@@ -1,0 +1,79 @@
+<md-content>
+  <div layout="row" style="justify-content:center;padding:30px 0;background:rgba(128,128,128,0.07);">
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#3f51b5;border-radius:50%;margin-right:8px;"></div>Fundamental I</div>
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Fundamental II</div>
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Ensino Médio, Técnico e Superior</div>
+  </div>
+  <!-- <hr size="3" style="margin:0!important;"> -->
+  <div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
+    <div layout style="align-items:center;margin-right:8px;font-weight:bold;">Aprovados:</div>
+    <div layout style="align-items:center;"><div class="green1" style="width:15px;height:15px;border-radius:50%;margin-right:8px;"></div>Confirmado!</div>
+    <div layout style="align-items:center;"><div class="red" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Cancelado</div>
+    <div layout style="align-items:center;"><div class="grey" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Pendente</div>
+  </div>
+  <!-- <hr size="3" style="margin:0!important;"> -->
+  <div layout="row" style="justify-content:center;padding-bottom:20px;background:rgba(128,128,128,0.07);">
+    TOTAL: {{projetos.length}}
+  </div>
+  <md-list flex style="margin-bottom:50px;">
+    <md-list-item class="list-header">
+      <div class="md-list-item-text" flex="15" style="margin-left:27px;margin-right:5px;text-align:center;">
+        <p>Nº</p>
+      </div>
+      <div class="md-list-item-text" flex="70" layout="column" style="text-align:center;">
+        <p>Projeto</p>
+      </div>
+      <md-divider></md-divider>
+    </md-list-item>
+    <md-divider></md-divider>
+    <div layout="row" layout-align="center center" data-ng-if="projetos.length === 0 && !spinnerActive" style="margin:40px 0;">
+      <md-button aria-label="Login" class="md-raised md-primary btn-options" data-ng-click="carregarProjetos()">
+        <span>Carregar projetos</span>
+      </md-button>
+    </div>
+    <!-- <div infinite-scroll='projetos.nextPage()' infinite-scroll-disabled='projetos.busy' infinite-scroll-distance='1'> -->
+    <md-list-item class="md-3-line" aria-label="Visualizar detalhes"
+    data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj.numInscricao"
+    ng-click="visualizarDetalhes(proj,$event)">
+    <div layout flex="5" layout-align="center center" style="align-self:center;">
+      <div style="width:15px;height:15px;border-radius:50%;"
+      data-ng-class="{azul:proj.categoria == 'Fundamental I (1º ao 5º anos)',
+      roxo:proj.categoria == 'Fundamental II (6º ao 9º anos)',
+      green1:proj.categoria == 'Ensino Médio, Técnico e Superior'}">
+    </div>
+  </div>
+  <div class="md-list-item-text" flex="10" style="margin-right:5px;text-align:center;">
+    <h3>{{::proj.numInscricao}}</h3>
+  </div>
+  <div class="md-list-item-text" layout="column">
+    <h3>{{::proj.nomeProjeto}}</h3>
+    <p data-ng-if="ordenacao == 'nomeEscola'">{{::proj.nomeEscola}}</p>
+    <p data-ng-if="ordenacao != 'nomeEscola'">{{::proj.eixo}}</p>
+  </div>
+  <div flex="15" layout="row" layout-align="end center">
+    <div data-ng-if="proj.aprovado === true" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{grey:proj.aprovado === true && proj.participa === undefined,green1:proj.participa === true,red:proj.participa === false}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+      <span style="font-weight:500;">Aprovado</span>
+    </div>
+    <md-icon class="md-secondary btn-plus" md-svg-src="plus"></md-icon>
+  </div>
+  <md-divider></md-divider>
+</md-list-item>
+<!-- <div data-ng-show='projetos.busy'>Loading data...</div> -->
+<!-- </div> -->
+
+<!-- <div infinite-scroll='projetos.nextPage()' infinite-scroll-disabled='projetos.busy' infinite-scroll-distance='1'>
+<div ng-repeat='item in projetos.items'>
+<span class='score'>{{item.nomeProjeto}}</span>
+<span class='title'>
+<a ng-href='{{item.url}}' target='_blank'>{{item.title}}</a>
+</span>
+<small>by {{item.author}} -
+<a ng-href='http://reddit.com{{item.permalink}}' target='_blank'>{{item.num_comments}} comments</a>
+</small>
+<div style='clear: both;'></div>
+</div>
+<div ng-show='projetos.busy'>Loading data...</div>
+</div> -->
+
+</md-list>
+</md-content>

@@ -1,0 +1,73 @@
+<md-dialog aria-label="Detalhes do participante" class="details2">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <!-- <p style="align-self:center;">{{details.tipo}}</p> -->
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;padding-left:2em;"></md-icon>
+  </div>
+  <div style="overflow:auto!important;">
+    <form name="participantesAltForm" novalidate style="padding:30px;">
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Nome completo</label>
+          <input type="text" name="nome" data-ng-model="participante.nome" required minlength="2" />
+          <div class="md-errors-spacer">
+            <div data-ng-show="participantesAltForm.nome.$dirty">
+              <div class="message-error" data-ng-show="participantesAltForm.nome.$error.required">Obrigatório.</div>
+            </div>
+          </div>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>CPF</label>
+          <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="14" maxlength="14" cpf-mask/>
+          <div class="md-errors-spacer">
+            <div data-ng-show="participantesAltForm.cpf.$dirty">
+              <div class="message-error" data-ng-show="participantesAltForm.cpf.$error.required">Obrigatório.</div>
+              <div class="message-error" data-ng-show="participantesAltForm.cpf.$error.minlength && participantesAltForm.cpf.$touched">CPF inválido.</div>
+            </div>
+          </div>
+        </md-input-container>
+      </div>
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+          <label>Semana Acadêmica</label>
+          <md-select name="tipo" data-ng-model="participante.eventos1" multiple>
+            <md-option data-ng-repeat="evt in eventos1" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <p class="select-vazio" data-ng-if="eventos1.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+          </md-select>
+          <div class="md-errors-spacer"></div>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+          <label>Saberes Docentes</label>
+          <md-select name="tipo" data-ng-model="participante.eventos2" multiple>
+            <md-option data-ng-repeat="evt in eventos2" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <p class="select-vazio" data-ng-if="eventos2.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+          </md-select>
+          <div class="md-errors-spacer"></div>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+          <label>Oficina</label>
+          <md-select name="tipo" data-ng-model="participante.eventos3" multiple>
+            <md-option data-ng-repeat="evt in eventos3" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <p class="select-vazio" data-ng-if="eventos3.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+          </md-select>
+          <div class="md-errors-spacer"></div>
+        </md-input-container>
+      </div>
+      <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+        <a data-ng-if="participante.tipo !== 'SD'" data-ng-click="removerParticipante($event,participante._id,participante.nome)" class="btn-apagar">Apagar participante</a>
+        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!participantesAltForm.$valid" data-ng-click="alterarParticipante(participante)">
+          <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+          <span style="vertical-align:middle;">Salvar</span>
+        </md-button>
+      </div>
+      <span us-spinner>
+        <div layout="row" layout-sm="column" layout-align="space-around">
+          <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+        </div>
+      </span>
+    </form>
+  </div>
+</md-dialog>

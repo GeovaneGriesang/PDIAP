@@ -1,0 +1,32 @@
+<md-content data-ng-controller="contaCtrl" data-ng-init="setHeader('Dados da conta')" class="md-padding update-inputs" style="background:#fdfdfd;padding-top:25px;" ng-cloak>
+  <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
+    <form name="contaForm" novalidate style="width:85%;max-width:850px;padding:8px;">
+      <div layout="row">
+        <div class="bloco-right" flex>
+          <md-input-container class="md-block" data-ng-init="editingU=false" flex-gt-sm>
+            <label>Nome do usuário</label>
+            <input type="text" name="username" data-ng-model="conta.username" data-ng-change="verificaUsername(conta.username)" data-ng-class="{'input-disabled': !editingU}" data-ng-focus="editingU=true" data-ng-blur="editingU=false" required/>
+            <div class="md-errors-spacer">
+              <div data-ng-if="contaForm.username.$dirty">
+                <div class="message-error" data-ng-if="contaForm.username.$error.required">Obrigatório.</div>
+              </div>
+              <div class="message-error" data-ng-if="contaForm.username.$error.duplicado">Username já está sendo utilizado.</div>
+            </div>
+          </md-input-container>
+          <div layout="row" layout-align="center center" class="senha" flex="100">
+            <md-button class="md-raised btn-outline grey-text darken-1" data-ng-click="enviarEmail2()" style="width:100%;">
+              <md-icon md-svg-icon="lock-outline" class="icon-btn-default grey-text darken-1"></md-icon>
+              Redefinir a senha
+            </md-button>
+          </div>
+        </div>
+      </div>
+      <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
+        <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!contaForm.$valid" data-ng-click="update(conta)">
+          <md-icon md-svg-icon="check" class="icon-btn-default white-text"></md-icon>
+          Salvar
+        </md-button>
+      </div>
+    </form>
+  </md-content>
+</md-content>

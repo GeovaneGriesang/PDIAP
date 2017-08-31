@@ -1,0 +1,71 @@
+<md-content data-ng-cloak style="background:#fdfdfd;padding:16px;" class="finalizar">
+  <h4>Em virtude de problemas técnicos na plataforma, o upload do relatório estará disponível até o <span style="text-decoration:underline;">meio-dia de 27 de setembro</span>, sendo este item a ser considerado na avaliação. Pedimos aos projetos que enviem os relatórios novamente.</h4>
+  <h4>Agradecemos a compreensão.</h4>
+  <br>
+  <div layout="row" layout-align="center center">
+    <md-button class="md-raised btn-file" type="file"
+    ngf-select="uploadFile($file, $invalidFiles)" accept="application/pdf">
+    Selecione o Arquivo</md-button>
+  </div>
+  <br><br>
+  <div data-ng-if="f !== undefined" class="table1">
+    <table class="table-upload" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tamanho</th>
+          <th>{{progresso}}</th>
+        </tr>
+      </thead>
+      <tbody style="font-weight:normal!important;">
+        <tr>
+          <td>{{f.name}} {{errFile.name}} {{errFile.$error}} {{errFile.$errorParam}}</td>
+          <td>{{calcSize}} kB</td>
+          <td data-ng-if="status === undefined">
+            <span class="progress" ng-show="f.progress >= 0" style="background-color:#eee;">
+              <div style="width:{{f.progress}}%;background-color:#d0d0d0;border-radius:4px;font-size:12px;padding:2.5px;" ng-bind="f.progress + '%'"></div>
+            </span>
+          </td>
+          <td data-ng-if="status !== undefined" style="color:{{statusColor}}">
+            <md-icon md-svg-icon="{{status}}" style="color:inherit;"></md-icon>
+            <span style="font-size:14px;vertical-align:middle;">{{statusText}}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div data-ng-if="f !== undefined" class="table2" style="display:none;">
+    <table class="tb2" cellspacing="0" style="font-weight:normal!important;">
+      <tr>
+        <th>Nome:</th>
+        <td>{{f.name}} {{errFile.name}} {{errFile.$error}} {{errFile.$errorParam}}</td>
+      </tr>
+      <tr>
+        <th>Tamanho:</th>
+        <td>{{calcSize}} kB</td>
+      </tr>
+      <tr>
+        <th>{{progresso}}:</th>
+        <td data-ng-if="status === undefined">
+          <span class="progress" ng-show="f.progress >= 0" style="background-color:#eee;">
+            <div style="width:{{f.progress}}%;background-color:#d0d0d0;border-radius:4px;font-size:12px;padding:2.5px;" ng-bind="f.progress + '%'"></div>
+          </span>
+        </td>
+        <td data-ng-if="status !== undefined" style="color:{{statusColor}}">
+          <md-icon md-svg-icon="{{status}}" style="color:inherit;"></md-icon>
+          <span style="font-size:14px;vertical-align:middle;">{{statusText}}</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- <div layout="row" layout-align="center center" layout-padding>
+  <md-checkbox md-no-ink ng-model="aceitaUpload" style="font-size:15px!important;" required>
+  Concordo que não poderei alterar asidasi
+</md-checkbox>
+</div>
+<div layout="row" layout-align="center center">
+<md-button class="md-raised teal lighten-1 white-text" data-ng-disabled="!aceitaUpload" data-ng-click="uploadFile()">
+Enviar
+</md-button>
+</div> -->
+</md-content>

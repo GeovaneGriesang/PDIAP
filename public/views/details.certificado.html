@@ -1,0 +1,136 @@
+<md-dialog aria-label="Certificados" class="details2" style="padding-bottom:20px;" data-ng-cloak>
+  <div style="display:flex;height:64px;width:100%;padding:0 2em;color:#424242;">
+    <p style="align-self:center;margin:0;" data-ng-if="countCertificados !== 1">Existem {{countCertificados}} certificados com o CPF informado.</p>
+    <p style="align-self:center;margin:0;" data-ng-if="countCertificados === 1">Existe {{countCertificados}} certificado com o CPF informado.</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;margin-left:2em;color:#757575"></md-icon>
+  </div>
+  <div style="overflow:auto!important;">
+    <!-- Avaliação -->
+    <div layout="row" layout-align="center center" data-ng-if="avaliador !== undefined" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Avaliação</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Avaliador',1,avaliador)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Avaliador',2,avaliador)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Orientação -->
+    <div layout="row" layout-align="center center" data-ng-if="orientador.length > 0" data-ng-repeat="ori in orientador" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Orientação de projeto</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Orientador',1,ori)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Orientador',2,ori)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Apresentação -->
+    <div layout="row" layout-align="center center" data-ng-if="aluno.length > 0" data-ng-repeat="alu in aluno" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Apresentação de projeto</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Apresentacao',1,alu)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Apresentacao',2,alu)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Responsavel-saberes -->
+    <div layout="row" layout-align="center center" data-ng-if="saberesDocentes.length > 0" data-ng-repeat="sab in saberesDocentes" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Seminário Saberes Docentes</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Responsavel-saberes',1,sab)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Responsavel-saberes',2,sab)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Responsavel-oficinas -->
+    <div layout="row" layout-align="center center" data-ng-if="oficina.length > 0" data-ng-repeat="ofi in oficina" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Oficineiro</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Responsavel-oficinas',1,ofi)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Responsavel-oficinas',2,ofi)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Responsavel-semanaAcademica -->
+    <div layout="row" layout-align="center center" data-ng-if="semanaAcademica.length > 0" data-ng-repeat="sem in semanaAcademica" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Semana Acadêmica</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Responsavel-semanaAcademica',1,sem)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Responsavel-semanaAcademica',2,sem)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Presença Oficina -->
+    <div layout="row" layout-align="center center" data-ng-if="presenca_oficina !== undefined" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Participação em oficina(s)</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Presenca-oficinas',1,presenca_oficina)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Presenca-oficinas',2,presenca_oficina)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Premiação de projeto -->
+    <div layout="row" layout-align="center center" data-ng-if="premiados.length > 0" data-ng-repeat="pre in premiados" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Premiação de projeto</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Premiacao',1,pre)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Premiacao',2,pre)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+    <!-- Presença Saberes -->
+    <div layout="row" layout-align="center center" data-ng-if="presenca_saberes !== undefined" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Participação em Sem. Saberes Docentes</p>
+      <div style="width:50%">
+        <md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado2(1,presenca_saberes)">
+          <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Abrir</span>
+        </md-button>
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:0 50px 50px 0;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado2(2,presenca_saberes)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
+  </div>
+</md-dialog>

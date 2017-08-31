@@ -1,0 +1,474 @@
+<header>
+	<md-toolbar md-scroll-shrink style="background:rgba(26,151,30,0.75)!important;min-height:60px!important;height:60px;">
+		<div class="md-toolbar-tools toolbar-inscricao" flex>
+			<span flex="5"></span>
+			<a href="http://movaci.com.br" flex>
+				<img src="assets/images/logo3-b.png" width="120px"></img>
+			</a>
+			<span flex></span>
+			
+      <nav id="nav-inscricao">
+        <ul>
+<!--          <li><a href="/saberes-docentes/inscricao">IV SEMINÁRIO SABERES DOCENTES</a></li>-->
+          <li><a href="/avaliadores/inscricao">AVALIADORES</a></li>
+        </ul>
+
+			</nav>
+			<span flex="5"></span>
+		</div>
+	</md-toolbar>
+</header>
+<section class="wrapper-registro" style="margin-top:-60px!important;" layout="column" layout-align="center center" data-ng-cloak>
+
+	<div layout="column" layout-align="center center" style="position:absolute;width:100%;height:150px;background:rgba(26,151,30,0.75);top:60px;z-index:2;">
+		<!-- <md-icon md-svg-icon="menu" style="margin:15px auto 0 60px;color:#eee;"></md-icon> -->
+		<div layout="column" layout-align="center center" class="inscricao-header-content">
+			<h1>Inscrição de Projetos</h1>
+		</div>
+	</div>
+	<div class="inscricao-header"></div>
+	<div style="position:absolute;width:100%;height:20px;z-index:20;top:190px;">
+		<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <polyline class="poly" points="100,100 0,100 100,0"/>
+  </svg>
+	</div>
+
+	<md-content flex layout="column" layout-align="center center" class="inscricao-content">
+		<form name="projetoForm" novalidate style="width:85%;max-width:900px;padding:8px;">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Sobre o Projeto</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<md-input-container class="md-block" flex-gt-sm>
+						<label>Nome do projeto</label>
+						<input type="text" name="nomeProjeto" data-ng-model="projeto.nomeProjeto" required />
+						<div class="md-errors-spacer">
+							<div data-ng-if="projetoForm.nomeProjeto.$dirty">
+								<div class="message-error" data-ng-if="projetoForm.nomeProjeto.$error.required">Obrigatório.</div>
+							</div>
+						</div>
+					</md-input-container>
+					<div class="md-block" style="margin-bottom:27px!important;padding-left:2px!important;">
+						<md-chips data-ng-required="true" name="palavrasChave" data-ng-model="palavrasChave" md-separator-keys="keys" md-max-chips="6" placeholder="Palavras-chave (máximo 5)" secondary-placeholder=""></md-chips>
+						<div class="md-errors-spacer" style="padding-top:3px!important;">
+							<div class="message-error" style="padding-bottom:4px!important;color:rgba(0,0,0,0.87)!important;" data-ng-if="palavrasChave.length !== 0 && palavrasChave.length <= 5 || (projetoForm.palavrasChave.$untouched && !projetoForm.palavrasChave.$dirty)">Utilize ENTER após cada palavra chave.</div>
+						</div>
+						<div class="md-errors-spacer" style="padding-top:3px!important;">
+							<div data-ng-if="projetoForm.palavrasChave.$dirty">
+								<div class="message-error" style="padding-bottom:4px!important;float:right!important;" data-ng-show="palavrasChave.length === 0">Obrigatório.</div>
+								<div class="message-error" style="padding-bottom:4px!important;float:right!important;" data-ng-show="palavrasChave.length > 5">Excedeu o número de palavras chave.</div>
+							</div>
+						</div>
+					</div>
+					<div layout="row">
+						<md-input-container class="md-block" flex-xs="100" flex="80">
+							<label>Categoria...</label>
+							<md-select name="categoria" data-ng-model="projeto.categoria" required style="width:100%!important;">
+								<md-optgroup label="Categorias">
+									<md-option data-ng-value="x.categoria" data-ng-repeat="x in listaCategorias" data-ng-focus="selectEixos(x.categoria)">{{x.categoria}}</md-option>
+								</md-optgroup>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.categoria.$touched">
+									<div class="message-error" data-ng-if="projetoForm.categoria.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<div flex layout="column" layout-align="center center" hide-xs>
+							<md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
+						</div>
+					</div>
+					<div layout="row">
+						<md-input-container class="md-block" flex-xs="100" flex="80">
+							<label>Eixo Temático...</label>
+							<md-select name="eixo" data-ng-model="projeto.eixo" required style="width:100%!important;">
+								<md-optgroup label="Eixos Temáticos" data-ng-if="projeto.categoria !== undefined">
+									<md-option data-ng-value="y" data-ng-repeat="y in eixos">{{y}}</md-option>
+								</md-optgroup>
+								<md-option value="" disabled data-ng-if="projeto.categoria === undefined">Selecione uma Categoria</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.eixo.$touched">
+									<div class="message-error" data-ng-if="projetoForm.eixo.$error.required && projeto.categoria !== undefined">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<div flex layout="column" layout-align="center center" hide-xs>
+							<md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<hr size="3">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Instituição de origem</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<div layout-gt-sm="row">
+						<md-autocomplete flex="100" md-no-cache="noCache" md-selected-item="selectedItem" md-search-text="projeto.nomeEscola" md-items="item in escolas" md-item-text="item" md-min-length="1" md-floating-label="Nome da instituição" md-input-name="nomeEscola" data-ng-required="true">
+							<md-item-template>
+								<span md-highlight-text="projeto.nomeEscola" md-highlight-flags="^i">{{item}}</span>
+							</md-item-template>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.nomeEscola.$dirty">
+									<div class="message-error" data-ng-if="projetoForm.nomeEscola.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-autocomplete>
+					</div>
+					<div layout-gt-sm="row">
+						<md-input-container class="md-block" flex-gt-sm="20">
+							<label>Estado</label>
+							<md-select name="estado" data-ng-model="projeto.estado" required>
+								<md-option data-ng-value="z.nome" data-ng-repeat="z in listaEstados" data-ng-focus="selectCidades(z.nome)">{{z.sigla}}</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.estado.$touched">
+									<div class="message-error" data-ng-if="projetoForm.estado.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<div flex="5" hide-xs hide-sm></div>
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>Cidade</label>
+							<md-select name="cidade" data-ng-model="projeto.cidade" required>
+								<md-option value="" disabled data-ng-if="projeto.estado === undefined">Selecione um Estado</md-option>
+								<md-option data-ng-value="c" data-ng-repeat="c in cidades">{{c}}</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.cidade.$touched">
+									<div class="message-error" data-ng-if="projetoForm.cidade.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<div flex="5" hide-xs hide-sm></div>
+						<md-input-container class="md-block" flex-gt-sm="20">
+							<label>CEP</label>
+							<input type="text" name="cep" data-ng-model="projeto.cep" required minlength="10" maxlength="10" cep-mask/>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.cep.$dirty">
+									<div class="message-error" data-ng-if="projetoForm.cep.$error.required">Obrigatório.</div>
+									<div class="message-error" data-ng-if="projetoForm.cep.$error.minlength && projetoForm.cep.$touched">CEP inválido.</div>
+								</div>
+							</div>
+						</md-input-container>
+					</div>
+				</div>
+			</div>
+			<hr size="3">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Orientador(es)</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<div ng-repeat="item1 in dynamicFields1" ng-form="projetoForm">
+						<h5 class="h5-2">
+							<md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador {{$index+1}}:
+							<md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover orientador" data-ng-click="removeOrientador($index)">
+								<md-tooltip md-direction="right">Remover orientador</md-tooltip>
+								<md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
+							</md-button>
+						</h5>
+						<div layout-gt-sm="row">
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Nome completo</label>
+								<input type="text" name="{{item1.nome}}" data-ng-model="projeto[item1.nome]" required minlength="2" />
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item1.nome}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item1.nome}}.$error.required">Obrigatório.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>E-mail</label>
+								<input type="email" name="{{item1.email}}" data-ng-model="projeto[item1.email]" required data-ng-pattern="/^.+@.+\..+$/" />
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item1.email}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item1.email}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item1.email}}.$error.pattern && projetoForm.{{item1.email}}.$touched">Email inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+						</div>
+						<div layout-gt-sm="row">
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>CPF</label>
+								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]" required minlength="14" maxlength="14" cpf-mask/>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item1.cpf}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item1.cpf}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item1.cpf}}.$error.minlength && projetoForm.{{item1.cpf}}.$touched">CPF inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Telefone</label>
+								<input type="text" name="{{item1.telefone}}" data-ng-model="projeto[item1.telefone]" required minlength="14" maxlength="15" fone-mask/>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item1.telefone}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item1.telefone}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item1.telefone}}.$error.minlength && projetoForm.{{item1.telefone}}.$touched">Telefone inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Tam. da camiseta</label>
+								<md-select name="{{item1.camiseta}}" data-ng-model="projeto[item1.camiseta]" required>
+									<md-option value="P">P - Pequena</md-option>
+									<md-option value="M">M - Média</md-option>
+									<md-option value="G">G - Grande</md-option>
+								</md-select>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item1.camiseta}}.$touched">
+										<div class="message-error" data-ng-show="projetoForm.{{item1.camiseta}}.$error.required">Obrigatório.</div>
+									</div>
+								</div>
+							</md-input-container>
+						</div>
+					</div>
+					<div layout="column" layout-align="center center" data-ng-if="btnAdd1">
+						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar orientador" data-ng-click="addOrientador()">
+							<md-tooltip md-direction="left">Adicionar orientador</md-tooltip>
+							<md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
+						</md-button>
+					</div>
+				</div>
+			</div>
+			<hr size="3">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Aluno(s)</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<div ng-repeat="item2 in dynamicFields2" ng-form="projetoForm">
+						<h5 class="h5-2">
+							<md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno {{$index+1}}:
+							<md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover aluno" data-ng-click="removeAluno($index)">
+								<md-tooltip md-direction="right">Remover aluno</md-tooltip>
+								<md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
+							</md-button>
+						</h5>
+						<div layout-gt-sm="row">
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Nome completo</label>
+								<input type="text" name="{{item2.nome}}" data-ng-model="projeto[item2.nome]" required minlength="2" />
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item2.nome}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item2.nome}}.$error.required">Obrigatório.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>E-mail</label>
+								<input type="email" name="{{item2.email}}" data-ng-model="projeto[item2.email]" required data-ng-pattern="/^.+@.+\..+$/" />
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item2.email}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item2.email}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item2.email}}.$error.pattern && projetoForm.{{item2.email}}.$touched">Email inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+						</div>
+						<div layout-gt-sm="row">
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>CPF</label>
+								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]" required minlength="14" maxlength="14" cpf-mask/>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item2.cpf}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item2.cpf}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item2.cpf}}.$error.minlength && projetoForm.{{item2.cpf}}.$touched">CPF inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Telefone</label>
+								<input type="text" name="{{item2.telefone}}" data-ng-model="projeto[item2.telefone]" required minlength="14" maxlength="15" fone-mask/>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item2.telefone}}.$dirty">
+										<div class="message-error" data-ng-show="projetoForm.{{item2.telefone}}.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-show="projetoForm.{{item2.telefone}}.$error.minlength && projetoForm.{{item2.telefone}}.$touched">Telefone inválido.</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Tam. da camiseta</label>
+								<md-select name="{{item2.camiseta}}" data-ng-model="projeto[item2.camiseta]" required>
+									<md-option value="P">P - Pequena</md-option>
+									<md-option value="M">M - Média</md-option>
+									<md-option value="G">G - Grande</md-option>
+								</md-select>
+								<div class="md-errors-spacer">
+									<div data-ng-show="projetoForm.{{item2.camiseta}}.$touched">
+										<div class="message-error" data-ng-show="projetoForm.{{item2.camiseta}}.$error.required">Obrigatório.</div>
+									</div>
+								</div>
+							</md-input-container>
+						</div>
+					</div>
+					<div layout="column" layout-align="center center" data-ng-if="btnAdd2">
+						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar aluno" data-ng-click="addAluno()">
+							<md-tooltip md-direction="left">Adicionar aluno</md-tooltip>
+							<md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
+						</md-button>
+					</div>
+				</div>
+			</div>
+			<hr size="3">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Informações Adicionais</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<div layout-gt-xs="row" class="hospedagem-inputs" style="margin-bottom:35px;margin-top:25px;">
+						<span style="margin-right:30px;color:#616161;">Algum integrante necessita de hospedagem?</span>
+						<md-radio-group layout="row" data-ng-model="hospedagemVerify" name="hospedagemVerify" ng-required="true">
+							<md-radio-button value="Sim">Sim</md-radio-button>
+							<md-radio-button value="Não">Não</md-radio-button>
+						</md-radio-group>
+						<div class="md-errors-spacer"></div>
+					</div>
+					<md-input-container class="md-block" data-ng-if="hospedagemVerify == 'Sim'" flex-gt-sm>
+						<label>Quais?</label>
+						<md-select name="hospedagem" data-ng-model="projeto.hospedagem" multiple data-ng-focus="montarIntegrantes(projeto)" required>
+							<!-- <md-optgroup label="Orientador(es)" data-ng-if="projeto.nomeOrientador1 !== undefined">
+          <md-option ng-value="eae" ng-repeat="eae in orientadoresArray">{{eae}}</md-option>
+        </md-optgroup> -->
+							<md-optgroup label="Aluno(s)" data-ng-if="projeto.nomeAluno1 !== undefined">
+								<md-option ng-value="dae" ng-repeat="dae in alunosArray">{{dae}}</md-option>
+							</md-optgroup>
+							<md-optgroup label="Nenhum integrante na lista :(" data-ng-if="projeto.nomeAluno1 === undefined" disabled></md-optgroup>
+						</md-select>
+						<div class="md-errors-spacer">
+							<div data-ng-if="projetoForm.hospedagem.$touched">
+								<div class="message-error" data-ng-if="projetoForm.hospedagem.$error.required">Obrigatório.</div>
+							</div>
+						</div>
+					</md-input-container>
+				</div>
+			</div>
+			<hr size="3">
+			<div layout="row">
+				<div class="bloco-left" flex="25" hide-xs>
+					<span>Resumo</span>
+				</div>
+				<div class="bloco-right" flex-xs="100" flex="75">
+					<div layout-gt-sm="row">
+						<md-input-container class="md-block" flex="100">
+							<label>Resumo do Projeto <br>Requisitos: apresentação do tema, objetivos, metodologia e resultados obtidos/esperados</label>
+							<textarea style="height:200px!important;" name="resumo" data-ng-model="projeto.resumo" ng-minlength="500" md-maxlength="2000" rows="1" md-select-on-focus required></textarea>
+							<div class="md-errors-spacer">
+								<div class="message-error" style="color:rgba(0,0,0,0.87)!important;" data-ng-show="!projetoForm.resumo.$invalid || (projetoForm.resumo.$untouched && !projetoForm.resumo.$dirty)">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
+								<div data-ng-if="projetoForm.resumo.$dirty">
+									<div class="message-error" data-ng-show="projetoForm.resumo.$error.required">Obrigatório |</div>
+									<div class="message-error" data-ng-show="projetoForm.resumo.$invalid && !projetoForm.resumo.$error.required">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
+								</div>
+							</div>
+						</md-input-container>
+					</div>
+				</div>
+			</div>
+
+			<div class="row finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
+				<md-button class="md-raised md-primary green lighten-1" data-ng-disabled="!projetoForm.$valid || palavrasChave.length === 0" data-ng-click="habilitarLogin()" data-ng-if="!loginHabilitado">
+					<md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Avançar
+				</md-button>
+			</div>
+
+			<!-- Cadastrar dados p/ login -->
+			<div data-ng-if="loginHabilitado">
+				<p style="text-align:center;color:rgba(0,0,0,0.73);">Os dados informados serão usados para a criação de um <b>login único</b> do projeto.</p>
+				<div layout="row">
+					<div class="bloco-left" flex="25" hide-xs style="padding-left:20px;background:#81c784;">
+						<span>Cadastro Login</span>
+					</div>
+					<div class="bloco-right" flex-xs="100" flex="75" style="border:1.5px solid #81c784;padding:20px;">
+						<!-- <div layout-gt-sm="row"> -->
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>E-mail principal</label>
+							<md-select name="email" data-ng-model="projeto.email" md-on-open="loadEmails()" required>
+								<md-option ng-value="email" data-ng-repeat="email in emails" data-ng-if="emails.length > 0">{{email}}</md-option>
+								<md-option value="" disabled data-ng-if="emails.length == 0">Nenhum email inserido</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.email.$touched">
+									<div class="message-error" data-ng-if="projetoForm.email.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>Nome do usuário</label>
+							<input type="text" name="username" data-ng-model="projeto.username" data-ng-change="verificaUsername(projeto.username)" required/>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm.username.$dirty">
+									<div class="message-error" data-ng-if="projetoForm.username.$error.required">Obrigatório.</div>
+								</div>
+								<div class="message-error" data-ng-if="projetoForm.username.$error.duplicado">Username já está sendo utilizado.</div>
+							</div>
+						</md-input-container>
+						<!-- </div> -->
+						<div layout-gt-sm="row">
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Senha</label>
+								<input type="password" name="password" data-ng-model="projeto.password" required data-ng-minlength="5" />
+								<div class="md-errors-spacer">
+									<div data-ng-if="projetoForm.password.$dirty">
+										<div class="message-error" data-ng-if="projetoForm.password.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-if="projetoForm.password.$error.minlength && projetoForm.password.$touched">Senha muito fraca</div>
+										<div class="message-error" id="senha-regular" data-ng-if="projeto.password.length > 4 && projeto.password.length < 12">Senha regular</div>
+										<div class="message-error" id="senha-forte" data-ng-if="projeto.password.length >= 12">Senha forte</div>
+									</div>
+								</div>
+							</md-input-container>
+							<div flex="5" hide-xs hide-sm></div>
+							<md-input-container class="md-block" flex-gt-sm>
+								<label>Confirme a senha</label>
+								<input type="password" name="password2" data-ng-model="projeto.password2" required data-password-verify="projeto.password" />
+								<div class="md-errors-spacer">
+									<div data-ng-if="projetoForm.password2.$dirty">
+										<div class="message-error" data-ng-if="projetoForm.password2.$error.required">Obrigatório.</div>
+										<div class="message-error" data-ng-if="projetoForm.password2.$error.passwordVerify && !projetoForm.password2.$error.required && !projetoForm.password.$error.minlength">Senha não confere!</div>
+									</div>
+									<div><span>Guarde bem a sua senha!</span></div>
+								</div>
+							</md-input-container>
+						</div>
+					</div>
+				</div>
+				<div layout="row" layout-align="center center" layout-padding>
+					<md-checkbox md-no-ink ng-model="aceitaRegulamento" style="font-size:15px!important;" required>
+						Para finalizar a inscrição você precisa aceitar os termos estabelecidos no <a href="/alpha/documentos/Regulamento_VI_MOVACI_2017.pdf" class="link-regulamento" target="_blank">regulamento</a> da feira.
+					</md-checkbox>
+				</div>
+				<!-- Finalizar inscrição -->
+				<div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
+					<md-button class="md-raised md-primary green lighten-1" data-ng-disabled="!projetoForm.$valid || projetoForm.password2.$error.pwmatch" data-ng-click="registrarProjeto(projeto);showConfirmDialog($event)">
+						<md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Finalizar
+					</md-button>
+				</div>
+				<span us-spinner>
+    <div layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+    </div>
+  </span>
+			</div>
+		</form>
+	</md-content>
+</section>
+<footer>
+	<div layout="row" layout-align="center center" style="height:50px;">
+		<span style="line-height:36px;font-size:14px;">&copy; MOVACI. Todos os direitos reservados. |
+      <md-button class="md-icon-button btn-github" aria-label="Github" data-ng-href="https://github.com/ricardosw/PDIAP" target="_blank">
+        <md-icon md-svg-src="github-circle" style="width:24px;height:24px;color:#9e9e9e;"></md-icon>
+        <!-- <span style="vertical-align:middle;"> PDIAP</span> -->
+		</md-button>
+		</span>
+	</div>
+</footer>

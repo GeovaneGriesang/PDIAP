@@ -1,0 +1,112 @@
+<span us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <!-- conteúdo da página -->
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <!-- <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+        <md-icon md-svg-src="menu" style="color:#424242;vertical-align:baseline;"></md-icon>
+      </md-button> -->
+      <!-- <h4 class="md-title" style="color:#424242;margin:0!important;">Admin</h4> -->
+      <img src="admin/assets/images/logo3-b.png" width="120px" style="margin-right:16px;"></img>
+      <span flex></span>
+      <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
+        <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
+      </div>
+      <div class="search-field" flex="40">
+        <!-- <md-autocomplete
+        md-search-text="searchProject"
+        md-items="item in querySearch(searchProject)"
+        placeholder="Buscar">
+      </md-autocomplete> -->
+      <input placeholder="Buscar" style="width:100%!important;" data-ng-model="search[query]" data-ng-model-options="{ debounce: 600 }"></input>
+    </div>
+    <div style="background:rgba(255,255,255,0.1);padding:2px 0 1px 0;border-radius:0 5px 5px 0;">
+      <!-- <md-icon md-svg-src="menu-down" style="color:#356937;width:30px;height:30px;"></md-icon> -->
+      <md-menu>
+        <md-button md-no-ink aria-label="Open demo menu" layout="row" class="hide-hover" style="height:45px;min-width:0!important;" ng-click="$mdOpenMenu($event)">
+          <md-icon md-svg-src="menu-down" style="color:#356937;width:30px;height:30px;"></md-icon>
+        </md-button>
+        <md-menu-content width="3">
+          <md-subheader class="md-no-sticky">CRITÉRIO DE BUSCA</md-subheader>
+          <md-menu-item data-ng-repeat="busca in textQuery">
+            <md-button data-ng-click="setBusca(busca.action)" class="grey-text darken-3">{{busca.text}}</md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+    </div>
+    <span flex="5"></span>
+    <div style="width:170px;">
+      <!-- <md-input-container class="md-block" flex="100"> -->
+      <!-- <label>Ordenar por</label> -->
+      <md-select data-ng-model="ordenar" placeholder="Ordenar" style="width:100%!important;font-size:17px;">
+        <md-optgroup label="Ordenar por:">
+          <md-option data-ng-repeat="ord in textOrdenacao" data-ng-focus="ordenarPor(ord.action)" data-ng-selected="ord.selected !== undefined">{{ord.text}}</md-option>
+          <!-- <md-option value="1" data-ng-focus="ordenarPor('numInscricao')">Nº de Inscrição</md-option>
+          <md-option value="2" data-ng-focus="ordenarPor('nomeProjeto')">Nome do projeto</md-option>
+          <md-option value="3" data-ng-focus="ordenarPor('nomeEscola')">Escola</md-option>
+          <md-option value="4" data-ng-focus="ordenarPor(['categoria','eixo'])" data-ng-selected="true">Categoria/eixo</md-option> -->
+        </md-optgroup>
+      </md-select>
+      <!-- </md-input-container> -->
+    </div>
+    <span flex></span>
+    <md-menu>
+      <md-button md-no-ink aria-label="Open demo menu" layout="row" class="hide-hover" style="height:45px;" ng-click="$mdOpenMenu($event)">
+        <md-icon md-svg-src="dots-vertical" style="color:#225024;width:28px;height:28px;"></md-icon>
+      </md-button>
+      <md-menu-content width="3">
+        <md-menu-item>
+          <md-button data-ng-click="visualizarRelatorio($event)" class="grey-text darken-3">
+            <md-icon md-svg-src="clipboard-text" class="grey-text darken-3"></md-icon>
+            Relatórios
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button data-ng-click="logout()" class="grey-text darken-3">
+            <md-icon md-svg-src="exit-to-app" class="grey-text darken-3"></md-icon>
+            Sair
+          </md-button>
+        </md-menu-item>
+      </md-menu-content>
+    </md-menu>
+  </div>
+</md-toolbar>
+<div>
+  <md-content>
+    <md-tabs md-dynamic-height md-border-bottom flex="100">
+      <md-tab label="Projetos" flex data-ng-cloak data-ng-click="setarProjetos()">
+        <div ui-view="projetos"></div>
+      </md-tab>
+      <md-tab label="Saberes Docentes" flex data-ng-cloak data-ng-click="setarSaberes()">
+        <div ui-view="saberes"></div>
+      </md-tab>
+      <md-tab label="Avaliadores" flex data-ng-cloak data-ng-click="setarAvaliadores()">
+        <div ui-view="avaliadores"></div>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+</div>
+
+<!-- <div layout="row" class="footer-admin" style="position:fixed;width:100%;height:50px;background:#424242;bottom:0!important;color:#f5f5f5;letter-spacing:0.5px;" align="center">
+<div flex="50">
+<p>Selecionados: {{count}}</p>
+</div>
+<span flex></span>
+<div flex="30">
+<md-button flex="50" aria-label="Login" class="md-raised md-primary white green darken-1 btnEntrar" data-ng-disabled="count == 0" data-ng-click="update()">
+<span>Salvar</span>
+</md-button>
+</div>
+</div> -->
+
+<!-- conteúdo dinâmico -->
+<!-- <section id="content" role="content" layout="column" layout-padding style="overflow:auto!important;background:#fdfdfd;height:100%;">
+<div ui-view style="background:#fdfdfd;"></div>
+</section> -->
+</section>
+</div>

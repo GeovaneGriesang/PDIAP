@@ -1,0 +1,13 @@
+<md-dialog aria-label="Detalhes dos saberes docentes" class="details">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nome}}</p>
+    <p><b>Email:</b> {{details.email}}</p>
+    <p><b>Tipo:</b> {{details.tipo}}</p>
+    <p><b>Escola:</b> {{details.escola}}</p>
+    <p style="text-align:justify;" data-ng-if="details.resumo !== undefined"><b>Resumo:</b> {{details.resumo}}</p>
+  </div>
+</md-dialog>

@@ -1,0 +1,161 @@
+<header>
+  <md-toolbar md-scroll-shrink style="background:rgba(0,131,143,0.8)!important;min-height:60px!important;height:60px;">
+    <div class="md-toolbar-tools toolbar-inscricao" flex>
+      <span flex="5"></span>
+      <a href="http://movaci.com.br" flex>
+        <img src="assets/images/logo3-b.png" width="120px"></img>
+      </a>
+      <span flex></span>
+      <nav id="nav-inscricao">
+        <ul>
+          <li><a href="">CONSULTAR INSCRIÇÕES</a></li>
+        </ul>
+      </nav>
+      <span flex="5"></span>
+    </div>
+  </md-toolbar>
+</header>
+<section class="wrapper-registro" style="margin-top:-60px!important;" layout="column" layout-align="center center" data-ng-cloak>
+  <div layout="column" layout-align="center center" style="position:absolute;width:100%;height:150px;background:rgba(0,131,143,0.8);top:60px;z-index:2;">
+    <!-- <md-icon md-svg-icon="menu" style="margin:15px auto 0 60px;color:#eee;"></md-icon> -->
+    <div layout="column" layout-align="center center" class="inscricao-header-content">
+      <h1>Inscrição Iv Sem. Saberes Docentes</h1>
+    </div>
+  </div>
+  <div class="inscricao-header"></div>
+  <div style="position:absolute;width:100%;height:20px;z-index:20;top:190px;">
+    <svg
+    width="100%"
+    height="100%"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none">
+    <polyline class="poly" points="100,100 0,100 100,0"/>
+  </svg>
+</div>
+
+<md-content flex layout="column" layout-align="center center" class="inscricao-content">
+  <form name="saberesForm" novalidate>
+    <div layout-gt-xs="row">
+      <p flex-gt-xs="50" flex-xs="100" style="text-align:center;color:#616161;">Tipo de Inscrição:</p>
+      <div flex="5" hide-xs></div>
+      <div flex-gt-xs="50" flex-xs="100" class="saberes-tipo">
+        <md-select placeholder="Opções" name="tipo" data-ng-model="saberes.tipo" required>
+          <md-option value="Apresentador">Apresentador</md-option>
+          <md-option value="Ouvinte">Ouvinte</md-option>
+          <md-option value="Apresentador e Ouvinte">Apresentador e Ouvinte</md-option>
+        </md-select>
+        <div class="md-errors-spacer">
+          <div data-ng-if="saberesForm.tipo.$touched">
+            <div class="message-error" data-ng-if="saberesForm.tipo.$error.required">Obrigatório.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div layout-gt-xs="row">
+
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>Nome completo</label>
+        <input type="text" name="nome" data-ng-model="saberes.nome" required />
+        <div class="md-errors-spacer">
+          <div data-ng-if="saberesForm.nome.$dirty">
+            <div class="message-error" data-ng-if="saberesForm.nome.$error.required">Obrigatório.</div>
+          </div>
+        </div>
+      </md-input-container>
+      <div flex="5" hide-xs></div>
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>E-mail</label>
+        <input type="email" name="email" data-ng-model="saberes.email" required data-ng-pattern="/^.+@.+\..+$/" />
+        <div class="md-errors-spacer">
+          <div data-ng-show="saberesForm.email.$dirty">
+            <div class="message-error" data-ng-show="saberesForm.email.$error.required">Obrigatório.</div>
+            <div class="message-error" data-ng-show="saberesForm.email.$error.pattern && saberesForm.email.$touched">Email inválido.</div>
+          </div>
+        </div>
+      </md-input-container>
+    </div>
+
+    <div layout-gt-xs="row">
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>CPF</label>
+        <input type="text" name="cpf" data-ng-model="saberes.cpf" required minlength="14" maxlength="14" cpf-mask/>
+        <div class="md-errors-spacer">
+          <div data-ng-show="saberesForm.cpf.$dirty">
+            <div class="message-error" data-ng-show="saberesForm.cpf.$error.required">Obrigatório.</div>
+            <div class="message-error" data-ng-show="saberesForm.cpf.$error.minlength && saberesForm.cpf.$touched">CPF inválido.</div>
+          </div>
+        </div>
+      </md-input-container>
+      <div flex="5" hide-xs></div>
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>Telefone</label>
+        <input type="text" name="telefone" data-ng-model="saberes.telefone" required minlength="14" maxlength="14" fone-mask/>
+        <div class="md-errors-spacer">
+          <div data-ng-show="saberesForm.telefone.$dirty">
+            <div class="message-error" data-ng-show="saberesForm.telefone.$error.required">Obrigatório.</div>
+            <div class="message-error" data-ng-show="saberesForm.telefone.$error.minlength && saberesForm.telefone.$touched">Telefone inválido.</div>
+          </div>
+        </div>
+      </md-input-container>
+    </div>
+
+    <div layout="row">
+      <div layout="row" flex="100">
+        <md-autocomplete flex="100"
+        md-no-cache="noCache"
+        md-selected-item="selectedItem"
+        md-search-text="saberes.escola"
+        md-items="item in escolas"
+        md-item-text="item"
+        md-min-length="1"
+        md-floating-label="Nome da instituição de ensino"
+        md-input-name="escola"
+        data-ng-required="true">
+        <md-item-template>
+          <span md-highlight-text="saberes.escola" md-highlight-flags="^i">{{item}}</span>
+        </md-item-template>
+        <div class="md-errors-spacer">
+          <div data-ng-if="saberesForm.escola.$dirty">
+            <div class="message-error" data-ng-if="saberesForm.escola.$error.required">Obrigatório.</div>
+          </div>
+        </div>
+      </md-autocomplete>
+    </div>
+  </div>
+
+  <md-input-container class="md-block" data-ng-if="saberes.tipo == 'Apresentador' || saberes.tipo == 'Apresentador e Ouvinte'" flex="100">
+    <label>Resumo da apresentação</label>
+    <textarea style="height:180px!important;" name="resumo" data-ng-model="saberes.resumo" rows="1" md-select-on-focus required></textarea>
+    <div class="md-errors-spacer">
+      <div data-ng-if="saberesForm.resumo.$dirty">
+        <div class="message-error" data-ng-show="saberesForm.resumo.$error.required">Obrigatório.</div>
+      </div>
+    </div>
+  </md-input-container>
+
+  <!-- Finalizar inscrição -->
+  <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
+    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!saberesForm.$valid" data-ng-click="registrarSaberes(saberes)">
+      <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Finalizar
+    </md-button>
+  </div>
+
+  <span us-spinner>
+    <div layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+    </div>
+  </span>
+
+</form>
+</md-content>
+</section>
+<footer>
+  <div layout="row" layout-align="center center" style="height:50px;">
+    <span style="line-height:36px;font-size:14px;">&copy; MOVACI. Todos os direitos reservados. |
+      <md-button class="md-icon-button btn-github" aria-label="Github" data-ng-href="https://github.com/ricardosw/PDIAP" target="_blank">
+        <md-icon md-svg-src="github-circle" style="width:24px;height:24px;color:#9e9e9e;"></md-icon>
+        <!-- <span style="vertical-align:middle;"> PDIAP</span> -->
+      </md-button>
+    </span>
+  </div>
+</footer>

@@ -1,0 +1,94 @@
+<div layout="row" layout-fill ng-cloak class="admin-page alert-theme" id="popupContainer3" data-ng-init="carregarProjeto()">
+
+  <md-sidenav class="md-sidenav-left md-whiteframe-z2 home-sidenav" role="sidenav" md-component-id="left" md-is-locked-open="$mdMedia('gt-sm')" style="background:#43a047;">
+    <!-- toolbar da sidenav -->
+    <md-toolbar class="md-tall md-hue-2" layout-align="center center" style="background:#43a047;height:70px;">
+      <div layout="column" layout-align="center center" style="width:100%;margin-top:20px;">
+        <img src="admin/assets/images/logo3-b.png" width="120px"></img>
+      </div>
+    </md-toolbar>
+    <!-- menu da sidenav -->
+    <hr size="3" style="background:#2e7d32;width:80%;">
+    <md-content role="navigation" style="background:#43a047;" class="config-admin">
+      <md-list>
+        <md-list-item ng-click="section.expand = !section.expand">
+          <p class="md-subheader" style="color:#f5f5f5;">Projetos</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{section.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="section.expand" ui-sref="master.seleciona-aprovados">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Selecionar aprovados</p>
+        </md-list-item>
+        <md-list-item data-ng-show="section.expand" ui-sref="master.presenca-projetos">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Presença</p>
+        </md-list-item>
+      </md-list>
+      <md-list>
+        <md-list-item ng-click="section2.expand = !section2.expand">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Avaliadores</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{section2.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="section2.expand" ui-sref="master.inscricao-avaliadores">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Inscrição</p>
+        </md-list-item>
+      </md-list>
+      <md-list>
+        <md-list-item ng-click="section3.expand = !section3.expand">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Eventos</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{section3.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-eventos">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar</p>
+        </md-list-item>
+      </md-list>
+      <md-list>
+        <md-list-item ng-click="section4.expand = !section4.expand">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Participantes</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{section4.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="section4.expand" ui-sref="master.cadastro-participantes">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar/Alterar</p>
+        </md-list-item>
+      </md-list>
+
+
+
+      <!-- <md-list>
+        <md-list-item ui-sref="home.categorias-eixos">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Categorias e Eixos</p>
+          <span flex></span>
+        </md-list-item>
+        <md-list-item ng-click="mostraAprovados()">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Lista de aprovados</p>
+          <span flex></span>
+        </md-list-item>
+        <md-list-item ui-sref="home.regulamento">
+          <p class="md-subheader" style="color:#f5f5f5;">Regulamento</p>
+          <span flex></span>
+        </md-list-item>
+      </md-list> -->
+      <hr size="3" class="toolbar-hr" style="background:#2e7d32;width:80%;">
+      <md-list style="margin-bottom:1.4em;">
+        <md-list-item ng-click="logout()">
+          <md-icon md-svg-src="exit-to-app" style="color:#f5f5f5;"></md-icon>
+          <p class="md-subheader" style="color:#f5f5f5;">Sair</p>
+        </md-list-item>
+      </md-list>
+    </md-content>
+  </md-sidenav>
+
+  <!-- conteúdo da página -->
+  <section layout="column" role="main" flex>
+    <section id="content" role="content" layout="column" style="overflow:auto!important;background:#fdfdfd;height:100%;">
+      <div ui-view style="background:#fdfdfd;"></div>
+    </section>
+  </section>
+</div>

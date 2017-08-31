@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-ng-app="PDIAPa">
+<head>
+  <base href="/">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <title>MOVACI - ADMINISTRAÇÃO INTERNA</title>
+
+  <!--CSS-->
+  <link rel="shortcut icon" href="admin/assets/images/favicon.png" type="image/x-icon" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+  <link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic">
+  <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
+  <link rel="stylesheet" href="admin/assets/css/style.css">
+
+</head>
+<body>
+
+  <ui-view></ui-view>
+
+  <!--JavaScript-->
+  <script>
+  function resize_iframe() {
+    var height=window.innerWidth;//Firefox
+    if (document.body.clientHeight) {
+      height=document.body.clientHeight;//IE
+    }
+    document.getElementById("glu").style.height=parseInt(height-document.getElementById("glu").offsetTop-8)+"px";
+  }
+  </script>
+  <script type="text/javascript" src="/bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-material/angular-material.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-aria/angular-aria.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-animate/angular-animate.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-resource/angular-resource.min.js"></script>
+  <script type="text/javascript" src="assets/js/auth.js"></script>
+  <script type="text/javascript" src="admin/assets/js/app.js"></script>
+  <script type="text/javascript" src="admin/assets/js/configs/icons.js"></script>
+  <!-- <script type="text/javascript" src="admin/assets/js/configs/logout.js"></script> -->
+  <script type="text/javascript" src="admin/assets/js/configs/interceptorsConfig.js"></script>
+  <script type="text/javascript" src="admin/assets/js/routes/ui-routes.js"></script>
+  <script type="text/javascript" src="admin/assets/js/services/adminAPIService.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/homeCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/adminCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/admin2Ctrl.js"></script>
+  <!-- <script type="text/javascript" src="admin/assets/js/controllers/loginCtrl.js"></script> -->
+  <script type="text/javascript" src="admin/assets/js/controllers/confirmacaoCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/projetosCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/eventosCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/participantesCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/usSpinner.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/cpfMask.js"></script>
+  <script type="text/javascript" src="admin/assets/js/interceptors/authInterceptor.js"></script>
+</body>
+</html>

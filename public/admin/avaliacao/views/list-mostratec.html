@@ -1,0 +1,47 @@
+<md-content>
+  <!-- <div layout="row" style="justify-content:center;padding:30px 0;background:rgba(128,128,128,0.07);">
+  <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#3f51b5;border-radius:50%;margin-right:8px;"></div>Fundamental I</div>
+  <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Fundamental II</div>
+  <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Ensino Médio, Técnico e Superior</div>
+</div>
+<div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
+<div layout style="align-items:center;margin-right:8px;font-weight:bold;">Aprovados:</div>
+<div layout style="align-items:center;"><div class="green1" style="width:15px;height:15px;border-radius:50%;margin-right:8px;"></div>Confirmado!</div>
+<div layout style="align-items:center;"><div class="red" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Cancelado</div>
+<div layout style="align-items:center;"><div class="grey" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Pendente</div>
+</div> -->
+<!-- <div layout="row" style="justify-content:center;padding:20px 0;background:rgba(128,128,128,0.07);">
+TOTAL: {{eixo1.length}}
+</div> -->
+<div id="logo-impressao" style="margin:0 0 40px 50px;display:none;">
+    <img src="/admin/avaliacao/assets/images/logo.png" width="37%"></img>
+</div>
+<section>
+  <div style="padding:55px 0 40px 0;background:#f7f7f7;" align="center">
+    <h3 style="text-align:center;margin:0;font-size:22px;width:80%;" class="title-categoria">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Classificados MOSTRATEC</span>
+    </h3>
+  </div>
+  <md-list flex>
+    <md-divider></md-divider>
+    <md-list-item class="md-3-line" aria-label="Ranking"
+      data-ng-repeat="proj in projetos | filter:search | orderBy:['eixo','-total'] track by proj.numInscricao"
+      ng-click="visualizarDetalhes(proj,$event)" data-ng-if="proj.numInscricao === 153 || proj.numInscricao === 190 || proj.numInscricao === 61">
+      <div layout flex="5" layout-align="center center" style="align-self:center;">
+        <md-icon md-svg-src="bookmark-check"></md-icon>
+      </div>
+      <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+        <h3>{{::proj.total}}</h3>
+      </div>
+      <div class="md-list-item-text" layout="column">
+        <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+        <!-- <p>{{::proj.eixo}}</p> -->
+        <p>{{::proj.nomeEscola}}</p>
+        <p>Orientador(es): {{::proj.orientadores}}</p>
+        <p>Aluno(s): {{::proj.alunos}}</p>
+      </div>
+      <md-divider></md-divider>
+    </md-list-item>
+  </md-list>
+</section>
+</md-content>

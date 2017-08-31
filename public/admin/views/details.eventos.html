@@ -1,0 +1,16 @@
+<md-dialog aria-label="Detalhes do evento" class="details">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">{{details.tipo}}</p>
+    <span flex></span>
+    <!-- <md-button class="md-raised md-primary btnEntrar2-2 btn-outline" aria-label="Abrir relatório" data-ng-click="">
+      <span style="vertical-align:middle;">Abrir relatório</span>
+    </md-button> -->
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;padding-left:2em;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Título:</b> {{details.titulo}}</p>
+    <p><b>Carga Horária:</b> {{details.cargaHoraria}}</p>
+    <p><b>Data:</b> {{details.data}}</p>
+    <p><b>Responsáveis:</b> {{details.responsavel}}</p>
+  </div>
+</md-dialog>

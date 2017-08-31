@@ -1,0 +1,34 @@
+{
+  "categorias": [
+    {
+      "categoria": "Fundamental I (1º ao 5º anos)",
+      "eixos": [
+        "Ciências da Natureza e suas tecnologias",
+        "Ciências Humanas e suas tecnologias",
+        "Linguagens, Códigos e suas tecnologias",
+        "Matemática e suas tecnologias"
+      ]
+    },
+    {
+      "categoria": "Fundamental II (6º ao 9º anos)",
+      "eixos": [
+        "Ciências da Natureza e suas tecnologias",
+        "Ciências Humanas e suas tecnologias",
+        "Linguagens, Códigos e suas tecnologias",
+        "Matemática e suas tecnologias"
+      ]
+    },
+    {
+      "categoria": "Ensino Médio, Técnico e Superior",
+      "eixos": [
+        "Ciências Agrárias, Exatas e da Terra",
+        "Ciências Ambientais, Biológicas e da Saúde",
+        "Ciências Humanas e Sociais Aplicadas",
+        "Línguas e Artes",
+        "Extensão",
+        "Ciências da Computação",
+        "Engenharias"
+      ]
+    }
+  ]
+}

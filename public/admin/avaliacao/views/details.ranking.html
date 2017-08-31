@@ -1,0 +1,25 @@
+<md-dialog aria-label="Detalhes do projeto" class="details dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Nº de Inscrição: {{details.numInscricao}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <p><b>Categoria/eixo:</b> {{details.categoria}}/{{details.eixo}}</p>
+    <!-- <p><b>Escola:</b> {{details.nomeEscola}}</p>
+    <p><b>Orientador(es):</b> {{details.orientadores}}</p>
+    <p><b>Aluno(s):</b> {{details.alunos}}</p> -->
+    <div data-ng-if="details.avaliacao !== undefined">
+    <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Avaliação</span>
+    </h3>
+    <div layout="column" layout-align="center center" style="background:#e0e0e0;padding:25px 0;">
+      <p style="margin:8px 0;">Nota do avaliador 1: {{details.avaliacao[0]}}</p>
+      <p style="margin:8px 0;">Nota do avaliador 2: {{details.avaliacao[1]}}</p>
+      <p style="margin:8px 0;" data-ng-if="details.avaliacao[2] !== undefined">Nota do desempate: {{details.avaliacao[2]}}</p>
+      <b style="margin:8px 0;">TOTAL: {{details.total}}</b>
+    </div>
+  </div>
+  </div>
+</md-dialog>

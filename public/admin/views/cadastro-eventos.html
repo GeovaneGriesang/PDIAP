@@ -1,0 +1,171 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Eventos | Cadastrar</h4>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo Evento</span>
+        </h3>
+        <form name="eventosForm" novalidate class="eventos-form">
+          <div layout-gt-xs="row" style="margin-top:15px;">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Título</label>
+              <input type="text" name="titulo" data-ng-model="evento.titulo" required/>
+              <div class="md-errors-spacer">
+                <div data-ng-if="eventosForm.titulo.$dirty">
+                  <div class="message-error" data-ng-if="eventosForm.titulo.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="15">
+              <label>C. Horária</label>
+              <input type="time" name="cargaHoraria" data-ng-model="evento.cargaHoraria" required/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="eventosForm.ch.$dirty">
+                  <div class="message-error" data-ng-show="eventosForm.ch.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <span style="align-self:center;margin-left:3px;margin-bottom:12px;">hora(s)</span>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block selectCustom1" flex-gt-xs>
+              <label>Tipo</label>
+              <md-select name="tipo" data-ng-model="evento.tipo" required>
+                <md-option value="Seminário Saberes Docentes">Seminário Saberes Docentes</md-option>
+                <md-option value="Semana Acadêmica">Semana Acadêmica</md-option>
+                <md-option value="Oficina">Oficina</md-option>
+              </md-select>
+              <div class="md-errors-spacer">
+                <div data-ng-if="eventosForm.tipo.$touched">
+                  <div class="message-error" data-ng-if="eventosForm.tipo.$error.required">Selecione uma opção.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex>
+              <label>Data</label>
+              <input type="date" name="data" data-ng-model="evento.data" required/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="eventosForm.data.$dirty">
+                  <div class="message-error" data-ng-show="eventosForm.data.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+
+          <div layout="row" style="margin-top:15px;">
+            <div class="bloco-left" flex="20" hide-xs>
+              <span>Responsáveis</span>
+            </div>
+            <div class="bloco-right" flex-xs="100" flex="80">
+              <div ng-repeat="item in dynamicFields" ng-form="eventosForm">
+                <h5 class="h5-2" data-ng-class={'h5-3':!$first}>
+                  <md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Responsável {{$index+1}}:
+                  <md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover" data-ng-click="removeResponsavel($index)">
+                    <md-tooltip md-direction="right">Remover</md-tooltip>
+                    <md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;display:flex;"></md-icon>
+                  </md-button>
+                </h5>
+                <div layout-gt-xs="row">
+                  <md-input-container class="md-block" flex-gt-xs>
+                    <label>Nome completo</label>
+                    <input type="text" name="{{item.nome}}" data-ng-model="evento.responsavel[$index].nome" required minlength="2" />
+                    <div class="md-errors-spacer">
+                      <div data-ng-show="eventosForm.{{item.nome}}.$dirty">
+                        <div class="message-error" data-ng-show="eventosForm.{{item.nome}}.$error.required">Obrigatório.</div>
+                      </div>
+                    </div>
+                  </md-input-container>
+                  <div flex="5" hide-xs></div>
+                  <md-input-container class="md-block" flex-gt-xs>
+                    <label>CPF</label>
+                    <input type="text" name="{{item.cpf}}" data-ng-model="evento.responsavel[$index].cpf" required minlength="14" maxlength="14" cpf-mask/>
+                    <div class="md-errors-spacer">
+                      <div data-ng-show="eventosForm.{{item.cpf}}.$dirty">
+                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.required">Obrigatório.</div>
+                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.minlength && eventosForm.{{item.cpf}}.$touched">CPF inválido.</div>
+                      </div>
+                    </div>
+                  </md-input-container>
+                </div>
+              </div>
+              <div layout="column" layout-align="center center" data-ng-if="btnAdd">
+                <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar" data-ng-click="addResponsavel()">
+                  <md-tooltip md-direction="left">Adicionar</md-tooltip>
+                  <md-icon md-svg-src="plus" style="color:#fdfdfd!important;display:flex;"></md-icon>
+                </md-button>
+              </div>
+            </div>
+          </div>
+          <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+            <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!eventosForm.$valid" data-ng-click="cadastrarEvento(evento)">
+              <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+              <span style="vertical-align:middle;">Salvar</span>
+            </md-button>
+          </div>
+          <span us-spinner>
+            <div layout="row" layout-sm="column" layout-align="space-around">
+              <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+            </div>
+          </span>
+        </form>
+      </div>
+      <div style="background:rgba(128,128,128,0.07);padding:30px 30px 15px 30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:0 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Eventos</span>
+        </h3>
+        <div layout="row" style="justify-content:center;padding:20px 0;">
+          <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#3f51b5;border-radius:50%;margin-right:8px;"></div>Semana Acadêmica</div>
+          <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Seminário Saberes Docentes</div>
+          <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Oficina</div>
+        </div>
+      </div>
+      <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = ['tipo','titulo']">
+        <md-divider></md-divider>
+        <div data-ng-if="eventos.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
+          <p>Nenhum evento cadastrado :(</p>
+        </div>
+        <md-list-item class="md-3-line" data-ng-repeat="evt in eventos | orderBy:ordenacao track by evt._id"
+        style="padding:0 45px;">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <div style="width:15px;height:15px;border-radius:50%;"
+          data-ng-class="{azul:evt.tipo == 'Semana Acadêmica',
+          roxo:evt.tipo == 'Seminário Saberes Docentes',
+          green1:evt.tipo == 'Oficina'}">
+        </div>
+      </div>
+      <div class="md-list-item-text" flex="15" style="margin-right:5px;text-align:center;">
+        <h3>{{::evt.data}}</h3>
+      </div>
+      <div class="md-list-item-text" layout="column" style="padding-right:15px;">
+        <h3>{{::evt.cargaHoraria}} - {{::evt.titulo}}</h3>
+        <p>{{::evt.responsavel}}</p>
+      </div>
+      <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+        <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover evento" ng-click="removerEvento($event,evt._id,evt.titulo)">
+          <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+          <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Apagar</span>
+        </md-button>
+      </div>
+      <md-divider></md-divider>
+    </md-list-item>
+  </md-list>
+</md-content>
+</section>
+</div>

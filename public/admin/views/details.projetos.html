@@ -1,0 +1,18 @@
+<md-dialog aria-label="Detalhes do projeto" class="details">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Nº de Inscrição: {{details.numInscricao}}</p>
+    <span flex></span>
+    <!-- <md-button class="md-raised md-primary btnEntrar2-2 btn-outline" aria-label="Abrir relatório" data-ng-click="">
+      <span style="vertical-align:middle;">Abrir relatório</span>
+    </md-button> -->
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <p><b>Categoria/eixo:</b> {{details.categoria}}/{{details.eixo}}</p>
+    <p><b>Escola:</b> {{details.nomeEscola}}</p>
+    <p><b>Orientadore(s):</b> {{details.orientadores}}</p>
+    <p><b>Aluno(s):</b> {{details.alunos}}</p>
+    <p style="text-align:justify;"><b>Resumo:</b> {{details.resumo}}</p>
+  </div>
+</md-dialog>

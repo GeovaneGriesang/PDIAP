@@ -1,0 +1,177 @@
+<link rel="stylesheet" href="/admin/assets/css/style-email.css">
+<span data-ng-if="verif === 'pending'">
+  <div layout="row" layout-sm="column" layout-align="space-around" style="height:100%;">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40" class="loading-default" style="display:flex;align-self:center;"></md-progress-circular>
+  </div>
+</span>
+<div data-ng-if="verif !== 'pending'" layout="row" layout-fill>
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="md-whiteframe-2dp" style="background:#43a047;min-height:70px!important;">
+      <div class="md-toolbar-tools" style="min-height:70px!important;">
+        <span flex></span>
+        <a href="https://www.movaci.com.br" style="cursor:pointer;"><img src="admin/assets/images/logo3-b.png" width="120px" style="margin-right:16px;"></img></a>
+        <span flex></span>
+      </div>
+    </md-toolbar>
+    <center>
+      <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
+        <tr>
+          <td align="center" valign="top" id="bodyCell">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer" style="margin-top:3em;">
+              <tr>
+                <td valign="top" id="templateBody" style="border-radius:5px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width:100%;">
+                    <tbody class="mcnTextBlockOuter">
+                      <tr>
+                        <td valign="top" class="mcnTextBlockInner" style="padding-top:9px;">
+                          <table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width:100%; min-width:100%;" width="100%" class="mcnTextContentContainer">
+                            <tbody><tr>
+                              <td valign="top" class="mcnTextContent" style="padding-top:30px; padding-right:30px; padding-bottom:30px; padding-left:30px;">
+                                <h1>Consulta certificados MOVACI 2016</h1>
+                                <p style="font-size:14px!important;">Para assegurar-se que o certificado em mãos é válido, digite o código apresentado no espaço indicado, desta forma você tem a garantia de que o documento é verdadeiro.</p>
+                                <!-- <div data-ng-if="verif === 'não'">
+                                <h1>Devido a escolha, o projeto está fora da lista de participantes da V MOVACI. Com isso, outro projeto ocupará o lugar.</h1>
+                                <p style="margin-top:20px;">Até a próxima!</p>
+                              </div> -->
+                              <!-- <div data-ng-if="verif === 'erro'">
+                              <h1>Houve algum erro na requisição, ou você já executou essa ação.</h1>
+                              <p style="margin-top:20px;margin-bottom:0;">Primeiramente, faça login e verifique a dashboard do projeto para obter essa informação.</p>
+                              <p style="margin-top:0;">Em caso de dúvida, entre em contato conosco.</p>
+                            </div> -->
+                            <form name="certificadosForm" novalidate style="margin-top:40px;display:flex;justify-content:center;">
+                              <div layout-gt-xs="row" flex="60">
+                                <md-input-container class="md-block" flex-gt-xs>
+                                  <label>Digite o código</label>
+                                  <input type="text" name="token" data-ng-model="token" required />
+                                  <!-- <div class="md-errors-spacer">
+                                  <div data-ng-if="certificadosForm.token.$dirty">
+                                  <div class="message-error" data-ng-if="certificadosForm.token.$error.required">Obrigatório.</div>
+                                </div>
+                              </div> -->
+                            </md-input-container>
+                            <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:0;">
+                              <md-button class="md-raised md-primary teal lighten-1" style="height:36px;line-height:inherit;margin-bottom:20px;" data-ng-disabled="!certificadosForm.$valid" data-ng-click="consultarCertificado(token)">
+                                <!-- <md-icon md-svg-icon="check" style="width:20px;height:20px;color:rgba(255,255,255,0.87);"></md-icon> Finalizar -->
+                                Consultar
+                              </md-button>
+                            </div>
+                            <span us-spinner>
+                              <div layout="row" layout-sm="column" layout-align="space-around">
+                                <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+                              </div>
+                            </span>
+                          </div>
+                        </form>
+                        <div data-ng-if="texto.length > 0" style="color:#388e3c;text-transform:uppercase;display:inline-flex;align-items:center;">
+                          <md-icon md-svg-icon="check" style="width:40px;height:40px;color:inherit;margin-bottom:10px;"></md-icon>
+                          <h5 style="color:inherit;font-size:17px;">Certificado válido</h5>
+                        </div>
+                        <div data-ng-if="texto.length === 0" style="color:#d32f2f;text-transform:uppercase;display:inline-flex;align-items:center;">
+                          <md-icon md-svg-icon="close" style="width:40px;height:40px;color:inherit;margin-bottom:5px;"></md-icon>
+                          <h5 style="color:inherit;font-size:17px;">Certificado não encontrado</h5>
+                        </div>
+                        <p ng-bind-html='texto'></p>
+                      </td>
+                    </tr>
+                  </tbody></table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnDividerBlock" style="min-width:100%;">
+            <tbody class="mcnDividerBlockOuter">
+              <tr>
+                <td class="mcnDividerBlockInner" style="min-width:100%; padding:18px 30px;">
+                  <table class="mcnDividerContent" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:12em;border-top:4px solid #e0e0e0;">
+                    <tbody><tr>
+                      <td>
+                        <span></span>
+                      </td>
+                    </tr>
+                  </tbody></table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnFollowBlock" style="min-width:100%;">
+            <tbody class="mcnFollowBlockOuter">
+              <tr>
+                <td align="center" valign="top" style="padding:0 9px 9px 9px" class="mcnFollowBlockInner">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnFollowContentContainer" style="min-width:100%;">
+                    <tbody><tr>
+                      <td align="center" style="padding-left:9px;padding-right:9px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width:100%;" class="mcnFollowContent">
+                          <tbody><tr>
+                            <td align="center" valign="top" class="ajustar" style="padding-right:9px; padding-left:9px;">
+                              <table align="center" style="display:flex!important;" border="0" cellpadding="0" cellspacing="0">
+                                <tbody><tr>
+                                  <td align="center" valign="top">
+                                    <table align="left" border="0" cellpadding="0" cellspacing="0" style="display:inline;">
+                                      <tbody><tr>
+                                        <td valign="top" style="padding-bottom:9px;" class="mcnFollowContentItemContainer">
+                                          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnFollowContentItem">
+                                            <tbody><tr>
+                                              <td align="left" valign="middle" style="padding-right:10px; padding-bottom:5px; padding-left:9px;">
+                                                <table align="left" border="0" cellpadding="0" cellspacing="0" width="">
+                                                  <tbody><tr>
+                                                    <td align="center" valign="middle" width="24" class="mcnFollowIconContent">
+                                                      <a href="https://www.facebook.com/movaciifsul" target="_blank">
+                                                        <md-tooltip md-direction="bottom">Acompanhe-nos</md-tooltip>
+                                                        <img src="http://oi65.tinypic.com/2922zae.jpg" style="display:block;" height="24" width="24" class="">
+                                                      </a>
+                                                    </td>
+                                                  </tr>
+                                                </tbody></table>
+                                              </td>
+                                            </tr>
+                                          </tbody></table>
+                                        </td>
+                                      </tr>
+                                    </tbody></table>
+                                    <table align="left" border="0" cellpadding="0" cellspacing="0" style="display:inline;">
+                                      <tbody><tr>
+                                        <td valign="top" style="padding-right:0; padding-bottom:9px;" class="mcnFollowContentItemContainer">
+                                          <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnFollowContentItem">
+                                            <tbody><tr>
+                                              <td align="left" valign="middle" style="padding-right:10px; padding-bottom:5px; padding-left:9px;">
+                                                <table align="left" border="0" cellpadding="0" cellspacing="0" width="">
+                                                  <tbody><tr>
+                                                    <td align="center" valign="middle" width="24" class="mcnFollowIconContent">
+                                                      <a href="https://github.com/ricardosw/PDIAP" target="_blank">
+                                                        <md-tooltip md-direction="bottom">Projeto no Github</md-tooltip>
+                                                        <img src="http://oi63.tinypic.com/30sk57c.jpg" style="display:block;" height="24" width="24" class="">
+                                                      </a>
+                                                    </td>
+                                                  </tr>
+                                                </tbody></table>
+                                              </td>
+                                            </tr>
+                                          </tbody></table>
+                                        </td>
+                                      </tr>
+                                    </tbody></table>
+                                  </td>
+                                </tr>
+                              </tbody></table>
+                            </td>
+                          </tr>
+                        </tbody></table>
+                      </td>
+                    </tr>
+                  </tbody></table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+</center>
+<footer id="footer" style="background:none!important;position:relative!important;">
+  <p>&copy; MOVACI. Todos os direitos reservados.</p>
+</footer>
+</section>
+</div>

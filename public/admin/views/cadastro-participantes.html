@@ -1,0 +1,147 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Participantes | Cadastrar</h4>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo Participante</span>
+        </h3>
+        <form name="participantesForm" novalidate class="eventos-form">
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Nome completo</label>
+              <input type="text" name="nome" data-ng-model="participante.nome" required minlength="2" />
+              <div class="md-errors-spacer">
+                <div data-ng-show="participantesForm.nome.$dirty">
+                  <div class="message-error" data-ng-show="participantesForm.nome.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>CPF</label>
+              <input type="text" name="cpf" data-ng-model="participante.cpf" data-ng-change="verificaCPF(participante.cpf)" required minlength="14" maxlength="14" cpf-mask/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="participantesForm.cpf.$dirty">
+                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.required">Obrigatório.</div>
+                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.minlength && participantesForm.cpf.$touched">CPF inválido.</div>
+                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.duplicado">CPF já está cadastrado.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+              <label>Semana Acadêmica</label>
+              <md-select name="tipo" data-ng-model="participante.eventos" multiple>
+                <md-option data-ng-repeat="evt in eventos1" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}">{{evt.titulo}}</md-option>
+                <p class="select-vazio" data-ng-if="eventos1.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+              </md-select>
+              <div class="md-errors-spacer"></div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+              <label>Saberes Docentes</label>
+              <md-select name="tipo" data-ng-model="participante.eventos" multiple>
+                <md-option data-ng-repeat="evt in eventos2" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}">{{evt.titulo}}</md-option>
+                <p class="select-vazio" data-ng-if="eventos2.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+              </md-select>
+              <div class="md-errors-spacer"></div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+              <label>Oficina</label>
+              <md-select name="tipo" data-ng-model="participante.eventos" multiple>
+                <md-option data-ng-repeat="evt in eventos3" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}">{{evt.titulo}}</md-option>
+                <p class="select-vazio" data-ng-if="eventos3.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+              </md-select>
+              <div class="md-errors-spacer"></div>
+            </md-input-container>
+          </div>
+          <!-- </div> -->
+          <!-- <div layout="column" layout-align="center center" data-ng-if="btnAdd">
+          <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar" data-ng-click="addResponsavel()">
+          <md-tooltip md-direction="left">Adicionar</md-tooltip>
+          <md-icon md-svg-src="plus" style="color:#fdfdfd!important;display:flex;"></md-icon>
+        </md-button>
+      </div> -->
+      <!-- </div> -->
+      <!-- </div> -->
+      <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!participantesForm.$valid" data-ng-click="cadastrarParticipante(participante)">
+          <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+          <span style="vertical-align:middle;">Salvar</span>
+        </md-button>
+      </div>
+      <span us-spinner>
+        <div layout="row" layout-sm="column" layout-align="space-around">
+          <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+        </div>
+      </span>
+    </form>
+  </div>
+  <div style="background:rgba(128,128,128,0.07);padding:30px 30px 15px 30px;">
+    <h3 style="text-align:center;border-top:1px solid grey;margin:0 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Participantes</span>
+    </h3>
+    <div layout="row" style="justify-content:center;padding:20px 0 10px 0;">
+      <md-icon class="md-secondary" md-svg-src="checkbox-marked-circle-outline" style="color:green;margin:0 10px;width:20px;height:20px;"></md-icon>
+      Participante com algum evento já cadastrado.
+    </div>
+    <div layout="row" style="justify-content:center;padding:0 0 20px 0;">
+      <b style="color:#0d9cdc;margin:0 10px;">SD</b> Inscrito nos Saberes Docentes
+    </div>
+  </div>
+  <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = 'nome'">
+    <md-divider></md-divider>
+    <div data-ng-if="participantes.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
+      <p>Nenhum participante cadastrado :(</p>
+    </div>
+    <md-list-item class="md-3-line" data-ng-repeat="part in participantes | orderBy:ordenacao track by part._id"
+    ng-click="visualizarDetalhes(part,$event)">
+    <!-- <div layout flex="5" layout-align="center center" style="align-self:center;">
+    <div style="width:15px;height:15px;border-radius:50%;"
+    data-ng-class="{azul:evt.tipo == 'Semana Acadêmica',
+    roxo:evt.tipo == 'Seminário Saberes Docentes',
+    green1:evt.tipo == 'Oficina'}">
+  </div>
+</div> -->
+<!-- <div class="md-list-item-text" flex="10" style="margin-right:5px;text-align:center;">
+<h3>{{::evt.cargaHoraria}}</h3>
+</div> -->
+<!-- <div class="md-list-item-text" layout="column" flex="25" style="align-self:center;">
+<h3>{{::part.cpf}}</h3>
+</div> -->
+<div class="md-list-item-text" layout="column">
+  <h3><b style="color:#0d9cdc;">{{::part.tipo}}</b> {{::part.nome}}</h3>
+  <p>CPF: {{::part.cpf}}</p>
+</div>
+<div layout flex="10" layout-align="center center" style="align-self:center;">
+  <md-icon data-ng-if="part.eventos !== undefined && part.eventos.length > 0" class="md-secondary" md-svg-src="checkbox-marked-circle-outline" style="color:green;margin:0;width:20px;height:20px;"></md-icon>
+</div>
+<!-- <div flex="15" style="align-self:center;">
+<md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Apagar" data-ng-click="removerEvento(evt._id,evt.titulo)">
+<md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+<span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Apagar</span>
+</md-button>
+</div> -->
+<md-divider></md-divider>
+</md-list-item>
+</md-list>
+</md-content>
+</section>
+</div>

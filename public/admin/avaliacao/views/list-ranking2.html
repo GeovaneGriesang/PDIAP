@@ -1,0 +1,125 @@
+<md-content>
+  <div id="logo-impressao" style="margin:0 0 40px 50px;display:none;">
+    <img src="/admin/avaliacao/assets/images/logo.png" width="37%"></img>
+  </div>
+  <section>
+    <div style="padding:55px 0 1px 0;background:#f7f7f7;" align="center">
+      <h3 style="text-align:center;margin:0;font-size:22px;width:80%;" class="title-categoria">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Fundamental II (6º ao 9º anos)</span>
+      </h3>
+    </div>
+    <div style="padding:15px 0 25px 0;background:#f7f7f7;" align="center" data-ng-if="eixo2_1.length > 0">
+      <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 15px 0;font-size:15px;width:70%;">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Ciências da Natureza e suas tecnologias</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+        data-ng-repeat="proj in eixo2_1 | filter:search | orderBy:['eixo','-total'] track by proj.numInscricao"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <h3>{{$index+1}}º</h3>
+        </div>
+        <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+          <h3>{{::proj.total}}</h3>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <!-- <p>{{::proj.eixo}}</p> -->
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+  <section>
+    <div style="width:100%;height:100px;" class="kkkkk"></div>
+    <div style="padding:25px 0;background:#f7f7f7;" align="center" data-ng-if="eixo2_2.length > 0">
+      <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 15px 0;font-size:15px;width:70%;">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Ciências Humanas e suas tecnologias</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+        data-ng-repeat="proj in eixo2_2 | filter:search | orderBy:['eixo','-total'] track by proj.numInscricao"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <h3>{{$index+1}}º</h3>
+        </div>
+        <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+          <h3>{{::proj.total}}</h3>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <!-- <p>{{::proj.eixo}}</p> -->
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+  <section>
+    <div style="width:100%;height:100px;" class="kkkkk"></div>
+    <div style="padding:25px 0;background:#f7f7f7;" align="center" data-ng-if="eixo2_3.length > 0">
+      <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 15px 0;font-size:15px;width:70%;">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Linguagens, Códigos e suas tecnologias</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+        data-ng-repeat="proj in eixo2_3 | filter:search | orderBy:['eixo','-total'] track by proj.numInscricao"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <h3>{{$index+1}}º</h3>
+        </div>
+        <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+          <h3>{{::proj.total}}</h3>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <!-- <p>{{::proj.eixo}}</p> -->
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+  <section>
+    <div style="width:100%;height:100px;" class="kkkkk"></div>
+    <div style="padding:25px 0;background:#f7f7f7;" align="center" data-ng-if="eixo2_4.length > 0">
+      <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 15px 0;font-size:15px;width:70%;">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Matemática e suas tecnologias</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+        data-ng-repeat="proj in eixo2_4 | filter:search | orderBy:['eixo','-total'] track by proj.numInscricao"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <h3>{{$index+1}}º</h3>
+        </div>
+        <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+          <h3>{{::proj.total}}</h3>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <!-- <p>{{::proj.eixo}}</p> -->
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+</md-content>

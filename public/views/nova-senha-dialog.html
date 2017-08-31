@@ -1,0 +1,29 @@
+<md-dialog class="login-content" ng-cloak>
+
+  <div class="md-padding" layout="column" layout-align="center center">
+    <h1>Nova Senha</h1>
+    <form name="newPassword" novalidate style="width:85%!important;">
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>Nova senha</label>
+        <input type="password" name="password" data-ng-model="new.password" autofocus required/>
+      </md-input-container>
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>Confirme a nova senha</label>
+        <input type="password" name="password2" data-ng-model="password2" required data-password-verify="new.password"/>
+        <div class="md-errors-spacer">
+            <div class="message-error" data-ng-show="newPassword.password2.$error.passwordVeridy && !newPassword.password2.$error.required">Senha não confere!</div>
+        </div>
+      </md-input-container>
+      <div layout="row" layout-align="center center">
+        <md-button id="btn-login" class="md-raised md-primary white teal lighten-1 btnEntrar" data-ng-disabled="!newPassword.$valid" data-ng-click="redefinirSenha(new)">
+          <!-- <span data-ng-show="loading && newPassword.$valid">
+            <div layout="row" layout-sm="column" layout-align="space-around">
+              <md-progress-circular md-mode="indeterminate" md-diameter="40" class="loading-login"></md-progress-circular>
+            </div>
+          </span> -->
+          <span data-ng-show="!loading">Salvar</span>
+        </md-button>
+      </div>
+    </form>
+  </div>
+</md-dialog>

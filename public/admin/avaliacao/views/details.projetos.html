@@ -1,0 +1,49 @@
+<md-dialog aria-label="Detalhes do projeto" class="details dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Nº de Inscrição: {{details.numInscricao}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Avaliação</span>
+    </h3>
+    <div layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
+      <form name="avaliacaoForm" novalidate>
+        <div layout="row" style="justify-content:center;">
+          <p>Nota do avaliador 1:</p>
+          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;">
+            <input type="number" placeholder="000" name="nota1" data-ng-model="details.avaliacao[0]" required/>
+          </md-input-container>
+        </div>
+        <div layout="row" style="justify-content:center;">
+          <p>Nota do avaliador 2:</p>
+          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;margin-left:0.8em;">
+            <input type="number" placeholder="000" name="nota2" data-ng-model="details.avaliacao[1]" required/>
+          </md-input-container>
+        </div>
+        <div layout="row" style="justify-content:center;" data-ng-if="desempate || details.avaliacao.length == 3">
+          <p>Nota do desempate:</p>
+          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;margin-left:0.8em;">
+            <input type="number" placeholder="000" name="nota3" data-ng-model="details.avaliacao[2]" required/>
+          </md-input-container>
+        </div>
+        <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
+          <md-button class="md-raised md-primary btnEntrar2-2 btn-outline" aria-label="Desempatar" data-ng-click="habilitaDesempate()">
+            <span style="vertical-align:middle;">Desempatar</span>
+          </md-button>
+          <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!avaliacaoForm.$valid" data-ng-click="addNotas(details._id,details.avaliacao)">
+            <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+            <span style="vertical-align:middle;">Salvar</span>
+          </md-button>
+        </div>
+        <span us-spinner>
+          <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+          </div>
+        </span>
+      </form>
+    </div>
+  </div>
+</md-dialog>

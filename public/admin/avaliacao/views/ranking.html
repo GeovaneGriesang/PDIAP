@@ -1,0 +1,39 @@
+<div>
+  <span us-spinner>
+    <div layout="row" layout-sm="column" layout-align="space-around">
+      <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+    </div>
+  </span>
+  <div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+    <section layout="column" role="main" flex>
+      <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+        <div class="md-toolbar-tools">
+          <div>
+            <img src="admin/assets/images/logo3-b.png" width="120px" id="logo" style="margin-left:40px;padding-right:15px;border-right:1px solid #225024;"></img>
+            <span style="padding-left:5px;font-weight:200;color:#225024;">Ranking das pontuações</span>
+          </div>
+          <span flex></span>
+          <md-button onclick="print()" class="no-hover" style="font-size:13px;color:#225024;margin-right:30px;">
+            <md-icon md-svg-src="printer" style="color:#225024;width:28px;height:28px;"></md-icon>
+            Imprimir
+          </md-button>
+        </div>
+      </md-toolbar>
+
+      <md-tabs md-dynamic-height md-border-bottom flex="100">
+        <md-tab label="Fundamental I" flex data-ng-cloak>
+          <div ui-view="ranking1" id="imprimir"></div>
+        </md-tab>
+        <md-tab label="Fundamental II" flex data-ng-cloak>
+          <div ui-view="ranking2" id="imprimir"></div>
+        </md-tab>
+        <md-tab label="Ensino Médio, Técnico e Superior" flex data-ng-cloak>
+          <div ui-view="ranking3" id="imprimir"></div>
+        </md-tab>
+        <!-- <md-tab label="MOSTRATEC" flex data-ng-cloak>
+        <div ui-view="mostratec" id="imprimir"></div>
+      </md-tab> -->
+    </md-tabs>
+  </section>
+</div>
+</div>

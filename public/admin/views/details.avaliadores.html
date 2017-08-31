@@ -1,0 +1,16 @@
+<md-dialog aria-label="Detalhes dos avaliadores" class="details">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nome}}</p>
+    <p><b>Email:</b> {{details.email}}</p>
+    <p><b>Nível Acadêmico:</b> {{details.nivelAcademico}}</p>
+    <p><b>Atuação Profissional:</b> {{details.atuacaoProfissional}}<br>
+      <b>Tempo de atuação:</b> {{details.tempoAtuacao}} anos</p>
+      <p><b>Currículo:</b> {{details.curriculo}}</p>
+      <p><b>Telefone:</b> {{details.telefone}}</p>
+      <p><b>Disponibilidade:</b> {{details.turnos}}</p>
+    </div>
+  </md-dialog>

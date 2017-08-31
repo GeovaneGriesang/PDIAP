@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-ng-app="PDIAP">
+
+<head>
+	<base href="/">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="description" content="Mostra Venâncio-airense de Cultura e Inovação" />
+	<meta name="keywords" content="Venâncio Aires, IFSul, Feira, Mostra, Evento, Comunidade, campus Venâncio Aires" />
+	<meta name="robots" content="index, follow" />
+
+	<title>MOVACI</title>
+
+	<!--CSS-->
+	<link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+	<link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic">
+	<link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
+	<link rel="stylesheet" href="/assets/css/style.css">
+
+	<link rel="stylesheet" href="/alpha/assets/css/main.css" />
+	<link rel="stylesheet" href="/alpha/assets/css/mapbox.css" />
+	<script src="/alpha/assets/js/mapbox.js"></script>
+
+</head>
+
+<body class="landing homepage" data-ng-controller="homeCtrl" style="height:initial!important;">
+
+	<div id="page-wrapper" class="alert-theme">
+
+		<!-- Header -->
+		<header id="header" class="alt">
+			<a href="#" style="margin-left:50px;"><img src="alpha/images/favicon.png" alt="Logo MOVACI" style="height:3.25em;" /></a>
+			<nav id="nav">
+				<ul>
+
+					<!--
+        <li>
+          <a href="#" class="icon fa-angle-down">nome</a>
+          <ul>
+            <li><a>Item 1</a></li>
+            <li><a>Item 2</a></li>
+          </ul>
+        </li>
+          
+-->
+					<li><a href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a></li>
+					<li><a href="/contato">Fale Conosco</a></li>
+					<li>
+						<a href="#">Cadastro <span class="icon fa-angle-down"></span></a>
+						<ul>
+							<li><a href="projetos/inscricao">Cadastrar projeto</a></li>
+							<li><a href="/avaliadores/inscricao">Cadastrar avaliador</a></li>
+							<li><a href="https://goo.gl/forms/wI2FIqV8AOIoKQdu2" target="_blank">Seminário Saberes Docentes</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">Documentos  <span class="icon fa-angle-down"></span></a>
+						<ul>
+							<li><a href="/alpha/documentos/Regulamento_VI_MOVACI_2017_final.pdf" target="_blank">Regulamento VI MOVACI</a></li>
+							<li><a href="/alpha/documentos/Modelo_de_relatório.pdf" target="_blank">Modelo de relatório</a></li>
+							<li><a href="/alpha/documentos/ficha_avaliacao_fundamental_2017.pdf" target="_blank">Avaliação fundamental</a></li>
+							<li><a href="/alpha/documentos/ficha_avaliacao_medio_tecnico_tecnologico_2017.pdf" target="_blank">Avaliação médio, técnico e tecnológico</a></li>
+							<li><a href="alpha/documentos/ficha_avaliacao_EXTENSAO_2017.pdf" target="_blank">Avaliação extensão</a></li>
+						</ul>
+					</li>
+					<li><a href="#" class="button" data-ng-click="showLoginDialog($event)" style="outline:none;">Logar</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<img id="preview" src="assets/images/Certificado_MOVACI4.jpeg" style="display:none!important;">
+		<!-- <img id="verso" src="assets/images/Verso_Certificado_MOVACI.jpeg" style="display:none!important;"> -->
+
+		<!-- Banner -->
+		<section id="banner">
+			<div class="dias">
+				<h3 style="margin:0!important;line-height:1.1em;font-weight:bold;">27, 28 e 29 DE</h3>
+				<h3 style="margin:0!important;line-height:1.1em;font-weight:bold;">SETEMBRO DE</h3>
+				<h3 style="margin:0!important;line-height:1.1em;font-weight:bold;">2017</h3>
+			</div>
+			<img src="alpha/images/logo3.png" alt="Logo MOVACI" width="320px">
+			<p style="color:#424242!important;">VI Mostra Venâncio-airense de Cultura e Inovação</p>
+			<h3 style="font-weight:bold;">Inscrições abertas até 15 de Stembro</h3>
+			<!-- <h4 id="prorrog">Inscrições de projetos encerradas!</h4> -->
+			<!-- <h4 id="prorrog">Confira a lista de projetos aprovados!</h4> -->
+			<!-- <h4 id="prorrog">Confira a lista de projetos premiados!</h4> -->
+			<!--    <h4 id="prorrog"><a href="www.movaci.com.br">Ir para MOVACI 2016</a></h4>-->
+			<!--      <a href="" class="button special" data-ng-click="showEmitCertificate($event)" style="width:14em;margin-top:5em">Emitir Certificado 2016</a>-->
+			<!--			<a href="https://goo.gl/forms/wI2FIqV8AOIoKQdu2" class="button" style="margin-top:5em" target="_blank">Seminário Saberes Docentes 2017</a>-->
+			<a href="/projetos/inscricao" class="button special" target="_blank" style="margin-top:3em;margin-right:0.5em">Cadastrar projeto</a>
+			<a href="/avaliadores/inscricao" class="button special" style="margin-left:0.5em" target="_blank">Cadastrar avaliador</a>
+		</section>
+		
+		<!-- Main -->
+		<section id="main" class="container">
+
+			<section class="box special">
+				<header class="major">
+					<h2>A Mostra</h2>
+					<hr size="3">
+					<p>Promovida pelo IFSul Venâncio Aires, a MOVACI tem como objetivo incentivar a produção científica, tecnológica e cultural, tanto no câmpus Venâncio Aires, quanto nas demais redes de ensino locais e regionais, com o estímulo aos estudantes e seus professores na realização de projetos de iniciação científica, inovação tecnológica, capacitação de projetos e promoção de momentos de troca de experiências ou saberes entre alunos e docentes das diversas áreas do conhecimento.</p>
+					<p>Em sua sexta edição, a inscrição de projetos será dividida em duas modalidades: o ensino fundamental fará sua inscrição na modalidade
+						<b>exposição de trabalhos</b>. O ensino médio, técnico e superior fará sua inscrição na modalidade <b>apresentação de trabalhos</b>.</p>
+					<p>A MOVACI objetiva mobilizar estudantes, professores e gestores em torno da necessidade de se movimentar em busca da criatividade e inovação, incentivando e divulgando os projetos culturais, científicos e tecnológicos mais relevantes.
+					</p>
+				</header>
+
+				<span class="image featured" style="background:#43a047;height:5px;"></span>
+			</section>
+
+			<section id="local" class="box special features" style="padding:0!important;">
+				<div class="features-row" style="height:350px;">
+					<section>
+						<div id="map"></div>
+					</section>
+					<section class="localizacao" style="float:right;height:100%;text-align:left;display:flex;flex-direction:column;justify-content:center;">
+						<div style="display:flex;">
+							<div>
+								<svg style="width:24px;height:24px;margin-right:15px;" viewBox="0 0 24 24">
+                      <path fill="#4caf50 " d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+                    </svg>
+							</div>
+							<div>
+								<h4>Avenida das Indústrias, 1865</h4>
+								<h4>Bairro Universitário</h4>
+								<h4 style="margin-bottom:0.5em;">Venâncio Aires/RS - CEP 958000-000</h4>
+							</div>
+						</div>
+
+						<div style="display:flex;" id="numero">
+							<svg style="width:24px;height:24px;margin-right:15px;" viewBox="0 0 24 24">
+                    <path fill="#4caf50" d="M12,3C7.46,3 3.34,4.78 0.29,7.67C0.11,7.85 0,8.1 0,8.38C0,8.66 0.11,8.91 0.29,9.09L2.77,11.57C2.95,11.75 3.2,11.86 3.5,11.86C3.75,11.86 4,11.75 4.18,11.58C4.97,10.84 5.87,10.22 6.84,9.73C7.17,9.57 7.4,9.23 7.4,8.83V5.73C8.85,5.25 10.39,5 12,5C13.59,5 15.14,5.25 16.59,5.72V8.82C16.59,9.21 16.82,9.56 17.15,9.72C18.13,10.21 19,10.84 19.82,11.57C20,11.75 20.25,11.85 20.5,11.85C20.8,11.85 21.05,11.74 21.23,11.56L23.71,9.08C23.89,8.9 24,8.65 24,8.37C24,8.09 23.88,7.85 23.7,7.67C20.65,4.78 16.53,3 12,3M9,7V10C9,10 3,15 3,18V22H21V18C21,15 15,10 15,10V7H13V9H11V7H9M12,12A4,4 0 0,1 16,16A4,4 0 0,1 12,20A4,4 0 0,1 8,16A4,4 0 0,1 12,12M12,13.5A2.5,2.5 0 0,0 9.5,16A2.5,2.5 0 0,0 12,18.5A2.5,2.5 0 0,0 14.5,16A2.5,2.5 0 0,0 12,13.5Z" />
+                  </svg>
+							<h4>(51) 3793-4200</h4>
+						</div>
+						<a href="/contato" target="_blank" class="button btn-outline" style="margin-left:-3em!important;margin-top:20px;">Contato</a>
+					</section>
+				</div>
+			</section>
+
+			<script>
+				L.mapbox.accessToken = 'pk.eyJ1IjoidGlhZ29wb3J0YWx1cHBpIiwiYSI6ImNpam0zdXhhdjAwOTZ1Mmtvd3RwZGx3MnEifQ.k4E8PzMGoP3ddQxpRoKZzA';
+
+				var map = L.mapbox.map('map', 'mapbox.streets', {
+					center: [-29.635471, -52.1690000],
+					zoom: 16,
+					zoomControl: false
+				});
+
+				var myLayer = L.mapbox.featureLayer().addTo(map);
+				var geoJson = [{
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [-52.169943, -29.637026]
+					},
+					"properties": {
+						"title": "<center>V MOVACI :D</center>",
+						"icon": {
+							"iconUrl": "/alpha/images/local.png",
+							"iconSize": [50, 50], // size of the icon
+							"iconAnchor": [25, 68], // point of the icon which will correspond to marker's location
+							"popupAnchor": [0, -68], // point from which the popup should open relative to the iconAnchor
+							"className": "dot"
+						}
+					}
+				}];
+
+				// Set a custom icon on each marker based on feature properties.
+				myLayer.on('layeradd', function(e) {
+					var marker = e.layer,
+						feature = marker.feature;
+
+					marker.setIcon(L.icon(feature.properties.icon));
+				});
+
+				new L.Control.Zoom({
+					position: 'topright'
+				}).addTo(map);
+
+				// Add features to the map.
+				myLayer.setGeoJSON(geoJson);
+
+				// Disable drag and zoom handlers.
+				//map.dragging.disable();
+				//map.doubleClickZoom.disable();
+				// map.touchZoom.disable();
+				// map.scrollWheelZoom.disable();
+				//map.keyboard.disable();
+
+				// Disable tap handler, if present.
+				if (map.tap) map.tap.disable();
+
+			</script>
+
+			<div class="row">
+				<div class="6u 12u(narrower)">
+
+				</div>
+				<div class="6u 12u(narrower)">
+
+				</div>
+			</div>
+
+			<!-- reverberando -->
+			<section class="box special features">
+				<span class="image featured" style="background:#4caf50;height:10px;"></span>
+				<h3 style="margin-bottom:35px!important;">Reverberando</h3>
+				<div class="features-row" style="border:none!important;">
+					<section style="padding-top:0;">
+						<p style="margin-bottom:1em!important;">O portal Reverberando faz parte do projeto Multiletramentos na escola: entrelaçamento entre mídias, cibercultura e educação o qual tem o objetivo de investigar as diversas mídias digitais e suas possibilidades como agentes de educação, analisadas em um contexto de produção midiática.</p>
+						<p>A galeria de fotos da V MOVACI está disponível na página!</p>
+					</section>
+					<section id="ifpublica-box" style="position:absolute;right:0;height:100%;padding-top:0">
+						<div align="center" style="position:relative;top:50%;margin-top:-60px;">
+							<a id="ifpublica" href="http://reverberando.com.br" target="_blank">
+								<div style="width:265px;height:116px;border:2px solid #e5e5e5;border-radius:70px;background:url('/assets/images/bg-reverb.png');">
+									<img src="/assets/images/logo-reverb.png" width="220px" style="position:relative;margin-top:50%;top:-100%;"></img>
+								</div>
+							</a>
+						</div>
+					</section>
+				</div>
+			</section>
+
+			<!-- anais -->
+			<section class="box special features">
+				<span class="image featured" style="background:#4caf50;height:10px;"></span>
+				<h3 style="margin-bottom:35px!important;">IFPublica</h3>
+				<div class="features-row" style="border:none!important;">
+					<section style="padding-top:0;">
+						<p style="margin-bottom:1em!important;">A Biblioteca Digital IFPublica é um repositório de artigos publicados pelo Instituto Federal Sul-rio-grandense (IFSul) câmpus Venâncio Aires.</p>
+						<p>Após a V MOVACI, todos os anais estarão disponíveis na página!</p>
+					</section>
+					<section id="ifpublica-box" style="position:absolute;right:0;height:100%;padding-top:0">
+						<div align="center" style="position:relative;top:50%;margin-top:-60px;">
+							<a id="ifpublica" href="http://quetalsaber.net/ifpublica" target="_blank"><img src="/alpha/images/ifpublica" height="120px" style="padding:25px 35px;border:2px solid #e5e5e5;border-radius:70px;"></img>
+							</a>
+						</div>
+					</section>
+				</div>
+			</section>
+
+		</section>
+
+		<!-- CTA -->
+		<section id="cta" style="border-bottom:5px solid #58a55b">
+
+			<h3>Realização</h3>
+			<hr size="4" style="width:50%;margin:0.5em auto;">
+			<form>
+				<div class="row realizacao uniform 50%" style="display:flex;flex-direction:row;justify-content:center;align-items:center;">
+					<div class="4u 12u(mobilep)" style="text-align:right;padding-right:1em;width:auto;">
+						<img src="/alpha/images/logo4-b.png" alt="MOVACI" width="220px" />
+					</div>
+					<div class="4u 12u(mobilep)" style="text-align:left;width:auto;">
+						<img src="/alpha/images/ifsul.png" alt="IFSul" width="260px" />
+					</div>
+				</div>
+			</form>
+
+		</section>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<ul class="icons" style="margin-bottom:1em!important;">
+				<li><a href="https://www.facebook.com/movaciifsul" target="_blank" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+				<li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon fa-github"><span class="label">Github</span></a></li>
+				<!-- <li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon"><img src="alpha/images/ifsul-b.png" alt="IFSul" /></a></li> -->
+			</ul>
+			<ul class="copyright">
+				<li>&copy; MOVACI. Todos os direitos reservados.</li>
+			</ul>
+		</footer>
+
+	</div>
+
+	<!--JavaScript-->
+	<script type="text/javascript" src="/alpha/assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/alpha/assets/js/jquery.dropotron.min.js"></script>
+	<script type="text/javascript" src="/alpha/assets/js/jquery.scrollgress.min.js"></script>
+	<script type="text/javascript" src="/alpha/assets/js/skel.min.js"></script>
+	<script type="text/javascript" src="/alpha/assets/js/util.js"></script>
+	<script type="text/javascript" src="/alpha/assets/js/main.js"></script>
+
+	<script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+	<script type="text/javascript" src="bower_components/angular-material/angular-material.js"></script>
+	<script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+	<script type="text/javascript" src="bower_components/angular-aria/angular-aria.js"></script>
+	<script type="text/javascript" src="bower_components/angular-animate/angular-animate.js"></script>
+	<script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
+	<script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+	<script type="text/javascript" src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>
+	<script type="text/javascript" src="bower_components/pdfmake/build/pdfmake.min.js"></script>
+	<script type="text/javascript" src="bower_components/pdfmake/build/vfs_fonts.js"></script>
+	<script type="text/javascript" src="assets/js/auth.js"></script>
+	<script type="text/javascript" src="assets/js/app.js"></script>
+	<script type="text/javascript" src="assets/js/routes/ui-routes.js"></script>
+	<script type="text/javascript" src="assets/js/interceptors/authInterceptor.js"></script>
+	<script type="text/javascript" src="assets/js/configs/logout.js"></script>
+	<script type="text/javascript" src="assets/js/configs/icons.js"></script>
+	<script type="text/javascript" src="assets/js/configs/loadingConfig.js"></script>
+	<script type="text/javascript" src="assets/js/configs/interceptorsConfig.js"></script>
+	<script type="text/javascript" src="assets/js/controllers/homeCtrl.js"></script>
+	<!-- <script type="text/javascript" src="assets/js/controllers/loginCtrl.js"></script> -->
+	<script type="text/javascript" src="assets/js/controllers/redefinirCtrl.js"></script>
+	<script type="text/javascript" src="assets/js/services/projetosAPIService.js"></script>
+</body>
+
+</html>

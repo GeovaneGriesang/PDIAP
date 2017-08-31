@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
+<link rel="stylesheet" href="/assets/css/style.css">
+<style>
+  body { background: #f5f5f5 !important; height: initial !important; }
+	.button.special { border-radius: 70px; }
+</style>
+<div id="page-wrapper" class="alert-theme">
+
+	<!-- Header -->
+	<header id="header">
+		<a href="http://movaci.com.br" style="display:flex;justify-content:center;"><img src="alpha/images/favicon.png" alt="Logo MOVACI" style="height:3.25em;"/></a>
+	</header>
+	<!-- Main -->
+	<section id="main" class="container 75%">
+		<header>
+			<h2>Fale Conosco</h2>
+			<p>Em caso de dúvida ou sugestão, entre em contato conosco através deste formulário.</p>
+		</header>
+		<div class="box" style="border-top: 15px solid #4caf50;border-bottom: 15px solid #4caf50;">
+			<form name="contatoForm" novalidate>
+				<md-input-container class="md-block" flex-gt-sm>
+					<label>Nome</label>
+					<input type="text" name="nome" data-ng-model="contato.nome" required />
+					<div class="md-errors-spacer">
+						<div data-ng-if="contatoForm.nome.$dirty">
+							<div class="message-error" data-ng-if="contatoForm.nome.$error.required">Obrigatório.</div>
+						</div>
+					</div>
+				</md-input-container>
+				<md-input-container class="md-block" flex-gt-sm>
+					<label>E-mail</label>
+					<input type="email" name="email" data-ng-model="contato.email" required data-ng-pattern="/^.+@.+\..+$/"/>
+					<div class="md-errors-spacer">
+						<div data-ng-if="contatoForm.email.$dirty">
+							<div class="message-error" data-ng-if="contatoForm.email.$error.required">Obrigatório.</div>
+							<div class="message-error" data-ng-show="contatoForm.email.$error.pattern && contatoForm.email.$touched">E-mail inválido.</div>
+						</div>
+					</div>
+				</md-input-container>
+				<md-input-container class="md-block" flex-gt-sm>
+					<label>Assunto</label>
+					<input type="text" name="assunto" data-ng-model="contato.assunto" required />
+					<div class="md-errors-spacer">
+						<div data-ng-if="contatoForm.assunto.$dirty">
+							<div class="message-error" data-ng-if="contatoForm.assunto.$error.required">Obrigatório.</div>
+						</div>
+					</div>
+				</md-input-container>
+				<md-input-container class="md-block" flex="100">
+					<label>Mensagem...</label>
+					<textarea style="height:150px!important;" name="mensagem" data-ng-model="contato.mensagem" rows="1" md-select-on-focus required></textarea>
+					<div class="md-errors-spacer">
+						<div data-ng-if="contatoForm.mensagem.$dirty">
+							<div class="message-error" data-ng-show="contatoForm.mensagem.$error.required">Obrigatório.</div>
+						</div>
+					</div>
+				</md-input-container>
+				<div style="display:flex;justify-content:center;" data-ng-if="!spinnerActive">
+				  <md-button class="md-raised green lighten-1 button special" style="width:10em;" data-ng-disabled="!contatoForm.$valid" data-ng-click="enviarContato(contato)">
+				    <span class="icon fa-paper-plane" style="margin-right:5px;"></span> Enviar
+				  </md-button>
+				</div>
+        <span us-spinner>
+          <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+          </div>
+        </span>
+			</form>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer id="footer">
+		<ul class="icons" style="margin-bottom:1em!important;">
+			<li><a href="https://www.facebook.com/movaciifsul" target="_blank" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+			<li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon fa-github"><span class="label">Github</span></a></li>
+			<!-- <li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon"><img src="alpha/images/ifsul-b.png" alt="IFSul" /></a></li> -->
+		</ul>
+		<ul class="copyright">
+			<li>&copy; MOVACI. Todos os direitos reservados.</li>
+		</ul>
+	</footer>
+
+</div>

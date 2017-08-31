@@ -1,0 +1,29 @@
+<md-dialog aria-label="Detalhes do projeto" class="details2 dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Nº de Inscrição: {{details.numInscricao}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Presença</span>
+    </h3>
+    <div layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
+      <form name="presencaProjetosForm" novalidate>
+        <md-checkbox aria-label="Check" data-ng-repeat="integ in details.integrantes" data-ng-model="presenca[$index]" data-ng-init="presenca[$index] = integ.presenca" data-ng-click="contador1(presenca[$index],integ._id)" style="display:flex;margin-right:0;">{{integ.nome}} ({{integ.tipo}})</md-checkbox>
+        <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
+          <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!presencaProjetosForm.$valid || idIntegrantes.length === 0" data-ng-click="setPresenca()">
+            <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+            <span style="vertical-align:middle;">Salvar</span>
+          </md-button>
+        </div>
+        <span us-spinner>
+          <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+          </div>
+        </span>
+      </form>
+    </div>
+  </div>
+</md-dialog>

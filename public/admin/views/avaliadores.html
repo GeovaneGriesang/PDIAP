@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-ng-app="PDIAPa">
+<head>
+  <base href="/">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <title>MOVACI - ADMINISTRAÇÃO INTERNA</title>
+
+  <!--CSS-->
+  <link rel="shortcut icon" href="admin/assets/images/favicon.png" type="image/x-icon" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+  <link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic">
+  <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="admin/assets/css/style.css">
+
+</head>
+<body data-ng-controller="avaliadoresCtrl">
+
+  <div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+    <!-- conteúdo da página -->
+    <section layout="column" role="main" flex>
+      <md-content flex layout="column" layout-align="center center" class="inscricao-content avaliadores-content">
+        <form name="avaliadoresForm" novalidate>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Nome completo*</label>
+              <input type="text" name="nome" data-ng-model="avaliadores.nome" required />
+              <div class="md-errors-spacer">
+                <div data-ng-if="avaliadoresForm.nome.$dirty">
+                  <div class="message-error" data-ng-if="avaliadoresForm.nome.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>E-mail*</label>
+              <input type="email" name="email" data-ng-model="avaliadores.email" required data-ng-pattern="/^.+@.+\..+$/" />
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.email.$dirty">
+                  <div class="message-error" data-ng-show="avaliadoresForm.email.$error.required">Obrigatório.</div>
+                  <div class="message-error" data-ng-show="avaliadoresForm.email.$error.pattern && avaliadoresForm.email.$touched">Email inválido.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>RG</label>
+              <input type="text" name="rg" data-ng-model="avaliadores.rg" minlength="10" maxlength="10" rg-mask/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.rg.$dirty">
+                  <!-- <div class="message-error" data-ng-show="avaliadoresForm.rg.$error.required">Obrigatório.</div> -->
+                  <div class="message-error" data-ng-show="avaliadoresForm.rg.$error.minlength && avaliadoresForm.rg.$touched">RG inválido.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Dt. nascimento</label>
+              <input type="text" name="dtNascimento" data-ng-model="avaliadores.dtNascimento" minlength="8" maxlength="10" nasc-mask/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.dtNascimento.$dirty">
+                  <!-- <div class="message-error" data-ng-show="avaliadoresForm.dtNascimento.$error.required">Obrigatório.</div> -->
+                  <div class="message-error" data-ng-show="avaliadoresForm.dtNascimento.$error.minlength && avaliadoresForm.dtNascimento.$touched">Data inválida.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Telefone</label>
+              <input type="text" name="telefone" data-ng-model="avaliadores.telefone" minlength="14" maxlength="14" fone-mask/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.telefone.$dirty">
+                  <!-- <div class="message-error" data-ng-show="avaliadoresForm.telefone.$error.required">Obrigatório.</div> -->
+                  <div class="message-error" data-ng-show="avaliadoresForm.telefone.$error.minlength && avaliadoresForm.telefone.$touched">CPF inválido.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>CPF*</label>
+              <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="14" maxlength="14" cpf-mask/>
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.cpf.$dirty">
+                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
+                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.minlength && avaliadoresForm.cpf.$touched">CPF inválido.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs>
+              <label>Nível Acadêmico</label>
+              <md-select name="nivelAcademico" data-ng-model="avaliadores.nivelAcademico" style="width:100%!important;">
+                <md-option value="Graduação">Graduação</md-option>
+                <md-option value="Especialização">Especialização</md-option>
+                <md-option value="Mestrado">Mestrado</md-option>
+                <md-option value="Doutorado">Doutorado</md-option>
+              </md-select>
+              <div class="md-errors-spacer">
+                <!-- <div data-ng-if="avaliadoresForm.nivelAcademico.$touched">
+                  <div class="message-error" data-ng-if="avaliadoresForm.nivelAcademico.$error.required">Selecione uma opção.</div>
+                </div> -->
+              </div>
+            </md-input-container>
+          </div>
+          <p style="text-align:left;font-size:13px;">* Obrigatório</p>
+
+          <!-- Finalizar inscrição -->
+          <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 0 0;">
+            <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!avaliadoresForm.$valid" data-ng-click="registrarAvaliador(avaliadores)">
+              <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87) !important'}"></md-icon> Finalizar
+            </md-button>
+          </div>
+          <span us-spinner>
+            <div layout="row" layout-sm="column" layout-align="space-around">
+              <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+            </div>
+          </span>
+        </form>
+      </md-content>
+    </section>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="text/javascript" src="/bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-material/angular-material.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-aria/angular-aria.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-animate/angular-animate.js"></script>
+  <script type="text/javascript" src="/bower_components/angular-resource/angular-resource.min.js"></script>
+  <script type="text/javascript" src="assets/js/auth.js"></script>
+  <script type="text/javascript" src="admin/assets/js/app.js"></script>
+  <script type="text/javascript" src="admin/assets/js/controllers/avaliadoresCtrl.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/usSpinner.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/cpfMask.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/foneMask.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/dataMask.js"></script>
+  <script type="text/javascript" src="admin/assets/js/directives/rgMask.js"></script>
+  <script type="text/javascript" src="admin/assets/js/services/adminAPIService.js"></script>
+  <script type="text/javascript" src="admin/assets/js/configs/interceptorsConfig.js"></script>
+  <script type="text/javascript" src="admin/assets/js/configs/icons.js"></script>
+  <script type="text/javascript" src="admin/assets/js/interceptors/authInterceptor.js"></script>
+</body>
+</html>
