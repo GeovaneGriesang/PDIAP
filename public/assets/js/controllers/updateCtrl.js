@@ -138,7 +138,7 @@
 			});
 			projetosAPI.putProjeto(hosp)
 			.success(function(data){
-				// $scope.carregarProjeto();
+				 $scope.carregarProjeto();
 			})
 			.error(function(status){
 				console.log('update error: '+status);

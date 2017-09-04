@@ -83,14 +83,14 @@
 			return $http(request);
 		};
 
-//		 let _putProjeto = function(projeto) {
-//		 	const request = {
-//		 		url: '/projetos/update',
-//		 		method: 'PUT',
-//		 		data: projeto
-//		 	}
-//		 	return $http(request);
-//		 };
+		 let _putProjeto = function(projeto) {
+		 	const request = {
+		 		url: '/projetos/update',
+		 		method: 'PUT',
+		 		data: projeto
+		 	}
+		 	return $http(request);
+		 };
 
 		let _putIntegrante = function(integrante) {
 			const request = {
@@ -165,7 +165,7 @@
 			getEstados: _getEstados,
 			getUsersEscolas: _getUsersEscolas,
 			getEscolasSaberes: _getEscolasSaberes,
-//			 putProjeto: _putProjeto,
+			 putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,
 			postRedefinir: _postRedefinir,
 			postNewPassword: _postNewPassword,

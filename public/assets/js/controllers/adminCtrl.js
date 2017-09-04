@@ -146,11 +146,11 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
-								// {
-								// 	name: 'Alterar projeto',
-								// 	icon: 'flask',
-								// 	link: 'home.update'
-								// },
+								 {
+								 	name: 'Alterar projeto',
+								 	icon: 'flask',
+								 	link: 'home.update'
+								 },
 								{
 									name: 'Upload',
 									icon: 'upload',
@@ -191,11 +191,11 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
-								// {
-								// 	name: 'Alterar projeto',
-								// 	icon: 'flask',
-								// 	link: 'home.update'
-								// },
+								 {
+								 	name: 'Alterar projeto',
+								 	icon: 'flask',
+								 	link: 'home.update'
+								 },
 								{
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',
