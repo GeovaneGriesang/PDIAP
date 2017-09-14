@@ -41,6 +41,8 @@
 		};
 
 		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {
+
+			console.log("sera que da pra fazer log?: " + arrayProjetosAprovados);
 			const request = {
 				url: '/admin/upgreice',
 				method: 'PUT',

@@ -48,6 +48,6 @@
 				});
 			}
 		}
-//comentário inútil pra commitar e fazer um testezinho com o trello
+
 	}]);
 })();

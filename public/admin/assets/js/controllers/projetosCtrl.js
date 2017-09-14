@@ -176,9 +176,10 @@
 		};
 
 		$scope.update = function() {
+			console.log("salvando aprovados: " + $scope.idProjetosAprovados + " " + $scope.idProjetosReprovados);
 			adminAPI.putSetAprovados($scope.idProjetosAprovados,$scope.idProjetosReprovados)
 			.success(function(data, status) {
-				$scope.toast('Projeto(s) atualizados com sucesso!','success-toast');
+				$scope.toast('Projeto(s) atualizado(s) com sucesso!','success-toast');
 				// $scope.selectedo = false;
 				var count = 0;
 				if ($scope.idProjetosAprovados.length !== 0) {

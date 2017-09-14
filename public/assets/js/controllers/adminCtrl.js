@@ -28,13 +28,13 @@
 		$scope.mostraRelatorioPDF = function() {
 			$window.open('http://www.movaci.com.br/alpha/documentos/Modelo_Relatorio_MOVACI.pdf', '_blank');
 		}
-		
+
 		//essa função mostra os projetos aprovados quando é clicado o botão na parte dashboard quado logado
 		$scope.mostraAprovados = function() {
 			$window.open('http://www.movaci.com.br/alpha/documentos/Lista_Aprovados_MOVACI.pdf', '_blank');
 		}
 		$scope.mostraApresentacao = function() {
-		
+
 			$window.open('http://www.movaci.com.br/alpha/documentos/Apresentação_eixos_e_salas_MOVACI.pdf', '_blank');
 		}
 
@@ -146,11 +146,14 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
+								/*
+								Descomentar para aparecer o botão de alterar dados do projeto
 								 {
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
 								 },
+								 */
 								{
 									name: 'Upload',
 									icon: 'upload',
@@ -191,11 +194,13 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
+								/*
+								Descomentar para aparecer o botão de alterar dados do projeto
 								 {
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
-								 },
+								},*/
 								{
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',

@@ -268,6 +268,7 @@ for (var i = 0; i < myArray1.length; i++) {
   }
 );
 }
+console.log("log antes de sucesso presença");
 res.send('success');
 });
 
@@ -298,6 +299,7 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
   for (var i = 0; i < myArray.length; i++) {
     let id_doc = myArray[i];
+
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$set": {"aprovado": true}}, {new:true},
     (err, doc) => {
