@@ -52,19 +52,19 @@
 				if (projeto.aprovado === true) {
 					if (projeto.participa === true) {
 						$scope.aviso1_1 = 'PARABÉNS!';
-						$scope.aviso1_2 = 'Esse projeto foi aprovado e já está confirmado para participar da 5ª edição da '+
+						$scope.aviso1_2 = 'Esse projeto foi aprovado e já está confirmado para participar da '+
 						'Mostra Venâncio-airense de Cultura e Inovação. Bom trabalho!';
 					} else if (projeto.participa === false) {
 						$scope.aviso1_2 = 'Esse projeto foi aprovado, mas devido a escolha, está fora da lista de confirmados para 5ª edição da '+
 						'Mostra Venâncio-airense de Cultura e Inovação. Com isso, outro projeto ocupará o lugar.';
 					} else {
 						$scope.aviso1_1 = 'PARABÉNS!';
-						$scope.aviso1_2 = 'Esse projeto foi aprovado, porém AINDA NÃO CONFIRMOU PRESENÇA na 5ª edição da '+
+						$scope.aviso1_2 = 'Esse projeto foi aprovado, porém AINDA NÃO CONFIRMOU PRESENÇA na '+
 						'Mostra Venâncio-airense de Cultura e Inovação. Caso o email de confirmação não foi recebido, '+
 						'favor entre em contato.';
 					}
 				} else {
-					$scope.aviso1_2 = 'Infelizmente, esse projeto não foi selecionado para apresentação na V MOVACI. '+
+					$scope.aviso1_2 = 'Infelizmente, esse projeto não foi selecionado para apresentação na MOVACI. '+
 					'Mas não desanime! Não estar selecionado não quer dizer que seu projeto não seja bom ou possa atingir o sucesso. '+
 					'Infelizmente não temos como escolher todos os projetos. '+
 					'Fique atento! Há uma lista de suplência. Em caso de desistências, serão chamados novos projetos.';
