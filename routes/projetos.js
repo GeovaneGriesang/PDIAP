@@ -411,9 +411,9 @@ router.put('/removerIntegrante', (req, res) => {
 //           }
 
 //           transport.sendMail({
-//             from: 'V MOVACI <contato@movaci.com.br>',
+//             from: 'MOVACI <contato@movaci.com.br>',
 //             to: locals.email,
-//             subject: 'V MOVACI - Redefinição de senha',
+//             subject: 'MOVACI - Redefinição de senha',
 //             html: results.html,
 //             text: results.text
 //           }, function (err, responseStatus) {
