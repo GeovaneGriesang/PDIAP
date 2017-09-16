@@ -37,11 +37,15 @@
 			url: "/",
 			templateUrl: '/alpha/index.html'
 		})
-		 .state('inscricao', {
-		 	url: "/projetos/inscricao",
-		 	templateUrl: "/views/inscricao.html",
-		 	controller: "registroCtrl"
-		 })
+
+		// 	descomentar pra ativar a rota pra inscricao de projetos
+		//  .state('inscricao', {
+		//  	url: "/projetos/inscricao",
+		//  	templateUrl: "/views/inscricao.html",
+		//  	controller: "registroCtrl"
+		//  })
+
+
 		.state('regulamento', {
 			url: "/regulamento",
 			templateUrl: "/alpha/regulamento.html"
