@@ -38,7 +38,7 @@
 			templateUrl: '/alpha/index.html'
 		})
 
-		// 	descomentar pra ativar a rota pra inscricao de projetos
+		// 	descomentar esse pra ativar a rota pra inscricao de projetos
 		//  .state('inscricao', {
 		//  	url: "/projetos/inscricao",
 		//  	templateUrl: "/views/inscricao.html",
@@ -108,11 +108,11 @@
 			templateUrl: "/views/conta.html",
 			controller: "updateCtrl"
 		})
-//		.state('home.fileUpload', {
-//			url: "/upload-relatorio",
-//			templateUrl: "/views/fileUpload.html",
-//			controller: "fileUploadCtrl"
-//		})
+		.state('home.fileUpload', {
+			url: "/upload-relatorio",
+			templateUrl: "/views/fileUpload.html",
+			controller: "fileUploadCtrl"
+		})
 		.state('home.regulamento', {
 			url: "/regulamento",
 			templateUrl: "/views/regulamento.html"
