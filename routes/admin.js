@@ -371,7 +371,7 @@ router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
               transporter.sendMail({
                 from: 'no-reply4@movaci.com.br',
                 to: locals.email,
-                subject: 'MOVACI 2016 - Projeto aprovado!',
+                subject: 'MOVACI - Projeto aprovado!',
                 html: html,
                 text: text
 
@@ -446,7 +446,7 @@ router.post('/reprovadosemail', miPermiso("3"), (req, res) => {
               transporter.sendMail({
                 from: 'contato@movaci.com.br',
                 to: locals.email,
-                subject: 'MOVACI 2016 - Seleção dos projetos',
+                subject: 'MOVACI - Seleção dos projetos',
                 html: html,
                 text: text
 
