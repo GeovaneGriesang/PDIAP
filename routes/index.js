@@ -868,14 +868,14 @@ router.post('/registro', testaUsername2, (req, res) => {
       username: username
     }
 
-		//essa parte que manda emails após a inscrição foi descomentada porque se não crasha o npm ao inscrever projeto
-		
+		//essa parte que manda emails após a inscrição foi comentada porque se não crasha o npm ao inscrever projeto
+
 //    template.render(locals, function (err, results) {
 //      if (err) throw err;
 //      transport.sendMail({
-//        from: 'V MOVACI <contato@movaci.com.br>',
+//        from: 'MOVACI <contato@movaci.com.br>',
 //        to: locals.email,
-//        subject: 'V MOVACI - Confirmação de inscrição',
+//        subject: 'MOVACI - Confirmação de inscrição',
 //        html: results.html,
 //        text: results.text
 //      }, function (err, responseStatus) {
@@ -1005,9 +1005,9 @@ router.post('/redefinir-senha', (req, res) => {
           }
 
           transport.sendMail({
-            from: 'V MOVACI <contato@movaci.com.br>',
+            from: 'MOVACI <contato@movaci.com.br>',
             to: locals.email,
-            subject: 'V MOVACI - Redefinição de senha',
+            subject: 'MOVACI - Redefinição de senha',
             html: results.html,
             text: results.text
           }, function (err, responseStatus) {

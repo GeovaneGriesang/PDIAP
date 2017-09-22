@@ -1062,7 +1062,7 @@ router.post('/pdf2', miPermiso("3"), (req, res) => {
 //   myDoc
 //     .image('public/assets/images/logo.png',70, 55, { fit: [200,350] })
 //     .moveDown(5)
-//     .text("V Mostra Venâncio-airense de Cultura e Inovação", {align: 'center'})
+//     .text("Mostra Venâncio-airense de Cultura e Inovação", {align: 'center'})
 //     .fontSize(16)
 //     .moveDown(2)
 //     .text("Projetos aprovados que necessitam confirmar presença", {align: 'center'})
