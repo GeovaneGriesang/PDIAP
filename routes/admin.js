@@ -343,7 +343,7 @@ router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
         if (err) throw err;
         //console.log(docs);
         docs.forEach(function(usr) {
-          let url = "http://www.movaci.com.b/projetos/confirma/"+usr._id+"/2456";
+          let url = "http://www.movaci.com.br/projetos/confirma/"+usr._id+"/2456";
           let url2 = "http://www.movaci.com.br/projetos/confirma/"+usr._id+"/9877";
           users.push({'email': usr.email, 'projeto': usr.nomeProjeto, 'url': url, 'url2': url2});
         });
