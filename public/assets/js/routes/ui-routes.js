@@ -38,7 +38,8 @@
 			templateUrl: '/alpha/index.html'
 		})
 
-			descomentar esse pra ativar a rota pra inscricao de projetos
+			//descomentar esse pra ativar a rota pra inscricao de projetos
+
 		 .state('inscricao', {
 		 	url: "/projetos/inscricao",
 		 	templateUrl: "/views/inscricao.html",
