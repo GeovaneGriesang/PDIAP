@@ -154,11 +154,12 @@
 								 	link: 'home.update'
 								 },
 								 */
-								{
-									name: 'Upload',
-									icon: 'upload',
-									link: 'home.fileUpload'
-								},
+								//Descomentar para aparecer o botão de upload de relatórios
+								// {
+								// 	name: 'Upload',
+								// 	icon: 'upload',
+								// 	link: 'home.fileUpload'
+								// },
 								{
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',
