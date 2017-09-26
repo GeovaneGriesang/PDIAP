@@ -16,7 +16,7 @@
 				$scope.message = 'Sucesso';
 				$scope.erro = false;
 				$mdDialog.hide();
-				$window.location.href="http://www.movaci.com.br/avaliacao/2017/"+id;
+				$window.location.href="http://www.movaci.com.br/avaliacao/2016/"+id;
 			})
 			.error(function() { // authentication failed
 				$rootScope.logado = false;

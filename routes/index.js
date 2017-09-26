@@ -1080,13 +1080,13 @@ router.all('/master/*', function(req, res, next) {
 // ========================================================================== //
 
 // avaliação ================================================================ //
-router.get('/avaliacao/2017', function(req, res, next) {
+router.get('/avaliacao/2016', function(req, res, next) {
   res.render('layout_avaliacao.ejs');
 });
-router.get('/avaliacao/2017/*', function(req, res, next) {
+router.get('/avaliacao/2016/*', function(req, res, next) {
   res.render('layout_avaliacao2.ejs');
 });
-router.get('/ranking/2017', function(req, res, next) {
+router.get('/ranking/2016', function(req, res, next) {
   res.render('layout_avaliacao2.ejs');
 });
 // ========================================================================== //
