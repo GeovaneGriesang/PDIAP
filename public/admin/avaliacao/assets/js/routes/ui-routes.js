@@ -21,7 +21,6 @@
 				} else { // Not Authenticated
 					$rootScope.logado = false;
 					$window.location.href="http://www.movaci.com.br/avaliacao/2016";
-					// $window.location.href="http://www.movaci.com./avaliacao/2017";
 					deferred.reject();
 				}
 			});
