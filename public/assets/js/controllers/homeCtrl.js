@@ -268,12 +268,6 @@
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
 						if (tipo === 'Avaliador') {
-//							if (dados.date.getFullYear = 2017) {
-//								var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
-//							'trabalhos apresentados na ', {text: 'VI MOVACI - Mostra Venâncio-airense de Cultura '+
-//							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-//							'IFSul, Câmpus Venâncio Aires, ocorrida de 28 a 30 de setembro de 2016.\n\n'];
-//							}
 							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
 							'trabalhos apresentados na ', {text: 'V MOVACI - Mostra Venâncio-airense de Cultura '+
 							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},

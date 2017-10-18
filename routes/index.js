@@ -103,6 +103,7 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoOrientador(cpf) {
     return new Promise(function (fulfill, reject) {
       // ProjetoSchema.find({'integrantes.cpf':cpf,'integrantes.presenca':true}, 'integrantes.$ nomeProjeto -_id',(err, usr) => {
+      console.log("caoleção: " + ProjetoSchema.collection.name + " || cpf: " + cpf);
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':true},
         'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
@@ -511,6 +512,7 @@ router.post('/emitirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada nos premiados. " + err.message))
 
+  console.log("CPF: " + cpf);
   const six = pesquisaProjetoOrientador(cpf).then(usr => {
     for (let i in usr) {
       if (usr[i].integrantes[0].certificados === undefined || usr[i].integrantes[0].certificados.lenght === 0 ) {

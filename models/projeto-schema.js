@@ -68,7 +68,7 @@ const ProjetoSchema = new Schema({
 	avaliacao: {type: Array}
 
 }, { collection: 'projetos2017' });
-//
+//projetos2017
 
 ProjetoSchema.methods.hasExpired = function(){
     let now = new Date().now;
