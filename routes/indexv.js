@@ -103,7 +103,6 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoOrientador(cpf) {
     return new Promise(function (fulfill, reject) {
       // ProjetoSchema.find({'integrantes.cpf':cpf,'integrantes.presenca':true}, 'integrantes.$ nomeProjeto -_id',(err, usr) => {
-      console.log("caoleção: " + ProjetoSchema.collection.name + " || cpf: " + cpf);
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':true},
         'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
@@ -117,7 +116,6 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaAvaliador(cpf) {
     return new Promise(function (fullfill, reject) {
-      console.log("caoleção: " + avaliadorSchema.collection.name + " || cpf: " + cpf);
       avaliadorSchema.find({'cpf':cpf}, 'nome token -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr.length > 0 && usr[0].token === undefined) {
@@ -335,7 +333,7 @@ router.post('/emitirCertificado', (req, res) => {
     }
   }
   })
-  .catch(err => console.log("Não encontrou nada nos projetos - alunos." + err.message))
+  .catch(err => console.log("Não encontrou nada nos projetos. " + err.message))
 
   const two = pesquisaAvaliador(cpf).then(usr => {
     return pesquisaAvaliador2(cpf).then(usr => ({
@@ -513,7 +511,6 @@ router.post('/emitirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada nos premiados. " + err.message))
 
-  console.log("CPF: " + cpf);
   const six = pesquisaProjetoOrientador(cpf).then(usr => {
     for (let i in usr) {
       if (usr[i].integrantes[0].certificados === undefined || usr[i].integrantes[0].certificados.lenght === 0 ) {
@@ -629,7 +626,7 @@ router.post('/conferirCertificado', (req, res) => {
        integrantes:participante
      }
   })
-  .catch(err => console.log("Não encontrou nada nos projetos - alunos." + err.message))
+  .catch(err => console.log("Não encontrou nada nos projetos. " + err.message))
 
   const two = pesquisaAvaliador(id).then(usr => ({
      tipo: "Avaliador",
@@ -732,7 +729,7 @@ router.post('/contato', (req, res) => {
     port: 587,
     auth: {
       user: "contato@movaci.com.br",
-      pass: "*mo12va45ci78!"
+      pass: "mvc2016"
     }
   }));
 
@@ -861,7 +858,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       port: 587,
       auth: {
         user: "contato@movaci.com.br",
-        pass: "*mo12va45ci78!"
+        pass: "mvc2016"
       }
     }));
 
@@ -871,20 +868,18 @@ router.post('/registro', testaUsername2, (req, res) => {
       username: username
     }
 
-		//essa parte que manda emails após a inscrição foi comentada porque se não crasha o npm ao inscrever projeto
-
-//    template.render(locals, function (err, results) {
-//      if (err) throw err;
-//      transport.sendMail({
-//        from: 'MOVACI <contato@movaci.com.br>',
-//        to: locals.email,
-//        subject: 'MOVACI - Confirmação de inscrição',
-//        html: results.html,
-//        text: results.text
-//      }, function (err, responseStatus) {
-//        if (err) throw err;
-//      })
-//    });
+    template.render(locals, function (err, results) {
+      if (err) throw err;
+      transport.sendMail({
+        from: 'V MOVACI <contato@movaci.com.br>',
+        to: locals.email,
+        subject: 'V MOVACI - Confirmação de inscrição',
+        html: results.html,
+        text: results.text
+      }, function (err, responseStatus) {
+        if (err) throw err;
+      })
+    });
     // res.redirect('/projetos/login');
   }
   //res.send('OK');
@@ -992,7 +987,7 @@ router.post('/redefinir-senha', (req, res) => {
           port: 587,
           auth: {
             user: "contato@movaci.com.br",
-            pass: "*mo12va45ci78!"
+            pass: "mvc2016"
           }
         }));
 
@@ -1008,9 +1003,9 @@ router.post('/redefinir-senha', (req, res) => {
           }
 
           transport.sendMail({
-            from: 'MOVACI <contato@movaci.com.br>',
+            from: 'V MOVACI <contato@movaci.com.br>',
             to: locals.email,
-            subject: 'MOVACI - Redefinição de senha',
+            subject: 'V MOVACI - Redefinição de senha',
             html: results.html,
             text: results.text
           }, function (err, responseStatus) {

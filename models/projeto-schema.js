@@ -67,8 +67,8 @@ const ProjetoSchema = new Schema({
 	palavraChave: {type: String},
 	avaliacao: {type: Array}
 
+// }, { collection: 'betaPorcaoAPI' });
 }, { collection: 'projetos2017' });
-//projetos2017
 
 ProjetoSchema.methods.hasExpired = function(){
     let now = new Date().now;
