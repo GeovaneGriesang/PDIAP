@@ -23,7 +23,7 @@ const IntegranteSchema = new Schema({
 	telefone: {type: String},
 	tamCamiseta: {type: String},
 	presenca: {type: Boolean},
-	certificados: [certificadoSchema]
+	certificados: {certificadoSchema}
 });
 
 const uploadSchema = new Schema({
