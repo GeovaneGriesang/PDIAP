@@ -40,11 +40,11 @@
 
 			//descomentar esse pra ativar a rota pra inscricao de projetos
 
-		 .state('inscricao', {
-		 	url: "/projetos/inscricao",
-		 	templateUrl: "/views/inscricao.html",
-		 	controller: "registroCtrl"
-		 })
+		//  .state('inscricao', {
+		//  	url: "/projetos/inscricao",
+		//  	templateUrl: "/views/inscricao.html",
+		//  	controller: "registroCtrl"
+		//  })
 
 
 		.state('regulamento', {
