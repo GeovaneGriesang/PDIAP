@@ -46,7 +46,7 @@ const AvaliadorSchema = new Schema({
 	token: {
 		type: String
 	}
-// }, { collection: 'avaliadorCollection' });
-}, { collection: 'avaliadorCollection2017' });
+}, { collection: 'avaliadorCollection' });
+// }, { collection: 'avaliadorCollection2017' });
 
 const Avaliador = module.exports = mongoose.model('Avaliador', AvaliadorSchema);

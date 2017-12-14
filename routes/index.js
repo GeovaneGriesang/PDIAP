@@ -118,7 +118,7 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaAvaliador(cpf) {
     return new Promise(function (fullfill, reject) {
       console.log("caoleção: " + avaliadorSchema.collection.name + " || cpf: " + cpf);
-      avaliadorSchema.find({'cpf':cpf}, 'nome token -_id',(err, usr) => {
+      avaliadorSchema.find({'cpf':cpf}, 'nome token -_id ',(err, usr) => {
         if (err) return reject(err)
         if (usr.length > 0 && usr[0].token === undefined) {
           var newId = new mongoose.mongo.ObjectId()

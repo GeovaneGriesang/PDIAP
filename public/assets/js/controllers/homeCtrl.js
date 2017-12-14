@@ -279,6 +279,7 @@
 							realizacao = '27 a 29 de setembro de 2017';
 							edicao = 'VI';
 						}
+
 						if (tipo === 'Avaliador') {
 							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
 							'trabalhos apresentados na ', {text: 'V MOVACI - Mostra Venâncio-airense de Cultura '+
