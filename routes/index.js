@@ -228,7 +228,7 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaPremiado(cpf) {
     return new Promise(function (fullfill, reject) {
-      premiadoSchema.find({'integrantes.cpf':cpf}, 'integrantes.$ categoria eixo colocacao mostratec token nomeProjeto numInscricao _id',(err, usr) => {
+      premiadoSchema.find({'integrantes.cpf':cpf}, 'integrantes.$ categoria eixo colocacao mostratec token nomeProjeto numInscricao _id createdAt',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fullfill(usr)
@@ -502,7 +502,8 @@ router.post('/emitirCertificado', (req, res) => {
         categoria: usr[i].categoria,
         eixo: usr[i].eixo,
         colocacao: usr[i].colocacao,
-        token: usr[i].token
+        token: usr[i].token,
+        createdAt: usr[i].createdAt
       }
       array.push(premiado)
     }

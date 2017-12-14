@@ -267,6 +267,18 @@
 					}
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
+						var ano = new Date(dados.createdAt);
+						var realizacao;
+						var edicao;
+						if (ano.getFullYear() === 2016) {
+							console.log("ano de criação do documento 2016");
+							realizacao = '28 a 30 de setembro de 2016';
+							edicao = 'V';
+						} else if(ano.getFullYear() === 2017){
+							console.log("ano de criação do documento 2016");
+							realizacao = '27 a 29 de setembro de 2017';
+							edicao = 'VI';
+						}
 						if (tipo === 'Avaliador') {
 							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
 							'trabalhos apresentados na ', {text: 'V MOVACI - Mostra Venâncio-airense de Cultura '+
@@ -285,8 +297,8 @@
 						} else if (tipo === 'Premiacao') {
 							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve o '+
 							dados.colocacao+ 'º LUGAR na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
-							', durante a ', {text: 'V MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
-							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de 28 a 30 de setembro de 2016.\n\n'];
+							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
+							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
 						} else if (tipo === 'Responsavel-saberes') {
 							var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
 							dados.titulo.toUpperCase()+ ' do Seminário Saberes Docentes, realizado na ', {text: 'V MOVACI - Mostra Venâncio-airense de Cultura '+
