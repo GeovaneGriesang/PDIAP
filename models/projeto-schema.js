@@ -68,6 +68,7 @@ const ProjetoSchema = new Schema({
 	avaliacao: {type: Array}
 
 // }, { collection: 'betaPorcaoAPI' });
+// }, { collection: 'projetos2016' });
 }, { collection: 'projetos2017' });
 
 ProjetoSchema.methods.hasExpired = function(){

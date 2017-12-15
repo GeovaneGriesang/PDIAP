@@ -29,5 +29,6 @@ const SaberesSchema = new Schema({
 		type: String
 	}
 }, { collection: 'saberesCollection' });
+// }, { collection: 'saberes2016' });
 
 const Saberes = module.exports = mongoose.model('Saberes', SaberesSchema);

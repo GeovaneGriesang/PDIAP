@@ -49,6 +49,7 @@ const premiadoSchema = new Schema({
   mostratec: {type: Boolean},
 	token: {type:String}
 
-}, { collection: 'premiados' });
+// }, { collection: 'premiados2016' });
+}, { collection: 'premiados2017' });
 
 const Premiado = module.exports = mongoose.model('Premiado', premiadoSchema);
