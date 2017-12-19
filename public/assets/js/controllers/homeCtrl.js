@@ -295,12 +295,12 @@
 							dados.nomeProjeto.toUpperCase()+ ' na ', {text: 'VI MOVACI - Mostra Venâncio-airense de Cultura '+
 							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
 							'IFSul, Câmpus Venâncio Aires, ocorrida de 27 a 29 de setembro de 2017.\n\n'];
-						} else if (tipo === 'Premiacao') {
+						} else if (tipo === 'Premiacao' && ano2.getFullYear() === 2016 ) {
 							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve o '+
 							dados.colocacao+ 'º LUGAR na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
 							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
 							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
-						} else if (tipo === 'Premiacao' && ano2 !== 2016) {
+						} else if (tipo === 'Premiacao' && ano2.getFullYear() === 2017) {
 							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve destaque na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
 							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
 							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
