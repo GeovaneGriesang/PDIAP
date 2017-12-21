@@ -285,8 +285,8 @@ router.post('/emitirCertificado', (req, res) => {
         tipo: usr[i].integrantes[0].tipo,
         nome: usr[i].integrantes[0].nome,
         nomeProjeto: usr[i].nomeProjeto,
-        token: usr[i].integrantes[0].certificados[0]._id,
-        tokentipo: usr[i].integrantes[0].certificados[0].tipo
+        // token: usr[i].integrantes[0].certificados[0]._id,
+        // tokentipo: usr[i].integrantes[0].certificados[0].tipo
       }
       array.push(participante)
     }
