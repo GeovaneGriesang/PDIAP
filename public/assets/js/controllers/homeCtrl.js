@@ -38,7 +38,7 @@
 		canvas.height = img.height;
 		let ctx = canvas.getContext("2d");
 		ctx.drawImage(img, 0, 0);
-		let aaa = canvas.toDataURL();
+		let aaa = canvas.toDataURL('image/jpeg',1.0);
 
 		// var estressado = aaa.length / 2;
 		// var vsf = aaa.substring(0,estressado);

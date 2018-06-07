@@ -11,7 +11,7 @@ var connection = mongoose.createConnection("mongodb://localhost:27017/loginapp")
 autoIncrement.initialize(connection);
 
 const certificadoSchema = new Schema({
-	token: {type: Schema.Types.ObjectId, ref: 'Certificado'},
+	_id: {type: Schema.Types.ObjectId, ref: 'Certificado'},
 	tipo: {type: String}
 });
 
@@ -23,7 +23,7 @@ const IntegranteSchema = new Schema({
 	telefone: {type: String},
 	tamCamiseta: {type: String},
 	presenca: {type: Boolean},
-	certificados: {certificadoSchema}
+	certificados: certificadoSchema
 });
 
 const uploadSchema = new Schema({

@@ -168,9 +168,10 @@ router.post('/emitirCertificado', (req, res) => {
 
   function inserirToken(cpf, numInscricao, tipo) {
     console.log(cpf +"      "+numInscricao+"      "+tipo)
+    var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf}},'numInscricao':numInscricao},
-        {'$set': {'integrantes.$.certificados': {tipo:tipo}}}, [{new:true}],
+        {'$set': {'integrantes.$.certificados': obj}}, [{new:true}],
         (err, usr) => {
           if (err) return reject(err)
           ProjetoSchema.find({'integrantes':{$elemMatch:{'cpf':cpf}},'numInscricao':numInscricao},
@@ -180,8 +181,8 @@ router.post('/emitirCertificado', (req, res) => {
               tipo: usr[0].integrantes[0].tipo,
               nome: usr[0].integrantes[0].nome,
               nomeProjeto: usr[0].nomeProjeto,
-              token: usr[0].integrantes[0].certificados[0].id,
-              tokentipo: usr[0].integrantes[0].certificados[0].tipo
+              token: usr[0].integrantes[0].certificados._id,
+              tokentipo: usr[0].integrantes[0].certificados.tipo
             }
             array.push(participante)
             var retorno = {
@@ -197,9 +198,10 @@ router.post('/emitirCertificado', (req, res) => {
   function inserirTokenEvento(cpf, id, tipo) {
     console.log("aaaaaaaaaa");
     console.log(cpf +"      "+id+"      "+tipo)
+    var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return new Promise(function (fulfill, reject) {
       eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf}},'_id':id},
-        {'$set': {'responsavel.$.certificados': {tipo:tipo}}}, [{new:true}],
+        {'$set': {'responsavel.$.certificados': obj}}, [{new:true}],
         (err, usr) => {
           if (err) return reject(err)
           eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ -_id', (err, usr) => {
@@ -211,8 +213,8 @@ router.post('/emitirCertificado', (req, res) => {
                 tipo: usr[i].tipo,
                 titulo: usr[i].titulo,
                 cargaHoraria: usr[i].cargaHoraria,
-                token: usr[i].responsavel[0].certificados[0]._id,
-                tokentipo: usr[i].responsavel[0].certificados[0].tipo
+                token: usr[i].responsavel[0].certificados._id,
+                tokentipo: usr[i].responsavel[0].certificados.tipo
               }
               array.push(participante)
             }
@@ -285,8 +287,8 @@ router.post('/emitirCertificado', (req, res) => {
         tipo: usr[i].integrantes[0].tipo,
         nome: usr[i].integrantes[0].nome,
         nomeProjeto: usr[i].nomeProjeto,
-        // token: usr[i].integrantes[0].certificados[0]._id,
-        // tokentipo: usr[i].integrantes[0].certificados[0].tipo
+        token: usr[i].integrantes[0].certificados._id,
+        tokentipo: usr[i].integrantes[0].certificados.tipo
       }
       array.push(participante)
     }
@@ -300,9 +302,10 @@ router.post('/emitirCertificado', (req, res) => {
 })}
 
   function inserirToken2(cpf, numInscricao, tipo) {
+    var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return new Promise(function (fullfill, reject) {
       ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf}},'numInscricao':numInscricao},
-        {'$set': {'integrantes.$.certificados': {tipo:tipo}}}, [{new:true}],
+        {'$set': {'integrantes.$.certificados': obj}}, [{new:true}],
         (err, usr) => {
           if (err) return reject(err)
           fullfill(usr)
@@ -314,15 +317,16 @@ router.post('/emitirCertificado', (req, res) => {
     let contador = false
     let array = []
     for (let i in usr) {
-        if (usr[i].integrantes[0].certificados !== undefined && usr[i].integrantes[0].certificados[0]._id !== undefined) {
+        if (usr[i].integrantes[0].certificados !== undefined && usr[i].integrantes[0].certificados._id !== undefined) {
           contador = true
           var participante = {
             tipo: usr[i].integrantes[0].tipo,
             nome: usr[i].integrantes[0].nome,
             nomeProjeto: usr[i].nomeProjeto,
-            token: usr[i].integrantes[0].certificados[0]._id,
-            tokentipo: usr[i].integrantes[0].certificados[0].tipo
+            token: usr[i].integrantes[0].certificados._id,
+            tokentipo: usr[i].integrantes[0].certificados.tipo
           }
+
           array.push(participante)
       } else {
         return inserirToken(cpf, usr[i].numInscricao, "ProjetoAluno")
@@ -398,7 +402,7 @@ router.post('/emitirCertificado', (req, res) => {
     let array = []
     let contador = false
     for (let i in usr) {
-      if (usr[i].responsavel[0].certificados[0] !== undefined) {
+      if (usr[i].responsavel[0].certificados !== undefined) {
         console.log(usr[i].responsavel[0]);
         contador = true
         console.log("CONTADO: "+contador)
@@ -407,11 +411,11 @@ router.post('/emitirCertificado', (req, res) => {
           tipo: usr[i].tipo,
           titulo: usr[i].titulo,
           cargaHoraria: usr[i].cargaHoraria,
-          token: usr[i].responsavel[0].certificados[0]._id,
-          tokentipo: usr[i].responsavel[0].certificados[0].tipo
+          token: usr[i].responsavel[0].certificados._id,
+          tokentipo: usr[i].responsavel[0].certificados.tipo
         }
         array.push(participante)
-      } else if (usr[i].responsavel[0].certificados[0] == undefined) {
+      } else if (usr[i].responsavel[0].certificados == undefined) {
         console.log("CHEGAMOS AQUI ENT")
         return inserirTokenEvento(cpf, usr[i]._id, "Evento")
       }
@@ -517,7 +521,7 @@ router.post('/emitirCertificado', (req, res) => {
   console.log("CPF: " + cpf);
   const six = pesquisaProjetoOrientador(cpf).then(usr => {
     for (let i in usr) {
-      if (usr[i].integrantes[0].certificados === undefined || usr[i].integrantes[0].certificados.lenght === 0 ) {
+      if (usr[i].integrantes[0].certificados === undefined || usr[i].integrantes[0].certificados._id === undefined ) {
           // console.log("Achei um ProjetoAluno " + usr[i].integrantes[0].certificados[x].id)
           inserirToken2(cpf, usr[i].numInscricao, "ProjetoOrientador");
       }
@@ -621,7 +625,7 @@ router.post('/conferirCertificado', (req, res) => {
          nome: usr[0].integrantes[0].nome,
          cpf: usr[0].integrantes[0].cpf,
          nomeProjeto: usr[0].nomeProjeto,
-         token: usr[0].integrantes[0].certificados[0]._id
+         token: usr[0].integrantes[0].certificados._id
        }
       //  array.push(participante)
     //  }
@@ -667,7 +671,7 @@ router.post('/conferirCertificado', (req, res) => {
          tipo: usr[0].tipo,
          titulo: usr[0].titulo,
          cargaHoraria: usr[0].cargaHoraria,
-         token: usr[0].responsavel[0].certificados[0]._id
+         token: usr[0].responsavel[0].certificados._id
        }
       //  array.push(participante)
     //  }
@@ -705,7 +709,7 @@ router.post('/conferirCertificado', (req, res) => {
         nome: usr[0].integrantes[0].nome,
         cpf: usr[0].integrantes[0].cpf,
         nomeProjeto: usr[0].nomeProjeto,
-        token: usr[0].integrantes[0].certificados[0]._id
+        token: usr[0].integrantes[0].certificados._id
       }
       // array.push(participante)
     // }
