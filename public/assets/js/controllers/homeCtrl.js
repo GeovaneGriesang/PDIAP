@@ -359,7 +359,7 @@
 							]
 						};
 						if (modo === 1) {
-							pdfMake.createPdf(docDefinition).open();
+							//pdfMake.createPdf(docDefinition).open();
 						} else if (modo === 2) {
 							pdfMake.createPdf(docDefinition).download('Certificado_'+tipo+'_MOVACI_2016.pdf');
 						}
