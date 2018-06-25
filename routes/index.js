@@ -733,17 +733,17 @@ router.post('/contato', (req, res) => {
   ,   mensagem = req.body.mensagem;
 
   const transporter = nodemailer.createTransport(smtpTransport({
-    host: 'smtp.zoho.com',
+    host: 'smtp.gmail.com',
     port: 587,
     auth: {
-      user: "contato@movaci.com.br",
+      user: "contatomovaci@gmail.com",
       pass: "*mo12va45ci78!"
     }
   }));
 
   var mailOptions = {
-    from: 'contato@movaci.com.br',
-    to: 'contato@movaci.com.br',
+    from: 'contatomovaci@gmail.com',
+    to: 'contatomovaci@gmail.com',
     subject: assunto,
     text: '',
     html: '<b> Contato via site:</b><br><b>De: </b>'+nome+' '+email+'<br><b>Assunto: </b>'+assunto+'<br><b>Mensagem: </b>'+mensagem
