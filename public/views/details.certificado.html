@@ -7,14 +7,14 @@
   </div>
   <div style="overflow:auto!important;">
     <!-- Avaliação -->
-    <div layout="row" layout-align="center center" data-ng-if="avaliador !== undefined" style="margin:40px 0 20px 0;">
+    <div layout="row" layout-align="center center" data-ng-if="avaliador.length > 0" data-ng-repeat="ava in avaliador" style="margin:40px 0 20px 0;">
       <p class="text-certificado">Avaliação</p>
       <div style="width:50%;">
         <!--<md-button class="md-raised md-primary white green darken-1 btn-certificado" style="border-radius:50px 0 0 50px;float:left;" aria-label="Abrir" data-ng-click="emitirCertificado1('Avaliador',1,avaliador)">
           <md-icon md-svg-icon="open-in-new" style="width:20px;height:20px;color:rgba(255,255,255,0.87);margin-bottom:3px;"></md-icon>
           <span style="vertical-align:middle;">Abrir</span>
         </md-button>-->
-        <md-button class="md-raised md-primary btn-certificado" style="border-radius:50px 50px 50px 50px;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Avaliador',2,avaliador)">
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:50px 50px 50px 50px;color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Avaliador',2,ava)">
           <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
           <span style="vertical-align:middle;">Baixar</span>
         </md-button>

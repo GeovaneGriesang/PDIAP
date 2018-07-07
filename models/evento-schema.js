@@ -20,6 +20,7 @@ const EventoSchema = new Schema({
 	,cargaHoraria: {type: String}
 	,responsavel: [responsavelSchema]
 	,data: {type: String}
-}, { collection: 'eventoCollection' });
+	,createdAt: {type: Date}
+}, { collection: 'eventos2016' });//Os documentos não possuem token
 
 const Evento = module.exports = mongoose.model('Evento', EventoSchema);

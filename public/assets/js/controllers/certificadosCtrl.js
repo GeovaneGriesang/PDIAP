@@ -25,7 +25,8 @@
 			.success(function(data) {
 				$scope.texto = '';
 				if (data[0].tipo === 'Avaliador') {
-					$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf;
+					var ano = new Date(data[0].createdAt);
+					$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+"</br><b>Ano:</b> "+ano.getFullYear();
 				}
 				else if (data[0].tipo === 'Participante') {
 					let evts1 = '';
@@ -59,10 +60,12 @@
 					}
 				}
 				else if (data[0].tipo === 'ProjetoAluno') {
-					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Apresentação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto;
+					var ano = new Date(data[0].integrantes.createdAt);
+					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Apresentação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto+'</br><b>Ano:</b> '+ano.getFullYear();
 				}
 				else if (data[0].tipo === 'ProjetoOrientador') {
-					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Orientação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto;
+					var ano = new Date(data[0].integrantes.createdAt);
+					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Orientação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto+'</br><b>Ano:</b> '+ano.getFullYear();
 				}
 				else if (data[0].tipo === 'Evento') {
 					if (data[0].evento.tipo === 'Oficina') {
@@ -73,7 +76,13 @@
 					}
 				}
 				else if (data[0].tipo === 'Premiado') {
-					$scope.texto = '<b>Projeto:</b> '+data[0].projeto.nomeProjeto+'</br><b>Tipo:</b> Premiação</br><b>Categoria:</b> '+data[0].projeto.categoria+'</br><b>Eixo:</b> '+data[0].projeto.eixo+'</br><b>Colocação:</b> '+data[0].projeto.colocacao+'º lugar';
+					var ano = new Date(data[0].projeto.createdAt);
+					if(ano.getFullYear() === 2016){
+						$scope.texto = '<b>Projeto:</b> '+data[0].projeto.nomeProjeto+'</br><b>Tipo:</b> Premiação</br><b>Categoria:</b> '+data[0].projeto.categoria+'</br><b>Eixo:</b> '+data[0].projeto.eixo+'</br><b>Colocação:</b> '+data[0].projeto.colocacao+'º lugar'+'</br><b>Ano:</b> '+ano.getFullYear();
+					} else {
+						$scope.texto = '<b>Projeto:</b> '+data[0].projeto.nomeProjeto+'</br><b>Tipo:</b> Premiação</br><b>Categoria:</b> '+data[0].projeto.categoria+'</br><b>Eixo:</b> '+data[0].projeto.eixo+'</br><b>Ano:</b> '+ano.getFullYear();
+					}
+					
 				}
 			})
 			.error(function(status) {

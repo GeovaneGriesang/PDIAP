@@ -50,6 +50,6 @@ const premiadoSchema = new Schema({
 	token: {type:String}
 
 // }, { collection: 'premiados2016' });
-}, { collection: 'premiados2017' });
+}, { collection: 'premiados' });
 
 const Premiado = module.exports = mongoose.model('Premiado', premiadoSchema);

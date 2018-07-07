@@ -92,7 +92,7 @@ router.post('/emitirCertificado', (req, res) => {
       // ProjetoSchema.find({'integrantes.cpf':cpf,'integrantes.presenca':true}, 'integrantes.$ nomeProjeto -_id',(err, usr) => {
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado':true},
-        'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
+        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -106,7 +106,7 @@ router.post('/emitirCertificado', (req, res) => {
       console.log("caoleção: " + ProjetoSchema.collection.name + " || cpf: " + cpf);
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':true},
-        'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
+        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -115,34 +115,36 @@ router.post('/emitirCertificado', (req, res) => {
     })
   }
 
-  function pesquisaAvaliador(cpf) {
+
+  function pesquisaAvaliador(cpf, createdAt, tipo) {
     return new Promise(function (fullfill, reject) {
       console.log("caoleção: " + avaliadorSchema.collection.name + " || cpf: " + cpf);
-      avaliadorSchema.find({'cpf':cpf}, 'nome token -_id ',(err, usr) => {
+      avaliadorSchema.findOneAndUpdate({'cpf':cpf,'createdAt':createdAt},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}],(err, usr) => {
         if (err) return reject(err)
-        if (usr.length > 0 && usr[0].token === undefined) {
-          var newId = new mongoose.mongo.ObjectId()
-          avaliadorSchema.update({'cpf':cpf}, {$set:{'token':newId}}, ['-_id',{new:true}], (err, usr) => {
-            if (err) return reject(err)
-            fullfill(usr)
-          })
-        } else
-          fullfill(usr)
-      })
-      .then(usr => ({
-        tipo: "Avaliador",
-        nome: usr[0].nome,
-        token: usr[0].token
-      }))
+	          avaliadorSchema.find({'cpf':cpf, 'createdAt':createdAt},'nome token createdAt', (err, usr) => {
+	            let array = []
+		    var avaliador = {
+			nome: usr[0].nome,
+			token: usr[0].token,
+			createdAt: usr[0].createdAt
+		    }
+		    array.push(avaliador)
+		    var retorno = {
+			tipo: tipo,
+			avaliadores: array
+		    }
+	            fullfill(retorno)
+	          })	        
+      	})
     })
   }
 
   function pesquisaAvaliador2(cpf) {
     return new Promise(function (fullfill, reject) {
-      avaliadorSchema.find({'cpf':cpf}, 'nome token -_id',(err, usr) => {
+      avaliadorSchema.find({'cpf':cpf}, 'nome token createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         fullfill(usr)
-      })
+      })	
     })
   }
 
@@ -157,7 +159,7 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaEvento(cpf) {
     return new Promise(function (fullfill, reject) {
-      eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$', (err, usr) => {
+      eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ createdAt', (err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fullfill(usr)
@@ -206,7 +208,7 @@ router.post('/emitirCertificado', (req, res) => {
           if (err) return reject(err)
           eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ -_id', (err, usr) => {
             let array = []
-            console.log(usr[0].responsavel[0]);
+            //console.log(usr[0].responsavel[0]);
             for (let i in usr) {
               let participante = {
                 responsavel: usr[i].responsavel[0].nome,
@@ -234,7 +236,7 @@ router.post('/emitirCertificado', (req, res) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fullfill(usr)
-        console.log(usr)
+        //console.log(usr)
       })
     })
   }
@@ -278,7 +280,7 @@ router.post('/emitirCertificado', (req, res) => {
     return new Promise(function (fullfill, reject) {
     ProjetoSchema.find(
       {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':true},
-      'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
+      'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
     if (err) return reject(err)
     if (usr == 0) return reject({err})
     let array = []
@@ -288,7 +290,8 @@ router.post('/emitirCertificado', (req, res) => {
         nome: usr[i].integrantes[0].nome,
         nomeProjeto: usr[i].nomeProjeto,
         token: usr[i].integrantes[0].certificados._id,
-        tokentipo: usr[i].integrantes[0].certificados.tipo
+        tokentipo: usr[i].integrantes[0].certificados.tipo,
+	createdAt: usr[i].createdAt
       }
       array.push(participante)
     }
@@ -324,7 +327,8 @@ router.post('/emitirCertificado', (req, res) => {
             nome: usr[i].integrantes[0].nome,
             nomeProjeto: usr[i].nomeProjeto,
             token: usr[i].integrantes[0].certificados._id,
-            tokentipo: usr[i].integrantes[0].certificados.tipo
+            tokentipo: usr[i].integrantes[0].certificados.tipo,
+	    createdAt: usr[i].createdAt
           }
 
           array.push(participante)
@@ -341,14 +345,31 @@ router.post('/emitirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada nos projetos - alunos." + err.message))
 
-  const two = pesquisaAvaliador(cpf).then(usr => {
-    return pesquisaAvaliador2(cpf).then(usr => ({
-      tipo: "Avaliador",
-      nome: usr[0].nome,
-      token: usr[0].token
-    }))
-  })
-  .catch(err => console.log("Não encontrou nada nos avaliadores. " + err.message))
+
+  const two = pesquisaAvaliador2(cpf).then(usr =>{
+  	let contador = false;
+  	let array = [];
+  	for(let i in usr){
+		if(usr.length > 0 && usr[i].token !== undefined){
+			contador = true;
+			var avaliador = {
+				email: usr[i].email,
+				nome: usr[i].nome,
+				token: usr[i].token,
+				createdAt: usr[i].createdAt
+			}
+			array.push(avaliador);
+		} else {
+			return pesquisaAvaliador(cpf, usr[i].createdAt, "Avaliador")
+		}
+	}
+	if(contador === true){
+		return{
+			tipo:'Avaliador',
+			avaliadores:array
+		}
+	}
+})
 
   const three = pesquisaParticipante(cpf).then(usr => {
     // console.log(usr[0].tokenSaberes)
@@ -398,21 +419,22 @@ router.post('/emitirCertificado', (req, res) => {
   .catch(err => console.log("Não encontrou nada nos participantes dos eventos. " + err.message))
 
   const four = pesquisaEvento(cpf).then(usr => {
-    console.log("AINDA EVENTO \n"+usr)
+    console.log("AINDA EVENTO \n"+JSON.stringify(usr))
     let array = []
     let contador = false
     for (let i in usr) {
       if (usr[i].responsavel[0].certificados !== undefined) {
-        console.log(usr[i].responsavel[0]);
+        //console.log(usr[i].responsavel[0]);
         contador = true
-        console.log("CONTADO: "+contador)
+        //console.log("CONTADO: "+contador)
         let participante = {
           responsavel: usr[i].responsavel[0].nome,
           tipo: usr[i].tipo,
           titulo: usr[i].titulo,
           cargaHoraria: usr[i].cargaHoraria,
-          token: usr[i].responsavel[0].certificados._id,
-          tokentipo: usr[i].responsavel[0].certificados.tipo
+          token: usr[i].responsavel[0].certificados[0]._id,
+          tokentipo: usr[i].responsavel[0].certificados[0].tipo,
+	  createdAt: usr[i].createdAt
         }
         array.push(participante)
       } else if (usr[i].responsavel[0].certificados == undefined) {
@@ -421,6 +443,7 @@ router.post('/emitirCertificado', (req, res) => {
       }
     }
     if (contador === true) {
+      console.log("Array:"+JSON.stringify(array))
       return {
         tipo:'Evento',
         evento:array
@@ -464,7 +487,7 @@ router.post('/emitirCertificado', (req, res) => {
         {'$set': {'token': newId}}, [{new:true}],
         (err, usr) => {
           // console.log(err)
-          console.log(usr)
+          //console.log(usr)
         })
         // .then(usr => {
         //   for(let i in usr) {
@@ -543,7 +566,7 @@ router.post('/conferirCertificado', (req, res) => {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Aluno'}}},
-        'integrantes.$ nomeProjeto numInscricao -_id',(err, usr) => {
+        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -556,7 +579,7 @@ router.post('/conferirCertificado', (req, res) => {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Orientador'}}},
-        'integrantes.$ nomeProjeto -_id',(err, usr) => {
+        'integrantes.$ nomeProjeto createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -567,7 +590,7 @@ router.post('/conferirCertificado', (req, res) => {
 
   function pesquisaAvaliador(id) {
     return new Promise(function (fulfill, reject) {
-      avaliadorSchema.find({'token':id}, 'nome cpf token -_id',(err, usr) => {
+      avaliadorSchema.find({'token':id}, 'nome cpf token createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         fulfill(usr)
         console.log("3")
@@ -608,7 +631,7 @@ router.post('/conferirCertificado', (req, res) => {
 
   function pesquisaPremiado(id) {
     return new Promise(function (fulfill, reject) {
-      premiadoSchema.find({'token':id}, 'nomeProjeto categoria eixo colocacao token -_id',(err, usr) => {
+      premiadoSchema.find({'token':id}, 'nomeProjeto categoria eixo colocacao token createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -618,17 +641,18 @@ router.post('/conferirCertificado', (req, res) => {
   }
 
   const one = pesquisaProjetoAluno(id).then(usr => {
-    // let array = []
-      // for (let i in usr) {
+    let array = []
+    for (let i in usr) {
         var participante = {
          tipo: usr[0].integrantes[0].tipo,
          nome: usr[0].integrantes[0].nome,
          cpf: usr[0].integrantes[0].cpf,
          nomeProjeto: usr[0].nomeProjeto,
-         token: usr[0].integrantes[0].certificados._id
-       }
-      //  array.push(participante)
-    //  }
+         token: usr[0].integrantes[0].certificados._id,
+	 createdAt: usr[0].createdAt
+      	}
+        array.push(participante)
+     }
      return {
        tipo:'ProjetoAluno',
        integrantes:participante
@@ -640,7 +664,8 @@ router.post('/conferirCertificado', (req, res) => {
      tipo: "Avaliador",
      nome: usr[0].nome,
      cpf: usr[0].cpf,
-     token: usr[0].token
+     token: usr[0].token,
+     createdAt: usr[0].createdAt
    }))
    .catch(err => console.log("Não encontrou nada nos projetos. " + err.message))
 
@@ -690,7 +715,8 @@ router.post('/conferirCertificado', (req, res) => {
          categoria: usr[0].categoria,
          eixo: usr[0].eixo,
          colocacao: usr[0].colocacao,
-         token: usr[0].token
+         token: usr[0].token,
+  	 createdAt: usr[0].createdAt
        }
       //  array.push(premiado)
     //  }
@@ -709,10 +735,12 @@ router.post('/conferirCertificado', (req, res) => {
         nome: usr[0].integrantes[0].nome,
         cpf: usr[0].integrantes[0].cpf,
         nomeProjeto: usr[0].nomeProjeto,
-        token: usr[0].integrantes[0].certificados._id
+        token: usr[0].integrantes[0].certificados._id,
+	createdAt: usr[0].createdAt
       }
       // array.push(participante)
     // }
+       console.log("Array:"+JSON.stringify(participante));
     return {
       tipo:'ProjetoOrientador',
       integrantes:participante
@@ -733,17 +761,17 @@ router.post('/contato', (req, res) => {
   ,   mensagem = req.body.mensagem;
 
   const transporter = nodemailer.createTransport(smtpTransport({
-    host: 'smtp.zoho.com',
+    host: 'smtp.gmail.com',
     port: 587,
     auth: {
-      user: "contato@movaci.com.br",
+      user: "contatomovaci@gmail.com",
       pass: "*mo12va45ci78!"
     }
   }));
 
   var mailOptions = {
-    from: 'contato@movaci.com.br',
-    to: 'contato@movaci.com.br',
+    from: 'contatomovaci@gmail.com',
+    to: 'contatomovaci@gmail.com',
     subject: assunto,
     text: '',
     html: '<b> Contato via site:</b><br><b>De: </b>'+nome+' '+email+'<br><b>Assunto: </b>'+assunto+'<br><b>Mensagem: </b>'+mensagem

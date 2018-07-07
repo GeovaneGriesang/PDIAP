@@ -27,6 +27,9 @@ const SaberesSchema = new Schema({
 	},
 	cargaHoraria: {
 		type: String
+	},
+	createdAt: {
+		type: Date
 	}
 }, { collection: 'saberesCollection' });
 // }, { collection: 'saberes2016' });

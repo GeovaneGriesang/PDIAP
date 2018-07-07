@@ -14,7 +14,8 @@ const ParticipantelSchema = new Schema({
 	cpf: {type: String},
 	eventos: [eventoSchema],
 	tokenSaberes : {type: String},
-	tokenOficinas : {type: String}
-}, { collection: 'participanteCollection' });
+	tokenOficinas : {type: String},
+	createdAt: {type: Date}
+}, { collection: 'participantes2016' });
 
 const Participante = module.exports = mongoose.model('Participante', ParticipantelSchema);

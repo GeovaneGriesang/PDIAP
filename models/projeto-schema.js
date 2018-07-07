@@ -69,7 +69,7 @@ const ProjetoSchema = new Schema({
 
 // }, { collection: 'betaPorcaoAPI' });
 // }, { collection: 'projetos2016' });
-}, { collection: 'projetos2017' });
+}, { collection: 'projetos' });
 
 ProjetoSchema.methods.hasExpired = function(){
     let now = new Date().now;
