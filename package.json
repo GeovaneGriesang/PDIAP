@@ -36,8 +36,7 @@
     "swig-email-templates": "^3.0.0"
   },
   "devDependencies": {
-    "babel": "^6.5.2",
-    "babel-cli": "^6.14.0",
+    "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.14.0",
     "babel-preset-stage-2": "^6.13.0",
     "del": "^2.2.2",
