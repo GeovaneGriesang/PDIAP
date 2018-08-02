@@ -63,6 +63,7 @@ router.post('/criarEvento', miPermiso("3"), (req, res) => {
     ,titulo: req.body.titulo
     ,cargaHoraria: req.body.cargaHoraria
     ,data: req.body.data
+    ,createdAt: req.body.createdAt
   });
 
   myArray.forEach(function (value, i) {
@@ -121,6 +122,7 @@ router.post('/criarParticipante', miPermiso("3"), (req, res) => {
   let newParticipante = new participanteSchema({
     nome: req.body.nome
     ,cpf: splita(req.body.cpf)
+    ,createdAt: Date.now()
   });
 
   if (req.body.eventos !== undefined) {
@@ -191,7 +193,8 @@ router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
     cpf: splita(req.body.cpf),
     telefone: splita(req.body.telefone),
     escola: req.body.escola,
-    resumo: req.body.resumo
+    resumo: req.body.resumo,
+    createdAt: Date.now()
   });
   Saberes.createSaberes(newSaberes, (callback) => {});
   res.send('success');
@@ -295,27 +298,39 @@ router.post('/saberes', miPermiso("2","3"), (req, res) => {
 
 router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
-  let myArray = req.body
-
-  for (var i = 0; i < myArray.length; i++) {
-    let id_doc = myArray[i];
+  let myArray0 = req.body.projetosAprovados;
+  let myArray1 = req.body.projetosReprovados;
+  
+  for (var i = 0; i < myArray0.length; i++) {
+    let id_doc = myArray0[i];
 
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$set": {"aprovado": true}}, {new:true},
     (err, doc) => {
-      if (err) throw err;
+      if (err)
+	throw err;
     }
   );
-}
+  }
+
+  for (var i = 0; i < myArray1.length; i++) {
+    let id_doc = myArray1[i];
+    projetoSchema.findOneAndUpdate({"_id": id_doc},
+    {"$unset": {"aprovado": true}}, {new:true},
+    (err, doc) => {
+      if (err) throw err;
+    });
+  }
 res.send('success');
 });
 
-router.put('/upgreice2', ensureAuthenticated, miPermiso("3"), (req, res) => {
+/*router.put('/upgreice2', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
-  let myArray = req.body
+  let myArray1 = req.body.projetosReprovados;
+  console.log("TESTE:"+JSON.stringify(myArray1));
 
-  for (var i = 0; i < myArray.length; i++) {
-    let id_doc = myArray[i];
+  for (var i = 0; i < myArray1.length; i++) {
+    let id_doc = myArray1[i];
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$unset": {"aprovado": true}}, {new:true},
     (err, doc) => {
@@ -323,7 +338,7 @@ router.put('/upgreice2', ensureAuthenticated, miPermiso("3"), (req, res) => {
     });
   }
   res.send('success');
-});
+});*/
 
 router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
   var templatesDir = path.resolve(__dirname, '..', 'templates');

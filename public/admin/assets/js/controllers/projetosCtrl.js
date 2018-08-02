@@ -16,21 +16,26 @@
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
-					let obj = ({
-						_id: value._id,
-						numInscricao: value.numInscricao,
-						nomeProjeto: value.nomeProjeto,
-						nomeEscola: value.nomeEscola,
-						categoria: value.categoria,
-						eixo: value.eixo,
-						aprovado: value.aprovado,
-						participa: value.participa,
-						integrantes: value.integrantes
-					});
-					$rootScope.projetos.push(obj);
-					if (obj.aprovado === true) {
-						$scope.count++;
-					}
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						let obj = ({
+							_id: value._id,
+							numInscricao: value.numInscricao,
+							nomeProjeto: value.nomeProjeto,
+							nomeEscola: value.nomeEscola,
+							categoria: value.categoria,
+							eixo: value.eixo,
+							aprovado: value.aprovado,
+							participa: value.participa,
+							integrantes: value.integrantes,
+							createdAt: ano
+						});
+						$rootScope.projetos.push(obj);
+						if (obj.aprovado === true) {
+							$scope.count++;
+						}
+					}	
+					
 				});
 			})
 			.error(function(status) {
@@ -78,6 +83,16 @@
 			}
 			// console.log("Aprovados: "+$scope.idProjetosAprovados);
 			// console.log("Reprovados: "+$scope.idProjetosReprovados);
+		}
+
+		$scope.recarregar = function(){
+			$rootScope.projetos = [];
+			$scope.searchProject = "";
+			$scope.idAprovados = [];
+			$scope.count = 0;
+			$scope.idProjetosAprovados = [];
+			$scope.idProjetosReprovados = [];
+			carregarProjetos();
 		}
 
 		$scope.visualizarDetalhes = function(projeto,ev) {

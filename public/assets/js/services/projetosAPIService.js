@@ -159,7 +159,7 @@
 			saveProjeto: _saveProjeto,
 			saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,
-			 postLogin: _postLogin,
+			postLogin: _postLogin,
 			getProjeto: _getProjeto,
 			getCategorias: _getCategorias,
 			getEstados: _getEstados,

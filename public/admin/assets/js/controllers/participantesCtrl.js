@@ -30,18 +30,22 @@
 			adminAPI.getEventos()
 			.success(function(eventos) {
 				angular.forEach(eventos, function (value, key) {
-					let evento = ({
-						tipo: value.tipo,
-						titulo: value.titulo,
-						cargaHoraria: value.cargaHoraria
-					});
-					if (value.tipo === 'Semana Acadêmica') {
-						$scope.eventos1.push(evento);
-					} else if (value.tipo === 'Seminário Saberes Docentes') {
-						$scope.eventos2.push(evento);
-					} else if (value.tipo === 'Oficina') {
-						$scope.eventos3.push(evento);
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						let evento = ({
+							tipo: value.tipo,
+							titulo: value.titulo,
+							cargaHoraria: value.cargaHoraria
+						});
+						if (value.tipo === 'Semana Acadêmica') {
+							$scope.eventos1.push(evento);
+						} else if (value.tipo === 'Seminário Saberes Docentes') {
+							$scope.eventos2.push(evento);
+						} else if (value.tipo === 'Oficina') {
+							$scope.eventos3.push(evento);
+						}	
 					}
+					
 				});
 			})
 			.error(function(status) {
@@ -71,11 +75,15 @@
 			.success(function(participantes) {
 				// $rootScope.participantes = [];
 				angular.forEach(participantes, function (value, key) {
-					var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(value._id);
-					if (index === -1) {
-						value.cpf = formatCPF(value.cpf);
-						$rootScope.participantes.push(value);
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(value._id);
+						if (index === -1) {
+							value.cpf = formatCPF(value.cpf);
+							$rootScope.participantes.push(value);
+						}
 					}
+					
 				});
 			})
 			.error(function(status) {
@@ -88,29 +96,46 @@
 			adminAPI.getTodosSaberes()
 			.success(function(saberes) {
 				angular.forEach(saberes, function (value, key) {
-					let CPFvalido = true;
-					let CPFverify = formatCPF(value.cpf);
-					for (var i = 0; i < $scope.CPFparticipantes.length; i++) {
-						if (CPFverify === $scope.CPFparticipantes[i]) {
-							CPFvalido = false;
-							break;
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						let CPFvalido = true;
+						let CPFverify = formatCPF(value.cpf);
+						for (var i = 0; i < $scope.CPFparticipantes.length; i++) {
+							if (CPFverify === $scope.CPFparticipantes[i]) {
+								CPFvalido = false;
+								break;
+							}
+						}
+						if (CPFvalido) {
+							let pacote = ({
+								_id: value._id,
+								tipo: "SD",
+								nome: value.nome,
+								cpf: formatCPF(value.cpf)
+							});
+							$rootScope.participantes.push(pacote);
 						}
 					}
-					if (CPFvalido) {
-						let pacote = ({
-							_id: value._id,
-							tipo: "SD",
-							nome: value.nome,
-							cpf: formatCPF(value.cpf)
-						});
-						$rootScope.participantes.push(pacote);
-					}
+					
 				});
 			})
 			.error(function(status) {
 				console.log("Error: "+status);
 			});
 		};
+
+		$scope.recarregar = function(){
+			$scope.eventos1 = [];
+			$scope.eventos2 = [];
+			$scope.eventos3 = [];
+			mostraEventos();
+
+			$scope.CPFparticipantes = [];
+			$rootScope.participantes = [];
+			getCPFparticipantes();
+			mostraParticipantes();
+
+		}
 
 		$scope.cadastrarParticipante = function(participante) {
 			adminAPI.postParticipante(participante)

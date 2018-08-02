@@ -35,7 +35,7 @@
         <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
           <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
         </div>
-        <div class="search-field" flex="40">
+        <div class="search-field" flex="30">
           <input placeholder="Buscar" style="width:100%!important;" ng-model="search[query]" ng-model-options="{ debounce: 600 }"/>
         </div>
         <div style="background:rgba(255,255,255,0.1);padding:2px 0 1px 0;border-radius:0 5px 5px 0;">
@@ -61,6 +61,7 @@
           </md-menu>
         </div>
         <span flex="5"></span>
+
         <div style="width:170px;">
           <md-select data-ng-model="ordenar" placeholder="Ordenar" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ordenar por:">
@@ -72,8 +73,21 @@
             </md-optgroup>
           </md-select>
         </div>
+
+	<span flex></span>
+
+	<div style="width:85px;">
+          <md-select data-ng-model="ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option value="2018" data-ng-selected="true" data-ng-click="recarregar()">2018</md-option>
+              <md-option value="2017" data-ng-click="recarregar()">2017</md-option>
+              <md-option value="2016" data-ng-click="recarregar()">2016</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+
         <span flex></span>
-      </div>
+      </div>     
     </md-toolbar>
 
     <md-content>

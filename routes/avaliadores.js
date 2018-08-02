@@ -42,8 +42,10 @@ router.post('/registro', (req, res) => {
 		tempoAtuacao: req.body.tempoAtuacao,
 		telefone: splita(req.body.telefone),
 		curriculo: req.body.curriculo,
-		turnos: req.body.turnos
+		turnos: req.body.turnos,
+		createdAt: Date.now()
 	});
+		
 
 	Avaliador.createAvaliador(newAvaliador, (callback) => {});
 	res.send('success');

@@ -42,16 +42,21 @@
 							}
 						});
 						dateFormat = value.data.slice(0,-5);
+						//dateFormat = value.data;
 
-						let evento = ({
-							_id: value._id,
-							tipo: value.tipo,
-							titulo: value.titulo,
-							cargaHoraria: value.cargaHoraria,
-							data: dateFormat,
-							responsavel: responsaveis
-						});
-						$scope.eventos.push(evento);
+						var ano = new Date(value.createdAt).getFullYear();
+						if(ano == $scope.ano){
+							let evento = ({
+								_id: value._id,
+								tipo: value.tipo,
+								titulo: value.titulo,
+								cargaHoraria: value.cargaHoraria,
+								data: dateFormat,
+								responsavel: responsaveis,
+								createdAt: ano
+							});
+							$scope.eventos.push(evento);
+						}						
 					}
 				});
 			})
@@ -60,6 +65,16 @@
 			});
 		}
 		$scope.mostraEventos = mostraEventos();
+
+		$scope.recarregar = function(){
+			$scope.eventos = [];
+			$scope.dynamicFields = [{nome:'nome1', cpf:'cpf1'}];
+
+			$scope.btnAdd = true;
+			$scope.count = 1;
+
+			mostraEventos();
+		}
 
 		$scope.cadastrarEvento = function(evento) {
 
@@ -86,7 +101,8 @@
 				tipo: evento.tipo,
 				cargaHoraria: hh+":"+mm,
 				data: dia+"/"+mes+"/"+ano,
-				responsavel: responsavel
+				responsavel: responsavel,
+				createdAt: Date.now()
 			});
 
 			adminAPI.postEvento(evt)

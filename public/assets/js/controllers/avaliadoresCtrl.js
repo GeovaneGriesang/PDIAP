@@ -48,7 +48,8 @@
 				categoria: avaliador.categoria,
 				eixo: avaliador.eixo,
 				curriculo: curriculo1,
-				turnos: avaliador.turnos
+				turnos: avaliador.turnos,
+				createdAt: Date.now()
 			});
 			projetosAPI.saveAvaliador(pacote)
 			.success(function(data, status) {

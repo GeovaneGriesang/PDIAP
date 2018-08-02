@@ -26,6 +26,8 @@
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
 					if (value.aprovado === true) {
 						relatorio.countAprovados++;
 						if (value.participa === true) {
@@ -55,20 +57,27 @@
 						}
 					});
 
-					let obj = ({
-						_id: value._id.$oid,
-						numInscricao: value.numInscricao,
-						nomeProjeto: value.nomeProjeto,
-						nomeEscola: value.nomeEscola,
-						categoria: value.categoria,
-						eixo: value.eixo,
-						orientadores: orientadores,
-						alunos: alunos,
-						resumo: value.resumo,
-						aprovado: value.aprovado,
-						participa: value.participa
-					});
-					$scope.projetos.push(obj);
+					
+					
+						let obj = ({
+							_id: value._id.$oid,
+							numInscricao: value.numInscricao,
+							nomeProjeto: value.nomeProjeto,
+							nomeEscola: value.nomeEscola,
+							categoria: value.categoria,
+							eixo: value.eixo,
+							orientadores: orientadores,
+							alunos: alunos,
+							resumo: value.resumo,
+							aprovado: value.aprovado,
+							participa: value.participa,
+							createdAt: ano
+						});
+						$scope.projetos.push(obj);
+					}
+
+					
+					
 				});
 			})
 			.error(function(status) {
@@ -79,7 +88,15 @@
 		$scope.carregarSaberes = function() {
 			adminAPI.getTodosSaberes()
 			.success(function(saberes) {
-				$scope.saberes = saberes;
+				angular.forEach(saberes, function(value, key){
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						console.log("VALUE:"+JSON.stringify(value));
+						let obj = value;
+						obj.createdAt = ano;
+						$scope.saberes.push(obj);
+					}
+				});
 				// console.log(saberes);
 			})
 			.error(function(status) {
@@ -102,7 +119,15 @@
 				// 	});
 				// 	$scope.projetos.push(obj);
 				// });
-				$scope.avaliadores = avaliadores;
+				angular.forEach(avaliadores, function(value, key){
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						let obj = value;
+						obj.createdAt = ano;
+						$scope.avaliadores.push(obj);
+					}					
+				});
+
 			})
 			.error(function(status) {
 				console.log(status);
@@ -115,6 +140,14 @@
 		$scope.setBusca = function(campo) {
 			$scope.query = campo;
 			delete $scope.search;
+		}
+		$scope.recarregar = function(){
+			$scope.projetos = [];
+			$scope.saberes = [];
+			$scope.avaliadores = [];
+			$scope.carregarProjetos();
+			$scope.carregarSaberes();
+			$scope.carregarAvaliadores();
 		}
 
 		$scope.setarProjetos = function() {

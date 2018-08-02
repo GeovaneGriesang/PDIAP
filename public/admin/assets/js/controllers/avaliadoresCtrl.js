@@ -6,21 +6,22 @@
 	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, adminAPI) {
 
 		$scope.registrarAvaliador = function(avaliador) {
-			// let pacote = ({
-			// 	nome: avaliador.nome,
-			// 	email: avaliador.email,
-			// 	telefone: avaliador.telefone,
-			// 	cpf: avaliador.cpf,
-			// 	rg: avaliador.rg,
-			// 	dtNascimento: avaliador.dtNascimento,
-			// 	nivelAcademico: avaliador.nivelAcademico,
-			// 	atuacaoProfissional: avaliador.atuacaoProfissional,
-			// 	tempoAtuacao: avaliador.tempoAtuacao,
-			// 	categoria: avaliador.categoria,
-			// 	eixo: avaliador.eixo,
-			// 	curriculo: curriculo1,
-			// 	turnos: avaliador.turnos
-			// });
+			/*let pacote = ({
+			 	nome: avaliador.nome,
+			 	email: avaliador.email,
+			 	telefone: avaliador.telefone,
+			 	cpf: avaliador.cpf,
+			 	rg: avaliador.rg,
+			 	dtNascimento: avaliador.dtNascimento,
+			 	nivelAcademico: avaliador.nivelAcademico,
+			 	atuacaoProfissional: avaliador.atuacaoProfissional,
+			 	tempoAtuacao: avaliador.tempoAtuacao,
+			 	categoria: avaliador.categoria,
+			 	eixo: avaliador.eixo,
+			 	//curriculo: curriculo1,
+			 	turnos: avaliador.turnos,
+				createdAt: Date.now()
+			});*/
 			adminAPI.saveAvaliador(avaliador)
 			.success(function(data, status) {
 				if (data === 'success') {

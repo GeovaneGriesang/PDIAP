@@ -31,7 +31,7 @@ const SaberesSchema = new Schema({
 	createdAt: {
 		type: Date
 	}
-}, { collection: 'saberesCollection' });
-// }, { collection: 'saberes2016' });
+//}, { collection: 'saberesCollection' });
+ }, { collection: 'saberes2016' });
 
 const Saberes = module.exports = mongoose.model('Saberes', SaberesSchema);

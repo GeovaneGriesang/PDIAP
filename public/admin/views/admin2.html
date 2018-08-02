@@ -17,7 +17,7 @@
       <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
         <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
       </div>
-      <div class="search-field" flex="40">
+      <div class="search-field" flex="30">
         <!-- <md-autocomplete
         md-search-text="searchProject"
         md-items="item in querySearch(searchProject)"
@@ -54,6 +54,19 @@
       </md-select>
       <!-- </md-input-container> -->
     </div>
+
+    <span flex></span>
+
+    <div style="width:85px;">
+          <md-select data-ng-model="ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option value="2018" data-ng-selected="true" data-ng-click="recarregar()">2018</md-option>
+              <md-option value="2017" data-ng-click="recarregar()">2017</md-option>
+              <md-option value="2016" data-ng-click="recarregar()">2016</md-option>
+            </md-optgroup>
+          </md-select>
+    </div>
+
     <span flex></span>
     <md-menu>
       <md-button md-no-ink aria-label="Open demo menu" layout="row" class="hide-hover" style="height:45px;" ng-click="$mdOpenMenu($event)">
