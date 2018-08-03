@@ -83,7 +83,7 @@
 		//  	controller: "saberesCtrl"
 		//  })
 		 //descomentar para possibilitar a inscrição de avaliadores
-		 /* .state('avaliadores', {
+		  /*.state('avaliadores', {
 		  	url: "/avaliadores/inscricao",
 		  	templateUrl: "/views/avaliadores.html",
 		  	controller: "avaliadoresCtrl"
