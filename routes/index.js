@@ -890,10 +890,10 @@ router.post('/registro', testaUsername2, (req, res) => {
     var templatesDir = path.resolve(__dirname, '..', 'templates');
     var template = new EmailTemplate(path.join(templatesDir, 'inscricao'));
     const transport = nodemailer.createTransport(smtpTransport({
-      host: 'smtp.zoho.com',
+      host: 'smtp.gmail.com',
       port: 587,
       auth: {
-        user: "contato@movaci.com.br",
+        user: "contatomovaci@gmail.com",
         pass: "*mo12va45ci78!"
       }
     }));
@@ -904,23 +904,24 @@ router.post('/registro', testaUsername2, (req, res) => {
       username: username
     }
 
-		//essa parte que manda emails após a inscrição foi comentada porque se não crasha o npm ao inscrever projeto
 
-//    template.render(locals, function (err, results) {
-//      if (err) throw err;
-//      transport.sendMail({
-//        from: 'MOVACI <contato@movaci.com.br>',
-//        to: locals.email,
-//        subject: 'MOVACI - Confirmação de inscrição',
-//        html: results.html,
-//        text: results.text
-//      }, function (err, responseStatus) {
-//        if (err) throw err;
-//      })
-//    });
-    // res.redirect('/projetos/login');
+    //essa parte que manda emails após a inscrição foi comentada porque se não crasha o npm ao inscrever projeto
+    
+    template.render(locals, function (err, results) {
+     	if (err) throw err;
+     	transport.sendMail({
+        	from: 'MOVACI <contatomovaci@gmail.com>',
+       		to: locals.email,
+        	subject: 'MOVACI - Confirmação de inscrição',
+        	html: results.html,
+        	text: results.text
+     	}, function (err, responseStatus) {
+        	if (err) throw err;
+      	})
+    });
+     res.redirect('/projetos/login');
   }
-  //res.send('OK');
+  res.send('OK');
 });
 
 passport.use('unico', new LocalStrategy(function(username, password, done) {
@@ -1021,10 +1022,10 @@ router.post('/redefinir-senha', (req, res) => {
         var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))
         // Prepare nodemailer transport object
         const transport = nodemailer.createTransport(smtpTransport({
-          host: 'smtp.zoho.com',
+          host: 'smtp.gmail.com',
           port: 587,
           auth: {
-            user: "contato@movaci.com.br",
+            user: "contatomovaci@gmail.com",
             pass: "*mo12va45ci78!"
           }
         }));
@@ -1041,7 +1042,7 @@ router.post('/redefinir-senha', (req, res) => {
           }
 
           transport.sendMail({
-            from: 'MOVACI <contato@movaci.com.br>',
+            from: 'MOVACI <contatomovaci@gmail.com>',
             to: locals.email,
             subject: 'MOVACI - Redefinição de senha',
             html: results.html,

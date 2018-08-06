@@ -40,11 +40,11 @@
 
 			//descomentar esse pra ativar a rota pra inscricao de projetos
 
-		  /*.state('inscricao', {
+		  .state('inscricao', {
 		  	url: "/projetos/inscricao",
 		  	templateUrl: "/views/inscricao.html",
 		  	controller: "registroCtrl"
-		  })*/
+		  })
 
 
 		.state('regulamento', {
@@ -83,11 +83,11 @@
 		//  	controller: "saberesCtrl"
 		//  })
 		 //descomentar para possibilitar a inscrição de avaliadores
-		  /*.state('avaliadores', {
+		  .state('avaliadores', {
 		  	url: "/avaliadores/inscricao",
 		  	templateUrl: "/views/avaliadores.html",
 		  	controller: "avaliadoresCtrl"
-		  })*/
+		  })
 		.state('home', {
 			url: "/projetos",
 			views: {
