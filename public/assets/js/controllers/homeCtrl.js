@@ -5,6 +5,21 @@
 	.module('PDIAP')
 	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, projetosAPI) {
 
+		
+
+		$scope.edits = [];
+
+		$scope.carregarEdits = function(){
+			projetosAPI.getEdits().success(function(edits){
+				$scope.edits = edits;
+				
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		}
+		$scope.carregarEdits();
+
 		var countCertificados = 0;
 		var avaliador = [];
 		var participante = undefined;

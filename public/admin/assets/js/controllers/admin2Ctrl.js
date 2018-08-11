@@ -98,7 +98,7 @@
 					}
 				});
 				// console.log(saberes);
-			})
+			})	
 			.error(function(status) {
 				console.log(status);
 			});

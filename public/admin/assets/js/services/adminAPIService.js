@@ -15,6 +15,21 @@
 		// 	}
 		// 	return $http(request);
 		// };
+		let _postEdit = function(edit){
+			const request = {
+				url: '/admin/edit',
+				method: 'POST',
+				data: edit
+			}
+			return $http(request);
+		}
+		let _getEdits = function(){
+			const request = {
+				url:'/admin/editar',
+				method: 'GET'
+			}
+			return $http(request);
+		}
 
 		let _getTodosProjetos = function() {
 			const request = {
@@ -185,10 +200,13 @@
 			}
 			return $http(request);
 		};
+		
 
 		return {
 			// postLoginAdmin: _postLoginAdmin,
+			postEdit: _postEdit,
 			getTodosProjetos: _getTodosProjetos,
+			getEdits: _getEdits,
 			getTodosSaberes: _getTodosSaberes,
 			getTodosAvaliadores: _getTodosAvaliadores,
 			putSetAprovados: _putSetAprovados,

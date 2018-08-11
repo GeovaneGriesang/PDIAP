@@ -4,7 +4,15 @@
 	angular
 	.module('PDIAP')
 	.factory("projetosAPI", function($http) {
-		 let _saveProjeto = function(projeto) {
+		 
+		let _getEdits = function(){
+			const request = {
+				url:'/edit',
+				method: 'GET',
+			}
+			return $http(request);
+		}
+		let _saveProjeto = function(projeto) {
 		 	const request = {
 		 		url: '/registro',
 		 		method: 'POST',
@@ -156,6 +164,7 @@
 		};
 
 		return {
+			getEdits: _getEdits,
 			saveProjeto: _saveProjeto,
 			saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,

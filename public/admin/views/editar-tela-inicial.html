@@ -1,0 +1,94 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Tela Inicial | Editar</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+      </div>
+      </md-toolbar>      
+    </md-toolbar>
+
+    <md-content>	
+      <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Atualizar</span>
+        </h3>
+        <form name="editForm" novalidate class="eventos-form">
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs="70">
+              <input placeholder="Texto" type="text" name="text" data-ng-model="edits[0].text" />
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <input placeholder="Edição" type="text" name="edicao" data-ng-model="edits[0].edicao" required/>
+	      <div class="md-errors-spacer">
+                <div data-ng-show="editForm.edicao.$dirty">
+                  <div class="message-error" data-ng-show="editForm.edicao.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+	    <md-input-container class="md-block" flex-gt-xs="40">
+	      <input placeholder="Dias" type="text" name="dias" data-ng-model="edits[0].dias" required/>
+	      <div class="md-errors-spacer">
+                <div data-ng-show="editForm.dias.$dirty">
+                  <div class="message-error" data-ng-show="editForm.dias.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+              </md-select>
+            </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="25">
+	      <input placeholder="Mês" type="text" name="mes" data-ng-model="edits[0].mes" required/>
+	      <div class="md-errors-spacer">
+                <div data-ng-show="editForm.mes.$dirty">
+                  <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="25">
+              <input placeholder="Ano" type="text" name="ano" data-ng-model="edits[0].ano" required/>
+	      <div class="md-errors-spacer">
+                <div data-ng-show="editForm.ano.$dirty">
+                  <div class="message-error" data-ng-show="editForm.ano.$error.required">Obrigatório.</div>
+                </div>
+              </div>
+            </md-input-container>              
+          </div>
+
+	  <div layout-align="center center" layout="row">
+		<md-checkbox aria-label="Check" data-ng-model="edits[0].cadastro_projetos">Botão de cadastro de projetos</md-checkbox>
+		<div flex="5" hide-xs></div>
+		<md-checkbox aria-label="Check" data-ng-model="edits[0].cadastro_avaliadores">Botão de cadastro de avaliadores</md-checkbox>
+	  </div>
+
+      <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!editForm.$valid" data-ng-click="atualizarEdit(edits)">
+          <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+          <span style="vertical-align:middle;">Salvar</span>
+        </md-button>
+      </div>
+      <span us-spinner>
+        <div layout="row" layout-sm="column" layout-align="space-around">
+          <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+        </div>
+      </span>
+    </form>
+  </div>
+</md-list-item>
+</md-list>
+</md-content>
+</section>
+</div>

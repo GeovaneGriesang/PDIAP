@@ -275,6 +275,35 @@ console.log("log antes de sucesso presença");
 res.send('success');
 });
 
+router.post('/edit', (req, res) => {
+	let obj = {
+		ano: req.body[0].ano,
+		mes: req.body[0].mes,
+		dias: req.body[0].dias,
+		edicao: req.body[0].edicao,
+		text: req.body[0].text,
+		cadastro_projetos: req.body[0].cadastro_projetos,
+		cadastro_avaliadores: req.body[0].cadastro_avaliadores
+	};	
+	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores}}, [{new:true}], (err, usr) =>{
+		if (err) throw err				
+		else {
+			console.log("USR:"+JSON.stringify(usr));
+			res.send('success');	
+		}
+	})
+});
+
+router.get('/editar', (req, res) => {
+	return new Promise(function (fulfill, reject) {
+		adminSchema.find({'username':'admin2'},'dias mes ano edicao cadastro_avaliadores cadastro_projetos text -_id',(err,usr)=>{
+			if(err) return reject(err);
+			if(usr == 0) return reject({err});
+			res.send(usr);
+		})						
+	})
+});
+
 router.get('/projetos', miPermiso("2","3"), (req, res) => {
   projetoSchema.find((err, usr) => {
     if (err) throw err;

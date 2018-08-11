@@ -89,6 +89,11 @@
 			templateUrl: 'admin/views/cadastro-participantes.html',
 			controller: 'participantesCtrl'
 		})
+		.state('master.editar-tela-inicial', {
+			url: "/editar-tela-inicial",
+			templateUrl:'admin/views/editar-tela-inicial.html',
+			controller: 'editCtrl'
+		})
 		.state('confirmando', {
 			url: "/projetos/confirma/:idProjeto/:situacao",
 			templateUrl: 'admin/views/confirmando.html',

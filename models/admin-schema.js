@@ -12,6 +12,27 @@ const AdminSchema = new Schema({
 	},
 	permissao: {
 		type: String
+	},
+	dias: {
+		type: String
+	},
+	mes: {
+		type: String
+	},
+	ano: {
+		type: String
+	},
+	edicao: {
+		type: String	
+	},
+	text: {
+		type: String
+	},
+	cadastro_projetos: {
+		type: Boolean
+	},
+	cadastro_avaliadores: {
+		type: Boolean
 	}
 }, { collection: 'adminCollection' });
 
