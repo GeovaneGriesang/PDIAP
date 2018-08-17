@@ -146,14 +146,14 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
-								/*
-								Descomentar para aparecer o botão de alterar dados do projeto
-								 {
+								
+								//Descomentar para aparecer o botão de alterar dados do projeto
+								 /*{
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
-								 },
-								 */
+								 },*/
+								 
 								//Descomentar para aparecer o botão de upload de relatórios
 								// {
 								// 	name: 'Upload',
@@ -195,9 +195,9 @@
 									icon: 'view-dashboard',
 									link: 'home'
 								},
-								/*
-								Descomentar para aparecer o botão de alterar dados do projeto
-								 {
+								
+								//Descomentar para aparecer o botão de alterar dados do projeto
+								 /*{
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
