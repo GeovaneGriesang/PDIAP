@@ -76,11 +76,11 @@
 			updateIntegrante($scope.orientadoresUpdate);
 			$scope.carregarProjeto();
 			getIntegrantes();
+			setTimeout($scope.refresh, 750);
 		};
 
 		$scope.alunosUpdate = [];
 		$scope.updateAlunos = function() {
-			//var dados = JSON.stringify({ integrantes: {nome: 'jailson' }});
 			$scope.alunosUpdate = [];
 			for (var i = 1; i <= $scope.dynamicFields22.length; i++) {
 				if (i == 1) {
@@ -148,6 +148,7 @@
 			updateIntegrante($scope.alunosUpdate);
 			$scope.carregarProjeto();
 			getIntegrantes();
+			setTimeout($scope.refresh, 750);
 
 			let showAlert = function(ev) {
 				$mdDialog.show(
@@ -159,7 +160,6 @@
 					.targetEvent(ev)
 				);
 			};
-			showAlert();
 		};
 
 		let getIntegrantes = function() {
@@ -234,6 +234,8 @@
 						model5.assign($scope, value.tamCamiseta);
 					}
 				});
+				console.log("Alunos:"+JSON.stringify($scope.alunos));
+				console.log("Orientadores:"+JSON.stringify($scope.orientadores));
 				$scope.dynamicFields11 = [];
 				$scope.dynamicFields22 = [];
 				$scope.btnAdd11 = true;
@@ -241,12 +243,14 @@
 				$scope.count11 = 0;
 				$scope.count22 = 0;
 
+
 				for (var i = 0; i < $scope.orientadores.length; i++) {
 					addOrientadorUpdate();
 				}
 				for (var i = 0; i < $scope.alunos.length; i++) {
 					addAlunoUpdate();
 				}
+			
 			});
 		}
 		getIntegrantes();
@@ -360,8 +364,10 @@
 							if ($scope.count11 !== 2) {
 								$scope.btnAdd11 = true;
 							}
+							
 							$scope.carregarProjeto();
 							getIntegrantes();
+							setTimeout($scope.refresh, 750);
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
 						})
 						.error(function(status){
@@ -426,14 +432,15 @@
 									.textContent('O(s) aluno(s) alterado(s) foram removidos da lista de hospedagem. Por favor, atualize-a.')
 									.ok('OK')
 									.targetEvent(ev)
-								).then(function(result) {
+								);/*.then(function(result) {
 									location.reload();
-								});
+								});*/
 							};
 							showAlert();
 
 							$scope.carregarProjeto();
 							getIntegrantes();
+							setTimeout($scope.refresh, 750);
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
 						})
 						.error(function(status){
@@ -457,6 +464,14 @@
 			}
 		};
 		// =========================================================================
+
+		$scope.refresh = function(){
+			console.log("REFRESH");
+			$scope.projeto4 = [];
+			$scope.projeto3 = [];
+			$scope.carregarProjeto();
+			getIntegrantes();
+		}		
 
 		$scope.alunosArray1 = [];
 

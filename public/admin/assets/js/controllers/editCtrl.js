@@ -28,18 +28,6 @@
 				console.log('Error: '+status);
 			});
 		}
-		
-		$scope.atualizarEdit = function(edit){
-			adminAPI.postEdit(edit).success(function() {
-				$scope.toast('Alterações realizadas com sucesso!','success-toast');
-				$scope.carregarEdits();
-				resetForm();
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
-			});
-		}
-
 			
 		
 		let resetForm = function() {

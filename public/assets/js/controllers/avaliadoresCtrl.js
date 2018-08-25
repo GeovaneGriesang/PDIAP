@@ -5,6 +5,35 @@
 	.module('PDIAP')
 	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, projetosAPI) {
 
+
+		$scope.carregarEdits = function(){
+			console.log("TESTE1");
+			projetosAPI.getEdits().success(function(edits){
+				console.log("TESTE2");
+				if(edits[0].cadastro_avaliadores == false){
+					console.log("TESTE3");
+					let showConfirmDialog = function(ev) {
+						var confirm = $mdDialog.alert()
+						.title('Página bloqueada!')
+						.textContent('Esta pagina não está disponível no momento!')
+						.ariaLabel('Esta pagina não está disponível no momento!')
+						.targetEvent(ev)
+						.theme('error')
+						.ok('OK, Voltar')
+						.escapeToClose(false)
+						$mdDialog.show(confirm).then(function() {
+							$window.location.href="http://movaci.com.br/";
+						}, function() {});
+					};
+					showConfirmDialog();
+				}	
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		}
+		$scope.carregarEdits();
+
 		$scope.eixos = [];
 
 		projetosAPI.getCategorias()

@@ -214,6 +214,7 @@ router.put('/upgreice', (req, res) => {
 
   let myArray = req.body
   ,   id = req.user.id;
+  console.log("TESTE:"+JSON.stringify(myArray));
   myArray.forEach(function (value, i) {
     //console.log('%d: %s', i);
 
@@ -228,13 +229,12 @@ router.put('/upgreice', (req, res) => {
         telefone: splita(value.telefone),
         tamCamiseta: value.tamCamiseta
       });
-
       ProjetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
       {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
       (err, doc) => {
         if (err) throw err;
       }
-    );
+    );	
   } else if (value._id === undefined) {
     let newIntegrante = ({
       tipo: value.tipo,

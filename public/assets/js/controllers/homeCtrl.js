@@ -11,8 +11,7 @@
 
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
-				$scope.edits = edits;
-				
+				$scope.edits = edits;				
 			})
 			.error(function(status) {
 				console.log(status);

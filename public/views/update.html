@@ -81,8 +81,8 @@
           </div>
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
-              <label>Resumo do Projeto</label>
-              <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus required></textarea>
+              <label>Resumo do Projeto (Edição desabilitada)</label>
+              <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus disabled required></textarea>
               <div class="md-errors-spacer">
                	<div class="message-error" style="color:rgba(0,0,0,0.87)!important;" data-ng-show="!projetoForm.resumo.$invalid || (projetoForm.resumo.$untouched && !projetoForm.resumo.$dirty)">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
 								<div data-ng-if="projetoForm.resumo.$dirty">

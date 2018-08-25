@@ -175,7 +175,7 @@
 			getUsersEscolas: _getUsersEscolas,
 			getEscolasSaberes: _getEscolasSaberes,
 			//Descomentar para salvar alterações dos projetos inscritos
-			//putProjeto: _putProjeto,
+			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,
 			postRedefinir: _postRedefinir,
 			postNewPassword: _postNewPassword,

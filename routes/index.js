@@ -208,8 +208,7 @@ router.post('/emitirCertificado', (req, res) => {
   }
 
   function inserirTokenEvento(cpf, id, tipo) {
-    console.log("aaaaaaaaaa");
-    console.log(cpf +"      "+id+"      "+tipo)
+    console.log("Evento -> "+cpf +"      "+id+"      "+tipo)
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return new Promise(function (fulfill, reject) {
       eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf}},'_id':id},
@@ -252,8 +251,7 @@ router.post('/emitirCertificado', (req, res) => {
   }
 
   function inserirTokenPremiado(cpf, id) {
-    console.log("aaaaaaaaaa");
-    console.log(cpf +"      "+id+"      "+tipo)
+    console.log("Premiado -> "+cpf +"      "+id+"      "+tipo)
     return new Promise(function (fullfill, reject) {
       var newId = new mongoose.mongo.ObjectId()
       premiadoSchema.findOneAndUpdate({'_id':id},

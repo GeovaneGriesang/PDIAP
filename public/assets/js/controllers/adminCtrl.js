@@ -48,7 +48,7 @@
 			.success(function(projeto) {
 				$scope.nomeDoProjeto = projeto.nomeProjeto;
 				$scope.projeto = projeto;
-				console.log(projeto);
+				//console.log(projeto);
 				if (projeto.aprovado === true) {
 					if (projeto.participa === true) {
 						$scope.aviso1_1 = 'PARABÉNS!';
@@ -132,9 +132,9 @@
 				} else if (projeto.eixo === 'Matemática e suas tecnologias') {
 					$scope.badget = 'chart-bar';
 				}
-				// for (var i in projeto.integrantes){
-				// 	$scope.integrantes.push(projeto.integrantes[i]);
-				// }
+				 /*for (var i in projeto.integrantes){
+				 	$scope.integrantes.push(projeto.integrantes[i]);
+				 }*/
 				if ($scope.projeto1.categoria === 'Ensino Médio, Técnico e Superior') {
 					$scope.data = {
 						sidenav: {
@@ -148,11 +148,11 @@
 								},
 								
 								//Descomentar para aparecer o botão de alterar dados do projeto
-								 /*{
+								 {
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
-								 },*/
+								 },
 								 
 								//Descomentar para aparecer o botão de upload de relatórios
 								// {
@@ -197,11 +197,11 @@
 								},
 								
 								//Descomentar para aparecer o botão de alterar dados do projeto
-								 /*{
+								 {
 								 	name: 'Alterar projeto',
 								 	icon: 'flask',
 								 	link: 'home.update'
-								},*/
+								},
 								{
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',

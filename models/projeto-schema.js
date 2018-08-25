@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 ,	bcrypt = require('bcryptjs')
 ,	autoIncrement = require('mongoose-auto-increment')
 ,	Schema = mongoose.Schema;
+	mongoose.plugin(schema => { schema.options.usePushEach = true });
 
 var connection = mongoose.createConnection("mongodb://localhost:27017/loginapp");
 //var connection = mongoose.createConnection("mongodb://172.17.0.2:27017/loginapp");

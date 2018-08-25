@@ -18,6 +18,11 @@
 			countPendente: 0
 		});
 
+		let qtd = ({
+			countTotal: 0,
+			countHospedagem: 0
+		});
+
 		$scope.abrir = function(num) {
 			$window.open('http://www.movaci.com.br/relatorios/'+num+'.pdf', '_blank');
 		}
@@ -28,6 +33,17 @@
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $scope.ano){
+					qtd.countTotal++;
+					var hosp = value.hospedagem;
+					if(hosp != undefined){
+						qtd.countHospedagem++;
+						if(hosp.indexOf(",") != -1){
+							qtd.countHospedagem++;
+							if(hosp.indexOf(",",hosp.indexOf(",")+1) != -1){
+								qtd.countHospedagem++;
+							}
+						}
+					}
 					if (value.aprovado === true) {
 						relatorio.countAprovados++;
 						if (value.participa === true) {
@@ -278,6 +294,26 @@
 				fullscreen: true // Only for -xs, -sm breakpoints.
 			});
 		};
+
+		$rootScope.qtd = qtd;
+		$scope.visualizarQtd = function(ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $rootScope, $mdDialog) {
+					$scope.details = $rootScope.qtd;
+					$scope.hide = function() {
+						$mdDialog.hide();
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: 'admin/views/qtd.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false,
+				fullscreen: true // Only for -xs, -sm breakpoints.
+			});
+		}
 
 		$scope.setarProjetos();
 		$scope.carregarProjetos();

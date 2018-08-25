@@ -1,0 +1,13 @@
+<md-dialog aria-label="Detalhes do projeto" class="details">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Quantidade de Projetos</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;margin-left:20px;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Total:</b> {{details.countTotal}}</p>
+    <div style="border-left:3px solid #2e7d32;">
+      <p style="padding-left:20px;"><b>Hospedagem:</b> {{details.countHospedagem}}</p>
+    </div>
+  </div>
+</md-dialog>
