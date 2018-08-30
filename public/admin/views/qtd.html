@@ -1,6 +1,6 @@
 <md-dialog aria-label="Detalhes do projeto" class="details">
   <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
-    <p style="align-self:center;">Quantidade de Projetos</p>
+    <p style="align-self:center;">Quantidade de Projetos: {{details.nome}}</p>
     <span flex></span>
     <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;margin-left:20px;"></md-icon>
   </div>
@@ -9,5 +9,30 @@
     <div style="border-left:3px solid #2e7d32;">
       <p style="padding-left:20px;"><b>Hospedagem:</b> {{details.countHospedagem}}</p>
     </div>
+    <p><b>Categorias:</b></p>
+    <div style="border-left:3px solid #2e7d32;">
+	<p style="padding-left:20px;"><b>Fundamental I (1º ao 5º anos):</b> {{details.countFundamentalI}}</p>   
+	<p style="padding-left:20px;"><b>Fundamental II (6º ao 9º anos):</b> {{details.countFundamentalII}}</p>
+	<p style="padding-left:20px;"><b>Ensino Médio, Técnico e Superior:</b> {{details.countEnsinoMedio}}</p>
+    </div>
+    <p><b>Camisetas:</b></p>
+    <div style="border-left:3px solid #2e7d32;">
+	<p style="padding-left:20px;"><b>Tamanho P:</b> {{details.countCamisetasP}}</p>   
+	<p style="padding-left:20px;"><b>Tamanho M:</b> {{details.countCamisetasM}}</p>
+	<p style="padding-left:20px;"><b>Tamanho G:</b> {{details.countCamisetasG}}</p>
+    </div>
+    <p><b>Eixos:</b></p>
+    <div style="border-left:3px solid #2e7d32;">
+      <li style="line-height:30px;list-style:none;" ng-repeat="eixo in details.countEixo">
+	<p style="padding-left:20px;"><b>{{eixo.categoria}}/{{eixo.nome}}:</b> <span style="float:right;">{{eixo.num}}</span></p>
+      </li>    
+    </div>
+    <p><b>Escolas:</b></p>
+    <div style="border-left:3px solid #2e7d32;">
+      <li style="line-height:30px;list-style:none;" ng-repeat="escola in details.countEscolas">
+	<p style="padding-left:20px;"><b>{{escola.nome}}:</b> <span style="float:right;">{{escola.num}}</span></p>
+      </li>    
+    </div>
+    
   </div>
 </md-dialog>

@@ -53,6 +53,12 @@
 		let ctx = canvas.getContext("2d");
 		ctx.drawImage(img, 0, 0);
 		let aaa = canvas.toDataURL('image/jpeg',1.0);
+				
+		let img2 = document.getElementById("preview2");
+		ctx.drawImage(img2, 0, 0);
+		let aaa2 = canvas.toDataURL('image/jpeg',1.0);
+
+		let background = aaa;
 
 		// var estressado = aaa.length / 2;
 		// var vsf = aaa.substring(0,estressado);
@@ -293,11 +299,18 @@
 							console.log("ano de criação do documento 2016");
 							realizacao = '28 a 30 de setembro de 2016';
 							edicao = 'V';
+							background = aaa;
 						} else if(ano2.getFullYear() === 2017){
 							console.log("ano de criação do documento 2017");
 							realizacao = '27 a 29 de setembro de 2017';
 							edicao = 'VI';
-						}
+							background = aaa;
+						} else if(ano2.getFullYear() === 2018){
+							console.log("ano de criação do documento 2018");
+							realizacao = '26 a 28 de setembro de 2018';
+							edicao = 'VII';
+							background = aaa2;
+						} 
 
 						if (tipo === 'Avaliador') {
 							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
@@ -343,13 +356,14 @@
 						// var url_1 = window.localStorage.getItem('url1');
 						// var url_2 = window.sessionStorage.getItem('url2');
 						// var urlmemo = url_1+url_2;
+				
 
 						var docDefinition = {
 							pageSize: 'A4',
 							pageOrientation: 'landscape',
 							background: [
 								{
-									image: aaa,
+									image: background,
 									width: 841,
 									alignment: 'center'
 								}

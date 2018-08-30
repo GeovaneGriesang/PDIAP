@@ -18,10 +18,84 @@
 			countPendente: 0
 		});
 
-		let qtd = ({
+		let eixo = [{nome:"Ciências da Natureza e suas tecnologias", num:0, categoria: "Fundamental I (1º ao 5º anos)"},
+			    {nome:"Ciências Humanas e suas tecnologias", num:0, categoria: "Fundamental I (1º ao 5º anos)"},
+			    {nome:"Linguagens, Códigos e suas tecnologias", num:0, categoria: "Fundamental I (1º ao 5º anos)"},
+			    {nome:"Matemática e suas tecnologias", num:0, categoria: "Fundamental I (1º ao 5º anos)"},
+			    {nome:"Ciências da Natureza e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
+			    {nome:"Ciências Humanas e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
+			    {nome:"Linguagens, Códigos e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
+			    {nome:"Matemática e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
+			    {nome:"Ciências Agrárias, Exatas e da Terra", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Ciências Ambientais, Biológicas e da Saúde", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Ciências Humanas e Sociais Aplicadas", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Línguas e Artes", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Extensão", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Ciências da Computação", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    {nome:"Engenharias", num:0, categoria: "Ensino Médio, Técnico e Superior"}];
+
+		let totalQtd = ({
+			nome: "Geral",
 			countTotal: 0,
-			countHospedagem: 0
+			countHospedagem: 0,
+			countFundamentalI: 0,
+			countFundamentalII: 0,
+			countEnsinoMedio: 0,
+			countCamisetasP: 0,
+			countCamisetasM: 0,
+			countCamisetasG: 0,
+			countEscolas:[{
+				nome: "",
+				num: 0
+			}],
+			countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
 		});
+		let aprovadosQtd = ({
+			nome: "Aprovados",
+			countTotal: 0,
+			countHospedagem: 0,
+			countFundamentalI: 0,
+			countFundamentalII: 0,
+			countEnsinoMedio: 0,
+			countCamisetasP: 0,
+			countCamisetasM: 0,
+			countCamisetasG: 0,
+			countEscolas:[{
+				nome: "",
+				num: 0
+			}],
+			countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
+		});
+		let canceladosQtd = ({
+			nome: "Cancelados/Pendentes",
+			countTotal: 0,
+			countHospedagem: 0,
+			countFundamentalI: 0,
+			countFundamentalII: 0,
+			countEnsinoMedio: 0,
+			countCamisetasP: 0,
+			countCamisetasM: 0,
+			countCamisetasG: 0,
+			countEscolas:[{
+				nome: "",
+				num: 0
+			}],
+			countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
+		});
+
+		for(var x = 0; x<eixo.length;x++){
+			totalQtd.countEixo[x].nome = eixo[x].nome;
+			totalQtd.countEixo[x].num = eixo[x].num;
+			totalQtd.countEixo[x].categoria = eixo[x].categoria;
+
+			aprovadosQtd.countEixo[x].nome = eixo[x].nome;
+			aprovadosQtd.countEixo[x].num = eixo[x].num;
+			aprovadosQtd.countEixo[x].categoria = eixo[x].categoria;
+
+			canceladosQtd.countEixo[x].nome = eixo[x].nome;
+			canceladosQtd.countEixo[x].num = eixo[x].num;
+			canceladosQtd.countEixo[x].categoria = eixo[x].categoria;
+		}
 
 		$scope.abrir = function(num) {
 			$window.open('http://www.movaci.com.br/relatorios/'+num+'.pdf', '_blank');
@@ -33,17 +107,120 @@
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $scope.ano){
-					qtd.countTotal++;
-					var hosp = value.hospedagem;
-					if(hosp != undefined){
-						qtd.countHospedagem++;
+					var hosp = value.hospedagem;				
+					var aprovado = 0;
+					var cancelado = 0;
+					if(value.aprovado === true){
+						aprovado = 1;
+						cancelado = 1;
+						if(value.participa === true){
+							cancelado = 0;
+						}
+					}
+					//Total
+					totalQtd.countTotal++;
+					aprovadosQtd.countTotal += aprovado;
+					canceladosQtd.countTotal += cancelado;
+					//Hospedagem
+					if(hosp != undefined && hosp !== ""){
+						totalQtd.countHospedagem++;
+						aprovadosQtd.countHospedagem += aprovado;
+						canceladosQtd.countHospedagem += cancelado;
 						if(hosp.indexOf(",") != -1){
-							qtd.countHospedagem++;
+							totalQtd.countHospedagem++;
+							aprovadosQtd.countHospedagem += aprovado;
+							canceladosQtd.countHospedagem += cancelado;
 							if(hosp.indexOf(",",hosp.indexOf(",")+1) != -1){
-								qtd.countHospedagem++;
+								totalQtd.countHospedagem++;
+								aprovadosQtd.countHospedagem += aprovado;
+								canceladosQtd.countHospedagem += cancelado;
 							}
 						}
 					}
+					//Categoria
+					var categoria = value.categoria;
+					if(categoria === "Fundamental I (1º ao 5º anos)"){
+						totalQtd.countFundamentalI++;
+						aprovadosQtd.countFundamentalI += aprovado;
+						canceladosQtd.countFundamentalI += cancelado;
+					} else if(categoria === "Fundamental II (6º ao 9º anos)"){
+						totalQtd.countFundamentalII++;
+						aprovadosQtd.countFundamentalII += aprovado;
+						canceladosQtd.countFundamentalII += cancelado;
+					} else if(categoria === "Ensino Médio, Técnico e Superior"){
+						totalQtd.countEnsinoMedio++;
+						aprovadosQtd.countEnsinoMedio += aprovado;
+						canceladosQtd.countEnsinoMedio += cancelado;
+					}
+					//Escolas
+					var nomeEscola = value.nomeEscola;
+					var teste = false, teste2 = false, teste3 = false;
+					for(var x = 0; x<totalQtd.countEscolas.length; x++){
+						if(nomeEscola === totalQtd.countEscolas[x].nome){
+							totalQtd.countEscolas[x].num++;
+							teste = true;
+						}												
+					}
+					for(var x = 0; x<aprovadosQtd.countEscolas.length; x++){
+						if(nomeEscola === aprovadosQtd.countEscolas[x].nome){
+							aprovadosQtd.countEscolas[x].num+=aprovado;
+							teste2 = true;
+						}
+					}
+					for(var x = 0; x<canceladosQtd.countEscolas.length; x++){
+						if(nomeEscola === canceladosQtd.countEscolas[x].nome){
+							canceladosQtd.countEscolas[x].num+=cancelado;
+							teste3 = true;
+						}
+					}
+					if(teste === false){
+						var escola = {
+							nome: nomeEscola,
+							num: 1
+						};
+						totalQtd.countEscolas.push(escola);
+					}
+					if(teste2 === false && aprovado == 1){
+						var escola = {
+							nome: nomeEscola,
+							num: 1
+						};
+						aprovadosQtd.countEscolas.push(escola);
+					}
+					if(teste3 === false && cancelado == 1){
+						var escola = {
+							nome: nomeEscola,
+							num: 1
+						};
+						canceladosQtd.countEscolas.push(escola);
+					}				
+					//Camisetas
+					var integrantes = value.integrantes;
+					for(var x = 0; x<integrantes.length; x++){
+						if(integrantes[x].tamCamiseta === "P"){
+							totalQtd.countCamisetasP++;
+							aprovadosQtd.countCamisetasP += aprovado;
+							canceladosQtd.countCamisetasP += cancelado;	
+						} else if(integrantes[x].tamCamiseta === "M"){
+							totalQtd.countCamisetasM++;
+							aprovadosQtd.countCamisetasM += aprovado;
+							canceladosQtd.countCamisetasM += cancelado;
+						} else if(integrantes[x].tamCamiseta === "G"){
+							totalQtd.countCamisetasG++;
+							aprovadosQtd.countCamisetasG += aprovado;
+							canceladosQtd.countCamisetasG += cancelado;
+						}  
+					}
+					//Eixos
+					for(var x = 0; x<eixo.length; x++){
+						if(value.eixo === eixo[x].nome && categoria === eixo[x].categoria){
+							totalQtd.countEixo[x].num++;
+							aprovadosQtd.countEixo[x].num += aprovado;
+							canceladosQtd.countEixo[x].num += cancelado;
+						}						
+					}
+					console.log("EIXO:"+JSON.stringify(eixo));
+					
 					if (value.aprovado === true) {
 						relatorio.countAprovados++;
 						if (value.participa === true) {
@@ -161,9 +338,18 @@
 			$scope.projetos = [];
 			$scope.saberes = [];
 			$scope.avaliadores = [];
+			$scope.resetarVariaveis();
 			$scope.carregarProjetos();
 			$scope.carregarSaberes();
 			$scope.carregarAvaliadores();
+			totalQtd.countEscolas.splice(0,1);
+			aprovadosQtd.countEscolas.splice(0,1);
+			canceladosQtd.countEscolas.splice(0,1);
+			$rootScope.qtd = totalQtd;
+			$rootScope.qtdA = aprovadosQtd;
+			$rootScope.qtdC = canceladosQtd;
+			$rootScope.relatorio = relatorio;
+			
 		}
 
 		$scope.setarProjetos = function() {
@@ -295,11 +481,18 @@
 			});
 		};
 
-		$rootScope.qtd = qtd;
-		$scope.visualizarQtd = function(ev) {
+
+		totalQtd.countEscolas.splice(0,1);
+		aprovadosQtd.countEscolas.splice(0,1);
+		canceladosQtd.countEscolas.splice(0,1);
+		$rootScope.qtd = totalQtd;
+		$rootScope.qtdA = aprovadosQtd;
+		$rootScope.qtdC = canceladosQtd;
+		$scope.visualizarQtd = function(ev, quantidade) {
+			console.log("QUANTIDADE:"+JSON.stringify(quantidade));
 			$mdDialog.show({
 				controller: function dialogController($scope, $rootScope, $mdDialog) {
-					$scope.details = $rootScope.qtd;
+					$scope.details = quantidade;
 					$scope.hide = function() {
 						$mdDialog.hide();
 					};
@@ -315,10 +508,74 @@
 			});
 		}
 
+		$scope.resetarVariaveis = function(){
+			totalQtd = ({
+				nome: "Geral",
+				countTotal: 0,
+				countHospedagem: 0,
+				countFundamentalI: 0,
+				countFundamentalII: 0,
+				countEnsinoMedio: 0,
+				countCamisetasP: 0,
+				countCamisetasM: 0,
+				countCamisetasG: 0,
+				countEscolas:[{
+					nome: "",
+					num: 0
+				}],
+				countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
+			});
+		   	aprovadosQtd = ({
+				nome: "Aprovados",
+				countTotal: 0,
+				countHospedagem: 0,
+				countFundamentalI: 0,
+				countFundamentalII: 0,
+				countEnsinoMedio: 0,
+				countCamisetasP: 0,
+				countCamisetasM: 0,
+				countCamisetasG: 0,
+				countEscolas:[{
+					nome: "",
+					num: 0
+				}],
+				countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
+			});
+			let canceladosQtd = ({
+				nome: "Cancelados/Pendentes",
+				countTotal: 0,
+				countHospedagem: 0,
+				countFundamentalI: 0,
+				countFundamentalII: 0,
+				countEnsinoMedio: 0,
+				countCamisetasP: 0,
+				countCamisetasM: 0,
+				countCamisetasG: 0,
+				countEscolas:[{
+					nome: "",
+					num: 0
+				}],
+				countEixo: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]			
+			});
+			for(var x = 0; x<eixo.length;x++){
+				totalQtd.countEixo[x].nome = eixo[x].nome;
+				totalQtd.countEixo[x].num = eixo[x].num;
+				totalQtd.countEixo[x].categoria = eixo[x].categoria;
+
+				aprovadosQtd.countEixo[x].nome = eixo[x].nome;
+				aprovadosQtd.countEixo[x].num = eixo[x].num;
+				aprovadosQtd.countEixo[x].categoria = eixo[x].categoria;
+
+				canceladosQtd.countEixo[x].nome = eixo[x].nome;
+				canceladosQtd.countEixo[x].num = eixo[x].num;
+				canceladosQtd.countEixo[x].categoria = eixo[x].categoria;
+			}
+			
+		}
+
 		$scope.setarProjetos();
 		$scope.carregarProjetos();
 		$scope.carregarSaberes();
 		$scope.carregarAvaliadores();
-
 	});
 })();

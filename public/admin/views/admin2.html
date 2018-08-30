@@ -84,13 +84,30 @@
             <md-icon md-svg-src="clipboard-text" class="grey-text darken-3"></md-icon>
             Relatórios
           </md-button>
-        </md-menu-item>
-	<md-menu-item>
-          <md-button data-ng-click="visualizarQtd($event)" class="grey-text darken-3">
-            <md-icon md-svg-src="clipboard-text" class="grey-text darken-3"></md-icon>
-            Quantidade Projetos
-          </md-button>
-        </md-menu-item>
+        </md-menu-item>	    
+	    <md-menu>
+		<md-button ng-click="$mdOpenMenu($event)">
+	    		<md-icon md-svg-src="clipboard-text" class="grey-text darken-3"></md-icon>
+            		Quantidade Projetos
+		</md-button>
+		<md-menu-content width="3">
+			<md-menu-item>
+         		 <md-button class="grey-text darken-3" ng-click="visualizarQtd($event, qtd)">
+            		  Geral
+          		 </md-button>
+        		</md-menu-item>
+			<md-menu-item>
+         		 <md-button class="grey-text darken-3" ng-click="visualizarQtd($event, qtdA)">
+            		  Aprovados
+          		 </md-button>
+        		</md-menu-item>
+			<md-menu-item>
+         		 <md-button  class="grey-text darken-3" ng-click="visualizarQtd($event, qtdC)">
+            		  Cancelados/Pendentes
+          		 </md-button>
+        		</md-menu-item>
+		</md-menu-content>
+	    </md-menu>
         <md-menu-item>
           <md-button data-ng-click="logout()" class="grey-text darken-3">
             <md-icon md-svg-src="exit-to-app" class="grey-text darken-3"></md-icon>
