@@ -7,11 +7,8 @@
 
 
 		$scope.carregarEdits = function(){
-			console.log("TESTE1");
 			projetosAPI.getEdits().success(function(edits){
-				console.log("TESTE2");
 				if(edits[0].cadastro_avaliadores == false){
-					console.log("TESTE3");
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.alert()
 						.title('Página bloqueada!')
@@ -32,7 +29,6 @@
 				console.log(status);
 			});
 		}
-		$scope.carregarEdits();
 
 		$scope.eixos = [];
 

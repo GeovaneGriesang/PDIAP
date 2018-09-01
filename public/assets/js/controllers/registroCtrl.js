@@ -4,9 +4,7 @@
 	angular
 	.module('PDIAP')
 	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, projetosAPI) {
-
-
-		
+	
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
 				if(edits[0].cadastro_projetos == false){
@@ -30,7 +28,6 @@
 				console.log(status);
 			});
 		}
-		$scope.carregarEdits();
 
 		$scope.registro = false;
 		$scope.loginHabilitado = false;
