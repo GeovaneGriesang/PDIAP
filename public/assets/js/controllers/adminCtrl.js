@@ -60,7 +60,7 @@
 					} else {
 						$scope.aviso1_1 = 'PARABÉNS!';
 						$scope.aviso1_2 = 'Esse projeto foi aprovado, porém AINDA NÃO CONFIRMOU PRESENÇA na '+
-						'Mostra Venâncio-airense de Cultura e Inovação. Caso o email de confirmação não foi recebido, '+
+						'Mostra Venâncio-airense de Cultura e Inovação. Vá em "Alterar Projeto" e "Marcar Participação", '+
 						'favor entre em contato.';
 					}
 				} else {
