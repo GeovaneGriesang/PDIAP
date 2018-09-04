@@ -79,6 +79,14 @@
               <md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
             </div>
           </div>
+
+	  <div layout="row">                 
+                  <md-checkbox name="participa" data-ng-model="projeto1.participa" data-ng-class="{'input-disabled': !editing3}" data-ng-focus="editing3=true" data-ng-blur="editing3=false" style="width:100%!important;padding:5px;margin-bottom:30px">
+		  Marcar Participação           
+                  </md-checkbox>		  
+                  <div class="md-errors-spacer"></div>
+	  </div>
+
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
               <label>Resumo do Projeto (Edição desabilitada)</label>

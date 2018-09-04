@@ -55,8 +55,8 @@
 						$scope.aviso1_2 = 'Esse projeto foi aprovado e já está confirmado para participar da '+
 						'Mostra Venâncio-airense de Cultura e Inovação. Bom trabalho!';
 					} else if (projeto.participa === false) {
-						$scope.aviso1_2 = 'Esse projeto foi aprovado, mas devido a escolha, está fora da lista de confirmados para 5ª edição da '+
-						'Mostra Venâncio-airense de Cultura e Inovação. Com isso, outro projeto ocupará o lugar.';
+						$scope.aviso1_2 = 'Esse projeto foi aprovado, mas devido a escolha, está fora da lista de confirmados para a '+
+						'Mostra Venâncio-airense de Cultura e Inovação.';
 					} else {
 						$scope.aviso1_1 = 'PARABÉNS!';
 						$scope.aviso1_2 = 'Esse projeto foi aprovado, porém AINDA NÃO CONFIRMOU PRESENÇA na '+
@@ -73,6 +73,7 @@
 				$scope.projeto1.categoria = projeto.categoria;
 				$scope.projeto1.eixo = projeto.eixo;
 				$scope.projeto1.resumo = projeto.resumo;
+				$scope.projeto1.participa = projeto.participa;
 
 				if (projeto.palavraChave === undefined) {
 					$scope.palavraChave = [];
