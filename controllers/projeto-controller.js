@@ -41,9 +41,19 @@ module.exports.getProjectByUsername = (username, callback) => {
 
 // NOVO LOGIN ÚNICO
 
-module.exports.getLoginProjeto = (username, user) => {
+module.exports.getLoginProjeto = (username, ano_atual, user) => {
 	let query = {username: username};
-	Projeto.findOne(query, user);
+	Projeto.find(query, function(err, document){
+		if(err) throw err;
+		document.forEach(function(value){		
+			if(value != undefined){
+				var data = new Date(value.createdAt);
+				if(ano_atual == data.getFullYear()){				
+					Projeto.findOne({_id:value._id}, user);
+				}
+			}			
+		});			
+	});									
 }
 
 module.exports.getLoginAdmin = (username, user) => {

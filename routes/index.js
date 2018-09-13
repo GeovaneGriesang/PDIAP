@@ -933,10 +933,12 @@ router.post('/registro', testaUsername2, (req, res) => {
 });
 
 passport.use('unico', new LocalStrategy(function(username, password, done) {
-  Projeto.getLoginProjeto(username, (err, user) => {
+  var ano_atual = new Date(Date.now());
+  Projeto.getLoginProjeto(username, ano_atual.getFullYear(), (err, user) => {    
     if(err) throw err;
     if(!user){
       console.log('entrou no !user '+username);
+      console.log("TESTE:"+JSON.stringify(user));
       Projeto.getLoginAdmin(username, (err, user) => {
         console.log('entrou no !user de novo');
         if(err) throw err;

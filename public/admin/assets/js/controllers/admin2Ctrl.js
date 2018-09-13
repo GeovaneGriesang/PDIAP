@@ -98,7 +98,7 @@
 		}
 
 		$scope.abrir = function(num) {
-			$window.open('http://www.movaci.com.br/relatorios/'+num+'.pdf', '_blank');
+			$window.open('http://www.movaci.com.br/relatorios_2018/'+num+'.pdf', '_blank');			
 		}
 
 		$scope.carregarProjetos = function() {
@@ -219,7 +219,6 @@
 							canceladosQtd.countEixo[x].num += cancelado;
 						}						
 					}
-					console.log("EIXO:"+JSON.stringify(eixo));
 					
 					if (value.aprovado === true) {
 						relatorio.countAprovados++;
@@ -489,7 +488,6 @@
 		$rootScope.qtdA = aprovadosQtd;
 		$rootScope.qtdC = canceladosQtd;
 		$scope.visualizarQtd = function(ev, quantidade) {
-			console.log("QUANTIDADE:"+JSON.stringify(quantidade));
 			$mdDialog.show({
 				controller: function dialogController($scope, $rootScope, $mdDialog) {
 					$scope.details = quantidade;
