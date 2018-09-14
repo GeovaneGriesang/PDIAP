@@ -54,11 +54,15 @@ module.exports.getLoginProjeto = (username, ano_atual, user) => {
 					Projeto.findOne({_id:value._id}, user);
 				}				 			
 			});
+			teste = false;
 		} else {
 			console.log("PROJETO_CONTROLLER -> Usuário desconhecido");
 			Projeto.findOne({username:''}, user);				
 		}		
-		Projeto.findOne({username:''}, user);			
+		if(!teste){
+			Projeto.findOne({username:''}, user);
+		}
+			
 	});	
 	
 }
