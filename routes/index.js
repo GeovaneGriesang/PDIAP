@@ -934,26 +934,26 @@ router.post('/registro', testaUsername2, (req, res) => {
 
 passport.use('unico', new LocalStrategy(function(username, password, done) {
   var ano_atual = new Date(Date.now());
+  console.log('Usuário:'+username);
   Projeto.getLoginProjeto(username, ano_atual.getFullYear(), (err, user) => {    
     if(err) throw err;
     if(!user){
-      console.log('entrou no !user '+username);
+      console.log('Usuário não é de projeto');
       console.log("TESTE:"+JSON.stringify(user));
       Projeto.getLoginAdmin(username, (err, user) => {
-        console.log('entrou no !user de novo');
         if(err) throw err;
         if(!user){
-          console.log('entrou no !user de novo de novo');
+          console.log('Usuário não é admin. Usuário desconhecido');
           return done(null, false, {message: 'Unknown User'});
         }
         Projeto.compareLogin(password, user.password, (err, isMatch) => {
-          console.log('OLHA, deu certo e agora vai comparar: '+password);
+          console.log('Usuário é admin / Comparação de senha sendo realizada');
           if(err) throw err;
           if(isMatch){
-            return done(null, user);
-            console.log("Pior que deu");
+	    console.log("Admin conectado");
+            return done(null, user);            
           } else {
-            console.log("Pior que não deu");
+            console.log("Erro ao conectar como admin");
             return done(null, false, {message: 'Invalid password'});
           }
         });
@@ -962,9 +962,12 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
     } else {
       Projeto.compareLogin(password, user.password, (err, isMatch) => {
         if(err) throw err;
+	console.log("Usuário é de projeto");
         if(isMatch){
+	  console.log("Usuário(Projeto) conectado");
           return done(null, user);
         } else {
+	  console.log("Erro ao conectar usuário(Projeto)");
           return done(null, false, {message: 'Invalid password'});
         }
       });

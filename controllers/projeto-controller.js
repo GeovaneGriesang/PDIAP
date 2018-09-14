@@ -43,17 +43,24 @@ module.exports.getProjectByUsername = (username, callback) => {
 
 module.exports.getLoginProjeto = (username, ano_atual, user) => {
 	let query = {username: username};
+	var teste = true;
 	Projeto.find(query, function(err, document){
 		if(err) throw err;
-		document.forEach(function(value){		
-			if(value != undefined){
+		if(document != ''){
+			console.log("DOCUMENT:"+JSON.stringify(document));
+			document.forEach(function(value){		
 				var data = new Date(value.createdAt);
 				if(ano_atual == data.getFullYear()){				
 					Projeto.findOne({_id:value._id}, user);
-				}
-			}			
-		});			
-	});									
+				}				 			
+			});
+		} else {
+			console.log("PROJETO_CONTROLLER -> Usuário desconhecido");
+			Projeto.findOne({username:''}, user);				
+		}		
+		Projeto.findOne({username:''}, user);			
+	});	
+	
 }
 
 module.exports.getLoginAdmin = (username, user) => {
