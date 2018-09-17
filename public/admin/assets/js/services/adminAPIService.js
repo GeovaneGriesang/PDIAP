@@ -4,17 +4,17 @@
 	angular
 	.module('PDIAPa')
 	.factory("adminAPI", function($http) {
-		// let _postLoginAdmin = function(username,password) {
-		// 	const request = {
-		// 		url: '/login',
-		// 		method: 'POST',
-		// 		data: {
-		// 			username: username,
-		// 			password: password
-		// 		}
-		// 	}
-		// 	return $http(request);
-		// };
+		/*let _postLoginAdmin = function(username,password) {
+		 	const request = {
+		 		url: '/login',
+		 		method: 'POST',
+		 		data: {
+		 			username: username,
+		 			password: password
+		 		}
+		 	}
+		 	return $http(request);
+		};*/
 		let _postEdit = function(edit){
 			const request = {
 				url: '/admin/edit',
@@ -203,7 +203,7 @@
 		
 
 		return {
-			// postLoginAdmin: _postLoginAdmin,
+			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
 			getTodosProjetos: _getTodosProjetos,
 			getEdits: _getEdits,

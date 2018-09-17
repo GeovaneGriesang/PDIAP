@@ -12,7 +12,10 @@
 			avaliacaoAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
-					if (value.aprovado === true) {
+					var ano = new Date(value.createdAt);
+					var ano_atual = new Date(Date.now());
+					console.log("ANO:"+ano.getFullYear()+" | ANO2:"+ano_atual.getFullYear());
+					if (value.aprovado === true && ano.getFullYear() == ano_atual.getFullYear()) {
 						if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
 							var avaliacao = value.avaliacao;
 							var avaliado = true;
@@ -33,6 +36,7 @@
 						$rootScope.projetos.push(obj);
 					}
 				});
+				console.log("Projetos:"+JSON.stringify($rootScope.projetos));
 			})
 			.error(function(status) {
 				console.log(status);

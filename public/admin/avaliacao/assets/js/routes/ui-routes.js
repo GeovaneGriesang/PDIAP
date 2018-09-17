@@ -28,15 +28,15 @@
 		};
 
 		$stateProvider
-		// .state('admin', {
-		// 	url: "/admin/avaliacao",
-		// 	views: {
-		// 		'': {
-		// 			templateUrl: '/admin/views/login.html',
-		// 			controller: 'loginCtrl'
-		// 		}
-		// 	}
-		// })
+		/* .state('admin', {
+		 	url: "/admin/avaliacao",
+		 	views: {
+		 		'': {
+		 			templateUrl: '/admin/views/login.html',
+		 			controller: 'loginCtrl'
+		 		}
+		 	}
+		 })*/
 		.state('home', {
 			url: "/avaliacao/2016/:id",
 			views: {
