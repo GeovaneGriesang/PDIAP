@@ -17,7 +17,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_1"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;" ng-if="">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -46,7 +46,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_2"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -75,7 +75,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_3"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -104,7 +104,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_4"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>

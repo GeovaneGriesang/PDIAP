@@ -13,8 +13,7 @@
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt);
-					var ano_atual = new Date(Date.now());
-					console.log("ANO:"+ano.getFullYear()+" | ANO2:"+ano_atual.getFullYear());
+					var ano_atual = new Date(Date.now());					
 					if (value.aprovado === true && ano.getFullYear() == ano_atual.getFullYear()) {
 						if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
 							var avaliacao = value.avaliacao;
@@ -36,7 +35,6 @@
 						$rootScope.projetos.push(obj);
 					}
 				});
-				console.log("Projetos:"+JSON.stringify($rootScope.projetos));
 			})
 			.error(function(status) {
 				console.log(status);

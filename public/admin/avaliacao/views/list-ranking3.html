@@ -17,7 +17,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo1"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -46,7 +46,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -75,7 +75,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo6"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -104,7 +104,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo3"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -133,7 +133,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo7"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -162,7 +162,7 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo5"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
           <h3>{{$index+1}}º</h3>
         </div>
@@ -191,9 +191,9 @@
       <md-divider></md-divider>
       <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
         data-ng-repeat="proj in eixo4"
-        ng-click="visualizarDetalhes(proj,$event)" ng-if="$index < 4 && proj._id != undefined">
+        ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
-          <h3>{{$index+1}}º</h3>
+          <h3>{{$indhex+1}}º</h3>
         </div>
         <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
           <h3>{{::proj.total}}</h3>
