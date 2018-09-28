@@ -102,7 +102,7 @@ router.post('/emitirCertificado', (req, res) => {
       // ProjetoSchema.find({'integrantes.cpf':cpf,'integrantes.presenca':true}, 'integrantes.$ nomeProjeto -_id',(err, usr) => {
       ProjetoSchema.find(
         {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado':true},
-        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
+        'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fulfill(usr)
@@ -336,7 +336,8 @@ router.post('/emitirCertificado', (req, res) => {
             nomeProjeto: usr[i].nomeProjeto,
             token: usr[i].integrantes[0].certificados._id,
             tokentipo: usr[i].integrantes[0].certificados.tipo,
-	    createdAt: usr[i].createdAt
+	    createdAt: usr[i].createdAt,
+	    categoria: usr[i].categoria
           }
 
           array.push(participante)

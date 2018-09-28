@@ -292,24 +292,24 @@
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
 						var ano2 = new Date(dados.createdAt);
-						console.log("DADOS:"+JSON.stringify(dados));
 						var realizacao;
 						var edicao;
+						var ch = "."; //Carga horaria
 						if (ano2.getFullYear() === 2016) {
-							console.log("ano de criação do documento 2016");
 							realizacao = '28 a 30 de setembro de 2016';
 							edicao = 'V';
 							background = aaa;
 						} else if(ano2.getFullYear() === 2017){
-							console.log("ano de criação do documento 2017");
 							realizacao = '27 a 29 de setembro de 2017';
 							edicao = 'VI';
 							background = aaa;
 						} else if(ano2.getFullYear() === 2018){
-							console.log("ano de criação do documento 2018");
 							realizacao = '26 a 28 de setembro de 2018';
 							edicao = 'VII';
 							background = aaa2;
+							if(dados.categoria === "Fundamental I (1º ao 5º anos)	" || dados.categoria === "Fundamental II (6º ao 9º anos)"){
+								ch = ", com carga horária de 20 horas.";
+							}
 						} 
 
 						if (tipo === 'Avaliador') {
@@ -326,7 +326,7 @@
 							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' apresentou o projeto '+
 							dados.nomeProjeto.toUpperCase()+ ' na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
 							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+ch+'\n\n'];
 						} else if (tipo === 'Premiacao') {
 							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve destaque na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
 							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
