@@ -201,9 +201,9 @@ router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
 });
 
 router.get('/mostraCPFparticipantes', miPermiso("3"), (req, res) => {
-  participanteSchema.find('cpf','cpf -_id', (error, cpfs) => {
+  participanteSchema.find({},'cpf -_id', (error, cpfs) => {
     if(error) {
-      return res.status(400).send({msg:"error occurred"});
+      return res.status(400).send({msg:"error occurred - "+error});
     } else
     return res.status(200).send(cpfs);
   });
@@ -283,12 +283,12 @@ router.post('/edit', (req, res) => {
 		edicao: req.body[0].edicao,
 		text: req.body[0].text,
 		cadastro_projetos: req.body[0].cadastro_projetos,
-		cadastro_avaliadores: req.body[0].cadastro_avaliadores
+		cadastro_avaliadores: req.body[0].cadastro_avaliadores,
+		saberes_docentes: req.body[0].saberes_docentes
 	};	
-	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores}}, [{new:true}], (err, usr) =>{
+	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores,'saberes_docentes':obj.saberes_docentes}}, [{new:true}], (err, usr) =>{
 		if (err) throw err				
 		else {
-			console.log("USR:"+JSON.stringify(usr));
 			res.send('success');	
 		}
 	})
@@ -296,7 +296,7 @@ router.post('/edit', (req, res) => {
 
 router.get('/editar', (req, res) => {
 	return new Promise(function (fulfill, reject) {
-		adminSchema.find({'username':'admin2'},'dias mes ano edicao cadastro_avaliadores cadastro_projetos text -_id',(err,usr)=>{
+		adminSchema.find({'username':'admin2'},'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text -_id',(err,usr)=>{
 			if(err) return reject(err);
 			if(usr == 0) return reject({err});
 			res.send(usr);
@@ -909,7 +909,7 @@ router.post('/pdf2', miPermiso("3"), (req, res) => {
 // });
 
 //   projetoSchema.find({"aprovado":true, "categoria":"Ensino Médio, Técnico e Superior"}).sort({"eixo":1, "numInscricao":1}).exec(function(err, users) {
-//     if (err) throw err;
+//     if (err) throw •••••••err;
 //     myDoc.addPage()
 //     .image('public/assets/images/logo.png',70, 55, { fit: [200,350] })
 //     .moveDown(5)

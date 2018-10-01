@@ -33,6 +33,9 @@ const AdminSchema = new Schema({
 	},
 	cadastro_avaliadores: {
 		type: Boolean
+	},
+	saberes_docentes: {
+		type: Boolean
 	}
 }, { collection: 'adminCollection' });
 

@@ -77,11 +77,11 @@
 			templateUrl: "/alpha/programacao.html"
 		})
 		 //descomentar para possibilitar a inscrição de saberes docentes
-		//  .state('saberes-docentes', {
-		//  	url: "/saberes-docentes/inscricao",
-		//  	templateUrl: "/views/saberes.html",
-		//  	controller: "saberesCtrl"
-		//  })
+		  .state('saberes-docentes', {
+		  	url: "/saberes-docentes/inscricao",
+		  	templateUrl: "/views/saberes.html",
+		  	controller: "saberesCtrl"
+		  })
 		 //descomentar para possibilitar a inscrição de avaliadores
 		  .state('avaliadores', {
 		  	url: "/avaliadores/inscricao",

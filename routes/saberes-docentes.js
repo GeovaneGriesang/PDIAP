@@ -29,13 +29,14 @@ router.get('/registro', testaEscola, (req, res) => {});
 router.post('/registro', (req, res) => {
 
 	let newSaberes = new SaberesSchema({
-    tipo: req.body.tipo,
+    		tipo: req.body.tipo,
 		nome: req.body.nome,
 		email: req.body.email,
 		cpf: splita(req.body.cpf),
 		telefone: splita(req.body.telefone),
 		escola: req.body.escola,
-    resumo: req.body.resumo
+		resumo: req.body.resumo,
+		createdAt: Date.now()
 	});
 
 	Saberes.createSaberes(newSaberes, (callback) => {});

@@ -56,27 +56,6 @@
 					<li>
 						<a href="#">Documentos  <span class="icon fa-angle-down"></span></a>
 						<ul>
-							<!-- <li><a href="/alpha/documentos/Regulamento_VI_MOVACI_2017_final.pdf" target="_blank">Regulamento VI MOVACI</a></li>
-							<li><a href="/alpha/documentos/Seleção_de_Avaliadores_VI_MOVACI_2017.pdf" target="_blank">Regulamento para inscrição de avaliadores</a></li>
-							<li><a href="/alpha/documentos/ficha_avaliacao_fundamental_2017.pdf" target="_blank">Avaliação fundamental</a></li>
-							<li><a href="/alpha/documentos/ficha_avaliacao_medio_tecnico_tecnologico_2017.pdf" target="_blank">Avaliação médio, técnico e tecnológico</a></li>
-							<li><a href="alpha/documentos/ficha_avaliacao_EXTENSAO_2017.pdf" target="_blank">Avaliação extensão</a></li>
-							<li><a href="/alpha/documentos/Modelo_de_relatório.pdf" target="_blank">Modelo de relatório</a></li>
-							<li><a href="/alpha/documentos/selecionados_FUNDAMENTAL_I_e_II_2017.pdf" target="_blank" style="font-weight:bold">Selecionados Fundamental I e II</a></li>
-							<li><a href="/alpha/documentos/Programação_Ensino_Médio_Técnico_Tecnológico_Superior.pdf" target="_blank">Programação para Ensino Médio</a></li> -->
-
-							<!--<li><a href="/alpha/documentos/Regulamento - VII MOVACI 2018.pdf" target="_blank">Regulamento VII MOVACI</a></li>
-							<li><a href="/alpha/documentos/Modelo de Relatorio 2018" target="_blank">Modelo de Relatório</a></li>
-							<li><a href="/alpha/documentos/Projetos aprovados - Ensino Medio.pdf" target="_blank">Projetos Aprovados - Ensino Médio</a></li>
-							<li><a href="/alpha/documentos/Projetos aprovados - Fundamental 1 e 2.pdf" target="_blank">Projetos Aprovados - Ensino Fundamental</a></li>
-							<li><a href="/alpha/documentos/Regulamento CHIMABOTS.pdf" target="_blank">Regulamento CHIMABOTS</a></li>
-							<li><a href="/alpha/documentos/organização das salas_movaci_2018_DIVULGACAO.pdf" target="_blank">Organização - Ensino Médio</a></li>	
-							<li><a href="/alpha/documentos/Programação_final.pdf" target="_blank">Programação</a></li>
-							<li><a href="/alpha/documentos/ficha_avaliacao_medio_tecnico_tecnologico_2018.pdf" target="_blank">Ficha de Avaliação - Ensino Técnico</a></li>
-							<li><a href="/alpha/documentos/ficha_avaliacao_EXTENSAO 2018.pdf" target="_blank">Ficha de Avaliação - Extensão</a></li>
-							<li><a href="/alpha/documentos/ficha_avaliacao_fundamental.pdf" target="_blank">Ficha de Avaliação - Fundamental</a></li>-->
-
-
 							<li><a href="/alpha/documentos/MOVACI - premiados - Fundamental 1 e 2.pdf" target="_blank">Premiados Fundamental</a></li>
 							<li><a href="/alpha/documentos/MOVACI - premiados - Ensino Médio, Técnico e Superior.pdf" target="_blank">Premiados Ensino Médio</a></li>
 							<li><a href="/alpha/documentos/MOVACI - premiados - MOSTRATEC.pdf" target="_blank">Classificados para MOSTRATEC</a></li>
@@ -101,11 +80,9 @@
 			<img src="alpha/images/logo3.png" alt="Logo MOVACI" width="320px">
 			<p style="color:#424242!important;" ng-bind ="edits[0].edicao + ' Mostra Venâncio-airense de Cultura e Inovação'"></p>
 			<h4 id="prorrog" ng-bind-html="edits[0].text"></h4>
-			<!--    <h4 id="prorrog"><a href="www.movaci.com.br">Ir para MOVACI 2016</a></h4>-->
-			<!--      <a href="" class="button special" data-ng-click="showEmitCertificate($event)" style="width:14em;margin-top:5em">Emitir Certificado 2016</a>-->
-			<!--<a href="https://goo.gl/forms/wI2FIqV8AOIoKQdu2" class="button" style="margin-top:5em" target="_blank">Seminário Saberes Docentes 2017</a>-->
 			<a href="/projetos/inscricao" class="button special" style="margin-top:3em;<margin-right:0.5></margin-right:>" target="_blank" data-ng-if="edits[0].cadastro_projetos == true">Cadastrar projeto</a>
 			<a href="/avaliadores/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].cadastro_avaliadores == true">Cadastrar avaliador</a>
+			<a href="/saberes-docentes/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].saberes_docentes == true">Saberes Docentes</a>
 		</section>
 
 		<!-- Main -->

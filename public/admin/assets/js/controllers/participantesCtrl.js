@@ -65,7 +65,7 @@
 				mostraSaberes();
 			})
 			.error(function(status) {
-				console.log('Error: '+status);
+				console.log('Error: '+JSON.stringify(status));
 			});
 		};
 		$scope.getCPFparticipantes = getCPFparticipantes();
