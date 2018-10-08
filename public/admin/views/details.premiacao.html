@@ -1,0 +1,40 @@
+<md-dialog aria-label="Detalhes do projeto" class="details2 dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Nº de Inscrição: {{details.numInscricao}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Premiação</span>
+    </h3>
+    <div layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
+      <form name="presencaProjetosForm" novalidate>
+	<md-radio-group  data-ng-model="premiacao.premiacao" data-ng-init="premiacao.premiacao = details.premiacao">
+           <md-radio-button value="Premiado">Premiação</md-radio-button>
+           <md-radio-button value="Mencao_honrosa">Menção honrosa</md-radio-button>
+	   <md-radio-button value="" data-ng-if="premiacao.premiacao != undefined || premiacao.premiacao != null" >Desmarcar</md-radio-button>
+        </md-radio-group>
+
+	<md-input-container class="md-block" data-ng-if="premiacao.premiacao == 'Premiado'" flex-gt-sm>
+              <label>Posição:</label>
+              <input type="number" data-ng-model="premiacao.colocacao" data-ng-init="premiacao.colocacao = details.colocacao">
+        </md-input-container>
+	<md-checkbox aria-label="Check" data-ng-model="premiacao.mostratec" data-ng-init="premiacao.mostratec = details.mostratec" style="display:flex;margin-right:0;">Classificado para MOSTRATEC</md-checkbox>
+
+        <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
+          <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!presencaProjetosForm.$valid" data-ng-click="setPremiado(premiacao)">
+            <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+            <span style="vertical-align:middle;">Salvar</span>
+          </md-button>
+        </div>
+        <span us-spinner>
+          <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+          </div>
+        </span>
+      </form>
+    </div>
+  </div>
+</md-dialog>
