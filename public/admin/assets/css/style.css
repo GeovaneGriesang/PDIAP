@@ -666,3 +666,28 @@ md-toast.md-failed-toast-theme .md-toast-content {
 @media only screen and (min-width: 1000px) and (min-width: 0) and (orientation: landscape) {
   .eventos-form { padding: 30px !important; }
 }
+md-radio-button.md-default-theme.md-checked .md-off,
+md-radio-button.md-checked .md-off {
+  border-color: #43a047 !important;
+}
+md-radio-button.md-default-theme .md-on,
+md-radio-button .md-on {
+  background-color: #43a047 !important;
+}
+md-radio-group.md-default-theme .md-checked .md-ink-ripple,
+md-radio-group .md-checked .md-ink-ripple {
+  color: transparent !important;
+}
+md-radio-button.md-checked .md-on {
+  -webkit-transform: scale(0.7);
+  transform: scale(0.7);
+}
+md-radio-button .md-container,
+md-radio-button .md-on,
+md-radio-button .md-off {
+  width: 25px;
+  height: 25px;
+}
+md-radio-button .md-label {
+  color: #616161 !important;
+}

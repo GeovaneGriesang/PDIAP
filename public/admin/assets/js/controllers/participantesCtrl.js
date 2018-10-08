@@ -303,6 +303,7 @@
 			});
 		};
 
+		//Participantes irão repetir?		
 		$scope.verificaCPF = function(cpf) {
 			for (var i in $scope.CPFparticipantes) {
 				if ($scope.CPFparticipantes[i] === cpf) {

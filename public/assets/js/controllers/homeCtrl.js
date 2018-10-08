@@ -29,6 +29,7 @@
 		var oficina = [];
 		var presenca_oficina = undefined;
 		var premiados = [];
+		var mencao_honrosa = [];
 		var presenca_saberes = undefined;
 
 		var somaHora = function(horaInicio, horaSomada) {
@@ -60,22 +61,6 @@
 
 		let background = aaa;
 
-		// var estressado = aaa.length / 2;
-		// var vsf = aaa.substring(0,estressado);
-		// var vsf2 = aaa.substring(estressado,aaa.length);
-		// // window.localStorage.clear();
-		// // window.sessionStorage.clear();
-		// var url1 = window.localStorage.getItem('url1');
-		// if (url1 === null || url1 === undefined) {
-		// 	window.localStorage.clear();
-		// 	window.localStorage.setItem('url1', vsf);
-		// }
-		// var url2 = window.sessionStorage.getItem('url2');
-		// if (url2 === null || url2 === undefined) {
-		// 	window.sessionStorage.clear();
-		// 	window.sessionStorage.setItem('url2', vsf2);
-		// }
-
 		$scope.showLoginDialog = function(ev) {
 			$mdDialog.show({
 				// controller: () => this,
@@ -100,9 +85,11 @@
 				oficina = [];
 				presenca_oficina = undefined;
 				premiados = [];
+				mencao_honrosa = [];
 				presenca_saberes = undefined;
 				
 				if (data.length > 0) {
+					console.log("DATA:"+JSON.stringify(data));
 					let i = data.map(function(e) { return e.tipo; }).indexOf('Avaliador');
 					if (i !== -1) {
 						angular.forEach(data[i].avaliadores, function (value, key){
@@ -142,7 +129,8 @@
 								nome: data[i].nome,
 								token: data[i].tokenOficinas,
 								eventos: evts1,
-								cargaHoraria: ch1
+								cargaHoraria: ch1,
+								ano: data[i].ano
 							};
 						}
 						if (eventos !== '') {
@@ -151,7 +139,8 @@
 								nome: data[i].nome,
 								token: data[i].tokenSaberes,
 								cargaHoraria: ch2,
-								eventos: eventos
+								eventos: eventos,
+								ano: data[i].ano
 							};
 						}
 					}
@@ -189,7 +178,14 @@
 							premiados.push(value);
 						});
 					}
-					visualizarCertificados(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,presenca_saberes,countCertificados);
+					i = data.map(function(e) { return e.tipo; }).indexOf('Mencao_honrosa');
+					if (i !== -1) {
+						angular.forEach(data[i].projetos, function (value, key){
+							countCertificados++;
+							mencao_honrosa.push(value);
+						});
+					}
+					visualizarCertificados(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,countCertificados);
 				} else {
 					let showAlert = function(ev) {
 						$mdDialog.show(
@@ -235,7 +231,7 @@
 			}, function() {});
 		};
 
-		let visualizarCertificados = function(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,presenca_saberes,numCertificados,ev) {
+		let visualizarCertificados = function(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,numCertificados,ev) {
 			$mdDialog.show({
 				controller: function dialogCertificateController($scope, $window, $mdDialog) {
 					$scope.avaliador = [];
@@ -247,6 +243,7 @@
 					$scope.oficina = [];
 					$scope.presenca_oficina = [];
 					$scope.premiados = [];
+					$scope.mencao_honrosa = [];
 					$scope.presenca_saberes = [];
 
 					$scope.avaliador = avaliador;
@@ -259,6 +256,7 @@
 					$scope.countCertificados = numCertificados;
 					$scope.presenca_oficina = presenca_oficina;
 					$scope.premiados = premiados;
+					$scope.mencao_honrosa = mencao_honrosa;
 					$scope.presenca_saberes = presenca_saberes;
 
 					var date = new Date();
@@ -291,6 +289,7 @@
 					}
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
+						console.log("DADOS:"+JSON.stringify(dados));
 						var ano2 = new Date(dados.createdAt);
 						var realizacao;
 						var edicao;
@@ -329,6 +328,10 @@
 							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+ch+'\n\n'];
 						} else if (tipo === 'Premiacao') {
 							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve destaque na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
+							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
+							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de '+realizacao+'.\n\n'];
+						} else if (tipo === 'Mencao_honrosa') {
+							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve menção honrosa na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
 							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
 							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
 						} else if (tipo === 'Responsavel-saberes') {

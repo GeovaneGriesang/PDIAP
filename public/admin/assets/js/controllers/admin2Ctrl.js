@@ -101,8 +101,8 @@
 			$window.open('http://www.movaci.com.br/relatorios_2018/'+num+'.pdf', '_blank');			
 		}
 
-		$scope.carregarProjetos = function() {
-			adminAPI.getTodosProjetos()
+		$scope.carregarProjetos = function(ano2) {
+			adminAPI.getTodosProjetos(ano2)
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
@@ -122,6 +122,7 @@
 					aprovadosQtd.countTotal += aprovado;
 					canceladosQtd.countTotal += cancelado;
 					//Hospedagem
+					console.log("HOSP:"+hosp+" | ");
 					if(hosp != undefined && hosp !== ""){
 						totalQtd.countHospedagem++;
 						aprovadosQtd.countHospedagem += aprovado;
@@ -137,6 +138,7 @@
 							}
 						}
 					}
+					console.log("TOTAL_HOSP:"+totalQtd.countHospedagem);
 					//Categoria
 					var categoria = value.categoria;
 					if(categoria === "Fundamental I (1º ao 5º anos)"){
@@ -338,7 +340,7 @@
 			$scope.saberes = [];
 			$scope.avaliadores = [];
 			$scope.resetarVariaveis();
-			$scope.carregarProjetos();
+			$scope.carregarProjetos($scope.ano);
 			$scope.carregarSaberes();
 			$scope.carregarAvaliadores();
 			totalQtd.countEscolas.splice(0,1);
@@ -572,7 +574,7 @@
 		}
 
 		$scope.setarProjetos();
-		$scope.carregarProjetos();
+		$scope.carregarProjetos("2018");
 		$scope.carregarSaberes();
 		$scope.carregarAvaliadores();
 	});

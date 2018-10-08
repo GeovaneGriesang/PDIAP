@@ -79,6 +79,11 @@
 			templateUrl: 'admin/views/presenca_projetos.html',
 			controller: 'projetosCtrl'
 		})
+		.state('master.premiacao', {
+			url: "/projetos/premiacao",
+			templateUrl: 'admin/views/premiacao.html',
+			controller: 'projetosCtrl'
+		})
 		.state('master.cadastro-eventos', {
 			url: "/cadastro-eventos",
 			templateUrl: 'admin/views/cadastro-eventos.html',

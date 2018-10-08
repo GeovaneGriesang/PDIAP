@@ -28,7 +28,10 @@
 							aprovado: value.aprovado,
 							participa: value.participa,
 							integrantes: value.integrantes,
-							createdAt: ano
+							createdAt: ano,
+							premiacao: value.premiacao,
+							mostratec: value.mostratec,
+							colocacao: value.colocacao
 						});
 						$rootScope.projetos.push(obj);
 						if (obj.aprovado === true) {
@@ -85,7 +88,7 @@
 			// console.log("Reprovados: "+$scope.idProjetosReprovados);
 		}
 
-		$scope.recarregar = function(){
+		$rootScope.recarregar = function(){
 			$rootScope.projetos = [];
 			$scope.searchProject = "";
 			$scope.idAprovados = [];
@@ -97,7 +100,7 @@
 
 		$scope.visualizarDetalhes = function(projeto,ev) {
 			$mdDialog.show({
-				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
+				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, $timeout, adminAPI) {
 					$scope.details = projeto;
 					$scope.idIntegrantesPresentes = [];
 					$scope.idIntegrantesAusentes = [];
@@ -183,6 +186,40 @@
 					};
 				},
 				templateUrl: 'admin/views/details.presenca_projetos.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false,
+				fullscreen: true // Only for -xs, -sm breakpoints.
+			});
+		};
+
+		$scope.visualizarDetalhesPremiacao = function(projeto,ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
+					$scope.details = projeto;
+					$scope.premiacao = {_id:projeto._id};
+					$scope.setPremiado = function() {
+						adminAPI.putPremiadoProjetos($scope.premiacao).success(function(data, status) {
+							$scope.toast('Projeto premiado com sucesso!','success-toast');
+							
+							setTimeout($rootScope.recarregar, 750);
+						}).error(function(status) {
+							$scope.toast('Falha.','failed-toast');
+							console.log('Error: '+status);
+						});
+					};				
+					$scope.toast = function(message,tema) {
+						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000);
+						$mdToast.show(toast);
+					};
+					$scope.hide = function() {
+						$mdDialog.hide();
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: 'admin/views/details.premiacao.html',
 				parent: angular.element(document.body),
 				targetEvent: ev,
 				clickOutsideToClose: false,

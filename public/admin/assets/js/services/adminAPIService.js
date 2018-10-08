@@ -31,11 +31,13 @@
 			return $http(request);
 		}
 
-		let _getTodosProjetos = function() {
+		let _getTodosProjetos = function(ano) {
 			const request = {
 				url: '/admin/projetos',
 				method: 'GET',
+				data: {ano: ano}
 			}
+			console.log("REQUEST:"+JSON.stringify(request));
 			return $http(request);
 		};
 
@@ -123,6 +125,15 @@
 			}
 			return $http(request);
 		};
+	
+		let _putPremiadoProjetos = function(premiacao){
+			const request = {
+				url: '/admin/setPremiadoProjetos',
+				method: 'PUT',
+				data: premiacao
+			}
+			return $http(request);
+		}
 
 		let _postEvento = function(evento) {
 			const request = {
@@ -216,6 +227,7 @@
 			// saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,
 			putPresencaProjetos: _putPresencaProjetos,
+			putPremiadoProjetos: _putPremiadoProjetos,
 			postEvento: _postEvento,
 			getEventos: _getEventos,
 			putRemoveEvento: _putRemoveEvento,

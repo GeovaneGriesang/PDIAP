@@ -45,8 +45,8 @@ const premiadoSchema = new Schema({
 	resumo: {type: String},
 	palavraChave: {type: String},
 	avaliacao: {type: Array},
-  colocacao: {type: String},
-  mostratec: {type: Boolean},
+  	colocacao: {type: String},
+  	mostratec: {type: Boolean},
 	token: {type:String}
 
 // }, { collection: 'premiados2016' });

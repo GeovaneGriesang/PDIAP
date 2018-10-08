@@ -66,7 +66,11 @@ const ProjetoSchema = new Schema({
 
 	resumo: {type: String},
 	palavraChave: {type: String},
-	avaliacao: {type: Array}
+	avaliacao: {type: Array},
+	premiacao: {type: String},
+	colocacao: {type: Number},
+	mostratec: {type: Boolean},
+	token: {type:String}
 
 // }, { collection: 'betaPorcaoAPI' });
 // }, { collection: 'projetos2016' });

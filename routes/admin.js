@@ -275,6 +275,24 @@ console.log("log antes de sucesso presença");
 res.send('success');
 });
 
+router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
+  let premiacao = req.body;
+  if(premiacao.premiacao === 'Premiado'){
+	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+		if(err) throw err;	
+	});
+  } else if(premiacao.premiacao === 'Mencao_honrosa'){
+	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+		if(err) throw err;	
+	});		
+  } else if(premiacao.premiacao === '') {
+	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","mostratec":"", "token":""}}, (err, doc) =>{
+		if(err) throw err;	
+	});
+  }
+  res.send('success');
+});
+
 router.post('/edit', (req, res) => {
 	let obj = {
 		ano: req.body[0].ano,
@@ -305,7 +323,9 @@ router.get('/editar', (req, res) => {
 });
 
 router.get('/projetos', miPermiso("2","3"), (req, res) => {
+  console.log("ANO:"+JSON.stringify(req.body));
   projetoSchema.find((err, usr) => {
+    
     if (err) throw err;
     res.send(usr);
   });
