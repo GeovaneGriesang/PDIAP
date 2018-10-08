@@ -225,6 +225,7 @@ router.post('/emitirCertificado', (req, res) => {
 			inserirTokenAvaliador(cpf, usr[i]._id, "Avaliador");
 		}
 	}	
+	return pesquisaAvaliadro(cpf)
   }).then(usr => {
 	let array = [];
 	for(let i in usr){

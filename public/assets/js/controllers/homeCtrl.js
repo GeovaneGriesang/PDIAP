@@ -89,7 +89,6 @@
 				presenca_saberes = undefined;
 				
 				if (data.length > 0) {
-					console.log("DATA:"+JSON.stringify(data));
 					let i = data.map(function(e) { return e.tipo; }).indexOf('Avaliador');
 					if (i !== -1) {
 						angular.forEach(data[i].avaliadores, function (value, key){
@@ -289,7 +288,6 @@
 					}
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
-						console.log("DADOS:"+JSON.stringify(dados));
 						var ano2 = new Date(dados.createdAt);
 						var realizacao;
 						var edicao;
