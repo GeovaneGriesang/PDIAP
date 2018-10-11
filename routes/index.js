@@ -130,7 +130,7 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaAvaliador(cpf) {
     return new Promise(function (fullfill, reject) {
-      avaliadorSchema.find({'cpf':cpf}, 'nome token createdAt _id -_id',(err, usr) => {
+      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome token createdAt _id -_id',(err, usr) => {
         if (err) return reject(err)
         fullfill(usr)
       })	
@@ -225,7 +225,7 @@ router.post('/emitirCertificado', (req, res) => {
 			inserirTokenAvaliador(cpf, usr[i]._id, "Avaliador");
 		}
 	}	
-	return pesquisaAvaliadro(cpf)
+	return pesquisaAvaliador(cpf)
   }).then(usr => {
 	let array = [];
 	for(let i in usr){

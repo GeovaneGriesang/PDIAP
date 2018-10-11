@@ -72,7 +72,8 @@
 		})
 		.state('master.inscricao-avaliadores', {
 			url: "/avaliadores/inscricao",
-			templateUrl: 'admin/views/avaliadores-iframe.html'
+			templateUrl: 'admin/views/avaliadores.html',
+			controller: 'avaliadoresCtrl'
 		})
 		.state('master.presenca-projetos', {
 			url: "/projetos/presenca",

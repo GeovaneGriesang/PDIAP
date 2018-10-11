@@ -71,6 +71,18 @@
 			return $http(request);
 		};
 
+		let _putSetAvaliadores = function(arrayAvaliadoresMarcados,arrayAvaliadoresNMarcados) {
+			const request = {
+				url: '/admin/upgreiceAvaliadores',
+				method: 'PUT',
+				data: {
+					avaliadoresMarcados: arrayAvaliadoresMarcados,
+					avaliadoresNMarcados: arrayAvaliadoresNMarcados
+				}
+			}
+			return $http(request);
+		};
+
 		let _putUnsetAprovados = function(projeto) {
 			const request = {
 				url: '/admin/upgreice2',
@@ -152,9 +164,26 @@
 			return $http(request);
 		};
 
+		let _getAvaliadores = function() {
+			const request = {
+				url: '/admin/mostraAvaliadores',
+				method: 'GET'
+			}
+			return $http(request);
+		};
+
 		let _putRemoveEvento = function(id) {
 			const request = {
 				url: '/admin/removeEvento',
+				method: 'PUT',
+				data: { id: id }
+			}
+			return $http(request);
+		};
+
+		let _putRemoveAvaliador = function(id) {
+			const request = {
+				url: '/admin/removeAvaliador',
 				method: 'PUT',
 				data: { id: id }
 			}
@@ -221,6 +250,7 @@
 			getTodosSaberes: _getTodosSaberes,
 			getTodosAvaliadores: _getTodosAvaliadores,
 			putSetAprovados: _putSetAprovados,
+			putSetAvaliadores: _putSetAvaliadores,
 			putUnsetAprovados: _putUnsetAprovados,
 			postConfirmacao: _postConfirmacao,
 			// getEscolasSaberes: _getEscolasSaberes,
@@ -230,10 +260,12 @@
 			putPremiadoProjetos: _putPremiadoProjetos,
 			postEvento: _postEvento,
 			getEventos: _getEventos,
+			getAvaliadores: _getAvaliadores,
 			putRemoveEvento: _putRemoveEvento,
 			postParticipante: _postParticipante,
 			getParticipantes: _getParticipantes,
 			putRemoveParticipante: _putRemoveParticipante,
+			putRemoveAvaliador: _putRemoveAvaliador,
 			putAtualizaParticipante: _putAtualizaParticipante,
 			getCPFparticipantes: _getCPFparticipantes,
 			getCPFsaberes: _getCPFsaberes

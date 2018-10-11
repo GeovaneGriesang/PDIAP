@@ -60,7 +60,7 @@
 				}
 				else if (data[0].tipo === 'ProjetoAluno') {					
 					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Apresentação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto+'</br><b>Ano:</b> '+data[0].integrantes.ano;
-				}
+				}	
 				else if (data[0].tipo === 'ProjetoOrientador') {				
 					$scope.texto = '<b>Nome:</b> '+data[0].integrantes.nome+'</br><b>Tipo:</b> Orientação de projeto</br><b>CPF:</b> '+data[0].integrantes.cpf+'</br><b>Projeto:</b> '+data[0].integrantes.nomeProjeto+'</br><b>Ano:</b> '+data[0].integrantes.ano;
 				}
@@ -70,6 +70,8 @@
 					}
 					else if (data[0].evento.tipo === 'Seminário Saberes Docentes') {
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Conferencista</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
+					} else if(data[0].evento.tipo === 'Semana Acadêmica') {
+						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Responsável Semana Acadêmica</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
 					}
 				}
 				else if (data[0].tipo === 'Premiado') {

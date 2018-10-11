@@ -43,6 +43,7 @@ router.post('/registro', (req, res) => {
 		telefone: splita(req.body.telefone),
 		curriculo: req.body.curriculo,
 		turnos: req.body.turnos,
+		avaliacao: req.body.avaliacao,
 		createdAt: Date.now()
 	});
 		

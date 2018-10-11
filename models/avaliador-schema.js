@@ -43,6 +43,9 @@ const AvaliadorSchema = new Schema({
 	turnos: {
 		type: String
 	},
+	avaliacao: {
+		type: Boolean
+	},
 	token: {
 		type: String
 	},

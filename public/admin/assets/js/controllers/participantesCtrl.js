@@ -302,9 +302,11 @@
 				fullscreen: true // Only for -xs, -sm breakpoints.
 			});
 		};
+	
+		//Para reativar a não duplicidade de CPF do participante descomentar esta função
+		//e adicionar: data-ng-change="verificaCPF(participante.cpf)" no input de cpf - (cadastro-participantes.html)
 
-		//Participantes irão repetir?		
-		$scope.verificaCPF = function(cpf) {
+		/*$scope.verificaCPF = function(cpf) {
 			for (var i in $scope.CPFparticipantes) {
 				if ($scope.CPFparticipantes[i] === cpf) {
 					$scope.participantesForm.cpf.$setValidity('duplicado',false);
@@ -313,7 +315,7 @@
 					$scope.participantesForm.cpf.$setValidity('duplicado',true);
 				}
 			}
-		};
+		};*/
 
 		let resetForm = function() {
 			delete $scope.participante;

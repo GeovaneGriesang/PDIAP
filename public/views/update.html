@@ -80,12 +80,21 @@
             </div>
           </div>
 
-	  <div layout="row">                 
+	  <!--<div layout="row">                 
                   <md-checkbox name="participa" data-ng-model="projeto1.participa" data-ng-class="{'input-disabled': !editing3}" data-ng-focus="editing3=true" data-ng-blur="editing3=false" style="width:100%!important;padding:5px;margin-bottom:30px">
 		  Marcar Participação           
-                  </md-checkbox>		  
+                  </md-checkbox>
+		  		  
                   <div class="md-errors-spacer"></div>
-	  </div>
+	  </div>-->
+	  <div layout="row" style="margin-bottom:35px;margin-top:25px;">
+              <span style="margin-right:30px;color:#616161;">Marcar Participação:</span>
+              <md-radio-group data-ng-model="projeto1.participa" layout="row" required>
+                <md-radio-button ng-value="true">Sim</md-radio-button>
+                <md-radio-button ng-value="false">Não</md-radio-button>
+              </md-radio-group>
+              <div class="md-errors-spacer"></div>
+          </div>
 
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">

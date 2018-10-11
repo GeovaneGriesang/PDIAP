@@ -119,6 +119,11 @@
     <p data-ng-if="ordenacao != 'nomeEscola'">{{::proj.eixo}}</p>
   </div>
   <div flex="15" layout="row" layout-align="end center">
+    <div data-ng-if="proj.premiacao === 'Premiado' || proj.premiacao === 'Mencao_honrosa'" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{green2:proj.premiacao !== undefined, }" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+      <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Premiado'">Premiado</span>
+      <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Mencao_honrosa'">Menção</span>
+    </div>
+    <span flex="5"></span>
     <div data-ng-if="proj.aprovado === true" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{grey:proj.aprovado === true && proj.participa === undefined,green1:proj.participa === true,red:proj.participa === false}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
       <span style="font-weight:500;">Aprovado</span>
     </div>

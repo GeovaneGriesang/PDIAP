@@ -96,6 +96,21 @@ router.put('/removeEvento', miPermiso("3"), (req, res) => {
   res.send('success');
 });
 
+router.get('/mostraAvaliadores', miPermiso("3","2"), (req, res) => {
+  avaliadorSchema.find((err, usr) => {
+    if (err) throw err;
+    res.send(usr);
+  });
+});
+
+router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
+  let id = req.body.id;
+  avaliadorSchema.remove({"_id": id}, (err) => {
+    if (err) throw err;
+  });
+  res.send('success');
+});
+
 // router.put('/insereParticipanteOficina', miPermiso("3"), (req, res) => {
 //   let myArray = req.body
 //   ,   nomeOficina = req.body.nomeOficina;
@@ -278,6 +293,7 @@ res.send('success');
 router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
   let premiacao = req.body;
   if(premiacao.premiacao === 'Premiado'){
+	if(premiacao.colocacao === undefined){premiacao.colocacao = null;}
 	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
 		if(err) throw err;	
 	});
@@ -366,6 +382,33 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
     let id_doc = myArray1[i];
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$unset": {"aprovado": true}}, {new:true},
+    (err, doc) => {
+      if (err) throw err;
+    });
+  }
+res.send('success');
+});
+
+router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), (req, res) => {
+
+  let myArray0 = req.body.avaliadoresMarcados;
+  let myArray1 = req.body.avaliadoresNMarcados;
+  
+  for (var i = 0; i < myArray0.length; i++) {
+    let id_doc = myArray0[i];
+    avaliadorSchema.findOneAndUpdate({"_id": id_doc},
+    {"$set": {"avaliacao": true}}, {new:true},
+    (err, doc) => {
+      if (err)
+	throw err;
+    }
+  );
+  }
+
+  for (var i = 0; i < myArray1.length; i++) {
+    let id_doc = myArray1[i];
+    avaliadorSchema.findOneAndUpdate({"_id": id_doc},
+    {"$unset": {"avaliacao": true}}, {new:true},
     (err, doc) => {
       if (err) throw err;
     });

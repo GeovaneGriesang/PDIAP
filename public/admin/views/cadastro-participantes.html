@@ -51,7 +51,7 @@
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
               <label>CPF</label>
-              <input type="text" name="cpf" data-ng-model="participante.cpf" data-ng-change="verificaCPF(participante.cpf)" required minlength="14" maxlength="14" cpf-mask/>
+              <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="14" maxlength="14" cpf-mask/>
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.cpf.$dirty">
                   <div class="message-error" data-ng-show="participantesForm.cpf.$error.required">Obrigatório.</div>
