@@ -122,7 +122,7 @@
 					aprovadosQtd.countTotal += aprovado;
 					canceladosQtd.countTotal += cancelado;
 					//Hospedagem
-					console.log("HOSP:"+hosp+" | ");
+					//console.log("HOSP:"+hosp+" | ");
 					if(hosp != undefined && hosp !== ""){
 						totalQtd.countHospedagem++;
 						aprovadosQtd.countHospedagem += aprovado;
@@ -138,7 +138,7 @@
 							}
 						}
 					}
-					console.log("TOTAL_HOSP:"+totalQtd.countHospedagem);
+					//console.log("TOTAL_HOSP:"+totalQtd.countHospedagem);
 					//Categoria
 					var categoria = value.categoria;
 					if(categoria === "Fundamental I (1º ao 5º anos)"){
@@ -234,19 +234,20 @@
 					}
 					let orientadores = "";
 					let alunos = "";
+					let hospedagem = value.hospedagem;
 					angular.forEach(value.integrantes, function (value, key) {
 						if (value.tipo === 'Orientador') {
 							if (orientadores !== "") {
-								orientadores = orientadores+", "+value.nome+" ("+value.telefone+")";
+								orientadores = orientadores+", "+value.nome+" ("+value.telefone+") - ("+value.tamCamiseta+")";
 							} else {
-								orientadores = value.nome+" ("+value.telefone+")";
+								orientadores = value.nome+" ("+value.telefone+") - ("+value.tamCamiseta+")";
 							}
 						}
 						if (value.tipo === 'Aluno') {
 							if (alunos !== "") {
-								alunos = alunos+", "+value.nome+" ("+value.telefone+")";
+								alunos = alunos+", "+value.nome+" ("+value.telefone+") - ("+value.tamCamiseta+")";
 							} else {
-								alunos = value.nome+" ("+value.telefone+")";
+								alunos = value.nome+" ("+value.telefone+") - ("+value.tamCamiseta+")";
 							}
 						}
 					});
@@ -265,6 +266,7 @@
 							resumo: value.resumo,
 							aprovado: value.aprovado,
 							participa: value.participa,
+							hospedagem: hospedagem,
 							createdAt: ano
 						});
 						$scope.projetos.push(obj);
@@ -285,13 +287,12 @@
 				angular.forEach(saberes, function(value, key){
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $scope.ano){
-						console.log("VALUE:"+JSON.stringify(value));
+						//console.log("VALUE:"+JSON.stringify(value));
 						let obj = value;
 						obj.createdAt = ano;
 						$scope.saberes.push(obj);
 					}
 				});
-				// console.log(saberes);
 			})	
 			.error(function(status) {
 				console.log(status);
@@ -301,18 +302,6 @@
 		$scope.carregarAvaliadores = function() {
 			adminAPI.getTodosAvaliadores()
 			.success(function(avaliadores) {
-				// angular.forEach(projetos, function (value, key) {
-				// 	let obj = ({
-				// 		_id: value._id.$oid,
-				// 		numInscricao: value.numInscricao,
-				// 		nomeProjeto: value.nomeProjeto,
-				// 		nomeEscola: value.nomeEscola,
-				// 		categoria: value.categoria,
-				// 		eixo: value.eixo,
-				// 		resumo: value.resumo
-				// 	});
-				// 	$scope.projetos.push(obj);
-				// });
 				angular.forEach(avaliadores, function(value, key){
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $scope.ano){
@@ -406,6 +395,7 @@
 		}
 
 		$scope.visualizarDetalhes = function(projeto,ev) {
+			//console.log("PROJETO:"+JSON.stringify(projeto));
 			$mdDialog.show({
 				controller: function dialogController($scope, $mdDialog) {
 					$scope.details = projeto;

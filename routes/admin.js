@@ -339,7 +339,7 @@ router.get('/editar', (req, res) => {
 });
 
 router.get('/projetos', miPermiso("2","3"), (req, res) => {
-  console.log("ANO:"+JSON.stringify(req.body));
+  //console.log("ANO:"+JSON.stringify(req.body));
   projetoSchema.find((err, usr) => {
     
     if (err) throw err;

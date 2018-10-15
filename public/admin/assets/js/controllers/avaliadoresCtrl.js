@@ -128,7 +128,7 @@
 				$scope.toast('Avaliador(es) atualizado(s) com sucesso!','success-toast');
 				var count = 0;
 				if ($scope.idAvaliadoresMarcados.length !== 0) {
-							angular.forEach($rootScope.avaliadores, function (value, key) {
+							angular.forEach($scope.avaliadores, function (value, key) {
 								for (var x = 0; x < $scope.idAvaliadoresMarcados.length; x++) {
 									if (value._id === $scope.idAvaliadoresMarcados[x]) {
 										$scope.avaliadores[count].avaliacao = true;
@@ -139,7 +139,7 @@
 					count = 0;
 				}
 				if ($scope.idAvaliadoresNMarcados.length !== 0) {
-							angular.forEach($rootScope.avaliadores, function (value, key) {
+							angular.forEach($scope.avaliadores, function (value, key) {
 								for (var x = 0; x < $scope.idAvaliadoresNMarcados.length; x++) {
 									if (value._id === $scope.idProjetosReprovados[x]) {
 										$scope.avaliadores[count].avaliacao = false;

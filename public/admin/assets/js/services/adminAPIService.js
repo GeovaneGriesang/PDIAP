@@ -36,8 +36,7 @@
 				url: '/admin/projetos',
 				method: 'GET',
 				data: {ano: ano}
-			}
-			console.log("REQUEST:"+JSON.stringify(request));
+			}			
 			return $http(request);
 		};
 
@@ -57,9 +56,7 @@
 			return $http(request);
 		};
 
-		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {
-
-			console.log("sera que da pra fazer log?: " + arrayProjetosAprovados);
+		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {			
 			const request = {
 				url: '/admin/upgreice',
 				method: 'PUT',
