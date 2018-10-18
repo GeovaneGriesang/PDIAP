@@ -432,6 +432,95 @@ res.send('success');
   res.send('success');
 });*/
 
+router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
+  if (req.body.cep !== undefined){
+    req.body.cep = splita(req.body.cep);
+  }
+  let newProject = req.body;
+  let id = req.body._id;
+  delete newProject._id;
+
+  console.log(newProject);
+
+  projetoSchema.update({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
+    if (err) throw err;
+    res.status(200).json(docs);
+  });
+});
+
+router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, res) => {
+  let myArray = req.body
+  ,   id = req.body[0].ID;
+
+  myArray.forEach(function (value, i) {
+    if (value._id !== undefined) {
+	let id_subdoc = value._id,
+	newIntegrante = ({
+		_id: id_subdoc,
+		tipo: value.tipo,
+		nome: value.nome,
+		email: value.email,
+		cpf: splita(value.cpf),
+		telefone: splita(value.telefone),
+		tamCamiseta: value.tamCamiseta
+	});
+      projetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
+      {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
+      (err, doc) => {
+        if (err) throw err;
+      });	
+    } else if (value._id === undefined) {
+	    let newIntegrante = ({
+	      tipo: value.tipo,
+	      nome: value.nome,
+	      email: value.email,
+	      cpf: splita(value.cpf),
+	      telefone: splita(value.telefone),
+	      tamCamiseta: value.tamCamiseta
+	    });
+
+	    projetoSchema.findOne({"_id": id}, (err, usr) => {
+	      if (err) throw err;
+	      usr.integrantes.push(newIntegrante);
+	      usr.save((err, usr) => {
+		if (err) throw err;
+	      });
+	    });
+
+	    projetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
+	      if (err) throw err;
+	    });
+    }
+  });
+  res.status(200).json(myArray);
+});
+
+router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), (req, res) => {
+  let id = req.body.integrantes_id;
+  let ID = req.body.ID;
+
+  projetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
+    if (err) throw err;
+    usr.integrantes.id(id).remove()
+    usr.save((err, usr) => {
+      if (err) throw err;
+    });
+  });
+
+  projetoSchema.update({_id:ID}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
+    if (err) throw err;
+    res.status(200).json(docs);
+  });
+});
+
+router.put('/removeProjeto', miPermiso("3"), (req, res) => {
+  let id = req.body.id;
+  projetoSchema.remove({"_id": id}, (err) => {
+    if (err) throw err;
+  });
+  res.send('success');
+});
+
 router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
   var templatesDir = path.resolve(__dirname, '..', 'templates');
   var emailTemplates = require('email-templates');

@@ -149,16 +149,27 @@
             <div flex layout="column" layout-align="center center" hide-xs>
               <md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
             </div>
+          </div>            
+                    
+          <div layout="row" style="margin-bottom:35px;margin-top:25px;">
+              <span style="margin-right:30px;color:#616161;">Marcar Participação:</span>
+              <md-radio-group data-ng-model="projeto1.participa" layout="row" required>
+                <md-radio-button ng-value="true">Sim</md-radio-button>
+                <md-radio-button ng-value="false">Não</md-radio-button>
+              </md-radio-group>
+              <div class="md-errors-spacer"></div>
           </div>
+                    
+                    
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
               <label>Resumo do Projeto</label>
               <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus required></textarea>
               <div class="md-errors-spacer">
-               	<div class="message-error" style="color:rgba(0,0,0,0.87)!important;" data-ng-show="!projetoForm.resumo.$invalid || (projetoForm.resumo.$untouched && !projetoForm.resumo.$dirty)">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
-								<div data-ng-if="projetoForm.resumo.$dirty">
-									<div class="message-error" data-ng-show="projetoForm.resumo.$error.required">Obrigatório |</div>
-									<div class="message-error" data-ng-show="projetoForm.resumo.$invalid && !projetoForm.resumo.$error.required">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
+               	<div class="message-error" style="color:rgba(0,0,0,0.87)!important;" data-ng-show="!projetoForm1.resumo.$invalid || (projetoForm1.resumo.$untouched && !projetoForm1.resumo.$dirty)">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
+								<div data-ng-if="projetoForm1.resumo.$dirty">
+									<div class="message-error" data-ng-show="projetoForm1.resumo.$error.required">Obrigatório |</div>
+									<div class="message-error" data-ng-show="projetoForm1.resumo.$invalid && !projetoForm1.resumo.$error.required">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
                 </div>
               </div>
             </md-input-container>
@@ -175,6 +186,49 @@
   </md-content>
 </md-content>
 </md-tab>
+    
+<md-tab label="Conta Usuário">
+        <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
+          <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
+            <form name="projetoForm1_2" novalidate style="width:100%;padding:8px;">
+                <div layout="row">
+					<div class="bloco-right" flex-xs="100" flex="75">
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>E-mail principal</label>
+							<md-select name="email" data-ng-model="projeto1_2.email" required>
+								<md-option ng-value="email" data-ng-repeat="email in EMAILS" data-ng-if="EMAILS.length > 0">{{email}}</md-option>
+								<md-option value="" disabled data-ng-if="EMAILS.length == 0">Nenhum email inserido</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm1_2.email.$touched">
+									<div class="message-error" data-ng-if="projetoForm1_2.email.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>Nome do usuário</label>
+							<!--<input type="text" name="username" data-ng-model="projeto1_2.username" data-ng-change="verificaUsername(projeto1_2.username)" required/>-->
+                            <input type="text" name="username" data-ng-model="projeto1_2.username" required/>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm1_2.username.$dirty">
+									<div class="message-error" data-ng-if="projetoForm1_2.username.$error.required">Obrigatório.</div>
+								</div>
+								<div class="message-error" data-ng-if="projetoForm1_2.username.$error.duplicado">Username já está sendo utilizado.</div>
+							</div>
+						</md-input-container>
+					</div>
+				</div>
+                <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
+                    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm1_2.$valid" data-ng-click="update(projeto1_2)">
+                        <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
+                        Salvar
+                    </md-button>
+                </div>                
+            </form>
+          </md-content>
+        </md-content>
+</md-tab>
+        
 <md-tab label="Instituição">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
@@ -463,10 +517,12 @@
 </md-content>
 </md-tab>
 </md-tabs>
-</md-content>
+<!--</md-content>-->
+
 </div>
-      </div>
-      <span us-spinner>
+<!----></div>
+
+     <span us-spinner>
         <div layout="row" layout-sm="column" layout-align="space-around">
           <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
         </div>
@@ -477,22 +533,73 @@
       <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Projetos</span>
     </h3>
   </div>
-  <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = 'nomeProjeto'">
+
+<md-content>
+  <div layout="row" style="justify-content:center;padding:40px 0 20px 0;background:rgba(128,128,128,0.07);">
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#3f51b5;border-radius:50%;margin-right:8px;"></div>Fundamental I</div>
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Fundamental II</div>
+    <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Ensino Médio, Técnico e Superior</div>
+  </div>
+  <div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
+    <div layout style="align-items:center;margin-right:8px;font-weight:bold;">Aprovados:</div>
+    <div layout style="align-items:center;"><div class="green1" style="width:15px;height:15px;border-radius:50%;margin-right:8px;"></div>Confirmado!</div>
+    <div layout style="align-items:center;"><div class="red" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Cancelado</div>
+    <div layout style="align-items:center;"><div class="grey" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Pendente</div>
+  </div>
+  <div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
+    TOTAL: {{projetos.length}}
+  </div>
+  <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = ['aprovado','eixo']">
+    <md-list-item class="list-header">
+      <div flex="5"></div>
+      <div class="md-list-item-text" flex="10" style="margin-right:5px;text-align:center;">
+        <p>Nº</p>
+      </div>
+      <div class="md-list-item-text" flex="80" layout="column" style="text-align:center;">
+        <p>Projetos</p>
+      </div>
+      <md-divider></md-divider>
+    </md-list-item>
     <md-divider></md-divider>
     <div data-ng-if="projetos.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
       <p>Nenhum projeto cadastrado :(</p>
     </div>
-    <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | orderBy:ordenacao track by proj._id"
+    <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj.numInscricao"
     ng-click="preencherCampos(proj)">
-<div class="md-list-item-text" layout="column">
-  <h3><b style="color:#0d9cdc;">{{::proj.nomeProjeto}}</b></h3>
-  <p><b>{{::proj.categoria}}</b> - {{::proj.eixo}}</p>
-</div>
-<div layout flex="10" layout-align="center center" style="align-self:center;">
-  <md-icon data-ng-if="part.eventos !== undefined && part.eventos.length > 0" class="md-secondary" md-svg-src="checkbox-marked-circle-outline" style="color:green;margin:0;width:20px;height:20px;"></md-icon>
-</div>
+    <div layout flex="5" layout-align="center center" style="align-self:center;">
+      <div style="width:15px;height:15px;border-radius:50%;"
+      data-ng-class="{azul:proj.categoria == 'Fundamental I (1º ao 5º anos)',
+      roxo:proj.categoria == 'Fundamental II (6º ao 9º anos)',
+      green1:proj.categoria == 'Ensino Médio, Técnico e Superior'}">
+      </div>
+    </div>
+
+    <div class="md-list-item-text" flex="10" style="margin-right:5px;text-align:center;">
+      <h3>{{::proj.numInscricao}}</h3>
+    </div>
+    <div class="md-list-item-text" layout="column">
+      <h3>{{::proj.nomeProjeto}}</h3>
+      <p data-ng-if="ordenacao == 'nomeEscola'">{{::proj.nomeEscola}}</p>
+      <p data-ng-if="ordenacao != 'nomeEscola'">{{::proj.eixo}}</p>
+    </div>
+    <div flex="15" layout="row" layout-align="end center">
+      <div data-ng-if="proj.aprovado === true" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{grey:proj.aprovado === true && proj.participa === undefined,green1:proj.participa === true,red:proj.participa === false}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+        <span style="font-weight:500;">Aprovado</span>
+      </div>
+    </div>
+    <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+  	  <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover projeto" ng-click="removeProjeto($event,proj._id,proj.nomeProjeto)">
+          	  <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+        	  <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Remover</span>
+ 	  </md-button>
+    </div>
+    <md-divider></md-divider>
+  </md-list-item>
+</md-list>
+</md-content>
+
 <md-divider></md-divider>
-</md-list-item>
+<!--</md-list-item>
 </md-list>
 </section>
-</div>
+</div>-->

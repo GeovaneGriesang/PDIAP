@@ -553,9 +553,9 @@ md-tabs md-ink-bar {
   min-width: 36px !important;
   width: 36px !important;
 }
-md-select-menu md-content, md-select-menu {
+/*md-select-menu md-content, md-select-menu {
   max-height: none !important;
-}
+}*/
 md-select:not([disabled]):focus .md-select-value {
   border-color: #43a047 !important;
 }

@@ -185,7 +185,7 @@
 				data: { id: id }
 			}
 			return $http(request);
-		};
+		};		
 
 		let _postParticipante = function(participante) {
 			const request = {
@@ -237,7 +237,58 @@
 			}
 			return $http(request);
 		};
-		
+
+		let _getCategorias = function() {
+			const request = {
+				url: 'assets/js/categorias-eixos.json',
+				method: 'GET',
+			}
+			return $http(request);
+		};
+
+		let _getEstados = function() {
+			const request = {
+				url: 'assets/js/estados-cidades.json',
+				method: 'GET',
+			}
+			return $http(request);
+		};
+
+		let _putProjeto = function(projeto) {
+		 	const request = {
+		 		url: '/admin/update',
+		 		method: 'PUT',
+		 		data: projeto
+		 	}
+		 	return $http(request);
+		 };
+
+		let _putIntegrante = function(integrante) {
+			const request = {
+				url: '/admin/upgreiceEditProjeto',
+				method: 'PUT',
+				data: integrante
+			}
+			return $http(request);
+		};
+
+		let _removeIntegrante = function(integrante) {
+			const request = {
+				url: '/admin/removerIntegrante',
+				method: 'PUT',
+				data: integrante
+			}
+			return $http(request);
+		};
+
+		let _putRemoveProjeto = function(id) {
+			const request = {
+				url: '/admin/removeProjeto',
+				method: 'PUT',
+				data: { id: id }
+			}
+			return $http(request);
+		};
 
 		return {
 			//postLoginAdmin: _postLoginAdmin,
@@ -263,9 +314,15 @@
 			getParticipantes: _getParticipantes,
 			putRemoveParticipante: _putRemoveParticipante,
 			putRemoveAvaliador: _putRemoveAvaliador,
+			putRemoveProjeto: _putRemoveProjeto,
 			putAtualizaParticipante: _putAtualizaParticipante,
 			getCPFparticipantes: _getCPFparticipantes,
-			getCPFsaberes: _getCPFsaberes
+			getCPFsaberes: _getCPFsaberes,
+			getCategorias: _getCategorias,
+			getEstados: _getEstados,
+			putProjeto: _putProjeto,
+			putIntegrante: _putIntegrante,
+			removeIntegrante: _removeIntegrante
 		};
 	});
 })();
