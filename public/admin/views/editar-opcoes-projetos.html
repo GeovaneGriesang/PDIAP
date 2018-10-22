@@ -1,0 +1,53 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Editar | Atualizações de projetos</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+      </div>
+      </md-toolbar>      
+    </md-toolbar>
+
+      <md-content>	
+          <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+            <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+                <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Habilitar e Desabilitar atualizações nos projetos</span>
+            </h3>
+            <form name="opcoesForm" novalidate class="eventos-form">
+                <div layout="column">
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.nomeProjeto">Nome do Projeto</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.palavras_chave">Palavras-chave</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.resumo">Resumo</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.categoria">Categoria</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.eixo">Eixo Temático</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.participa">Participação</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.instituicao">Instituição</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.integrantes">Integrantes</md-checkbox>
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.hospedagem">Hospedagem</md-checkbox>
+                </div>
+                <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+                    <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!opcoesForm.$valid" data-ng-click="atualizarOpcoes(opcoes)">
+                        <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"> </md-icon>
+                        <span style="vertical-align:middle;">Salvar</span>
+                    </md-button>
+                </div>
+                <span us-spinner>
+                    <div layout="row" layout-sm="column" layout-align="space-around">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+                    </div>
+                </span>
+            </form>
+          </div>
+      </md-content>
+</section>
+</div>

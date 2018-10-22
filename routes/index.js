@@ -82,6 +82,16 @@ router.get('/edit', (req, res) => {
 	})
 });
 
+router.get('/getOpcoes', (req, res) => {
+	return new Promise(function (fulfill, reject) {
+		adminSchema.find({'username':'admin2'},'opcoes -_id',(err,usr)=>{
+			if(err) return reject(err);
+			if(usr == 0) return reject({err});
+			res.send(usr[0].opcoes);
+		})						
+	})
+});
+
 // router.post('/registro2', (req, res) => {
 //   let newAdmin = new adminSchema({
 //       username: req.body.username,

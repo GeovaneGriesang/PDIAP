@@ -100,6 +100,11 @@
 			templateUrl:'admin/views/editar-tela-inicial.html',
 			controller: 'editCtrl'
 		})
+		.state('master.editar-opcoes-projetos', {
+			url: "/editar-opcoes-projetos",
+			templateUrl:'admin/views/editar-opcoes-projetos.html',
+			controller: 'opcoesProjetosCtrl'
+		})
 		.state('master.editar-projetos', {
 			url: "/editar-projetos",
 			templateUrl:'admin/views/editar-projetos.html',

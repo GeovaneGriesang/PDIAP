@@ -31,6 +31,22 @@
 			return $http(request);
 		}
 
+		let _postOpcoes = function(op){
+			const request = {
+				url: '/admin/setOpcoes',
+				method: 'POST',
+				data: op
+			}
+			return $http(request);
+		}
+		let _getOpcoes = function(){
+			const request = {
+				url:'/admin/getOpcoes',
+				method: 'GET'
+			}
+			return $http(request);
+		}
+
 		let _getTodosProjetos = function(ano) {
 			const request = {
 				url: '/admin/projetos',
@@ -295,6 +311,8 @@
 			postEdit: _postEdit,
 			getTodosProjetos: _getTodosProjetos,
 			getEdits: _getEdits,
+			getOpcoes: _getOpcoes,
+			postOpcoes: _postOpcoes,
 			getTodosSaberes: _getTodosSaberes,
 			getTodosAvaliadores: _getTodosAvaliadores,
 			putSetAprovados: _putSetAprovados,

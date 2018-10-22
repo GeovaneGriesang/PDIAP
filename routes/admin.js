@@ -309,7 +309,7 @@ router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
   res.send('success');
 });
 
-router.post('/edit', (req, res) => {
+router.post('/edit', miPermiso("3"), (req, res) => {
 	let obj = {
 		ano: req.body[0].ano,
 		mes: req.body[0].mes,
@@ -334,6 +334,25 @@ router.get('/editar', (req, res) => {
 			if(err) return reject(err);
 			if(usr == 0) return reject({err});
 			res.send(usr);
+		})						
+	})
+});
+
+router.post('/setOpcoes', miPermiso("3"), (req, res) => {
+	let obj = req.body;
+	console.log("OBJ:"+JSON.stringify(obj));	
+	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true}, (err, usr) =>{
+		if (err) throw err				
+		else res.send('success');		
+	})
+});
+
+router.get('/getOpcoes', (req, res) => {
+	return new Promise(function (fulfill, reject) {
+		adminSchema.find({'username':'admin2'},'opcoes -_id',(err,usr)=>{
+			if(err) return reject(err);
+			if(usr == 0) return reject({err});
+			res.send(usr[0].opcoes);
 		})						
 	})
 });

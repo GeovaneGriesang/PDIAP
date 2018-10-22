@@ -12,6 +12,15 @@
 			}
 			return $http(request);
 		}
+
+		let _getOpcoes = function(){
+			const request = {
+				url:'/getOpcoes',
+				method: 'GET',
+			}
+			return $http(request);
+		}		
+
 		let _saveProjeto = function(projeto) {
 		 	const request = {
 		 		url: '/registro',
@@ -165,6 +174,7 @@
 
 		return {
 			getEdits: _getEdits,
+			getOpcoes: _getOpcoes,
 			saveProjeto: _saveProjeto,
 			saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,

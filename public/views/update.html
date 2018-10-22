@@ -10,7 +10,7 @@
                 <div class="bloco-right" flex>
                   <md-input-container class="md-block" data-ng-init="editing1=false" flex-gt-sm>
                     <label>Nome do Projeto</label>
-                    <input type="text" name="nomeProjeto" data-ng-model="projeto1.nomeProjeto" data-ng-class="{'input-disabled': !editing1}" data-ng-focus="editing1=true" data-ng-blur="editing1=false" required/>
+                    <input type="text" name="nomeProjeto" data-ng-model="projeto1.nomeProjeto" data-ng-class="{'input-disabled': !editing1}" data-ng-focus="editing1=true" data-ng-blur="editing1=false" required ng-disabled="!opcoes.nomeProjeto"/>
                     <div class="md-errors-spacer">
                       <div data-ng-if="projetoForm1.nomeProjeto.$dirty">
                         <div class="message-error" data-ng-if="projetoForm1.nomeProjeto.$error.required">Preencha esse campo.</div>
@@ -29,7 +29,8 @@
                     md-separator-keys="keys"
                     md-max-chips="6"
                     placeholder="Palavras-chave (máximo 5)"
-                    secondary-placeholder=""></md-chips>
+                    secondary-placeholder=""
+		    readonly="!opcoes.palavras_chave"></md-chips>
                     <div class="md-errors-spacer" style="padding-top:3px!important;">
                       <div class="message-error" style="padding-bottom:4px!important;color:rgba(0,0,0,0.87)!important;" data-ng-if="palavraChave.length !== 0 && palavraChave.length <= 5 || (projetoForm1.palavraChave.$untouched && !projetoForm1.palavraChave.$dirty)">Utilize ENTER após cada palavra chave.</div>
                     </div>
@@ -43,7 +44,7 @@
                   <div layout="row">
                     <md-input-container class="md-block" data-ng-init="editing2=false" style="width:100%!important;" flex-xs="100" flex="80">
                       <label>Categoria...</label>
-                      <md-select name="categoria" data-ng-model="projeto1.categoria" data-ng-class="{'input-disabled': !editing2}" data-ng-focus="editing2=true" data-ng-blur="editing2=false" style="width:97%!important;" required>
+                      <md-select name="categoria" data-ng-model="projeto1.categoria" data-ng-class="{'input-disabled': !editing2}" data-ng-focus="editing2=true" data-ng-blur="editing2=false" style="width:97%!important;" required ng-disabled="!opcoes.categoria">
                         <md-optgroup label="Categorias">
                           <md-option data-ng-value="x.categoria" data-ng-repeat="x in listaCategorias" data-ng-click="selectEixos(x.categoria)" data-ng-init="selectEixos(projeto1.categoria)">{{x.categoria}}</md-option>
                         </md-optgroup>
@@ -62,7 +63,7 @@
               <div layout="row">
                 <md-input-container class="md-block" data-ng-init="editing3=false" style="width:100%!important;" flex-xs="100" flex="80">
                   <label>Eixo Temático...</label>
-                  <md-select name="eixo" data-ng-model="projeto1.eixo" data-ng-class="{'input-disabled': !editing3}" data-ng-focus="editing3=true" data-ng-blur="editing3=false" style="width:97%!important;" required>
+                  <md-select name="eixo" data-ng-model="projeto1.eixo" data-ng-class="{'input-disabled': !editing3}" data-ng-focus="editing3=true" data-ng-blur="editing3=false" style="width:97%!important;" required ng-disabled="!opcoes.eixo">
                     <md-optgroup label="Eixos Temáticos" data-ng-if="projeto1.categoria !== undefined">
                       <md-option data-ng-value="y" data-ng-repeat="y in eixos">{{y}}</md-option>
                     </md-optgroup>
@@ -83,16 +84,16 @@
 	  <div layout="row" style="margin-bottom:35px;margin-top:25px;">
               <span style="margin-right:30px;color:#616161;">Marcar Participação:</span>
               <md-radio-group data-ng-model="projeto1.participa" layout="row" required>
-                <md-radio-button ng-value="true">Sim</md-radio-button>
-                <md-radio-button ng-value="false">Não</md-radio-button>
+                <md-radio-button ng-value="true" ng-disabled="!opcoes.participa">Sim</md-radio-button>
+                <md-radio-button ng-value="false" ng-disabled="!opcoes.participa">Não</md-radio-button>
               </md-radio-group>
               <div class="md-errors-spacer"></div>
           </div>
 
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
-              <label>Resumo do Projeto (Edição desabilitada)</label>
-              <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus disabled required></textarea>
+              <label>Resumo do Projeto</label>
+              <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus ng-disabled="!opcoes.resumo" required></textarea>
               <div class="md-errors-spacer">
                	<div class="message-error" style="color:rgba(0,0,0,0.87)!important;" data-ng-show="!projetoForm.resumo.$invalid || (projetoForm.resumo.$untouched && !projetoForm.resumo.$dirty)">Mínimo 500 caracteres, máximo 2000 caracteres |</div>
 								<div data-ng-if="projetoForm.resumo.$dirty">
@@ -114,7 +115,7 @@
   </md-content>
 </md-content>
 </md-tab>
-<md-tab label="Instituição">
+<md-tab label="Instituição" ng-disabled="!opcoes.instituicao">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
       <form name="projetoForm2" novalidate style="width:85%;max-width:850px;padding:8px;">
@@ -196,7 +197,7 @@
 </md-content>
 </md-content>
 </md-tab>
-<md-tab label="Orientador(es)">
+<md-tab label="Orientador(es)" ng-disabled="!opcoes.integrantes">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
       <form name="projetoForm3" novalidate style="width:85%;max-width:850px;padding:8px;">
@@ -289,7 +290,7 @@
 </md-content>
 </md-content>
 </md-tab>
-<md-tab label="Aluno(s)">
+<md-tab label="Aluno(s)" ng-disabled="!opcoes.integrantes">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
       <form name="projetoForm4" novalidate style="width:85%;max-width:850px;padding:8px;">
@@ -382,7 +383,7 @@
 </md-content>
 </md-content>
 </md-tab>
-<md-tab label="Hospedagem" data-ng-click="carregaIntegrantes()">
+<md-tab label="Hospedagem" data-ng-click="carregaIntegrantes()" ng-disabled="!opcoes.hospedagem">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
       <form name="projetoForm5" novalidate style="width:85%;max-width:850px;padding:8px;">

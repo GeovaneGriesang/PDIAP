@@ -58,7 +58,7 @@ const ProjetoSchema = new Schema({
 	updatedAt: {type: Date},
 
 	resetPasswordToken: {type: String},
-    resetPasswordCreatedDate: {type: Date},
+    	resetPasswordCreatedDate: {type: Date},
 
 	integrantes: [IntegranteSchema],
 	relatorio: uploadSchema,

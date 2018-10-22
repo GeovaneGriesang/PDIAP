@@ -3,6 +3,18 @@
 const mongoose = require('mongoose')
 ,	Schema = mongoose.Schema;
 
+const opcoesSchema = new Schema({	
+	instituicao: {type: Boolean},
+	integrantes: {type: Boolean},
+	hospedagem: {type: Boolean},
+	nomeProjeto: {type: Boolean},
+	palavras_chave: {type: Boolean},
+	categoria: {type: Boolean},
+	eixo: {type: Boolean},
+	participa: {type: Boolean},
+	resumo: {type: Boolean}
+});
+
 const AdminSchema = new Schema({
 	username: {
 		type: String
@@ -36,7 +48,8 @@ const AdminSchema = new Schema({
 	},
 	saberes_docentes: {
 		type: Boolean
-	}
+	},
+	opcoes: opcoesSchema
 }, { collection: 'adminCollection' });
 
 const Avaliador = module.exports = mongoose.model('Admin', AdminSchema);

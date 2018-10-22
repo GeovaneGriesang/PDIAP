@@ -11,6 +11,18 @@
 		$scope.alunos = [];
 		$scope.emails1 = [];
 
+		$scope.opcoes = {};
+
+		$scope.carregarOpcoes = function(){
+			projetosAPI.getOpcoes().success(function(op){
+				$scope.opcoes = op;
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		}
+		$scope.carregarOpcoes();
+
 		$scope.update = function(projeto) {
 			if (projeto.nomeProjeto !== undefined) {
 				projeto.palavraChave = $scope.palavraChave;
@@ -234,8 +246,6 @@
 						model5.assign($scope, value.tamCamiseta);
 					}
 				});
-				console.log("Alunos:"+JSON.stringify($scope.alunos));
-				console.log("Orientadores:"+JSON.stringify($scope.orientadores));
 				$scope.dynamicFields11 = [];
 				$scope.dynamicFields22 = [];
 				$scope.btnAdd11 = true;
