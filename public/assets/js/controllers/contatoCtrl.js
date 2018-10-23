@@ -19,7 +19,7 @@
 							.ok('OK')
 							.targetEvent(ev)
 						).then(function(result) {
-							$location.url('/');
+							$window.location.href="http://movaci.com.br";
 						}, function() {});
 					};
 					showAlert2();

@@ -1,4 +1,4 @@
-<header ng-init="carregarEdits()">
+<header>
 	<md-toolbar md-scroll-shrink style="background:rgba(26,151,30,0.75)!important;min-height:60px!important;height:60px;">
 		<div class="md-toolbar-tools toolbar-inscricao" flex>
 			<span flex="5"></span>
@@ -377,7 +377,7 @@
 			</div>
 
 			<div class="row finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-				<md-button class="md-raised md-primary green lighten-1" data-ng-disabled="!projetoForm.$valid || palavrasChave.length === 0" data-ng-click="habilitarLogin()" data-ng-if="!loginHabilitado">
+				<md-button class="md-raised md-primary green lighten-1" data-ng-disabled="!((projetoForm.$valid && palavrasChave.length !== 0) && cadastro_projetos)" data-ng-click="habilitarLogin()" data-ng-if="!loginHabilitado">
 					<md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Avançar
 				</md-button>
 			</div>

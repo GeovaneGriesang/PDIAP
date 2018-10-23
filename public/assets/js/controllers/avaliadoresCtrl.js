@@ -5,11 +5,13 @@
 	.module('PDIAP')
 	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, projetosAPI) {
 
+		$scope.cadastro_avaliadores = true;
 
 		$scope.carregarEdits = function(){
-			projetosAPI.getEdits().success(function(edits){
+			projetosAPI.getEdits().success(function(edits){				
 				if(edits[0].cadastro_avaliadores == false){
-					let showConfirmDialog = function(ev) {
+					$scope.cadastro_avaliadores = false;
+					/*let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.alert()
 						.title('Página bloqueada!')
 						.textContent('Esta pagina não está disponível no momento!')
@@ -22,13 +24,14 @@
 							$window.location.href="http://movaci.com.br/";
 						}, function() {});
 					};
-					showConfirmDialog();
+					showConfirmDialog();*/
 				}	
 			})
 			.error(function(status) {
 				console.log(status);
 			});
 		}
+		$scope.carregarEdits();		
 
 		$scope.eixos = [];
 
@@ -88,7 +91,7 @@
 						.ok('OK, Voltar')
 						.cancel('Nova Inscrição');
 						$mdDialog.show(confirm).then(function() {
-							$location.url('/');
+							$window.location.href="http://movaci.com.br";
 						}, function() {});
 					};
 					showConfirmDialog();

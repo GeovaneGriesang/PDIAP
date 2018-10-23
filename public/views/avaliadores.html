@@ -1,4 +1,4 @@
-<header ng-init="carregarEdits()">
+<header>
   <md-toolbar md-scroll-shrink style="background:rgba(55,71,79,0.8)!important;min-height:60px!important;height:60px;">
     <div class="md-toolbar-tools toolbar-inscricao" flex>
       <span flex="5"></span>
@@ -38,7 +38,7 @@
 
 <!-- Formulário -->
 <md-content flex layout="column" layout-align="center center" class="inscricao-content avaliadores-content">
-  <form name="avaliadoresForm" novalidate>
+  <form name="avaliadoresForm" novalidate ng-disabled="!cadastroAvaliadores">
     <div layout-gt-xs="row">
       <md-input-container class="md-block" flex-gt-xs>
         <label>Nome completo</label>
@@ -241,7 +241,7 @@
 
   <!-- Finalizar inscrição -->
   <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
-    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!avaliadoresForm.$valid" data-ng-click="registrarAvaliador(avaliadores)">
+    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!(avaliadoresForm.$valid && cadastro_avaliadores)" data-ng-click="registrarAvaliador(avaliadores)">
       <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Finalizar
     </md-button>
   </div>

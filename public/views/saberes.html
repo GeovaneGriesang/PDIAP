@@ -84,7 +84,7 @@
       <div flex="5" hide-xs></div>
       <md-input-container class="md-block" flex-gt-xs>
         <label>Telefone</label>
-        <input type="text" name="telefone" data-ng-model="saberes.telefone" required minlength="14" maxlength="14" fone-mask/>
+        <input type="text" name="telefone" data-ng-model="saberes.telefone" required minlength="15" maxlength="15" fone-mask/>
         <div class="md-errors-spacer">
           <div data-ng-show="saberesForm.telefone.$dirty">
             <div class="message-error" data-ng-show="saberesForm.telefone.$error.required">Obrigatório.</div>
@@ -130,7 +130,7 @@
 
   <!-- Finalizar inscrição -->
   <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
-    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!saberesForm.$valid" data-ng-click="registrarSaberes(saberes)">
+    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!(saberesForm.$valid && saberes_docentes)" data-ng-click="registrarSaberes(saberes)">
       <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Finalizar
     </md-button>
   </div>
