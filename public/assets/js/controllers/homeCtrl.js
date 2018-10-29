@@ -293,17 +293,14 @@
 						var edicao;
 						var ch = "."; //Carga horaria
 						if (ano2.getFullYear() === 2016) {
-							console.log("Certificado 2016");
 							realizacao = '28 a 30 de setembro de 2016';
 							edicao = 'V';
 							background = aaa;
 						} else if(ano2.getFullYear() === 2017){
-							console.log("Certificado 2017");
 							realizacao = '27 a 29 de setembro de 2017';
 							edicao = 'VI';
 							background = aaa;
 						} else if(ano2.getFullYear() === 2018){
-							console.log("Certificado 2018");
 							realizacao = '26 a 28 de setembro de 2018';
 							edicao = 'VII';
 							background = aaa2;
