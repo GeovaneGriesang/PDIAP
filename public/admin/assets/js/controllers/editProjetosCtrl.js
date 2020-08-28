@@ -23,6 +23,8 @@
 		$scope.projetoEmail = '';
 		$scope.integrantes = [];
 
+		$scope.year = CadastraAno();
+
 		$scope.recarregar = function(){
 			resetForm();
 			

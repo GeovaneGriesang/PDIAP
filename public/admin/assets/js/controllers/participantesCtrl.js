@@ -12,6 +12,8 @@
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
 
+		$scope.year = CadastraAno();
+
 		let formatCPF = function(cpf) {
 			if (cpf !== undefined) {
 				cpf = cpf.substring(0,3) + "." + cpf.substring(3);

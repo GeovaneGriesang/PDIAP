@@ -77,11 +77,9 @@
 	<span flex></span>
 
 	<div style="width:85px;">
-          <md-select data-ng-model="ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+          <md-select data-ng-model="ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
-              <md-option value="2018" data-ng-selected="true" data-ng-click="recarregar()">2018</md-option>
-              <md-option value="2017" data-ng-click="recarregar()">2017</md-option>
-              <md-option value="2016" data-ng-click="recarregar()">2016</md-option>
+              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year" data-ng-click="recarregar()">{{years}}</md-option>
             </md-optgroup>
           </md-select>
         </div>

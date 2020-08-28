@@ -10,6 +10,8 @@
 		$scope.idAprovados = [];
 		$scope.count = 0;
 
+		$scope.year = CadastraAno();
+
 		let countTotal = 0;
 		$scope.hosp = [];
 		let carregarProjetos = function() {
@@ -95,6 +97,7 @@
 			$scope.count = 0;
 			$scope.idProjetosAprovados = [];
 			$scope.idProjetosReprovados = [];
+			$scope.year = CadastraAno();
 			carregarProjetos();
 		}
 

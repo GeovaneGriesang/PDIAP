@@ -8,6 +8,8 @@
 		$scope.avaliadores = [];
 		$scope.count = 0;
 
+		$scope.year = CadastraAno();
+
 		$scope.registrarAvaliador = function(avaliador) {
 			adminAPI.saveAvaliador(avaliador)
 			.success(function(data, status) {

@@ -16,6 +16,8 @@
 		$scope.btnAdd = true;
 		$scope.count = 1;
 
+		$scope.year = CadastraAno();
+
 		$scope.addResponsavel = function() {
 			$scope.count++;
 			$scope.dynamicFields.push({nome:'nome'+$scope.count, cpf:'cpf'+$scope.count});
