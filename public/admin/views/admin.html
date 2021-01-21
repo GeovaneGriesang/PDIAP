@@ -54,6 +54,10 @@
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar</p>
         </md-list-item>
+        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-mostra">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Mostra</p>
+        </md-list-item>
       </md-list>
       <md-list>
         <md-list-item ng-click="section4.expand = !section4.expand">
@@ -76,6 +80,10 @@
         <md-list-item data-ng-show="section5.expand" ui-sref="master.editar-tela-inicial">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Tela inicial</p>
+        </md-list-item>
+        <md-list-item data-ng-show="section5.expand" ui-sref="master.exportar">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Exportar Projetos</p>
         </md-list-item>
 	<md-list-item data-ng-show="section5.expand" ui-sref="master.editar-opcoes-projetos">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>

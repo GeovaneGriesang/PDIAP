@@ -306,6 +306,24 @@
 			return $http(request);
 		};
 
+		let _postExportarprojetos = function(username, password) {
+			const request = {
+				url: '/admin/exportarprojetos',
+				method: 'POST',
+				data: { usuario: username, senha: password }
+			}
+			return $http(request);
+		}
+
+		let _postCertificado = function(data){
+			const request = {
+				url: '/admin/postCertificado',
+				method: 'POST',
+				data: {data}
+			}
+			return $http(request);
+		}
+
 		return {
 			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
@@ -340,7 +358,9 @@
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,
-			removeIntegrante: _removeIntegrante
+			removeIntegrante: _removeIntegrante,
+			exportaProjetos: _postExportarprojetos,
+			postCertificado: _postCertificado
 		};
 	});
 })();

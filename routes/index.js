@@ -110,7 +110,7 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoAluno(cpf) {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado':true},
+        {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado':{$exists: true}},
         'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
@@ -122,7 +122,7 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoOrientador(cpf) {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':true},
+        {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':{$exists: true}},
         'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})

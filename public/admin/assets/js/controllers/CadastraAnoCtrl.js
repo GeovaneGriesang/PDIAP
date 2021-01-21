@@ -12,8 +12,3 @@ var CadastraAno = function () {
   }
   return Ano; //especifica que a função deve retornar o array Ano
 };
-
-//exporta a função CadastraAno e possibilita sua utilização em outros scripts JS
-module.exports = function () {
-  return CadastraAno;
-};

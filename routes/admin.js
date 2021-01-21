@@ -23,7 +23,9 @@ const express = require('express')
 , saberesSchema = require('../models/saberes-schema')
 , pdf = require('pdfkit')
 , fs = require('fs')
-, async = require('async');
+, async = require('async')
+, { exec } = require("child_process")
+, readline = require('readline');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -171,6 +173,48 @@ router.put('/removeParticipante', (req, res) => {
   participanteSchema.remove({"_id": id}, (err) => {
     if (err) throw err;
   });
+  res.send('success');
+});
+
+router.post('/exportarprojetos', (req, res) => {
+
+    var dadosbrutos = "";
+    
+    exec("mongo ../PDIAP/exportar.js > ../dados.json");
+      
+    setTimeout(function() {      
+      var manipuladados = readline.createInterface({
+        input: fs.createReadStream("../dados.json"),
+        crflDelay: Infinity   
+      });    
+      var comecaput = false;    
+      manipuladados.on("line", function(line){   
+        if(line == "["){   
+          comecaput = true;
+        }    
+        if(comecaput == true){    
+          dadosbrutos += line.toString();
+          console.log(line);   
+        }    
+      });    
+    }, 5000);    
+    setTimeout(function(){    
+      fs.writeFileSync("../data.json", dadosbrutos);    
+
+    	exec("curl -d \"@../data.json\" -X POST -H \"Content-Type: application/json\"  http://"+req.body.usuario+":"+req.body.senha+"@localhost:8080/Webservice/integrador.php");    
+    }, 10000);  
+    setTimeout(function(){
+      let codigo = { cod: 1};
+      return res.send(codigo);
+    }, 15000);  
+});
+
+//rota para cadastro de certificado
+router.post('/postCertificado', (req, res) => {
+
+  var teste = req.body.data;
+  console.log(teste);
+
   res.send('success');
 });
 

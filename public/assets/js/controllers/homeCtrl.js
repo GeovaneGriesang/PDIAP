@@ -292,6 +292,7 @@
 						var realizacao;
 						var edicao;
 						var ch = "."; //Carga horaria
+
 						if (ano2.getFullYear() === 2016) {
 							realizacao = '28 a 30 de setembro de 2016';
 							edicao = 'V';

@@ -25,7 +25,7 @@
 			.success(function(data) {
 				$scope.texto = '';
 				if (data[0].tipo === 'Avaliador') {
-					$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+"</br><b>Ano:</b> "+data[0].ano;
+					$scope.texto = '<b>Nome:</b> '+data[0].createdAt+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+"</br><b>Ano:</b> "+data[0].ano;
 				}
 				else if (data[0].tipo === 'Participante') {
 					let evts1 = '';
