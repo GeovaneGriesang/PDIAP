@@ -18,8 +18,7 @@
         var LerImagem = new FileReader();
         var Imagem = document.querySelector('input[type=file]').files[0];
         var preview = document.getElementById('preview_img');
-        console.log("chegou aqui");
-
+        
         LerImagem.onloadend = function(){
           
           preview.src = LerImagem.result;
@@ -38,7 +37,7 @@
           adminAPI.postCertificado(dados)
           .success(function(){
 
-            alert('deu bom');
+            alert('Sucesso!!'); 
 
           });
         }
