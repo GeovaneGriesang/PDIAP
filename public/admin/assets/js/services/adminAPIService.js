@@ -315,6 +315,7 @@
 			return $http(request);
 		}
 
+		//função da API para levar as informações do controlador cadastromostraCtrl.js para admin.js através de um request usando método POST
 		let _postCertificado = function(data){
 			const request = {
 				url: '/admin/postCertificado',

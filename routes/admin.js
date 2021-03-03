@@ -21,6 +21,8 @@ const express = require('express')
 , wellknown = require('nodemailer-wellknown')
 , avaliadorSchema = require('../models/avaliador-schema')
 , saberesSchema = require('../models/saberes-schema')
+, cadastroMostraSchema = require('../models/cMostra-schema')
+, cadastroMostra = require('../controllers/cMostra-controller')
 , pdf = require('pdfkit')
 , fs = require('fs')
 , async = require('async')
@@ -45,7 +47,7 @@ function splita(arg){
 function miPermiso(role,role2) {
   return function(req, res, next) {
     if(req.user.permissao === role || req.user.permissao === role2)
-    next();
+      next();
     else res.sendStatus(403);
   }
 }
@@ -212,9 +214,36 @@ router.post('/exportarprojetos', (req, res) => {
 //rota para cadastro de certificado
 router.post('/postCertificado', (req, res) => {
 
-  var teste = req.body.data;
-  console.log(teste);
+  //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
+  let novoCadastro = new cadastroMostraSchema({
+    imagem: req.body.data.dataUrl,
+    textoaluno: req.body.data.textoAluno,
+    textoorientador: req.body.data.textoOrientador,
+    textosaberes: req.body.data.textoSaberes,
+    textopremiado: req.body.data.textoPremiado,
+    textoparticipante: req.body.data.textoParticipante,
+    textohonrosa: req.body.data.textoMencao,
+    textoacademica: req.body.data.textoSemana,
+    createdAt: Date.now()
+  });
 
+  // let novoCadastro = new cadastroMostraSchema({
+  //   imagem: req.body.data.dataUrl,
+  //   texto: [
+  //     {aluno: req.body.data.textoAluno},
+  //     {orientador: req.body.data.textoOrientador},
+  //     {saberes: req.body.data.textoSaberes},
+  //     {premiado: req.body.data.textoPremiado},
+  //     {participante: req.body.data.textoParticipante},
+  //     {honrosa: req.body.data.textoMencao},
+  //     {academica: req.body.data.textoSemana}
+  //   ]
+  // });
+
+  //envia o Schema para cMostra-controller para salvar os dados no banco
+
+  //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
+  cadastroMostra.createMostra(novoCadastro, (callback) => {});
   res.send('success');
 });
 
@@ -263,8 +292,9 @@ router.get('/mostraCPFparticipantes', miPermiso("3"), (req, res) => {
   participanteSchema.find({},'cpf -_id', (error, cpfs) => {
     if(error) {
       return res.status(400).send({msg:"error occurred - "+error});
-    } else
+    } else {
     return res.status(200).send(cpfs);
+    }
   });
 });
 
@@ -435,8 +465,9 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$set": {"aprovado": true}}, {new:true},
     (err, doc) => {
-      if (err)
-	throw err;
+      if (err){
+        throw err;
+        }
     }
   );
   }
@@ -462,8 +493,9 @@ router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), (req, re
     avaliadorSchema.findOneAndUpdate({"_id": id_doc},
     {"$set": {"avaliacao": true}}, {new:true},
     (err, doc) => {
-      if (err)
-	throw err;
+      if (err){
+        throw err;
+      }
     }
   );
   }

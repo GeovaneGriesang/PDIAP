@@ -172,6 +172,15 @@
 			return $http(request);
 		};
 
+		//Get na API para retornar os dados das mostras e certificados 
+		let _getMostra = function(){
+			const request= {
+				url: '/getMostraInfo',
+				method: 'GET',
+			};
+			return $http(request);
+		}
+
 		return {
 			getEdits: _getEdits,
 			getOpcoes: _getOpcoes,
@@ -192,7 +201,8 @@
 			postContato: _postContato,
 			removeIntegrante: _removeIntegrante,
 			postCertificado: _postCertificado,
-			postConferirCertificado: _postConferirCertificado
+			postConferirCertificado: _postConferirCertificado,
+			getMostra: _getMostra
 		};
 	});
 })();

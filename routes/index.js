@@ -7,6 +7,7 @@ const express = require('express')
 , Projeto = require('../controllers/projeto-controller')
 , session = require('express-session')
 , ProjetoSchema = require('../models/projeto-schema')
+, CadastroMostraSchema = require('../models/cMostra-schema')
 , avaliadorSchema = require('../models/avaliador-schema')
 , participanteSchema = require('../models/participante-schema')
 , eventoSchema = require('../models/evento-schema')
@@ -973,6 +974,15 @@ router.post('/nova-senha/:token', (req, res) => {
     });
   };
 });
+
+router.get('/getMostraInfo', function(req, res){
+  CadastroMostraSchema.find(function(err ,data){
+    console.log('teste');
+    if(err) throw err;
+    res.status(200).send(data);
+  });
+
+})
 
 //GET na homepage (/).
 router.all('/', function(req, res, next) {

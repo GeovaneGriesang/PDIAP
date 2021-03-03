@@ -71,7 +71,6 @@
 			});
 		};
 
-
 		let buscarCPF = function(cpf) {
 			projetosAPI.postCertificado(cpf)
 			.success(function(data) {
@@ -184,7 +183,12 @@
 							mencao_honrosa.push(value);
 						});
 					}
-					visualizarCertificados(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,countCertificados);
+					//Antes de passar para a criação do certificado puxa os dados das mostras 
+					projetosAPI.getMostra()
+					.success(function(dadosMostra){
+						console.log(dadosMostra);
+						visualizarCertificados(dadosMostra,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,countCertificados);
+					});
 				} else {
 					let showAlert = function(ev) {
 						$mdDialog.show(
@@ -230,7 +234,7 @@
 			}, function() {});
 		};
 
-		let visualizarCertificados = function(avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,numCertificados,ev) {
+		let visualizarCertificados = function(dadosMostra,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,numCertificados,ev) {
 			$mdDialog.show({
 				controller: function dialogCertificateController($scope, $window, $mdDialog) {
 					$scope.avaliador = [];
