@@ -217,13 +217,16 @@ router.post('/postCertificado', (req, res) => {
   //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
   let novoCadastro = new cadastroMostraSchema({
     imagem: req.body.data.dataUrl,
-    textoaluno: req.body.data.textoAluno,
-    textoorientador: req.body.data.textoOrientador,
-    textosaberes: req.body.data.textoSaberes,
-    textopremiado: req.body.data.textoPremiado,
-    textoparticipante: req.body.data.textoParticipante,
-    textohonrosa: req.body.data.textoMencao,
-    textoacademica: req.body.data.textoSemana,
+    textoAvaliador: req.body.data.textoAvaliador,
+    textoOrientador: req.body.data.textoOrientador,
+    textoApresentacao: req.body.data.textoApresentacao,
+    textoPremiado: req.body.data.textoPremiado,
+    textoMencao: req.body.data.textoMencao,
+    textoSaberes: req.body.data.textoSaberes,
+    textoPOficinas: req.body.data.textoPOficinas,
+    textoROficinas: req.body.data.textoROficinas,
+    textoAcademica: req.body.data.textoAcademica,
+    textoDocentes: req.body.data.textoDocentes,
     createdAt: Date.now()
   });
 

@@ -6,13 +6,16 @@
 
       //algumas scopes para recuperar os dados 
       $scope.layout_certificado;
-      $scope.textocertificado_aluno;
+      $scope.textocertificado_avaliador;
       $scope.textocertificado_orientador;
-      $scope.textocertificado_saberes;
+      $scope.textocertificado_apresentacao;
       $scope.textocertificado_premiado;
-      $scope.textocertificado_participante;
       $scope.textocertificado_mencao;
-      $scope.textocertificado_semana;
+      $scope.textocertificado_saberes;
+      $scope.textocertificado_poficinas;
+      $scope.textocertificado_roficinas;
+      $scope.textocertificado_academica;
+      $scope.textocertificado_docentes;
       
       //função que é ativada ao se clicar no botão CADASTRAR na página cadastro-mostra.html 
       $scope.cadastrarMostra = function(){
@@ -30,13 +33,16 @@
           //preenche o JSON de dados com as informações do certificado
           var dados = {
             'dataUrl' : LerImagem.result,
-            'textoAluno' : $scope.textocertificado_aluno,
+            'textoAvaliador' : $scope.textocertificado_avaliador,
             'textoOrientador' : $scope.textocertificado_orientador,
-            'textoSaberes' : $scope.textocertificado_saberes,
+            'textoApresentacao' : $scope.textocertificado_apresentacao,
             'textoPremiado' : $scope.textocertificado_premiado,
-            'textoParticipante' : $scope.textocertificado_participante,
             'textoMencao' : $scope.textocertificado_mencao,
-            'textoSemana' : $scope.textocertificado_semana, 
+            'textoSaberes' : $scope.textocertificado_saberes,
+            'textoPOficinas' : $scope.textocertificado_poficinas, 
+            'textoROficinas' : $scope.textocertificado_roficinas,
+            'textoAcademica' : $scope.textocertificado_academica,
+            'textoDocentes' : $scope.textocertificado_docentes
           };
 
           //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'

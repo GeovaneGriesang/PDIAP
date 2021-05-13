@@ -186,7 +186,6 @@
 					//Antes de passar para a criação do certificado puxa os dados das mostras 
 					projetosAPI.getMostra()
 					.success(function(dadosMostra){
-						console.log(dadosMostra);
 						visualizarCertificados(dadosMostra,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,countCertificados);
 					});
 				} else {
@@ -296,6 +295,21 @@
 						var realizacao;
 						var edicao;
 						var ch = "."; //Carga horaria
+						var dados_certificado = {};
+						console.log(dadosMostra);
+						console.log(dados);
+						
+						var texto = "";
+
+						//loopa pelos dados das mostras e encontra a mostra que melhor se encaixa naquele certificado
+						for(var i = dadosMostra.length - 1; i >= 0; i--){
+							var ano_certificado = new Date(dadosMostra[i].createdAt)
+							if(ano_certificado < ano2){
+								dados_certificado = dadosMostra[i];
+								console.log(dados_certificado);
+								break;
+							}
+						}						
 
 						if (ano2.getFullYear() === 2016) {
 							realizacao = '28 a 30 de setembro de 2016';
@@ -313,63 +327,87 @@
 								ch = ", com carga horária de 20 horas.";
 							}
 						} 
-
+						
 						if (tipo === 'Avaliador') {
-							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
-							'trabalhos apresentados na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
-							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
+							// 'trabalhos apresentados na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
+							// 'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
+							// 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoAvaliador;
 						} else if (tipo === 'Orientador') {
-							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como ORIENTADOR (a) do '+
-							'projeto ' +dados.nomeProjeto.toUpperCase()+ ' na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
-							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como ORIENTADOR (a) do '+
+							// 'projeto ' +dados.nomeProjeto.toUpperCase()+ ' na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
+							// 'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
+							// 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoOrientador;
 						} else if (tipo === 'Apresentacao') {
-							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' apresentou o projeto '+
-							dados.nomeProjeto.toUpperCase()+ ' na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
-							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+ch+'\n\n'];
+							// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' apresentou o projeto '+
+							// dados.nomeProjeto.toUpperCase()+ ' na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
+							// 'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
+							// 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+ch+'\n\n'];
+							texto = dados_certificado.textoApresentacao;
 						} else if (tipo === 'Premiacao') {
-							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve destaque na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
-							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
-							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de '+realizacao+'.\n\n'];
+							// var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve destaque na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
+							// ', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
+							// 'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de '+realizacao+'.\n\n'];
+							texto = dados_certificado.textoPremiado;
 						} else if (tipo === 'Mencao_honrosa') {
-							var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve menção honrosa na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
-							', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
-							'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que o projeto ' +dados.nomeProjeto.toUpperCase()+ ' obteve menção honrosa na categoria ' +dados.categoria.toUpperCase()+ ' e eixo ' +dados.eixo.toUpperCase()+
+							// ', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
+							// 'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoMencao;
 						} else if (tipo === 'Responsavel-saberes') {
-							var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
-							dados.titulo.toUpperCase()+ ' do Seminário Saberes Docentes, realizado na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
-							'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
-							'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
+							// dados.titulo.toUpperCase()+ ' do Seminário Saberes Docentes, realizado na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
+							// 'e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia Sul-rio-grandense, ',bold: true},
+							// 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoSaberes;
 						} else if (tipo === 'Presenca-oficinas') {
-							var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou da (s) oficina (s) '+
-							dados.eventos.toUpperCase()+ ' com carga horária total de ' +dados.cargaHoraria+ ' hora (s), realizada (s) durante a ',
-							{text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
-							'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou da (s) oficina (s) '+
+							// dados.eventos.toUpperCase()+ ' com carga horária total de ' +dados.cargaHoraria+ ' hora (s), realizada (s) durante a ',
+							// {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
+							// 'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoPOficinas;
 						} else if (tipo === 'Responsavel-oficinas') {
-							var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' ofertou a oficina '+
-							dados.titulo.toUpperCase()+ ', com carga horária de ' +dados.cargaHoraria+ ' hora (s), durante a ',
-							{text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
-							'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' ofertou a oficina '+
+							// dados.titulo.toUpperCase()+ ', com carga horária de ' +dados.cargaHoraria+ ' hora (s), durante a ',
+							// {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
+							// 'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoROficinas;
 						} else if (tipo === 'Responsavel-semanaAcademica') {
-							var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
-							dados.titulo.toUpperCase()+ ', com carga horária de ' +dados.cargaHoraria+ ' hora (s), durante a semana acadêmica, realizada na ',
-							{text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
-							'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							// var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
+							// dados.titulo.toUpperCase()+ ', com carga horária de ' +dados.cargaHoraria+ ' hora (s), durante a semana acadêmica, realizada na ',
+							// {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
+							// 'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
+							texto = dados_certificado.textoAcademica;
 						}
+
+						console.log("Texto normal: " + texto);
+
+						while(texto.match(/¨\w+/) != null){
+
+							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
+								
+								for (let chave in dados) {
+									if(str == "¨"+chave){
+										return dados[chave].toUpperCase(); 
+									}
+								}
+							});
+						}
+						console.log("Alteração com RegEx: " + texto);
 
 						// var url_1 = window.localStorage.getItem('url1');
 						// var url_2 = window.sessionStorage.getItem('url2');
 						// var urlmemo = url_1+url_2;
-				
+						
 
 						var docDefinition = {
 							pageSize: 'A4',
 							pageOrientation: 'landscape',
 							background: [
 								{
-									image: background,
+									image: dados_certificado.imagem,
 									width: 841,
 									alignment: 'center'
 								}

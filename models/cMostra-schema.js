@@ -8,25 +8,34 @@ const CadastroMostraSchema = new Schema({
     imagem: {
         type: String
     },
-    textoaluno: {
+    textoAvaliador: {
         type: String
     },
-    textoorientador: {
+    textoOrientador: {
         type: String
     },
-    textosaberes: {
+    textoApresentacao: {
         type: String
     },
-    textopremiado: {
+    textoPremiado: {
         type: String
     },
-    textoparticipante: {
+    textoMencao: {
         type: String
     },
-    textohonrosa: {
+    textoSaberes: {
         type: String
     },
-    textoacademica: {
+    textoPOficinas: {
+        type: String
+    },
+    textoROficinas: {
+        type: String
+    },
+    textoAcademica: {
+        type: String
+    },
+    textoDocentes: {
         type: String
     },
     createdAt: {
