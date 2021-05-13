@@ -296,8 +296,6 @@
 						var edicao;
 						var ch = "."; //Carga horaria
 						var dados_certificado = {};
-						console.log(dadosMostra);
-						console.log(dados);
 						
 						var texto = "";
 
@@ -306,7 +304,6 @@
 							var ano_certificado = new Date(dadosMostra[i].createdAt)
 							if(ano_certificado < ano2){
 								dados_certificado = dadosMostra[i];
-								console.log(dados_certificado);
 								break;
 							}
 						}						
@@ -382,8 +379,6 @@
 							texto = dados_certificado.textoAcademica;
 						}
 
-						console.log("Texto normal: " + texto);
-
 						while(texto.match(/¨\w+/) != null){
 
 							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
@@ -395,7 +390,6 @@
 								}
 							});
 						}
-						console.log("Alteração com RegEx: " + texto);
 
 						// var url_1 = window.localStorage.getItem('url1');
 						// var url_2 = window.sessionStorage.getItem('url2');
