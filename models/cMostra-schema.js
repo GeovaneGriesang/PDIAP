@@ -8,6 +8,9 @@ const CadastroMostraSchema = new Schema({
     imagem: {
         type: String
     },
+    imagemFundo: {
+        type: String
+    },
     textoAvaliador: {
         type: String
     },

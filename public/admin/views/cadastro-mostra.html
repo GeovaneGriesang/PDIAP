@@ -26,7 +26,16 @@
                 <form name="editForm" novalidate class="eventos-form">
                     <md-input-container class="md-block" flex-gt-xs="25">
                         <label style="font-weight: bold;" for="imagemcertificado">Selecione o layout do certificado:</label><br>
-                        <input placeholder="Imagem" type="file" accept="image/jpeg" name="layoutcertificado" data-ng-model="layout_certificado"/>
+                        <input placeholder="Imagem" type="file" id="imagem" accept="image/jpeg" name="layoutcertificado" data-ng-model="layout_certificado"/>
+                        <div class="md-errors-spacer">
+                            <div data-ng-show="editForm.mes.$dirty">
+                                <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
+                            </div>
+                        </div>
+                    </md-input-container>
+                    <md-input-container class="md-block" flex-gt-xs="25">
+                        <label style="font-weight: bold;" for="imagemcertificado">Selecione o layout do certificado(Fundo):</label><br>
+                        <input placeholder="Imagem" type="file" id="imagem2" accept="image/jpeg" name="layoutcertificado" data-ng-model="layout_certificado"/>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
@@ -120,6 +129,7 @@
                         </md-button>
                     </div>
                     <img id="preview_img" src="" alt="preview">
+                    <img id="preview_img2" src="" alt="preview">
                     <span us-spinner>
                         <div layout="row" layout-sm="column" layout-align="space-around">
                             <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>

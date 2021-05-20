@@ -217,6 +217,7 @@ router.post('/postCertificado', (req, res) => {
   //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
   let novoCadastro = new cadastroMostraSchema({
     imagem: req.body.data.dataUrl,
+    imagemFundo: req.body.data.dataUrlFundo,
     textoAvaliador: req.body.data.textoAvaliador,
     textoOrientador: req.body.data.textoOrientador,
     textoApresentacao: req.body.data.textoApresentacao,
@@ -229,20 +230,6 @@ router.post('/postCertificado', (req, res) => {
     textoDocentes: req.body.data.textoDocentes,
     createdAt: Date.now()
   });
-
-  // let novoCadastro = new cadastroMostraSchema({
-  //   imagem: req.body.data.dataUrl,
-  //   texto: [
-  //     {aluno: req.body.data.textoAluno},
-  //     {orientador: req.body.data.textoOrientador},
-  //     {saberes: req.body.data.textoSaberes},
-  //     {premiado: req.body.data.textoPremiado},
-  //     {participante: req.body.data.textoParticipante},
-  //     {honrosa: req.body.data.textoMencao},
-  //     {academica: req.body.data.textoSemana}
-  //   ]
-  // });
-
   //envia o Schema para cMostra-controller para salvar os dados no banco
 
   //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/

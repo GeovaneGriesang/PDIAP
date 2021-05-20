@@ -21,18 +21,24 @@
       $scope.cadastrarMostra = function(){
 
         var LerImagem = new FileReader();
-        var Imagem = document.querySelector('input[type=file]').files[0];
+        var Imagem = document.getElementById('imagem').files[0];
         var preview = document.getElementById('preview_img');
+
+        var LerImagem2 = new FileReader();
+        var Imagem2 = document.getElementById('imagem2').files[0];
+        var preview2 = document.getElementById('preview_img2');
         
         //essa função é ativada quando o método readAsDataURL do FileReader terminar de carregar a imagem do certificado como base 64
         LerImagem.onloadend = function(){
           
           //gera um preview da imagem na página cadastro-mostra.html 
           preview.src = LerImagem.result;
-
+          preview2.src = LerImagem2.result;
+          
           //preenche o JSON de dados com as informações do certificado
           var dados = {
             'dataUrl' : LerImagem.result,
+            'dataUrlFundo' : LerImagem2.result,
             'textoAvaliador' : $scope.textocertificado_avaliador,
             'textoOrientador' : $scope.textocertificado_orientador,
             'textoApresentacao' : $scope.textocertificado_apresentacao,
@@ -55,8 +61,8 @@
         }
 
         // usa um método do FileReader pra ler a imagem do certificado como base64
-        LerImagem.readAsDataURL(Imagem);
-
+        LerImagem2.readAsDataURL(Imagem2);
+        LerImagem.readAsDataURL(Imagem);  
       };
     }
   )
