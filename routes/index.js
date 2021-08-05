@@ -785,8 +785,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       username: username
     }
 
-
-    //essa parte que manda emails após a inscrição foi comentada porque se não crasha o npm ao inscrever projeto
+    //se o programa crasha para mandar o email de confirmação de inscrição é porque a máquina não está com direito para acessar o email
     
     template.render(locals, function (err, results) {
       if (err) throw err;
