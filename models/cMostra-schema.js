@@ -41,8 +41,8 @@ const CadastroMostraSchema = new Schema({
     textoDocentes: {
         type: String
     },
-    createdAt: {
-		type: Date
+    ano_certificado: {
+		type: Number
 	}
 }, {collection: 'mostra'}); 
 

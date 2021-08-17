@@ -327,6 +327,14 @@
 			return $http(request);
 		};
 
+		let _getCertificado = function(){
+			const request = {
+				url: '/admin/getCertificados',
+				method: 'GET'
+			}
+			return $http(request);
+		}
+
 		return {
 			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
@@ -363,7 +371,8 @@
 			putIntegrante: _putIntegrante,
 			removeIntegrante: _removeIntegrante,
 			exportaProjetos: _postExportarprojetos,
-			postCertificado: _postCertificado
+			postCertificado: _postCertificado,
+			getCertificado: _getCertificado
 		};
 	});
 })();

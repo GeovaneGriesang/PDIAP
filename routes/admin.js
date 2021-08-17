@@ -12,6 +12,7 @@ const express = require('express')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
 , participanteSchema = require('../models/participante-schema')
+, CadastroMostraSchema = require('../models/cMostra-schema')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , nodemailer = require('nodemailer')
@@ -214,27 +215,40 @@ router.post('/exportarprojetos', (req, res) => {
 //rota para cadastro de certificado
 router.post('/postCertificado', (req, res) => {
 
-  //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
-  let novoCadastro = new cadastroMostraSchema({
-    imagem: req.body.data.dataUrl,
-    imagemFundo: req.body.data.dataUrlFundo,
-    textoAvaliador: req.body.data.textoAvaliador,
-    textoOrientador: req.body.data.textoOrientador,
-    textoApresentacao: req.body.data.textoApresentacao,
-    textoPremiado: req.body.data.textoPremiado,
-    textoMencao: req.body.data.textoMencao,
-    textoSaberes: req.body.data.textoSaberes,
-    textoPOficinas: req.body.data.textoPOficinas,
-    textoROficinas: req.body.data.textoROficinas,
-    textoAcademica: req.body.data.textoAcademica,
-    textoDocentes: req.body.data.textoDocentes,
-    createdAt: Date.now()
-  });
-  //envia o Schema para cMostra-controller para salvar os dados no banco
+  //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
+  //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
+  CadastroMostraSchema.remove({"ano_certificado":req.body.data.ano_certificado}, (err) => {
+    if (err) throw err;
+    //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
+      let novoCadastro = new cadastroMostraSchema({
+        imagem: req.body.data.dataUrl,
+        imagemFundo: req.body.data.dataUrlFundo,
+        textoAvaliador: req.body.data.textoAvaliador,
+        textoOrientador: req.body.data.textoOrientador,
+        textoApresentacao: req.body.data.textoApresentacao,
+        textoPremiado: req.body.data.textoPremiado,
+        textoMencao: req.body.data.textoMencao,
+        textoSaberes: req.body.data.textoSaberes,
+        textoPOficinas: req.body.data.textoPOficinas,
+        textoROficinas: req.body.data.textoROficinas,
+        textoAcademica: req.body.data.textoAcademica,
+        textoDocentes: req.body.data.textoDocentes,
+        ano_certificado: req.body.data.ano_certificado
+      });
+      //envia o Schema para cMostra-controller para salvar os dados no banco
 
-  //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
-  cadastroMostra.createMostra(novoCadastro, (callback) => {});
-  res.send('success');
+      //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
+      cadastroMostra.createMostra(novoCadastro, (callback) => {});
+      res.send('success');
+  });
+});
+
+//rota para recuperar informações do certificado para AdminAPI
+router.get('/getCertificados', (req, res) => {
+  CadastroMostraSchema.find(function(err ,data){
+    if(err) throw err;
+    res.status(200).send(data);
+  });
 });
 
 router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {

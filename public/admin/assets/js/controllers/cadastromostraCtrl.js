@@ -4,6 +4,28 @@
     .module('PDIAPa')
     .controller('cadastromostraCtrl', function($scope, adminAPI) {
 
+      $scope.certificados = [];
+      adminAPI.getCertificado().success(function(certificados){
+        
+        $scope.confereCertificado = function(ano){
+          for(i = 0; i < certificados.length; i++){
+            if(certificados[i].ano_certificado == ano){
+              console.log('chegou aqui');
+              return true;
+            }
+          }
+          return false;
+        }
+      });
+      
+
+      // var CarregaCertificado = function(){
+      //   var certificados = adminAPI.getCertificado();
+      // }
+
+
+      $scope.year = CadastraAno();
+
       //algumas scopes para recuperar os dados 
       $scope.layout_certificado;
       $scope.textocertificado_avaliador;
@@ -31,10 +53,6 @@
         //essa função é ativada quando o método readAsDataURL do FileReader terminar de carregar a imagem do certificado como base 64
         LerImagem.onloadend = function(){
           
-          //gera um preview da imagem na página cadastro-mostra.html 
-          preview.src = LerImagem.result;
-          preview2.src = LerImagem2.result;
-          
           //preenche o JSON de dados com as informações do certificado
           var dados = {
             'dataUrl' : LerImagem.result,
@@ -48,10 +66,11 @@
             'textoPOficinas' : $scope.textocertificado_poficinas, 
             'textoROficinas' : $scope.textocertificado_roficinas,
             'textoAcademica' : $scope.textocertificado_academica,
-            'textoDocentes' : $scope.textocertificado_docentes
+            'textoDocentes' : $scope.textocertificado_docentes,
+            'ano_certificado' : $scope.ano
           };
 
-          //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
+          // //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
           adminAPI.postCertificado(dados)
           .success(function(){
 

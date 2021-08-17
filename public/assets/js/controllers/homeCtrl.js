@@ -47,19 +47,19 @@
 			return horasTotal + ":" + minutosTotal;
 		};
 
-		let canvas = document.createElement("canvas");
-		let img = document.getElementById("preview");
-		canvas.width = img.width;
-		canvas.height = img.height;
-		let ctx = canvas.getContext("2d");
-		ctx.drawImage(img, 0, 0);
-		let aaa = canvas.toDataURL('image/jpeg',1.0);
+		// let canvas = document.createElement("canvas");
+		// let img = document.getElementById("preview");
+		// canvas.width = img.width;
+		// canvas.height = img.height;
+		// let ctx = canvas.getContext("2d");
+		// ctx.drawImage(img, 0, 0);
+		// let aaa = canvas.toDataURL('image/jpeg',1.0);
 				
-		let img2 = document.getElementById("preview2");
-		ctx.drawImage(img2, 0, 0);
-		let aaa2 = canvas.toDataURL('image/jpeg',1.0);
+		// let img2 = document.getElementById("preview2");
+		// ctx.drawImage(img2, 0, 0);
+		// let aaa2 = canvas.toDataURL('image/jpeg',1.0);
 
-		let background = aaa;
+		// let background = aaa;
 
 		$scope.showLoginDialog = function(ev) {
 			$mdDialog.show({
@@ -296,13 +296,27 @@
 						var texto = "";
 
 						//loopa pelos dados das mostras e encontra a mostra que melhor se encaixa naquele certificado
-						for(var i = dadosMostra.length - 1; i >= 0; i--){
-							var ano_certificado = new Date(dadosMostra[i].createdAt)
-							if(ano_certificado < ano2){
+						// for(var i = dadosMostra.length - 1; i >= 0; i--){
+						// 	var ano_certificado = new Date(dadosMostra[i].createdAt)
+						// 	if(ano_certificado < ano2){
+						// 		dados_certificado = dadosMostra[i];
+						// 		break;
+						// 	}
+						// }	
+
+
+						//Itera pelos certificados para encontrar o layout necessário
+						var isso = true;
+						var i = 0;
+						
+						//procura o layout correto de certificado
+						while(isso){
+							if(dadosMostra[i].ano_certificado == ano2.getFullYear()){
 								dados_certificado = dadosMostra[i];
-								break;
+								isso = false;
 							}
-						}						
+							i++;
+						}
 						
 						if (tipo === 'Avaliador') {
 							// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
@@ -358,6 +372,8 @@
 							texto = dados_certificado.textoAcademica;
 						}
 
+						//usa regex pra alterar as chaves no texto pela informação correspondente Ex: ¨nome -> Mateus R. Algayer,
+						//¨nomeProjeto -> PDIAPIA, e assim por diante
 						while(texto.match(/¨\w+/) != null){
 
 							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
@@ -387,7 +403,7 @@
 							],
 							content: [
 								{
-									text: texto,
+									text: texto + "\n\n\n\n",
 									alignment: 'justify',
 									margin: [50,210,50,0],
 									fontSize: 16
@@ -416,28 +432,33 @@
 					}
 
 					$scope.emitirCertificado2 = function(modo,dados) {
-						var ano2 = new Date(dados.createdAt);
 						var dados_certificado = {};
 						var texto = "";
-						
+						console.log(dadosMostra);
 						// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou do IV Seminário Saberes Docentes, com '+
 						// 'carga horária de ' +dados.cargaHoraria+ ' hora (s), nos dias 26 e 27 de setembro de 2016, que integrou a programação da ',
 						// {text: 'V MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e '+
 						// 'Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de 28 a 30 de setembro de 2016.\n\n'];
 
-						//loopa pelos dados das mostras e encontra a mostra que melhor se encaixa naquele certificado
-						for(var i = dadosMostra.length - 1; i >= 0; i--){
-							var ano_certificado = new Date(dadosMostra[i].createdAt)
-							if(ano_certificado < ano2){
+						//Itera pelos certificados para encontrar o layout necessário
+						var isso = true;
+						var i = 0;
+						
+						//procura o layout correto de certificado
+						while(isso){
+							if(dadosMostra[i].ano_certificado == dados.ano){
 								dados_certificado = dadosMostra[i];
-								break;
+								isso = false;
 							}
+							i++;
 						}	
-
-						texto = dados_certificado.textoSaberes;
+						//pega o texto que vai ser utilizado no certificado
+						texto = dados_certificado.textoDocentes;
 						// var url_1 = window.localStorage.getItem('url1');
 						// var url_2 = window.sessionStorage.getItem('url2');
 
+						//usa regex pra alterar as chaves no texto pela informação correspondente Ex: ¨nome -> Mateus R. Algayer,
+						//¨nomeProjeto -> PDIAPIA, e assim por diante
 						while(texto.match(/¨\w+/) != null){
 
 							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
@@ -470,7 +491,7 @@
 							},
 							content: [
 								{
-									text: texto,
+									text: texto + "\n\n\n\n",
 									alignment: 'justify',
 									margin: [50,210,50,0],
 									fontSize: 16
