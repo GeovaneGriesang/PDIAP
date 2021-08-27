@@ -6,11 +6,29 @@
 
       $scope.certificados = [];
       adminAPI.getCertificado().success(function(certificados){
-        
+       //carregaDado explicacao
+        $scope.carregaDado = function (ano) {
+          for(i = 0; i < certificados.length; i++){
+            if(certificados[i].ano_certificado == ano){
+              //<img src="" id="preview_img" alt="">(139.html)
+              //  document.getElementById("preview_img").src = certificados[i].imagem;
+               $scope.textocertificado_avaliador = certificados[i].textoAvaliador;
+               $scope.textocertificado_orientador = certificados[i].textoOrientador;
+               $scope.textocertificado_apresentacao = certificados[i].textoApresentacao;
+               $scope.textocertificado_premiado = certificados[i].textoPremiado;
+               $scope.textocertificado_mencao = certificados[i].textoMencao;
+               $scope.textocertificado_saberes = certificados[i].textoSaberes;
+               $scope.textocertificado_poficinas = certificados[i].textoPOficinas;
+               $scope.textocertificado_roficinas = certificados[i].textoROficinas;
+               $scope.textocertificado_academica = certificados[i].textoAcademica;
+               $scope.textocertificado_docentes = certificados[i].textoDocentes;
+
+            }
+          }  
+        }
         $scope.confereCertificado = function(ano){
           for(i = 0; i < certificados.length; i++){
             if(certificados[i].ano_certificado == ano){
-              console.log('chegou aqui');
               return true;
             }
           }
@@ -27,7 +45,7 @@
       $scope.year = CadastraAno();
 
       //algumas scopes para recuperar os dados 
-      $scope.layout_certificado;
+      
       $scope.textocertificado_avaliador;
       $scope.textocertificado_orientador;
       $scope.textocertificado_apresentacao;
@@ -45,6 +63,7 @@
         var LerImagem = new FileReader();
         var Imagem = document.getElementById('imagem').files[0];
         var preview = document.getElementById('preview_img');
+        // preview.<img></img>
 
         var LerImagem2 = new FileReader();
         var Imagem2 = document.getElementById('imagem2').files[0];

@@ -1,6 +1,9 @@
 'use strict';
 
 const express = require('express')
+, nodemailer = require('nodemailer')
+, smtpTransport = require('nodemailer-smtp-transport')
+, EmailTemplate = require('email-templates').EmailTemplate
 , router = express.Router()
 , passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy
@@ -76,5 +79,6 @@ router.put('/addNota', (req, res) => {
 	res.send(200);
 	console.log("Feito adrovão");
 });
+
 
 module.exports = router;

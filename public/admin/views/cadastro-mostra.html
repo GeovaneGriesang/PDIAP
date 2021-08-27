@@ -19,12 +19,12 @@
         </md-toolbar>
 
         <md-content>	
-            <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
-                <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
-                <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Cadastro da mostra</span>
-                </h3>
+            <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:40px;">
+                <h1 style="text-align:center;border-top:1px solid #225024;margin:55px 0 15px 0;font-size:40px;width:100%;">
+                <span style="text-transform:uppercase;padding:8px 15px;position:relative;background:rgb(240, 236, 236);bottom:30px;letter-spacing:1px; font-size: 30px; color: #225024; border-color: #225024;">Cadastro da mostra</span>
+                </h1>
                 <form name="editForm" novalidate class="eventos-form">
-                    <md-input-container class="md-block" flex-gt-xs="25">
+                    <md-input-container class="md-block" flex-gt-xs="110">
                         <label style="font-weight: bold;" for="imagemcertificado">Selecione o layout do certificado:</label><br>
                         <input placeholder="Imagem" type="file" id="imagem" accept="image/jpeg" name="layoutcertificado" data-ng-model="layout_certificado"/>
                         <div class="md-errors-spacer">
@@ -33,7 +33,7 @@
                             </div>
                         </div>
                     </md-input-container>
-                    <md-input-container class="md-block" flex-gt-xs="25">
+                    <md-input-container class="md-block" flex-gt-xs="110">
                         <label style="font-weight: bold;" for="imagemcertificado">Selecione o layout do certificado(Fundo):</label><br>
                         <input placeholder="Imagem" type="file" id="imagem2" accept="image/jpeg" name="layoutcertificado" data-ng-model="layout_certificado"/>
                         <div class="md-errors-spacer">
@@ -42,88 +42,88 @@
                             </div>
                         </div>
                     </md-input-container>
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Avaliador)" type="text" name="certificadotextoavaliador" data-ng-model="textocertificado_avaliador" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea  placeholder="Texto do certificado (Avaliador)" type="text" name="certificadotextoavaliador" data-ng-model="textocertificado_avaliador" style="overflow: hidden; resize: none;"required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container>           
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                            <input placeholder="Texto do certificado (Orientador)" type="text" name="certificadotextoorientador" data-ng-model="textocertificado_orientador" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                            <textarea placeholder="Texto do certificado (Orientador)" type="text" name="certificadotextoorientador" data-ng-model="textocertificado_orientador" required></textarea>
                             <div class="md-errors-spacer">
                                 <div data-ng-show="editForm.mes.$dirty">
                                     <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                                 </div>
                             </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Apresentação)" type="text" name="certificadotextoapresentacao" data-ng-model="textocertificado_apresentacao" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Apresentação)" type="text" name="certificadotextoapresentacao" data-ng-model="textocertificado_apresentacao" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Premiado)" type="text" name="certificadotextopremiado" data-ng-model="textocertificado_premiado" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Premiado)" type="text" name="certificadotextopremiado" data-ng-model="textocertificado_premiado" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Menção Honrosa)" type="text" name="certificadotextomencao" data-ng-model="textocertificado_mencao" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Menção Honrosa)" type="text" name="certificadotextomencao" data-ng-model="textocertificado_mencao" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Responsável saberes)" type="text" name="certificadotextosaberes" data-ng-model="textocertificado_saberes" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Responsável saberes)" type="text" name="certificadotextosaberes" data-ng-model="textocertificado_saberes" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Presença oficinas)" type="text" name="certificadotextopoficinas" data-ng-model="textocertificado_poficinas" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Presença oficinas)" type="text" name="certificadotextopoficinas" data-ng-model="textocertificado_poficinas" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Responsável oficinas)" type="text" name="certificadotextoroficinas" data-ng-model="textocertificado_roficinas" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Responsável oficinas)" type="text" name="certificadotextoroficinas" data-ng-model="textocertificado_roficinas" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Responsável Semana acadêmica)" type="text" name="certificadotextoacademica" data-ng-model="textocertificado_academica" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Responsável Semana acadêmica)" type="text" name="certificadotextoacademica" data-ng-model="textocertificado_academica" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <input placeholder="Texto do certificado (Saberes docentes)" type="text" name="certificadotextodocentes" data-ng-model="textocertificado_docentes" required/>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Saberes docentes)" type="text" name="certificadotextodocentes" data-ng-model="textocertificado_docentes" required></textarea>
                         <div class="md-errors-spacer">
                             <div data-ng-show="editForm.mes.$dirty">
                                 <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
                             </div>
                         </div>
                     </md-input-container> 
-                    <md-input-container class="md-block" flex-gt-xs="25">
-                        <md-select data-ng-model="ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
+                    <md-input-container class="md-block" flex-gt-xs="30">
+                        <md-select data-ng-model="ano" ng-change="carregaDado(ano)" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
                             <md-optgroup label="Ano:">
                               <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year" data-ng-click="confereCertificado()">{{years}}  
                                 <span data-ng-if="confereCertificado(years)">(Certificado Cadastrado)</span>
@@ -134,9 +134,9 @@
                     <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
                         <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!editForm.$valid" data-ng-click="cadastrarMostra()">
                             <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
-                            <span style="vertical-align:middle;">Cadastrar</span>
+                            <span style="vertical-align:middle;"; <i class="fa fa-align-center" aria-hidden="true"></i>Cadastrar</span>
                         </md-button>
-                    </div>
+                    </div> 
                     <span us-spinner>
                         <div layout="row" layout-sm="column" layout-align="space-around">
                             <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
