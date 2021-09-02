@@ -134,6 +134,18 @@
 					</section>
 				</div>
 			</section>
+			<script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script> <!--script que faz o mapa funcionar-->
+			<link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' /> <!--script que faz o mapa funcionar-->
+
+			<script>
+					mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+					var map = new mapboxgl.Map({
+					container: 'map',
+					style: 'mapbox://styles/mapbox/streets-v11',
+					center: [-52.169943, -29.637026], // coordenadas
+					zoom: 15 // zoom do mapa
+					});
+			</script>
 		</body>
 		</html>
 
