@@ -47,6 +47,7 @@
 -->
 					<li><a href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a></li>
 					<li><a href="/contato">Fale Conosco</a></li>
+					<li><a href="/certificados">Validar Certificado</a></li>
 					<!-- <li>
 						<a href="#">Cadastro <span class="icon fa-angle-down"></span></a>
 						<ul>
@@ -83,6 +84,7 @@
 				<h3 style="margin:0!important;line-height:1.1em;font-weight:bold;">2017</h3>
 			</div>
 			<img src="alpha/images/logo3.png" alt="Logo MOVACI" width="320px">
+			<a href="movaci.com.br"></a>
 			<p style="color:#424242!important;">VI Mostra Venâncio-airense de Cultura e Inovação</p>
 			<!-- <h3 style="font-weight:bold;">Inscrições abertas até 15 de Setembro</h3> -->
 			<!-- <h3 style="font-weight:bold;">Upload do relatório disponível até dia 24 de Setembro</h3> -->
@@ -143,73 +145,10 @@
 					</section>
 				</div>
 			</section>
-
-			<script>
-				L.mapbox.accessToken = 'pk.eyJ1IjoidGlhZ29wb3J0YWx1cHBpIiwiYSI6ImNpam0zdXhhdjAwOTZ1Mmtvd3RwZGx3MnEifQ.k4E8PzMGoP3ddQxpRoKZzA';
-
-				var map = L.mapbox.map('map', 'mapbox.streets', {
-					center: [-29.635471, -52.1690000],
-					zoom: 16,
-					zoomControl: false
-				});
-
-				var myLayer = L.mapbox.featureLayer().addTo(map);
-				var geoJson = [{
-					"type": "Feature",
-					"geometry": {
-						"type": "Point",
-						"coordinates": [-52.169943, -29.637026]
-					},
-					"properties": {
-						"title": "<center>V MOVACI :D</center>",
-						"icon": {
-							"iconUrl": "/alpha/images/local.png",
-							"iconSize": [50, 50], // size of the icon
-							"iconAnchor": [25, 68], // point of the icon which will correspond to marker's location
-							"popupAnchor": [0, -68], // point from which the popup should open relative to the iconAnchor
-							"className": "dot"
-						}
-					}
-				}];
-
-				// Set a custom icon on each marker based on feature properties.
-				myLayer.on('layeradd', function(e) {
-					var marker = e.layer,
-						feature = marker.feature;
-
-					marker.setIcon(L.icon(feature.properties.icon));
-				});
-
-				new L.Control.Zoom({
-					position: 'topright'
-				}).addTo(map);
-
-				// Add features to the map.
-				myLayer.setGeoJSON(geoJson);
-
-				// Disable drag and zoom handlers.
-				//map.dragging.disable();
-				//map.doubleClickZoom.disable();
-				// map.touchZoom.disable();
-				// map.scrollWheelZoom.disable();
-				//map.keyboard.disable();
-
-				// Disable tap handler, if present.
-				if (map.tap) map.tap.disable();
-
-			</script>
-
-			<div class="row">
-				<div class="6u 12u(narrower)">
-
-				</div>
-				<div class="6u 12u(narrower)">
-
-				</div>
-			</div>
-
+		</body>
+		</html>
 			<!-- reverberando -->
-			<section class="box special features">
+			<!-- <section class="box special features">
 				<span class="image featured" style="background:#4caf50;height:10px;"></span>
 				<h3 style="margin-bottom:35px!important;">Reverberando</h3>
 				<div class="features-row" style="border:none!important;">
@@ -227,10 +166,10 @@
 						</div>
 					</section>
 				</div>
-			</section>
+			</section> -->
 
 			<!-- anais -->
-			<section class="box special features">
+			<!-- <section class="box special features">
 				<span class="image featured" style="background:#4caf50;height:10px;"></span>
 				<h3 style="margin-bottom:35px!important;">IFPublica</h3>
 				<div class="features-row" style="border:none!important;">
@@ -245,9 +184,9 @@
 						</div>
 					</section>
 				</div>
-			</section>
+			</section> -->
 
-		</section>
+		<!-- </section> -->
 
 		<!-- CTA -->
 		<section id="cta" style="border-bottom:5px solid #58a55b">
@@ -259,9 +198,10 @@
 					<div class="4u 12u(mobilep)" style="text-align:right;padding-right:1em;width:auto;">
 						<img src="/alpha/images/logo4-b.png" alt="MOVACI" width="220px" />
 					</div>
-					<div class="4u 12u(mobilep)" style="text-align:left;width:auto;">
-						<img src="/alpha/images/ifsul.png" alt="IFSul" width="260px" />
-					</div>
+					<header class="4u 12u(mobilep)" style="text-align:left;width:auto;">
+						<a href="http://www.ifsul.edu.br"><img src="/alpha/images/ifsul.png" alt="IFSul" width="260px"/></a>
+						<!-- <img src="/alpha/images/ifsul.png" alt="IFSul" width="260px" /> -->
+					</header>
 				</div>
 			</form>
 
@@ -271,8 +211,8 @@
 		<footer id="footer">
 			<ul class="icons" style="margin-bottom:1em!important;">
 				<li><a href="https://www.facebook.com/movaciifsul" target="_blank" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-				<li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon fa-github"><span class="label">Github</span></a></li>
-				<!-- <li><a href="https://github.com/ricardosw/PDIAP" target="_blank" class="icon"><img src="alpha/images/ifsul-b.png" alt="IFSul" /></a></li> -->
+				<li><a href="https://github.com/GeovaneGriesang/PDIAP" target="_blank" class="icon fa-github"><span class="label">Github</span></a></li>
+				<!-- <li><a href="https://github.com/GeovaneGriesang/PDIAP" target="_blank" class="icon"><img src="alpha/images/ifsul-b.png" alt="IFSul" /></a></li> -->
 			</ul>
 			<ul class="copyright">
 				<li>&copy; MOVACI. Todos os direitos reservados.</li>
