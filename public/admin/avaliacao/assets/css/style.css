@@ -433,7 +433,7 @@ md-list-item.list-header .md-no-style {
   box-shadow: none !important;
 }
 .btn-close:focus {
-  outline-color: transparent !im;
+  outline-color: transparent !important;
 }
 .md-ripple-container {
   width: 0 !important;

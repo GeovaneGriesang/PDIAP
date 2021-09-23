@@ -227,6 +227,14 @@ button {
 	margin-top: 30px;
 	cursor: pointer;
 }
+.AntiCSS {
+	background: none;
+	border: none;
+	padding: 0px;
+	border-radius: 0px;
+	color: #43a047;
+	margin-top: 0px;
+}
 /*@media only screen and (min-width:768px){
 	.templateContainer{
 		width:600px !important;

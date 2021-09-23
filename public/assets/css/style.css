@@ -898,7 +898,7 @@ background: black !important;
   overflow: hidden !important;
 }
 .btn-close:focus {
-  outline-color: transparent !im;
+  outline-color: transparent !important;
 }
 .btn-certificado {
   margin:0!important;
