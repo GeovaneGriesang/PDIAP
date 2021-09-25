@@ -89,7 +89,7 @@
             'ano_certificado' : $scope.ano
           };
 
-          // //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
+          //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
           adminAPI.postCertificado(dados)
           .success(function(){
 
