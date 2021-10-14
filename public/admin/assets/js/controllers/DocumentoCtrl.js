@@ -1,3 +1,4 @@
+//Mateus Roberto Algayer - 01/10/2021
 (function(){
     'use strict';
     angular
@@ -12,7 +13,7 @@
         $scope.ano;
         $scope.Exibe_documento;
 
-        $scope.documento = [];
+        $scope.documentos = [];
 
         //declaração de uma função que ativa ao pressionar o botão "Cadastrar"
         $scope.CadastraDocumento = function(){
@@ -29,10 +30,10 @@
                 //itera até encontrar um identificador válido
                 while(continua){
                     //caso lista vazia ou chegar ao fim da lista ele ativa esse if
-                    if(typeof $scope.documento[indice-1] === "undefined"){
+                    if(typeof $scope.documentos[indice-1] === "undefined"){
                         id = indice;
                         continua = false;
-                    }else if(indice != $scope.documento[indice-1].id){ //esse if serve para reutilizar números que em teoria seriam "pulados"
+                    }else if(indice != $scope.documentos[indice-1].id){ //esse if serve para reutilizar números que em teoria seriam "pulados"
                         id = indice;
                         continua = false;
                     } else {
@@ -40,17 +41,19 @@
                     }
                 }
 
-                let json = {
+                //cria um pacote com as informações do formulário
+                let pacote = {
                         "id": id,
                         "pdf": pdf.result,
                         "titulo": $scope.titulo_documento,
                         "ano": $scope.ano,
                         "Exibe": $scope.Exibe_documento
                 };
+                $scope.documentos.push(pacote);
                 
-                $scope.documento.push(json);
-                console.log(json);
-                console.log($scope.documento);
+                //mandar o documento cadastrado para o express
+                adminAPI.postDocumento(pacote);
+
                 $scope.exibeDocumentos = true;
             }
 

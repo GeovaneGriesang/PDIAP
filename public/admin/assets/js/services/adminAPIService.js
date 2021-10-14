@@ -306,7 +306,7 @@
 			return $http(request);
 		};
 
-		//função da API para exportação dos projetos
+		//função da API para exportação dos projetos - Mateus Algayer 30/09/2021
 
 		let _postExportarprojetos = function(username, password) {
 			const request = {
@@ -318,6 +318,7 @@
 		};
 
 		//função da API para levar as informações do controlador cadastromostraCtrl.js para admin.js através de um request usando método POST
+		//Mateus Algayer 30/09/2021
 		let _postCertificado = function(data){
 			const request = {
 				url: '/admin/postCertificado',
@@ -326,10 +327,30 @@
 			}
 			return $http(request);
 		};
-
+		
+		//função de API para recuperar as informações de certificados do banco - Mateus Algayer 30/09/2021
 		let _getCertificado = function(){
 			const request = {
 				url: '/admin/getCertificados',
+				method: 'GET'
+			}
+			return $http(request);
+		} 
+
+		//função da API para levar as informações de cadastro de documentos - Mateus Algayer 30/09/2021
+		let _postDocumento = function(pacote){
+			const request = {
+				url: '/admin/postDocumento',
+				method: 'POST',
+				data: {pacote}
+			}
+			return $http(request);
+		}
+
+		//função da API para recuperar as informações de documentos - Mateus Algayer 30/09/2021
+		let _getDocumentos = function() {
+			const request = {
+				url: '/admin/getDocumentos',
 				method: 'GET'
 			}
 			return $http(request);
@@ -372,7 +393,9 @@
 			removeIntegrante: _removeIntegrante,
 			exportaProjetos: _postExportarprojetos,
 			postCertificado: _postCertificado,
-			getCertificado: _getCertificado
+			getCertificado: _getCertificado,
+			postDocumento: _postDocumento,
+			getDocumentos: _getDocumentos
 		};
 	});
 })();

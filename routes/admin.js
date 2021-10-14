@@ -212,6 +212,7 @@ router.post('/exportarprojetos', (req, res) => {
     }, 15000);  
 });
 
+//Mateus Roberto Algayer - 14/10/2021
 //rota para cadastro de certificado
 router.post('/postCertificado', (req, res) => {
 
@@ -243,6 +244,7 @@ router.post('/postCertificado', (req, res) => {
   });
 });
 
+//Mateus Roberto Algayer - 14/10/2021
 //rota para recuperar informações do certificado para AdminAPI
 router.get('/getCertificados', (req, res) => {
   CadastroMostraSchema.find(function(err ,data){

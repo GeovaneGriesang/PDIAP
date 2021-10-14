@@ -33,7 +33,7 @@
 			return deferred.promise;
 		};
 
-		$stateProvider
+		$stateProvider 
 		.state('home', {
 			url: "/admin/home",
 			views: {
