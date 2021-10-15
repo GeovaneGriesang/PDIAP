@@ -5,13 +5,26 @@
     .module('PDIAPa')
     .controller('documentoCtrl', function($scope, adminAPI) {
 
-        $scope.exibeDocumentos = false;
-
         //declaração das scopes da tela
         $scope.year = CadastraAno();
         $scope.titulo_documento;
         $scope.ano;
         $scope.Exibe_documento;
+
+        //Leandro Henrique Kopp Ferreira - 14/10/2021
+        adminAPI.getDocumentos().success(function(documentos){
+            console.log(documentos);
+            $scope.exibeDocumentos = function(){
+                if(documentos.length>0){
+                    for(i=0; i<documentos.length; i++){
+                        $scope.documentos.push(documentos[i]);
+                    }
+                    return true;
+                }
+                else return false;
+            }
+        });
+
 
         $scope.documentos = [];
 
@@ -54,9 +67,7 @@
                 //mandar o documento cadastrado para o express
                 adminAPI.postDocumento(pacote);
 
-                $scope.exibeDocumentos = true;
             }
-
             pdf.readAsDataURL(arquivo);
         }
     }

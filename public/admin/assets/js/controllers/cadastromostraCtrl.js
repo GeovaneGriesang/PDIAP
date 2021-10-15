@@ -22,7 +22,6 @@
                $scope.textocertificado_roficinas = certificados[i].textoROficinas;
                $scope.textocertificado_academica = certificados[i].textoAcademica;
                $scope.textocertificado_docentes = certificados[i].textoDocentes;
-
             }
           }  
         }

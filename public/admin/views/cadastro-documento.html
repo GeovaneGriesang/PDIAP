@@ -53,12 +53,12 @@
                             <p>Exibir:</p><input type="checkbox" data-ng-model="Exibe_documento" class="md-checkbox">
                        </div>
                     </md-input-container> 
-                    <md-input-container data-ng-if="exibeDocumentos" class="md-block" flex-gt-xs="30">
+                    <md-input-container data-ng-if="exibeDocumentos()" class="md-block" flex-gt-xs="30">
                         <md-select data-ng-model="documento_atual"  ng-change="carregaDoc(documento)" placeholder="Documentos" disableOptionCentering style="width:100%!important;font-size:17px;">
                             <md-optgroup label="Documentos:">
-                              <md-option ng-value="documento.titulo" data-ng-repeat="documento in documentos">{{documento.titulo}}  
+                              <md-option ng-value="Documentos.titulo" data-ng-repeat="documento in documentos">{{documento.titulo}}  
                               </md-option>
-                              <md-option ng-value="Novo" data-ng-selected="true">Novo documento
+                              <md-option ng-value="Novo">Novo documento
                               </md-option>
                             </md-optgroup>
                         </md-select>

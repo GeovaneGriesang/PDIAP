@@ -13,6 +13,7 @@ const express = require('express')
 , eventoSchema = require('../models/evento-schema')
 , participanteSchema = require('../models/participante-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
+, CadastroDocumentoSchema = require('../models/documento-schema')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , nodemailer = require('nodemailer')
@@ -24,6 +25,7 @@ const express = require('express')
 , saberesSchema = require('../models/saberes-schema')
 , cadastroMostraSchema = require('../models/cMostra-schema')
 , cadastroMostra = require('../controllers/cMostra-controller')
+, CadastroDocumento = require('../controllers/documento-controller')
 , pdf = require('pdfkit')
 , fs = require('fs')
 , async = require('async')
@@ -253,6 +255,28 @@ router.get('/getCertificados', (req, res) => {
   });
 });
 
+//Leandro Henrique Kopp Ferreira - 14/10/2021
+//rota para cadastrar os documentos
+router.post('/postDocumento', (req, res) => {
+  let novoCadastro = new CadastroDocumentoSchema({
+    id: req.body.pacote.id,
+    pdf: req.body.pacote.pdf,
+    titulo: req.body.pacote.titulo,
+    ano: req.body.pacote.ano,
+    exibe: req.body.pacote.exibe,
+  });
+  CadastroDocumento.createDocumento(novoCadastro, (callback) => {});
+  res.send('success');
+});
+
+//Leandro Henrique Kopp Ferreira - 14/10/2021
+router.get('/getDocumentos', (req, res) =>{
+  CadastroDocumentoSchema.find(function(err ,data){
+    if(err) throw err;
+    res.status(200).send(data);
+  });
+});
+      
 router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
   var id = req.body.id;
   let nome = req.body.nome;
