@@ -1,5 +1,7 @@
 'use strict';
 
+const documentoSchema = require('../models/documento-schema');
+
 const express = require('express')
 , router = express.Router()
 , passport = require('passport')
@@ -93,6 +95,14 @@ router.get('/mostraEvento', miPermiso("3","2"), (req, res) => {
     if (err) throw err;
     res.send(usr);
   });
+});
+
+//Leandro Henrique Kopp Ferreira - 04/11/2021
+router.put('/removeDocumento', miPermiso("3"), (req, res) => {
+  let id = req.body.id;
+  CadastroDocumentoSchema.remove({"_id": id}, (err) => {
+  });
+  res.send('success');
 });
 
 router.put('/removeEvento', miPermiso("3"), (req, res) => {

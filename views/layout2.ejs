@@ -48,13 +48,15 @@
 					<li><a href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a></li>
 					<li><a href="/contato">Fale Conosco</a></li>
 					<li><a href="/certificados">Validar Certificado</a></li>
+
+
 					<!-- <li>
 						<a href="#">Cadastro <span class="icon fa-angle-down"></span></a>
 						<ul>
 							<li><a href="/avaliadores/inscricao">Cadastrar avaliador</a></li>
 						</ul>
 					</li> -->
-					<li>
+					<!-- <li>
 						<a href="#">Documentos  <span class="icon fa-angle-down"></span></a>
 						<ul>
 							<li><a href="/alpha/documentos/MOVACI - premiados - Fundamental 1 e 2.pdf" target="_blank">Premiados Fundamental</a></li>
@@ -62,6 +64,15 @@
 							<li><a href="/alpha/documentos/MOVACI - premiados - MOSTRATEC.pdf" target="_blank">Classificados para MOSTRATEC</a></li>
 							<li><a href="/alpha/documentos/Cronograma SD.pdf" target="_blank">Cronograma Saberes Docentes</a></li>
 							<li><a href="/alpha/documentos/Folder SD.jpg" target="_blank">Folder Saberes Docentes</a></li>
+						</ul>
+					</li> -->
+
+					
+					<!-- abaixo é como fazer a lista dinamica de documentos -->
+					<li>
+					<a href="#">Documentos  <span class="icon fa-angle-down"></span></a>
+						<ul>
+							<li ng-repeat="documento in documentos"><a href="">{{documento.titulo}}</a></li>
 						</ul>
 					</li>
 					<li><a href="#" class="button" data-ng-click="showLoginDialog($event)" style="outline:none;">Logar</a></li>

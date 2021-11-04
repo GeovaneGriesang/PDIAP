@@ -8,6 +8,7 @@ const express = require('express')
 , session = require('express-session')
 , ProjetoSchema = require('../models/projeto-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
+, CadastroDocumentoSchema = require('../models/documento-schema')
 , avaliadorSchema = require('../models/avaliador-schema')
 , participanteSchema = require('../models/participante-schema')
 , eventoSchema = require('../models/evento-schema')
@@ -981,7 +982,16 @@ router.get('/getMostraInfo', function(req, res){
     res.status(200).send(data);
   });
 
-})
+});
+
+router.get('/getDocumentosInfo', function(req, res){
+  CadastroDocumentoSchema.find(function(err ,data){
+    if(err) throw err;
+    res.status(200).send(data);
+  });
+
+});
+
 
 //GET na homepage (/).
 router.all('/', function(req, res, next) {

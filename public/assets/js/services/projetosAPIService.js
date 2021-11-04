@@ -180,6 +180,13 @@
 			};
 			return $http(request);
 		}
+		let _getDocumentos = function(){
+			const request = {
+				url: '/getDocumentosInfo',
+				method: 'GET',
+			}
+			return $http(request);
+		}
 
 		return {
 			getEdits: _getEdits,
@@ -202,7 +209,8 @@
 			removeIntegrante: _removeIntegrante,
 			postCertificado: _postCertificado,
 			postConferirCertificado: _postConferirCertificado,
-			getMostra: _getMostra
+			getMostra: _getMostra,
+			getDocumentos: _getDocumentos,
 		};
 	});
 })();

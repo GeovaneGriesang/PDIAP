@@ -185,6 +185,16 @@
 			return $http(request);
 		};
 
+		//Leandro Henrique Kopp Ferreira - 04/11/2021
+		// let _getDocumentos = function(id) {
+		// 	const request = {
+		// 		url: '/admin/removeDocumento',
+		// 		method: 'PUT',
+		// 		data: {id: id}
+		// 	}
+		// 	return $http(request);
+		// };
+
 		let _putRemoveEvento = function(id) {
 			const request = {
 				url: '/admin/removeEvento',

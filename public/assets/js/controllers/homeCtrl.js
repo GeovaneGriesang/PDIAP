@@ -4,8 +4,14 @@
 	angular
 	.module('PDIAP')
 	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, projetosAPI) {
-
 		
+		projetosAPI.getDocumentos().success(function(documentos){
+			$scope.documentos = documentos;
+
+			$scope.ExibeDocumentos = documentos.length > 0;
+		}
+			
+		)
 
 		$scope.edits = [];
 
