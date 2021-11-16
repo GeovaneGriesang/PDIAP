@@ -366,6 +366,17 @@
 			return $http(request);
 		}
 
+		//Mateus Roberto Algayer - 15/11/2021
+		//rota para deletar documentos
+		let _putDocumento = function(id){
+			const request = {
+				url: '/admin/putDocumento',
+				method: 'PUT',
+				data: {id: id}
+			}
+			return $http(request);
+		}
+
 		return {
 			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
@@ -405,7 +416,8 @@
 			postCertificado: _postCertificado,
 			getCertificado: _getCertificado,
 			postDocumento: _postDocumento,
-			getDocumentos: _getDocumentos
+			getDocumentos: _getDocumentos,
+			removeDocumento: _putDocumento
 		};
 	});
 })();

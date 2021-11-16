@@ -97,14 +97,6 @@ router.get('/mostraEvento', miPermiso("3","2"), (req, res) => {
   });
 });
 
-//Leandro Henrique Kopp Ferreira - 04/11/2021
-router.put('/removeDocumento', miPermiso("3"), (req, res) => {
-  let id = req.body.id;
-  CadastroDocumentoSchema.remove({"_id": id}, (err) => {
-  });
-  res.send('success');
-});
-
 router.put('/removeEvento', miPermiso("3"), (req, res) => {
   let id = req.body.id;
   eventoSchema.remove({"_id": id}, (err) => {
@@ -268,8 +260,8 @@ router.get('/getCertificados', (req, res) => {
 //Leandro Henrique Kopp Ferreira - 14/10/2021
 //rota para cadastrar os documentos
 router.post('/postDocumento', (req, res) => {
+  console.log(req.body.pacote.exibe);
   let novoCadastro = new CadastroDocumentoSchema({
-    id: req.body.pacote.id,
     pdf: req.body.pacote.pdf,
     titulo: req.body.pacote.titulo,
     ano: req.body.pacote.ano,
@@ -280,11 +272,21 @@ router.post('/postDocumento', (req, res) => {
 });
 
 //Leandro Henrique Kopp Ferreira - 14/10/2021
+//rota para requisição dos documentos
 router.get('/getDocumentos', (req, res) =>{
   CadastroDocumentoSchema.find(function(err ,data){
     if(err) throw err;
     res.status(200).send(data);
   });
+});
+
+//Leandro Henrique Kopp Ferreira - 04/11/2021
+router.put('/putDocumento', miPermiso("3"), (req, res) => {
+  let id = req.body.id;
+  CadastroDocumentoSchema.remove({"_id": id}, (err) => {
+    if (err) throw err;
+  });
+  res.send('success');
 });
       
 router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {

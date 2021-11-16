@@ -6,9 +6,10 @@ const mongoose = require('mongoose')
 
 //Definição do Schema de cadastro de documentos 
 const CadastroDocumentoSchema = new Schema({
-    id: {
-        type: Number
-    },
+    //Mateus Roberto Algayer - 15/11/2021
+    // id: { 
+    //     type: Number
+    // },
     pdf: {
         type: String
     },
