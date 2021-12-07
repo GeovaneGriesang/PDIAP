@@ -377,6 +377,16 @@
 			return $http(request);
 		}
 
+		//Mateus Roberto Algayer - 24/11/2021
+		let _putUpdateExibir = function(id, exibe){
+			const request = {
+				url: '/admin/putUpdateExibir',
+				method: 'PUT',
+				data : {id: id, exibe: exibe}
+			}
+			return $http(request);
+		}
+
 		return {
 			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
@@ -417,7 +427,8 @@
 			getCertificado: _getCertificado,
 			postDocumento: _postDocumento,
 			getDocumentos: _getDocumentos,
-			removeDocumento: _putDocumento
+			removeDocumento: _putDocumento,
+			putUpdateExibir: _putUpdateExibir
 		};
 	});
 })();

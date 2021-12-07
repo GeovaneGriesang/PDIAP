@@ -28,12 +28,6 @@
             }
         });
 
-
-        //Mateus Roberto Algayer - 15/11/2021
-        $scope.Exibido = function(exibir){
-            return exibir ? "Sim" : "Não";
-        }
-
         //declaração de uma função que ativa ao pressionar o botão "Cadastrar"
         $scope.CadastraDocumento = function(){
             
@@ -75,6 +69,11 @@
 					console.log("Error: "+status);
 				});
 			}, function() {});
+        }
+
+        //Mateus Roberto Algayer - 24/11/2021
+        $scope.UpdateExibir = function(id, exibe){
+            adminAPI.putUpdateExibir(id, exibe);
         }
     }
   )

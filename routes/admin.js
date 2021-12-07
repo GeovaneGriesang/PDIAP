@@ -288,6 +288,22 @@ router.put('/putDocumento', miPermiso("3"), (req, res) => {
   });
   res.send('success');
 });
+
+//Mateus Roberto Algayer - 24/11/2021
+router.put('/putUpdateExibir', miPermiso("3"), (req, res) => {
+
+  let id = req.body.id;
+  let exibe = req.body.exibe;
+
+  CadastroDocumentoSchema.update({'_id': id}, 
+                                 {$set:{'exibe': exibe}},
+                                 {multi:false},
+                                 (err) =>{
+                                  if (err) throw err;
+                                 });
+
+  res.send('sucess');
+});
       
 router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
   var id = req.body.id;

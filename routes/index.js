@@ -975,6 +975,7 @@ router.post('/nova-senha/:token', (req, res) => {
   };
 });
 
+//Mateus Roberto Algayer - 24/11/2021
 //Função para recuperar os dados da mostra na base de dados 
 router.get('/getMostraInfo', function(req, res){
   CadastroMostraSchema.find(function(err ,data){
@@ -985,7 +986,7 @@ router.get('/getMostraInfo', function(req, res){
 });
 
 router.get('/getDocumentosInfo', function(req, res){
-  CadastroDocumentoSchema.find(function(err ,data){
+  CadastroDocumentoSchema.find({'exibe': true}, function(err ,data){
     if(err) throw err;
     res.status(200).send(data);
   });
