@@ -80,9 +80,9 @@
                                     <h3>Exibir: <input type="checkbox" data-ng-model="info.exibe" class="md-checkbox" data-ng-click="UpdateExibir(info._id,info.exibe)"></h3>
                                 </div>
                                 <div flex style="display:flex;align-self:center;justify-content:space-evenly;">
-                                    <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important; background-color: green;" aria-label="Visualizar documento" ng-click="">
+                                    <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important; background-color: green;" aria-label="Visualizar documento" ng-click="Visualiza(info.pdf)">
                                         <md-icon md-svg-icon="eye" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
-                                        <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Visualizar</span>
+                                        <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);"">Visualizar</span>
                                     </md-button>
                                     <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover documento" ng-click="RemoveDocumento($event, info.titulo, info._id)">
                                         <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
@@ -93,6 +93,7 @@
                             <md-divider></md-divider>
                         </md-list-item>
                     </md-list>
+                    <iframe src="" id="visualizaPdf"></iframe>
                 </div>
             </md-content>
         </section>

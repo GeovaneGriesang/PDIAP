@@ -14,7 +14,7 @@
         //Leandro Henrique Kopp Ferreira - 14/10/2021
         adminAPI.getDocumentos()
         .success(function(documentos){
-            
+
             $scope.exibeDocumentos = function(){
                 if(documentos.length <= 0){return false;}
 
@@ -74,6 +74,18 @@
         //Mateus Roberto Algayer - 24/11/2021
         $scope.UpdateExibir = function(id, exibe){
             adminAPI.putUpdateExibir(id, exibe);
+        }
+
+        //Mateus Roberto Algayer - 07/12/2021
+        $scope.Visualiza = function(pdf){
+            if(pdf == ''){
+                return false;
+            }
+            
+            var preview = document.getElementById("visualizaPdf");
+            preview.src = pdf;
+            
+            return true;
         }
     }
   )

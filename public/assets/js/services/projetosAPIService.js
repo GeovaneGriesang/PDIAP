@@ -180,6 +180,8 @@
 			};
 			return $http(request);
 		}
+		
+		//Mateus Roberto Algayer - 07/12/2021
 		let _getDocumentos = function(){
 			const request = {
 				url: '/getDocumentosInfo',

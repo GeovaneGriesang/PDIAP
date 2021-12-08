@@ -72,7 +72,7 @@
 					<li>
 					<a href="#">Documentos  <span class="icon fa-angle-down"></span></a>
 						<ul>
-							<li ng-repeat="documento in documentos"><a href="">{{documento.titulo}}</a></li>
+							<li ng-repeat="documento in documentos"><a download="{{documento.titulo}}.pdf" href="{{documento.pdf}}">{{documento.titulo}}</a></li>
 						</ul>
 					</li>
 					<li><a href="#" class="button" data-ng-click="showLoginDialog($event)" style="outline:none;">Logar</a></li>
