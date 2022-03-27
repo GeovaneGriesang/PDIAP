@@ -58,16 +58,17 @@
 		};
 
 		let enviarEmail = function(username) {
-			projetosAPI.postRedefinir(username)
+			projetosAPI.postRedef1inir(username)
 			.success(function(data) {
 				$scope.email = data;
+				// console.log(data);
 				let showAlert = function(ev) {
 					$mdDialog.show(
 						$mdDialog.alert()
 						.parent(angular.element(document.querySelector('#popupContainer')))
 						.clickOutsideToClose(false)
 						.title('Quase lá...')
-						.textContent('Foi enviado um email para '+$scope.email+', onde seguem as instruções para a alteração da senha.')
+						.textContent('Foi enviado um email para '+$scope.username+', onde seguem as instruções para a alteração da senha.')
 						.ok('OK')
 						.targetEvent(ev)
 					);

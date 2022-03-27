@@ -381,10 +381,10 @@ router.put('/removerIntegrante', (req, res) => {
 //       } else{
 //         let email = doc.email;
 //         let nome_projeto = doc.nomeProjeto;
-//         let url = "http://www.movaci.com.br/nova-senha/"+token;
-//         // let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
+//         // let url = "http://www.movaci.com.br/nova-senha/"+token;
+//         let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
 
-//         // res.sendStatus(200);
+//         res.sendStatus(200);
 //         res.send(url);
 
 //         var templatesDir = path.resolve(__dirname, '..', 'templates')
@@ -431,7 +431,7 @@ router.put('/removerIntegrante', (req, res) => {
 // router.post('/nova-senha/:token', (req, res) => {
 //   if(req.params.token === '') {
 //     res.status(400).send("erro");
-//     //console.log('err');
+//     console.log('err');
 //   } else {
 //     ProjetoSchema.findOne({resetPasswordToken: (req.params.token)}, (err, usr) => {
 //       if(err || !usr) {
@@ -446,7 +446,7 @@ router.put('/removerIntegrante', (req, res) => {
 //             usr.password = hash;
 //             usr.save((err, usr) => {
 //               if(err) throw err;
-//               //console.log(usr);
+//               console.log(usr);
 //               res.status(200).send('Senha alterada');
 //             });
 //           });
