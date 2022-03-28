@@ -62,13 +62,15 @@
 			.success(function(data) {
 				$scope.email = data;
 				// console.log(data);
+				console.log('authjs'+ $scope.email);
 				let showAlert = function(ev) {
+					console.log('authjs'+ $scope.email)
 					$mdDialog.show(
 						$mdDialog.alert()
 						.parent(angular.element(document.querySelector('#popupContainer')))
 						.clickOutsideToClose(false)
 						.title('Quase lá...')
-						.textContent('Foi enviado um email para '+$scope.username+', onde seguem as instruções para a alteração da senha.')
+						.textContent('Foi enviado um email para '+$scope.email+', onde seguem as instruções para a alteração da senha.')
 						.ok('OK')
 						.targetEvent(ev)
 					);
@@ -76,6 +78,7 @@
 				showAlert();
 			})
 			.error(function(status) {
+				console.log(status);
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Oxe...')

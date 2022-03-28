@@ -8,6 +8,7 @@
 		$scope.login = function() {
 			const username = $scope.user.username;
 			const password = $scope.user.password;
+			
 
 			projetosAPI.postLogin(username,password)
 			.success(function(projeto) { // authentication OK
@@ -26,10 +27,14 @@
 		};
 
 		let enviarEmail = function(username) {
+			// console.log(username)
 			projetosAPI.postRedefinir(username)
 			.success(function(data) {
+				console.log(data);
 				$scope.email = data;
+				console.log('loginCtrl'+$scope.email);
 				let showAlert = function(ev) {
+					console.log('loginCtrl'+$scope.email)
 					$mdDialog.show(
 						$mdDialog.alert()
 						.parent(angular.element(document.querySelector('#popupContainer')))
@@ -43,10 +48,11 @@
 				showAlert();
 			})
 			.error(function(status) {
+				console.log(status);
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Oxe...')
-					.textContent('Houve algum erro ao enviar o email. Tente mais tarde ou então, entre em contato conosco.')
+					.textContent('Houve algum erro ao enviar o email. Tente mais tarde ou então, entre em contato conosco. '+status.error)
 					.targetEvent(ev)
 					.theme('error')
 					.ok('Continuar')

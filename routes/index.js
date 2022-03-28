@@ -888,13 +888,13 @@ router.post('/logout', (req, res) => {
 
 router.post('/redefinir-senha', (req, res) => {
   let username = req.body.username;
-  console.log(username);
+  console.log('meuusuario:'+ username);
   crypto.randomBytes(20, (err, buf) => {
     let token = buf.toString('hex');
 
     ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {upsert:true, new: true}, function(err, doc){
       if(err){
-        console.log("Something wrong when updating data!");
+        return res.status(400).send({ error: 'Não foi possível encontrar o usuário: '+username}) //ARUUMAR A MENSAGEM DE ERRO DO USUARIO
       } else{
         let email = doc.email;
         let nome_projeto = doc.nomeProjeto;
@@ -902,7 +902,7 @@ router.post('/redefinir-senha', (req, res) => {
         // let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
 
         // res.sendStatus(200);
-        res.send(url);
+        res.send(email);
 
         var templatesDir = path.resolve(__dirname, '..', 'templates')
         var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))

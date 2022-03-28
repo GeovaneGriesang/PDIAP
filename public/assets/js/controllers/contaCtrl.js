@@ -35,10 +35,12 @@
 			.success(function(data) {
 				$scope.email = data;
 				console.log('EMAIL ENVIADO');
-				let showAlert4 = function(ev) {
+				console.log('contaCtrl'+$scope.email);
+				let showAlert = function(ev) {
+					console.log('contaCtrl'+$scope.email)
 					$mdDialog.show(
 						$mdDialog.alert()
-						.parent(angular.element(document.querySelector('#popupContainer3')))
+						.parent(angular.element(document.querySelector('#popupContainer')))
 						.clickOutsideToClose(false)
 						.title('Quase lá...')
 						.textContent('Foi enviado um email para '+$scope.email+', onde seguem as instruções para a alteração da senha.')
@@ -46,10 +48,11 @@
 						.targetEvent(ev)
 					);
 				};
-				showAlert4();
+				showAlert();
 			})
 			.error(function(status) {
-				console.log('EMAIL NÃO FOI ENVIADO AF TIO');
+				console.log(status);
+				// console.log('EMAIL NÃO FOI ENVIADO AF TIO');
 				let showConfirmDialog4 = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
