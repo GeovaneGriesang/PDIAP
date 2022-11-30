@@ -1,23 +1,25 @@
+//Mateus Roberto Algayer - 07/09/2022 :: Revisões
+
 'use strict';
 
-const express = require('express')
-,     path = require('path')
-,     favicon = require('serve-favicon')
-,     logger = require('morgan')
-,     cookieParser = require('cookie-parser')
-,     passport = require('passport')
-,     session = require('express-session')
-,     LocalStrategy = require('passport-local').Strategy
-,     expressValidator = require('express-validator')
-,     flash = require('connect-flash')
-,     bodyParser = require('body-parser')
-,     routes = require('./routes/index')
-,     projetos = require('./routes/projetos')
-,     avaliadores = require('./routes/avaliadores')
-,     saberes = require('./routes/saberes-docentes')
-,     admin = require('./routes/admin')
-,     db = require('./configs/db-config')
-,     app = express();
+const express = require('express'),
+      path = require('path'),
+      favicon = require('serve-favicon'),
+      logger = require('morgan'),
+      cookieParser = require('cookie-parser'),
+      passport = require('passport'),
+      session = require('express-session'),
+      LocalStrategy = require('passport-local').Strategy,
+      expressValidator = require('express-validator'),
+      //flash = require('connect-flash'),
+      bodyParser = require('body-parser'),
+      routes = require('./routes/index'),
+      projetos = require('./routes/projetos'),
+      avaliadores = require('./routes/avaliadores'),
+      saberes = require('./routes/saberes-docentes'),
+      admin = require('./routes/admin'),
+      db = require('./configs/db-config'),
+      app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,12 +33,12 @@ app.use(bodyParser.urlencoded({ extended: false, limit : '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-            // Express Session
-            app.use(session({
-                secret: 'secret',
-                saveUninitialized: true,
-                resave: true
-            }));
+// Express Session
+app.use(session({
+    secret: 'secret',
+    saveUninitialized: true,
+    resave: true
+}));
 
 // Passport init
 app.use(passport.initialize());
@@ -90,8 +92,14 @@ app.use('/saberes-docentes', saberes);
             process.exit(0);
           });*/
 
+//Mateus Roberto Algayer - 30/11/2022 :: Mudei de ideia, Vou deixar isso rodando mas vou printar, assim da pra ver o que está acontecendo.
+//Mateus Roberto Algayer - 07/09/2022 :: Isso aqui quebra tudo
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
+  console.log(req);
+  console.log(res);
+  console.log(next);
+
   res.redirect('/404');
   const err = new Error('Not Found');
   err.status = 404;
