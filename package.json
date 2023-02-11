@@ -29,7 +29,7 @@
     "nodemailer": "^2.5.0",
     "nodemailer-smtp-transport": "^2.6.0",
     "nodemailer-wellknown": "^0.1.10",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.20",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "pdfkit": "^0.8.0",
