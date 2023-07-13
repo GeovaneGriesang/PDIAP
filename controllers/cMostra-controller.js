@@ -6,10 +6,14 @@ const mongoose = require('mongoose');
 
 //Nota: melhorar o tratamento de erros dessa função quando possível
 module.exports.createMostra = ( novaMostra, callback) => {
-	novaMostra.save((err, callback) => {
-        if(err){
-            throw err;
-        }
-        return 0;
-    })
+	try {
+        novaMostra.save((err, callback) => {
+            if(err){
+                throw new Error('Erro ao salvar Schema preenchida na base do mongo'); // Alteração Lucas Ferreira
+            }
+            return 0;
+        })
+    } catch (error) {
+        console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    }
 };

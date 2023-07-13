@@ -66,19 +66,23 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
 });
 
 router.put('/addNota', (req, res) => {
+	try {
 	let id = req.body.id
 	,	arrayNota = req.body.adrovan;
 
 	ProjetoSchema.findOne({_id: id}, (err, usr) => {
-		if (err) throw err;
+		if (err) throw new Error('Erro');
 		usr.avaliacao = arrayNota;
 		usr.save((err, usr) => {
-			if (err) throw err;
+			if (err) throw new Error('Erro'); // Alteração Lucas Ferreira
 		});
 	});
 	res.send(200);
 	console.log("Feito adrovão");
-});
 
+	} catch (error) {
+		console.log("ProjetoSchema.finOne: " + err); // Alteração Lucas Ferreira
+	}
+});
 
 module.exports = router;

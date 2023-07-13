@@ -5,16 +5,20 @@ const mongoose = require('mongoose')
 ,	Admin = require('../models/admin-schema');
 
 module.exports.createAdmin = (newAdmin, callback) => {
-	bcrypt.genSalt(10, (err, salt) => {
-	    bcrypt.hash(newAdmin.password, salt, (err, hash) => {
-	        newAdmin.password = hash;
-	        //newProject.save(callback);
-	        newAdmin.save((err, data) => {
-	        	if(err) throw err;
-	        	console.log(data);
-	        });
-	    });
-	});
+	try {
+		bcrypt.genSalt(10, (err, salt) => {
+			bcrypt.hash(newAdmin.password, salt, (err, hash) => {
+				newAdmin.password = hash;
+				//newProject.save(callback);
+				newAdmin.save((err, data) => {
+					if(err) throw new Error('Erro ao criar admin'); // Alteração Lucas Ferreira
+					console.log(data);
+				});
+			});
+		});
+	} catch (error) {
+		console.log('findOne error--> ${error}');
+	}
 }
 
 module.exports.getAdminByEmail = (username, callback) => {
@@ -37,8 +41,12 @@ module.exports.getAdminById = (id, callback) => {
 }
 
 module.exports.comparePassword = (candidatePassword, hash, callback) => {
-	bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-    	if(err) throw err;
-    	callback(null, isMatch);
-	});
+	try {
+		bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
+			if(err) throw new Error('Erro ao comparar senha'); // Alteração Lucas Ferreira
+			callback(null, isMatch);
+		});
+	} catch (error) {
+		console.log('findOne error--> ${error}');
+	}
 }

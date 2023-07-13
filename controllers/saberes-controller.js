@@ -12,8 +12,12 @@ module.exports.createSaberes = (newSaberes, callback) => {
 };
 
 module.exports.createAtivSaberes = (newSaberes, callback) => {
-	newSaberes.save((err, data) => {
-		if(err) throw err;
-		console.log(data);
-	});
+	try {
+		newSaberes.save((err, data) => {
+			if(err) throw new Error('Erro ao criar atividade do Saberes Docentes'); // Alteração Lucas Ferreira
+			console.log(data);
+		});
+	} catch (error) {
+		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+	}
 };

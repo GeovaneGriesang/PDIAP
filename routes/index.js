@@ -647,7 +647,7 @@ router.post('/contato', (req, res) => {
     port: 587,
     auth: {
       user: "contatomovaci@gmail.com",
-      pass: "*mo12va45ci78!"
+      pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
     }
   }));
 
@@ -776,7 +776,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       port: 587,
       auth: {
         user: "contatomovaci@gmail.com",
-        pass: "*mo12va45ci78!"
+        pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
       }
     });
 
@@ -912,7 +912,7 @@ router.post('/redefinir-senha', (req, res) => {
           port: 587,
           auth: {
             user: "contatomovaci@gmail.com",
-            pass: "*mo12va45ci78!"
+            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
           }
         }));
 

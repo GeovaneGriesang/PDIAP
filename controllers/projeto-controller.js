@@ -6,16 +6,21 @@ const mongoose = require('mongoose')
 ,	Admin = require('../models/admin-schema');
 
 module.exports.createProject = (newProject, callback) => {
-	bcrypt.genSalt(10, (err, salt) => {
-	    bcrypt.hash(newProject.password, salt, (err, hash) => {
-	        newProject.password = hash;
-	        //newProject.save(callback);
-	        newProject.save((err, data) => {
-	        	if(err) throw err;
-	        	console.log(data);
-	        });
-	    });
-	});
+	//try {
+		bcrypt.genSalt(10, (err, salt) => {
+			bcrypt.hash(newProject.password, salt, (err, hash) => {
+				newProject.password = hash;
+				//newProject.save(callback);
+				newProject.save((err, data) => {
+					if(err) throw err;
+					//new Error('Erro ao criar projeto'); // Alteração Lucas Ferreira
+					console.log(data);
+				});
+			});
+		});
+	//} catch (error) {
+	//	console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+	//}
 }
 
 // module.exports.createProject = (newProject, callback) => {
@@ -42,23 +47,27 @@ module.exports.getProjectByUsername = (username, callback) => {
 // NOVO LOGIN ÚNICO
 
 module.exports.getLoginProjeto = (username, ano_atual, user) => {
-	let query = {username: username};
-	Projeto.find(query, function(err, document){
-		if(err) throw err;
-		if(document != ''){
-			console.log("DOCUMENT:"+JSON.stringify(document));
-			document.forEach(function(value){		
-				var data = new Date(value.createdAt);
-				if(ano_atual == data.getFullYear()){				
-					Projeto.findOne({_id:value._id}, user);
-				}				 			
-			});
-		} else {
-			console.log("PROJETO_CONTROLLER -> Usuário desconhecido");
-			Projeto.findOne({username:''}, user);				
-		}		
-			
-	});	
+	try {
+		let query = {username: username};
+		Projeto.find(query, function(err, document){
+			if(err) throw new Error('Erro ao realizar login'); // Alteração Lucas Ferreira
+			if(document != ''){
+				console.log("DOCUMENT:"+JSON.stringify(document));
+				document.forEach(function(value){		
+					var data = new Date(value.createdAt);
+					if(ano_atual == data.getFullYear()){				
+						Projeto.findOne({_id:value._id}, user);
+					}				 			
+				});
+			} else {
+				console.log("PROJETO_CONTROLLER -> Usuário desconhecido");
+				Projeto.findOne({username:''}, user);				
+			}		
+				
+		});	
+	} catch (error) {
+		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+	}
 	
 }
 
@@ -68,10 +77,14 @@ module.exports.getLoginAdmin = (username, user) => {
 }
 
 module.exports.compareLogin = (candidatePassword, hash, callback) => {
+	try {
 	bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-    	if(err) throw err;
+    	if(err) throw new Error('Erro ao realizar login'); // Alteração Lucas Ferreira
     	callback(null, isMatch);
 	});
+} catch (error) {
+	console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+}
 }
 
 // NOVO LOGIN ÚNICO
@@ -88,10 +101,14 @@ module.exports.getProjectById = (id, callback) => {
 }
 
 module.exports.comparePassword = (candidatePassword, hash, callback) => {
-	bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-    	if(err) throw err;
-    	callback(null, isMatch);
-	});
+	try {
+		bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
+			if(err) throw new Error('Erro ao comparar senhas'); // Alteração Lucas Ferreira
+			callback(null, isMatch);
+		});
+	} catch (error) {
+		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+	}
 }
 
 module.exports.findAll = (callback) => {

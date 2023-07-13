@@ -65,59 +65,79 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
 });
 
 router.post('/criarEvento', miPermiso("3"), (req, res) => {
-  let myArray = req.body.responsavel;
+  try {
+    let myArray = req.body.responsavel;
 
-  let newEvento = new eventoSchema({
-    tipo: req.body.tipo
-    ,titulo: req.body.titulo
-    ,cargaHoraria: req.body.cargaHoraria
-    ,data: req.body.data
-    ,createdAt: req.body.createdAt
-  });
-
-  myArray.forEach(function (value, i) {
-    let newResponsavel = ({
-      nome: value.nome
-      ,cpf: splita(value.cpf)
+    let newEvento = new eventoSchema({
+      tipo: req.body.tipo
+      ,titulo: req.body.titulo
+      ,cargaHoraria: req.body.cargaHoraria
+      ,data: req.body.data
+      ,createdAt: req.body.createdAt
     });
-    newEvento.responsavel.push(newResponsavel);
-  });
 
-  newEvento.save((err, data) => {
-    if(err) throw err;
-    console.log(data);
-  });
-  res.send('success');
+    myArray.forEach(function (value, i) {
+      let newResponsavel = ({
+        nome: value.nome
+        ,cpf: splita(value.cpf)
+      });
+      newEvento.responsavel.push(newResponsavel);
+    });
+
+    newEvento.save((err, data) => {
+      if(err) throw new Error('Erro ao criar um evento'); // Alteração Lucas Ferreira
+      console.log(data);
+    });
+    res.send('success');
+  } catch (error){
+    console.log("ProjetoSchema.findOne: " + err); //Mostra onde o erro acontece e em seguida o erro em si 
+  }
 });
 
 router.get('/mostraEvento', miPermiso("3","2"), (req, res) => {
-  eventoSchema.find((err, usr) => {
-    if (err) throw err;
-    res.send(usr);
-  });
+  try {
+    eventoSchema.find((err, usr) => {
+      if (err) throw new Error('Erro ao mostrar evento'); //alteração Lucas A. Ferreira
+      res.send(usr);
+    });
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
 });
 
 router.put('/removeEvento', miPermiso("3"), (req, res) => {
-  let id = req.body.id;
-  eventoSchema.remove({"_id": id}, (err) => {
-    if (err) throw err;
-  });
-  res.send('success');
+  try {
+    let id = req.body.id;
+    eventoSchema.remove({"_id": id}, (err) => {
+      if (err) throw new Error('Erro ao remover evento'); //alteração Lucas A. Ferreira
+    });
+    res.send('success');
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
 });
 
 router.get('/mostraAvaliadores', miPermiso("3","2"), (req, res) => {
-  avaliadorSchema.find((err, usr) => {
-    if (err) throw err;
-    res.send(usr);
-  });
+  try {
+    avaliadorSchema.find((err, usr) => {
+      if (err) throw new Error('Erro ao mostrar avaliadores'); //alteração Lucas A. Ferreira
+      res.send(usr);
+    });
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
 });
 
 router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
-  let id = req.body.id;
-  avaliadorSchema.remove({"_id": id}, (err) => {
-    if (err) throw err;
-  });
-  res.send('success');
+  try {
+    let id = req.body.id;
+    avaliadorSchema.remove({"_id": id}, (err) => {
+      if (true) throw new Error('Erro ao remover avaliador'); //alteração Lucas A. Ferreira
+    });
+    res.send('success');
+  } catch (error) {
+    console.log("ProjetoSchema.findOne: " + err);
+  }
 });
 
 // router.put('/insereParticipanteOficina', miPermiso("3"), (req, res) => {
@@ -142,45 +162,57 @@ router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
 //   res.send('sucess');
 // });
 
-router.post('/criarParticipante', miPermiso("3"), (req, res) => {
-  let newParticipante = new participanteSchema({
-    nome: req.body.nome
-    ,cpf: splita(req.body.cpf)
-    ,createdAt: Date.now()
-  });
-
-  if (req.body.eventos !== undefined) {
-    let myArray = req.body.eventos;
-    myArray.forEach(function (value, i) {
-      let newEvento = ({
-        tipo: value.tipo
-        ,titulo: value.titulo
-        ,cargaHoraria: value.cargaHoraria
-      });
-      newParticipante.eventos.push(newEvento);
+router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração Lucas A. Ferreira
+  try {
+    let newParticipante = new participanteSchema({
+      nome: req.body.nome
+      ,cpf: splita(req.body.cpf)
+      ,createdAt: Date.now()
     });
-  }
 
-  newParticipante.save((err, data) => {
-    if(err) throw err;
-    console.log(data);
-  });
-  res.send('success');
+    if (req.body.eventos !== undefined) {
+      let myArray = req.body.eventos;
+      myArray.forEach(function (value, i) {
+        let newEvento = ({
+          tipo: value.tipo
+          ,titulo: value.titulo
+          ,cargaHoraria: value.cargaHoraria
+        });
+        newParticipante.eventos.push(newEvento);
+      });
+    }
+
+    newParticipante.save((err, data) => {
+      if(true) throw new Error('Erro ao criar participante');
+      console.log(data);
+    });
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); //Mostra onde o erro acontece e em seguida o erro em si
+  }
 });
 
-router.get('/mostraParticipante', miPermiso("3","2"), (req, res) => {
-  participanteSchema.find((err, usr) => {
-    if (err) throw err;
-    res.send(usr);
-  });
+router.get('/mostraParticipante', miPermiso("3","2"), (req, res) => { 
+  try {
+    participanteSchema.find((err, usr) => {
+      if (err) throw new Error('Erro ao mostrar participante'); //alteração Lucas A. Ferreira
+      res.send(usr);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
 });
 
 router.put('/removeParticipante', (req, res) => {
-  let id = req.body.id;
-  participanteSchema.remove({"_id": id}, (err) => {
-    if (err) throw err;
-  });
-  res.send('success');
+  try {
+    let id = req.body.id;
+    participanteSchema.remove({"_id": id}, (err) => {
+      if (err) throw new Error('Erro ao remover participante'); // Alteração Lucas Ferreira
+    });
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.post('/exportarprojetos', (req, res) => {
@@ -219,42 +251,49 @@ router.post('/exportarprojetos', (req, res) => {
 //Mateus Roberto Algayer - 14/10/2021
 //rota para cadastro de certificado
 router.post('/postCertificado', (req, res) => {
+  try {
+    //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
+    //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
+    CadastroMostraSchema.remove({"ano_certificado":req.body.data.ano_certificado}, (err) => {
+      if (err) throw new Error('Erro ao cadastrar certificado'); //alteração Lucas A. Ferreira
+      //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
+        let novoCadastro = new cadastroMostraSchema({
+          imagem: req.body.data.dataUrl,
+          imagemFundo: req.body.data.dataUrlFundo,
+          textoAvaliador: req.body.data.textoAvaliador,
+          textoOrientador: req.body.data.textoOrientador,
+          textoApresentacao: req.body.data.textoApresentacao,
+          textoPremiado: req.body.data.textoPremiado,
+          textoMencao: req.body.data.textoMencao,
+          textoSaberes: req.body.data.textoSaberes,
+          textoPOficinas: req.body.data.textoPOficinas,
+          textoROficinas: req.body.data.textoROficinas,
+          textoAcademica: req.body.data.textoAcademica,
+          textoDocentes: req.body.data.textoDocentes,
+          ano_certificado: req.body.data.ano_certificado
+        });
+        //envia o Schema para cMostra-controller para salvar os dados no banco
 
-  //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
-  //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
-  CadastroMostraSchema.remove({"ano_certificado":req.body.data.ano_certificado}, (err) => {
-    if (err) throw err;
-    //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
-      let novoCadastro = new cadastroMostraSchema({
-        imagem: req.body.data.dataUrl,
-        imagemFundo: req.body.data.dataUrlFundo,
-        textoAvaliador: req.body.data.textoAvaliador,
-        textoOrientador: req.body.data.textoOrientador,
-        textoApresentacao: req.body.data.textoApresentacao,
-        textoPremiado: req.body.data.textoPremiado,
-        textoMencao: req.body.data.textoMencao,
-        textoSaberes: req.body.data.textoSaberes,
-        textoPOficinas: req.body.data.textoPOficinas,
-        textoROficinas: req.body.data.textoROficinas,
-        textoAcademica: req.body.data.textoAcademica,
-        textoDocentes: req.body.data.textoDocentes,
-        ano_certificado: req.body.data.ano_certificado
-      });
-      //envia o Schema para cMostra-controller para salvar os dados no banco
-
-      //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
-      cadastroMostra.createMostra(novoCadastro, (callback) => {});
-      res.send('success');
-  });
+        //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
+        cadastroMostra.createMostra(novoCadastro, (callback) => {});
+        res.send('success');
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 //Mateus Roberto Algayer - 14/10/2021
 //rota para recuperar informações do certificado para AdminAPI
 router.get('/getCertificados', (req, res) => {
-  CadastroMostraSchema.find(function(err ,data){
-    if(err) throw err;
-    res.status(200).send(data);
-  });
+  try {
+    CadastroMostraSchema.find(function(err ,data){
+      if(err) throw new Error('Erro ao carregar informações do certificado'); //alteração Lucas A. Ferreira
+      res.status(200).send(data);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 //Leandro Henrique Kopp Ferreira - 14/10/2021
@@ -274,24 +313,32 @@ router.post('/postDocumento', (req, res) => {
 //Leandro Henrique Kopp Ferreira - 14/10/2021
 //rota para requisição dos documentos
 router.get('/getDocumentos', (req, res) =>{
-  CadastroDocumentoSchema.find(function(err ,data){
-    if(err) throw err;
-    res.status(200).send(data);
-  });
+  try {
+    CadastroDocumentoSchema.find(function(err ,data){
+      if(err) throw new Error('Erro ao mostrar certificados'); //alteração Lucas A. Ferreira
+      res.status(200).send(data);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
 });
 
 //Leandro Henrique Kopp Ferreira - 04/11/2021
 router.put('/putDocumento', miPermiso("3"), (req, res) => {
-  let id = req.body.id;
-  CadastroDocumentoSchema.remove({"_id": id}, (err) => {
-    if (err) throw err;
-  });
-  res.send('success');
+  try {
+    let id = req.body.id;
+    CadastroDocumentoSchema.remove({"_id": id}, (err) => {
+      if (err) throw new Error('Erro ao mostrar certificados'); //alteração Lucas A. Ferreira
+    });
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 //Mateus Roberto Algayer - 24/11/2021
 router.put('/putUpdateExibir', miPermiso("3"), (req, res) => {
-
+  try {
   let id = req.body.id;
   let exibe = req.body.exibe;
 
@@ -299,36 +346,43 @@ router.put('/putUpdateExibir', miPermiso("3"), (req, res) => {
                                  {$set:{'exibe': exibe}},
                                  {multi:false},
                                  (err) =>{
-                                  if (err) throw err;
+                                  if (err) throw new Error('Erro ao editar documento'); //alteração Lucas A. Ferreira
                                  });
 
   res.send('sucess');
+                                } catch (error) {
+                                  console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+                                }
 });
       
 router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
-  var id = req.body.id;
-  let nome = req.body.nome;
-  let cpf = splita(req.body.cpf);
+  try {
+    var id = req.body.id;
+    let nome = req.body.nome;
+    let cpf = splita(req.body.cpf);
 
-  participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
-      if (err) throw err;
-    });
-
-  if (req.body.eventos !== undefined) {
-    let myArray = req.body.eventos;
-    myArray.forEach(function (value, i) {
-      var newEvento = ({
-        tipo: value.tipo
-        ,titulo: value.titulo
-        ,cargaHoraria: value.cargaHoraria
+    participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
+        if (err) throw new Error('Erro ao atualizar participante'); //alteração Lucas A. Ferreira
       });
 
-      participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true}, (err, doc) => {
-        if (err) throw err;
+    if (req.body.eventos !== undefined) {
+      let myArray = req.body.eventos;
+      myArray.forEach(function (value, i) {
+        var newEvento = ({
+          tipo: value.tipo
+          ,titulo: value.titulo
+          ,cargaHoraria: value.cargaHoraria
+        });
+
+        participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true}, (err, doc) => {
+          if (err) throw new Error('Erro ao atualizar participante'); //alteração Lucas A. Ferreira
+        });
       });
-    });
+    }
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-  res.send('success');
 });
 
 router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
@@ -397,67 +451,79 @@ router.get('/mostraCPFparticipantes', miPermiso("3"), (req, res) => {
 // });
 
 router.put('/setPresencaProjetos', miPermiso("3"), (req, res) => {
-  let myArray0 = req.body.integrantesPresentes;
-  let myArray1 = req.body.integrantesAusentes;
+  try {
+    let myArray0 = req.body.integrantesPresentes;
+    let myArray1 = req.body.integrantesAusentes;
 
-  for (var i = 0; i < myArray0.length; i++) {
-    let id_integ = myArray0[i];
-    projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
-    {"$set": {"integrantes.$.presenca": true}}, {new:true},
-    (err, doc) => {
-      if (err) throw err;
+    for (var i = 0; i < myArray0.length; i++) {
+      let id_integ = myArray0[i];
+      projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
+      {"$set": {"integrantes.$.presenca": true}}, {new:true},
+      (err, doc) => {
+        if (err) throw new Error('Erro ao mostrar presença do projeto'); // Alteração Lucas Ferreira
+      }
+    );
     }
-  );
-}
-for (var i = 0; i < myArray1.length; i++) {
-  let id_integ = myArray1[i];
-  projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
-  {"$unset": {"integrantes.$.presenca": true}}, {new:true},
-  (err, doc) => {
-    if (err) throw err;
+    for (var i = 0; i < myArray1.length; i++) {
+      let id_integ = myArray1[i];
+      projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
+      {"$unset": {"integrantes.$.presenca": true}}, {new:true},
+      (err, doc) => {
+        if (err) throw new Error('Erro ao mostrar presença do projeto'); // Alteração Lucas Ferreira
+      }
+    );
+    }
+    console.log("log antes de sucesso presença");
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-);
-}
-console.log("log antes de sucesso presença");
-res.send('success');
 });
 
 router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
-  let premiacao = req.body;
-  if(premiacao.premiacao === 'Premiado'){
-	if(premiacao.colocacao === undefined){premiacao.colocacao = null;}
-	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
-		if(err) throw err;	
-	});
-  } else if(premiacao.premiacao === 'Mencao_honrosa'){
-	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
-		if(err) throw err;	
-	});		
-  } else if(premiacao.premiacao === '') {
-	projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","mostratec":"", "token":""}}, (err, doc) =>{
-		if(err) throw err;	
-	});
+  try {
+    let premiacao = req.body;
+    if(premiacao.premiacao === 'Premiado'){
+    if(premiacao.colocacao === undefined){premiacao.colocacao = null;}
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+      if(err) throw new Error('Erro ao atribuir premiação'); // Alteração Lucas Ferreira	
+    });
+    } else if(premiacao.premiacao === 'Mencao_honrosa'){
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+      if(err) throw new Error('Erro ao atribuir premiação'); // Alteração Lucas Ferreira
+    });		
+    } else if(premiacao.premiacao === '') {
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","mostratec":"", "token":""}}, (err, doc) =>{
+      if(err) throw new Error('Erro ao atribuir premiação'); // Alteração Lucas Ferreira
+    });
+    }
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-  res.send('success');
 });
 
 router.post('/edit', miPermiso("3"), (req, res) => {
-	let obj = {
-		ano: req.body[0].ano,
-		mes: req.body[0].mes,
-		dias: req.body[0].dias,
-		edicao: req.body[0].edicao,
-		text: req.body[0].text,
-		cadastro_projetos: req.body[0].cadastro_projetos,
-		cadastro_avaliadores: req.body[0].cadastro_avaliadores,
-		saberes_docentes: req.body[0].saberes_docentes
-	};	
-	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores,'saberes_docentes':obj.saberes_docentes}}, [{new:true}], (err, usr) =>{
-		if (err) throw err				
-		else {
-			res.send('success');	
-		}
-	})
+	try {
+    let obj = {
+      ano: req.body[0].ano,
+      mes: req.body[0].mes,
+      dias: req.body[0].dias,
+      edicao: req.body[0].edicao,
+      text: req.body[0].text,
+      cadastro_projetos: req.body[0].cadastro_projetos,
+      cadastro_avaliadores: req.body[0].cadastro_avaliadores,
+      saberes_docentes: req.body[0].saberes_docentes
+    };	
+    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores,'saberes_docentes':obj.saberes_docentes}}, [{new:true}], (err, usr) =>{
+      if (err) throw new Error('Erro ao editar'); // Alteração Lucas Ferreira				
+      else {
+        res.send('success');	
+      }
+    })
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.get('/editar', (req, res) => {
@@ -471,12 +537,16 @@ router.get('/editar', (req, res) => {
 });
 
 router.post('/setOpcoes', miPermiso("3"), (req, res) => {
-	let obj = req.body;
-	console.log("OBJ:"+JSON.stringify(obj));	
-	adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true}, (err, usr) =>{
-		if (err) throw err				
-		else res.send('success');		
-	})
+	try {
+    let obj = req.body;
+    console.log("OBJ:"+JSON.stringify(obj));	
+    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true}, (err, usr) =>{
+      if (err) throw new Error('Erro ao editar'); // Alteração Lucas Ferreira				
+      else res.send('success');		
+    })
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.get('/getOpcoes', (req, res) => {
@@ -490,30 +560,42 @@ router.get('/getOpcoes', (req, res) => {
 });
 
 router.get('/projetos', miPermiso("2","3"), (req, res) => {
-  //console.log("ANO:"+JSON.stringify(req.body));
-  projetoSchema.find((err, usr) => {
-    
-    if (err) throw err;
-    res.send(usr);
-  });
+  try {
+    //console.log("ANO:"+JSON.stringify(req.body));
+    projetoSchema.find((err, usr) => {
+      
+      if (err) throw new Error('Erro em projetos'); // Alteração Lucas Ferreira
+      res.send(usr);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.post('/avaliador', miPermiso("2","3"), (req, res) => {
-  avaliadorSchema.find((err, usr) => {
-    if (err) throw err;
-    res.send(usr);
-  });
+  try {
+    avaliadorSchema.find((err, usr) => {
+      if (err) throw new Error('Erro em avaliador'); // Alteração Lucas Ferreira
+      res.send(usr);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.post('/saberes', miPermiso("2","3"), (req, res) => {
-  saberesSchema.find((err, usr) => {
-    if (err) throw err;
-    res.send(usr);
-  });
+  try {
+    saberesSchema.find((err, usr) => {
+      if (err) throw new Error('Erro em saberes docentes'); // Alteração Lucas Ferreira
+      res.send(usr);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
-
+  try {
   let myArray0 = req.body.projetosAprovados;
   let myArray1 = req.body.projetosReprovados;
   
@@ -524,7 +606,7 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
     {"$set": {"aprovado": true}}, {new:true},
     (err, doc) => {
       if (err){
-        throw err;
+        throw new Error('Erro'); // Alteração Lucas Ferreira
         }
     }
   );
@@ -535,38 +617,44 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
     projetoSchema.findOneAndUpdate({"_id": id_doc},
     {"$unset": {"aprovado": true}}, {new:true},
     (err, doc) => {
-      if (err) throw err;
+      if (err) throw new Error('Erro'); // Alteração Lucas Ferreira
     });
   }
 res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), (req, res) => {
-
-  let myArray0 = req.body.avaliadoresMarcados;
-  let myArray1 = req.body.avaliadoresNMarcados;
-  
-  for (var i = 0; i < myArray0.length; i++) {
-    let id_doc = myArray0[i];
-    avaliadorSchema.findOneAndUpdate({"_id": id_doc},
-    {"$set": {"avaliacao": true}}, {new:true},
-    (err, doc) => {
-      if (err){
-        throw err;
+  try {
+      let myArray0 = req.body.avaliadoresMarcados;
+      let myArray1 = req.body.avaliadoresNMarcados;
+      
+      for (var i = 0; i < myArray0.length; i++) {
+        let id_doc = myArray0[i];
+        avaliadorSchema.findOneAndUpdate({"_id": id_doc},
+        {"$set": {"avaliacao": true}}, {new:true},
+        (err, doc) => {
+          if (err){
+            throw new Error('Erro na avaliação'); // Alteração Lucas Ferreira
+          }
+        }
+      );
       }
-    }
-  );
-  }
 
-  for (var i = 0; i < myArray1.length; i++) {
-    let id_doc = myArray1[i];
-    avaliadorSchema.findOneAndUpdate({"_id": id_doc},
-    {"$unset": {"avaliacao": true}}, {new:true},
-    (err, doc) => {
-      if (err) throw err;
-    });
+      for (var i = 0; i < myArray1.length; i++) {
+        let id_doc = myArray1[i];
+        avaliadorSchema.findOneAndUpdate({"_id": id_doc},
+        {"$unset": {"avaliacao": true}}, {new:true},
+        (err, doc) => {
+          if (err) throw new Error('Erro na avaliação'); // Alteração Lucas Ferreira
+        });
+      }
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-res.send('success');
 });
 
 /*router.put('/upgreice2', ensureAuthenticated, miPermiso("3"), (req, res) => {
@@ -586,92 +674,108 @@ res.send('success');
 });*/
 
 router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
-  if (req.body.cep !== undefined){
-    req.body.cep = splita(req.body.cep);
+  try {
+    if (req.body.cep !== undefined){
+      req.body.cep = splita(req.body.cep);
+    }
+    let newProject = req.body;
+    let id = req.body._id;
+    delete newProject._id;
+
+    console.log(newProject);
+
+    projetoSchema.update({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
+      if (err) throw new Error('Erro ao editar'); // Alteração Lucas Ferreira
+      res.status(200).json(docs);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-  let newProject = req.body;
-  let id = req.body._id;
-  delete newProject._id;
-
-  console.log(newProject);
-
-  projetoSchema.update({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
-    if (err) throw err;
-    res.status(200).json(docs);
-  });
 });
 
 router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, res) => {
-  let myArray = req.body
-  ,   id = req.body[0].ID;
+  try {
+    let myArray = req.body
+    ,   id = req.body[0].ID;
 
-  myArray.forEach(function (value, i) {
-    if (value._id !== undefined) {
-	let id_subdoc = value._id,
-	newIntegrante = ({
-		_id: id_subdoc,
-		tipo: value.tipo,
-		nome: value.nome,
-		email: value.email,
-		cpf: splita(value.cpf),
-		telefone: splita(value.telefone),
-		tamCamiseta: value.tamCamiseta
-	});
-      projetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
-      {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
-      (err, doc) => {
-        if (err) throw err;
-      });	
-    } else if (value._id === undefined) {
-	    let newIntegrante = ({
-	      tipo: value.tipo,
-	      nome: value.nome,
-	      email: value.email,
-	      cpf: splita(value.cpf),
-	      telefone: splita(value.telefone),
-	      tamCamiseta: value.tamCamiseta
-	    });
+    myArray.forEach(function (value, i) {
+      if (value._id !== undefined) {
+    let id_subdoc = value._id,
+    newIntegrante = ({
+      _id: id_subdoc,
+      tipo: value.tipo,
+      nome: value.nome,
+      email: value.email,
+      cpf: splita(value.cpf),
+      telefone: splita(value.telefone),
+      tamCamiseta: value.tamCamiseta
+    });
+        projetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
+        {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
+        (err, doc) => {
+          if (err) throw new Error('Erro ao editar projeto'); // Alteração Lucas Ferreira
+        });	
+      } else if (value._id === undefined) {
+        let newIntegrante = ({
+          tipo: value.tipo,
+          nome: value.nome,
+          email: value.email,
+          cpf: splita(value.cpf),
+          telefone: splita(value.telefone),
+          tamCamiseta: value.tamCamiseta
+        });
 
-	    projetoSchema.findOne({"_id": id}, (err, usr) => {
-	      if (err) throw err;
-	      usr.integrantes.push(newIntegrante);
-	      usr.save((err, usr) => {
-		if (err) throw err;
-	      });
-	    });
+        projetoSchema.findOne({"_id": id}, (err, usr) => {
+          if (err) throw new Error('Erro ao editar projeto'); // Alteração Lucas Ferreira
+          usr.integrantes.push(newIntegrante);
+          usr.save((err, usr) => {
+      if (err) throw new Error('Erro ao editar projeto'); // Alteração Lucas Ferreira
+          });
+        });
 
-	    projetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
-	      if (err) throw err;
-	    });
-    }
-  });
-  res.status(200).json(myArray);
+        projetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
+          if (err) throw new Error('Erro ao editar projeto'); // Alteração Lucas Ferreira
+        });
+      }
+    });
+    res.status(200).json(myArray);
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), (req, res) => {
-  let id = req.body.integrantes_id;
-  let ID = req.body.ID;
+  try {
+    let id = req.body.integrantes_id;
+    let ID = req.body.ID;
 
-  projetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
-    if (err) throw err;
-    usr.integrantes.id(id).remove()
-    usr.save((err, usr) => {
-      if (err) throw err;
+    projetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
+      if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      usr.integrantes.id(id).remove()
+      usr.save((err, usr) => {
+        if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      });
     });
-  });
 
-  projetoSchema.update({_id:ID}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
-    if (err) throw err;
-    res.status(200).json(docs);
-  });
+    projetoSchema.update({_id:ID}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
+      if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      res.status(200).json(docs);
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.put('/removeProjeto', miPermiso("3"), (req, res) => {
-  let id = req.body.id;
-  projetoSchema.remove({"_id": id}, (err) => {
-    if (err) throw err;
-  });
-  res.send('success');
+  try {
+    let id = req.body.id;
+    projetoSchema.remove({"_id": id}, (err) => {
+      if (err) throw new Error('Erro ao remover projeto'); // Alteração Lucas Ferreira
+    });
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+  }
 });
 
 router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
@@ -705,7 +809,7 @@ router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "no-reply4@movaci.com.br",
-            pass: "*mo12va45ci78!"
+            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
           },
           getSocket: true
         }));
@@ -780,7 +884,7 @@ router.post('/reprovadosemail', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "contato@movaci.com.br",
-            pass: "*mo12va45ci78!"
+            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
           },
           getSocket: true
         }));
@@ -933,7 +1037,7 @@ router.post('/emailUpload', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "no-reply5@movaci.com.br",
-            pass: "*mo12va45ci78!"
+            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
           },
           getSocket: true
         }));

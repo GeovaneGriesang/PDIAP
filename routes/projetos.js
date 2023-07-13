@@ -353,20 +353,24 @@ res.status(200).json(docs);
 });*/
 
 router.put('/removerIntegrante', (req, res) => {
-  let id = req.body.integrantes_id;
+  try {
+    let id = req.body.integrantes_id;
 
-  ProjetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
-    if (err) throw err;
-    usr.integrantes.id(id).remove()
-    usr.save((err, usr) => {
-      if (err) throw err;
+    ProjetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
+      if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      usr.integrantes.id(id).remove()
+      usr.save((err, usr) => {
+        if (err) throw err;
+      });
     });
-  });
 
-  ProjetoSchema.update({_id:req.user.id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
-    if (err) throw err;
-    res.status(200).json(docs);
-  });
+    ProjetoSchema.update({_id:req.user.id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
+      if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      res.status(200).json(docs);
+    });
+  } catch (error) {
+    console.log("ProjetoSchema.finOne: " + err); // Alteração Lucas Ferreira
+  }
 });
 
 // router.post('/redefinir-senha', (req, res) => {
