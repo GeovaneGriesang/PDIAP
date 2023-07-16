@@ -324,6 +324,9 @@
 			$scope.query = campo;
 			delete $scope.search;
 		}
+
+		$scope.year = CadastraAno();
+
 		$scope.recarregar = function(){
 			$scope.projetos = [];
 			$scope.saberes = [];
