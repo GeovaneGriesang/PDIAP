@@ -214,19 +214,20 @@
     </div>
   </div>
   <hr size="3" style="background:green!important;margin-top:2.5em!important;">
-  <p style="position:relative;top:20px;margin-bottom:40px;">Para a melhor organização, informe os turnos que estará disponível para realizar a avaliação.</p></p></p>
+  <!-- MateusAlgayer 22/07/2023 - Comentado até ser criada uma estrutura decente para isso -->
+  <!-- <p style="position:relative;top:20px;margin-bottom:40px;">Para a melhor organização, informe os turnos que estará disponível para realizar a avaliação.</p></p></p>
   <md-input-container class="md-block turnos" flex-gt-sm>
     <label>Turnos</label>
     <md-select name="turnos" data-ng-model="avaliadores.turnos" multiple required>
       <md-optgroup label="Quarta-feira, 26/09">
-<!--        <md-option value="Quarta-feira, 27/09 - Manhã">Quarta-feira, 27/09 - Manhã</md-option>-->
+        <md-option value="Quarta-feira, 27/09 - Manhã">Quarta-feira, 27/09 - Manhã</md-option>
         <md-option value="Quarta-feira, 26/09 - Tarde">Quarta-feira, 26/09 - Tarde</md-option>
-<!--        <md-option value="Quarta-feira, 27/09 - Noite">Quarta-feira, 27/09 - Noite</md-option>-->
+        <md-option value="Quarta-feira, 27/09 - Noite">Quarta-feira, 27/09 - Noite</md-option>
       </md-optgroup>
       <md-optgroup label="Quinta-feira, 27/09">
         <md-option value="Quinta-feira, 27/09 - Manhã">Quinta-feira, 27/09 - Manhã</md-option>
         <md-option value="Quinta-feira, 27/09 - Tarde">Quinta-feira, 27/09 - Tarde</md-option>
-<!--        <md-option value="Quinta-feira, 28/09 - Noite">Quinta-feira, 28/09 - Noite</md-option>-->
+        <md-option value="Quinta-feira, 28/09 - Noite">Quinta-feira, 28/09 - Noite</md-option>
       </md-optgroup>
       <md-optgroup label="Sexta-feira, 28/09">
         <md-option value="Sexta-feira, 28/09 - Manhã">Sexta-feira, 28/09 - Manhã</md-option>
@@ -237,7 +238,7 @@
         <div class="message-error" data-ng-if="avaliadoresForm.turnos.$error.required">Selecione uma opção.</div>
       </div>
     </div>
-  </md-input-container>
+  </md-input-container> -->
 
   <!-- Finalizar inscrição -->
   <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">

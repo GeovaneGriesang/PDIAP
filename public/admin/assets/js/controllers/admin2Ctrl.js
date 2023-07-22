@@ -326,7 +326,6 @@
 		}
 
 		$scope.year = CadastraAno();
-
 		$scope.recarregar = function(){
 			$scope.projetos = [];
 			$scope.saberes = [];
