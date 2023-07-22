@@ -156,33 +156,35 @@
 								 },
 								 
 								//Descomentar para aparecer o botão de upload de relatórios
-								 /*{
+								 {
 								 	name: 'Upload',
 								 	icon: 'upload',
 								 	link: 'home.fileUpload'
-								 },*/
+								 },
 								{
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',
 									link: 'home.conta'
 								}]
-							},{
-								name: 'Avaliação',
-								expand: false,
-								actions: [{
-									name: 'Ensino Fundamental',
-									icon: 'lead-pencil',
-									link: 'home.avaliacao-fundamental'
-								}, {
-									name: 'Ensino Médio',
-									icon: 'pen',
-									link: 'home.avaliacao-medio'
-								}, {
-									name: 'Ensino Médio - Ext',
-									icon: 'pen',
-									link: 'home.avaliacao-medio-extensao'
-								}]
-							}]
+							}//,
+							// {
+							// 	name: 'Avaliação',
+							// 	expand: false,
+							// 	actions: [{
+							// 		name: 'Ensino Fundamental',
+							// 		icon: 'lead-pencil',
+							// 		link: 'home.avaliacao-fundamental'
+							// 	}, {
+							// 		name: 'Ensino Médio',
+							// 		icon: 'pen',
+							// 		link: 'home.avaliacao-medio'
+							// 	}, {
+							// 		name: 'Ensino Médio - Ext',
+							// 		icon: 'pen',
+							// 		link: 'home.avaliacao-medio-extensao'
+							// 	}]
+							// }
+						]
 						}
 					};
 				} else {
@@ -207,24 +209,25 @@
 									name: 'Dados da conta',
 									icon: 'account-settings-variant',
 									link: 'home.conta'
-								}]
-							},{
-								name: 'Avaliação',
-								expand: false,
-								actions: [{
-									name: 'Ensino Fundamental',
-									icon: 'lead-pencil',
-									link: 'home.avaliacao-fundamental'
-								}, {
-									name: 'Ensino Médio',
-									icon: 'pen',
-									link: 'home.avaliacao-medio'
-								}, {
-									name: 'Ensino Médio - Ext',
-									icon: 'pen',
-									link: 'home.avaliacao-medio-extensao'
-								}]
-							}]
+								}]}
+							// },{
+							// 	name: 'Avaliação',
+							// 	expand: false,
+							// 	actions: [{
+							// 		name: 'Ensino Fundamental',
+							// 		icon: 'lead-pencil',
+							// 		link: 'home.avaliacao-fundamental'
+							// 	}, {
+							// 		name: 'Ensino Médio',
+							// 		icon: 'pen',
+							// 		link: 'home.avaliacao-medio'
+							// 	}, {
+							// 		name: 'Ensino Médio - Ext',
+							// 		icon: 'pen',
+							// 		link: 'home.avaliacao-medio-extensao'
+							// 	}]
+							// }
+							]
 						}
 					};
 				}
