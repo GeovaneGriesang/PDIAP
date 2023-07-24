@@ -184,7 +184,7 @@
 							// 		link: 'home.avaliacao-medio-extensao'
 							// 	}]
 							// }
-						]
+							]
 						}
 					};
 				} else {

@@ -6,3 +6,4 @@
 /relatorios/
 /nbproject/private/
 .env
+*.pdf

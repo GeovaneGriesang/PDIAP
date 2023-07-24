@@ -98,6 +98,7 @@
 		}
 
 		$scope.abrir = function(num) {
+			console.log(num);
 			$window.open('http://www.movaci.com.br/relatorios_2018/'+num+'.pdf', '_blank');			
 		}
 
