@@ -59,7 +59,7 @@ function testaUsernameEEscola(req, res) {
 }
 
 function testaUsername2(req, res, next) {
-  let query2 = req.body.email
+  let query2 = req.body.username
   ,   query = new RegExp(["^", query2, "$"].join(""), "i");
 
   ProjetoSchema.find({'username':query},'username -_id', (error, usernames) => {

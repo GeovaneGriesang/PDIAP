@@ -260,14 +260,19 @@
 		});
 
 		$scope.verificaUsername = function(username) {
+			let valido = true;
 			for (var i in $scope.usernames) {
 				if ($scope.usernames[i] == username) {
-					$scope.projetoForm.username.$setValidity('duplicado',false);
+					valido = false;
+					//$scope.projetoForm.username.$setValidity('duplicado',false);
 					break; // importante parar caso email seja igual, senão não funciona
-				} else {
-					$scope.projetoForm.username.$setValidity('duplicado',true);
-				}
+				} /*else {
+					valido = true;
+					//$scope.projetoForm.username.$setValidity('duplicado',true);
+				}*/
 			}
+
+			$scope.projetoForm.username.$setValidity('duplicado',valido);
 		};
 
 		$scope.alunosArray = [];
