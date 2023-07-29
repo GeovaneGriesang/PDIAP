@@ -49,6 +49,7 @@
 				$scope.nomeDoProjeto = projeto.nomeProjeto;
 				$scope.projeto = projeto;
 				//console.log(projeto);
+				$scope.aviso1_2 = '';
 				if (projeto.aprovado === true) {
 					if (projeto.participa === true) {
 						$scope.aviso1_1 = 'PARABÉNS!';
@@ -63,12 +64,13 @@
 						'Mostra Venâncio-airense de Cultura e Inovação. Vá em "Alterar Projeto" e "Marcar Participação", '+
 						'favor entre em contato.';
 					}
-				} else {
+				} else if(projeto.aprovado === false) {
 					$scope.aviso1_2 = 'Infelizmente, esse projeto não foi selecionado para apresentação na MOVACI. '+
 					'Mas não desanime! Não estar selecionado não quer dizer que seu projeto não seja bom ou possa atingir o sucesso. '+
 					'Infelizmente não temos como escolher todos os projetos. '+
 					'Fique atento! Há uma lista de suplência. Em caso de desistências, serão chamados novos projetos.';
 				}
+
 				$scope.projeto1.nomeProjeto = projeto.nomeProjeto;
 				$scope.projeto1.categoria = projeto.categoria;
 				$scope.projeto1.eixo = projeto.eixo;

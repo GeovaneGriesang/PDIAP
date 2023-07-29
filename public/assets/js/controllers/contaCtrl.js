@@ -17,14 +17,16 @@
 		});
 
 		$scope.verificaUsername = function(username) {
+			let valido = true;
 			for (var i in $scope.usernames) {
 				if ($scope.usernames[i] == username) {
-					$scope.contaForm.username.$setValidity('duplicado',false);
+					valido = false;
 					break; // importante parar caso username seja igual, senão não funciona
-				} else {
+				} /*else {
 					$scope.contaForm.username.$setValidity('duplicado',true);
-				}
+				}*/
 			}
+			$scope.contaForm.username.$setValidity('duplicado',valido);
 		};
 
 		$scope.enviarEmail2 = function() {
