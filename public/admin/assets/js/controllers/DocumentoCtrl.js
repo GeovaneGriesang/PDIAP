@@ -44,8 +44,9 @@
                 };
 
                 //mandar o documento cadastrado para o express
-                adminAPI.postDocumento(pacote);
-                window.location.reload();
+                adminAPI.postDocumento(pacote).success(function(_){
+                    window.location.reload();
+                });
             }
             pdf.readAsDataURL(arquivo);
         }
