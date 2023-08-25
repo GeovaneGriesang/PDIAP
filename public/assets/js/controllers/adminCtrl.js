@@ -138,8 +138,7 @@
 				 /*for (var i in projeto.integrantes){
 				 	$scope.integrantes.push(projeto.integrantes[i]);
 				 }*/
-				if ($scope.projeto1.categoria === 'Ensino Médio, Técnico e Superior' || 
-				    $scope.projeto1.categoria === 'Ensino Médio e Técnico' || $scope.projeto1.categoria === 'Graduação e Pós-graduação') {
+				if ($scope.projeto1.categoria === 'Ensino Médio, Técnico e Superior') {
 					$scope.data = {
 						sidenav: {
 							sections: [{
