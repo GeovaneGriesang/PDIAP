@@ -10,6 +10,8 @@
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
 				if(edits[0].cadastro_projetos == false){
+					// Ao meu ver não precisa disso aqui
+					/*console.log('caiu aqui');
 					$scope.cadastro_projetos = false;				
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.alert()
@@ -24,7 +26,7 @@
 							$window.location.href="http://movaci.com.br/";
 						}, function() {});
 					};
-					showConfirmDialog();
+					showConfirmDialog();*/
 				}	
 			})
 			.error(function(status) {

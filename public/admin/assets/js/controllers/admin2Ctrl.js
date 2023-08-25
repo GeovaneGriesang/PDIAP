@@ -26,13 +26,32 @@
 			    {nome:"Ciências Humanas e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
 			    {nome:"Linguagens, Códigos e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
 			    {nome:"Matemática e suas tecnologias", num:0, categoria: "Fundamental II (6º ao 9º anos)"},
-			    {nome:"Ciências Agrárias, Exatas e da Terra", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+			    //Eixos de Ensino médio, Técnico e Superior
+					//Esses eixos são eixos legado, não serão mais utilizados, mas serão mantidos por questões de projetos históricos.
+					{nome:"Ciências Agrárias, Exatas e da Terra", num:0, categoria: "Ensino Médio, Técnico e Superior"},
 			    {nome:"Ciências Ambientais, Biológicas e da Saúde", num:0, categoria: "Ensino Médio, Técnico e Superior"},
 			    {nome:"Ciências Humanas e Sociais Aplicadas", num:0, categoria: "Ensino Médio, Técnico e Superior"},
 			    {nome:"Línguas e Artes", num:0, categoria: "Ensino Médio, Técnico e Superior"},
 			    {nome:"Extensão", num:0, categoria: "Ensino Médio, Técnico e Superior"},
 			    {nome:"Ciências da Computação", num:0, categoria: "Ensino Médio, Técnico e Superior"},
-			    {nome:"Engenharias", num:0, categoria: "Ensino Médio, Técnico e Superior"}];
+			    {nome:"Engenharias", num:0, categoria: "Ensino Médio, Técnico e Superior"},
+					//Eixos de Ensino médio e técnico
+					{nome:"Ciências Agrárias, Exatas e da Terra", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Ciências Ambientais, Biológicas e da Saúde", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Ciências Humanas e Sociais Aplicadas", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Línguas e Artes", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Extensão", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Ciências da Computação", num:0, categoria: "Ensino Médio e Técnico"},
+			    {nome:"Engenharias", num:0, categoria: "Ensino Médio e Técnico"},
+					//Eixos de graduação e pós-graduação
+					{nome:"Ciências Agrárias, Exatas e da Terra", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Ciências Ambientais, Biológicas e da Saúde", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Ciências Humanas e Sociais Aplicadas", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Línguas e Artes", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Extensão", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Ciências da Computação", num:0, categoria: "Graduação e Pós-graduação"},
+			    {nome:"Engenharias", num:0, categoria: "Graduação e Pós-graduação"}
+				];
 
 		let totalQtd = ({
 			nome: "Geral",
