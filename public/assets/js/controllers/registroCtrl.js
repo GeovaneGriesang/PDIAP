@@ -10,7 +10,7 @@
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
 				if(edits[0].cadastro_projetos == false){
-					$scope.cadastro_projetos = false;				
+					/*$scope.cadastro_projetos = false;				
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.alert()
 						.title('Página bloqueada!')
@@ -24,7 +24,7 @@
 							$window.location.href="http://movaci.com.br/";
 						}, function() {});
 					};
-					showConfirmDialog();
+					showConfirmDialog();*/
 				}	
 			})
 			.error(function(status) {
