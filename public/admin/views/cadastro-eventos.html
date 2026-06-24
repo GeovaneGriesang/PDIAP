@@ -109,12 +109,12 @@
                   </md-input-container>
                   <div flex="5" hide-xs></div>
                   <md-input-container class="md-block" flex-gt-xs>
-                    <label>CPF</label>
-                    <input type="text" name="{{item.cpf}}" data-ng-model="evento.responsavel[$index].cpf" required minlength="14" maxlength="14" cpf-mask/>
+                    <label>Doc. identificação</label>
+                    <input type="text" name="{{item.cpf}}" data-ng-model="evento.responsavel[$index].cpf" required minlength="0" maxlength="20"/>
                     <div class="md-errors-spacer">
                       <div data-ng-show="eventosForm.{{item.cpf}}.$dirty">
                         <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.required">Obrigatório.</div>
-                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.minlength && eventosForm.{{item.cpf}}.$touched">CPF inválido.</div>
+                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.minlength && eventosForm.{{item.cpf}}.$touched">Documento inválido.</div>
                       </div>
                     </div>
                   </md-input-container>

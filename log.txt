@@ -1,0 +1,120 @@
+
+> pdiap@0.2.0 start /home/ubuntu/PDIAP
+> nodemon bin/www --exec babel-node --presets es2015
+
+[33m[nodemon] 1.11.0[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching: *.*[39m
+[32m[nodemon] starting `babel-node bin/www --presets es2015`[39m
+events.js:182
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: EBADF: bad file descriptor, read
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! pdiap@0.2.0 start: `nodemon bin/www --exec babel-node --presets es2015`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the pdiap@0.2.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/ubuntu/.npm/_logs/2022-12-08T22_31_31_184Z-debug.log
+(node:14863) DeprecationWarning: `open()` is deprecated in mongoose >= 4.11.0, use `openUri()` instead, or set the `useMongoClient` option if using `connect()` or `createConnection()`. See http://mongoosejs.com/docs/connections.html#use-mongo-client
+<<Mongoose>> conectou em: mongodb://localhost:27017/loginapp
+<<Mongoose>> conexão aberta.
+[0mGET / [36m304 [0m19.491 ms - -[0m
+[0mGET /assets/css/style.css [36m304 [0m4.082 ms - -[0m
+[0mGET /bower_components/angular-material/angular-material.css [36m304 [0m5.963 ms - -[0m
+[0mGET /alpha/assets/css/main.css [36m304 [0m0.784 ms - -[0m
+[0mGET /alpha/assets/css/mapbox.css [36m304 [0m2.386 ms - -[0m
+[0mGET /alpha/assets/js/mapbox.js [36m304 [0m3.330 ms - -[0m
+[0mGET /alpha/assets/css/font-awesome.min.css [36m304 [0m2.078 ms - -[0m
+[0mGET /alpha/assets/js/jquery.min.js [36m304 [0m1.072 ms - -[0m
+[0mGET /alpha/assets/js/skel.min.js [36m304 [0m2.917 ms - -[0m
+[0mGET /alpha/assets/js/jquery.scrollgress.min.js [36m304 [0m0.798 ms - -[0m
+[0mGET /alpha/assets/js/jquery.dropotron.min.js [36m304 [0m2.154 ms - -[0m
+[0mGET /alpha/assets/js/util.js [36m304 [0m3.369 ms - -[0m
+[0mGET /alpha/assets/js/main.js [36m304 [0m0.305 ms - -[0m
+[0mGET /alpha/images/logo3.png [36m304 [0m0.650 ms - -[0m
+[0mGET /alpha/images/favicon.png [36m304 [0m2.584 ms - -[0m
+[0mGET /bower_components/angular/angular.min.js [36m304 [0m2.307 ms - -[0m
+[0mGET /alpha/assets/css/images/overlay.png [36m304 [0m2.756 ms - -[0m
+[0mGET /alpha/images/img4.png [36m304 [0m2.257 ms - -[0m
+[0mGET /bower_components/angular-material/angular-material.js [36m304 [0m2.210 ms - -[0m
+[0mGET /alpha/assets/fonts/fontawesome-webfont.woff2?v=4.6.3 [36m304 [0m0.311 ms - -[0m
+[0mGET /bower_components/angular-ui-router/release/angular-ui-router.min.js [36m304 [0m0.433 ms - -[0m
+[0mGET /bower_components/angular-aria/angular-aria.js [36m304 [0m1.272 ms - -[0m
+[0mGET /bower_components/angular-animate/angular-animate.js [36m304 [0m2.239 ms - -[0m
+[0mGET /bower_components/angular-resource/angular-resource.min.js [36m304 [0m3.269 ms - -[0m
+[0mGET /bower_components/angular-sanitize/angular-sanitize.min.js [36m304 [0m3.249 ms - -[0m
+[0mGET /bower_components/ng-file-upload/ng-file-upload.min.js [36m304 [0m1.201 ms - -[0m
+[0mGET /lib/pdfmake/build/pdfmake.min.js [36m304 [0m0.349 ms - -[0m
+[0mGET /lib/pdfmake/build/vfs_fonts.js [36m304 [0m0.903 ms - -[0m
+[0mGET /assets/js/app.js [36m304 [0m3.103 ms - -[0m
+[0mGET /assets/js/auth.js [36m304 [0m3.102 ms - -[0m
+[0mGET /assets/js/routes/ui-routes.js [36m304 [0m1.586 ms - -[0m
+[0mGET /assets/js/interceptors/authInterceptor.js [36m304 [0m0.580 ms - -[0m
+[0mGET /assets/js/configs/logout.js [36m304 [0m0.438 ms - -[0m
+[0mGET /assets/js/configs/icons.js [36m304 [0m2.853 ms - -[0m
+[0mGET /assets/js/configs/loadingConfig.js [36m304 [0m1.832 ms - -[0m
+[0mGET /assets/js/configs/interceptorsConfig.js [36m304 [0m1.148 ms - -[0m
+[0mGET /assets/js/controllers/homeCtrl.js [36m304 [0m1.134 ms - -[0m
+[0mGET /assets/js/controllers/registroCtrl.js [36m304 [0m0.312 ms - -[0m
+[0mGET /assets/js/controllers/loginCtrl.js [36m304 [0m0.339 ms - -[0m
+[0mGET /assets/js/controllers/redefinirCtrl.js [36m304 [0m0.306 ms - -[0m
+[0mGET /assets/js/services/projetosAPIService.js [36m304 [0m0.590 ms - -[0m
+[0mGET /assets/images/Certificado_MOVACI4.jpeg [36m304 [0m0.611 ms - -[0m
+[0mGET /assets/images/Certificado_MOVACI5.jpeg [36m304 [0m1.746 ms - -[0m
+[0mGET /alpha/images/logo4-b.png [36m304 [0m1.630 ms - -[0m
+[0mGET /alpha/images/ifsul.png [36m304 [0m0.283 ms - -[0m
+[0mGET /getDocumentosInfo [36m304 [0m9.474 ms - -[0m
+[0mGET /edit [36m304 [0m11.836 ms - -[0m
+[0mGET /alpha/index.html [36m304 [0m4.389 ms - -[0m
+[0mGET /assets/images/favicon.png [36m304 [0m1.274 ms - -[0m
+[0mGET / [32m200 [0m4.362 ms - 13089[0m
+[0mGET /assets/css/style.css [32m200 [0m6.265 ms - 24845[0m
+[0mGET /alpha/assets/css/main.css [32m200 [0m3.633 ms - 59045[0m
+[0mGET /alpha/assets/css/mapbox.css [32m200 [0m3.803 ms - 28620[0m
+[0mGET /alpha/assets/js/mapbox.js [32m200 [0m3.762 ms - 195628[0m
+[0mGET /alpha/assets/css/font-awesome.min.css [32m200 [0m1.622 ms - 29063[0m
+[0mGET /bower_components/angular-material/angular-material.css [32m200 [0m6.029 ms - 687340[0m
+[0mGET /alpha/assets/js/jquery.min.js [32m200 [0m0.836 ms - 95957[0m
+[0mGET /alpha/assets/js/jquery.dropotron.min.js [32m200 [0m0.543 ms - 5106[0m
+[0mGET /alpha/assets/js/jquery.scrollgress.min.js [32m200 [0m0.426 ms - 2894[0m
+[0mGET /alpha/assets/js/skel.min.js [32m200 [0m0.430 ms - 9085[0m
+[0mGET /alpha/assets/js/util.js [32m200 [0m0.453 ms - 12433[0m
+[0mGET /alpha/assets/fonts/fontawesome-webfont.woff2?v=4.6.3 [32m200 [0m0.633 ms - 71896[0m
+[0mGET /alpha/assets/css/images/overlay.png [32m200 [0m0.623 ms - 28136[0m
+[0mGET /alpha/images/logo3.png [32m200 [0m0.647 ms - 29794[0m
+[0mGET /alpha/images/favicon.png [32m200 [0m0.460 ms - 2729[0m
+[0mGET /alpha/assets/js/main.js [32m200 [0m0.616 ms - 2303[0m
+[0mGET /bower_components/angular/angular.min.js [32m200 [0m0.663 ms - 160048[0m
+[0mGET /alpha/images/img4.png [32m200 [0m3.043 ms - 312015[0m
+[0mGET /bower_components/angular-aria/angular-aria.js [32m200 [0m1.071 ms - 15470[0m
+[0mGET /bower_components/angular-ui-router/release/angular-ui-router.min.js [32m200 [0m2.561 ms - 32961[0m
+[0mGET /bower_components/angular-resource/angular-resource.min.js [32m200 [0m0.640 ms - 4510[0m
+[0mGET /bower_components/angular-sanitize/angular-sanitize.min.js [32m200 [0m0.530 ms - 5861[0m
+[0mGET /bower_components/angular-animate/angular-animate.js [32m200 [0m1.562 ms - 151136[0m
+[0mGET /bower_components/ng-file-upload/ng-file-upload.min.js [32m200 [0m0.640 ms - 37402[0m
+[0mGET /assets/js/auth.js [32m200 [0m0.706 ms - 3259[0m
+[0mGET /assets/js/app.js [32m200 [0m0.657 ms - 140[0m
+[0mGET /assets/js/routes/ui-routes.js [32m200 [0m0.616 ms - 5284[0m
+[0mGET /assets/js/interceptors/authInterceptor.js [32m200 [0m0.653 ms - 932[0m
+[0mGET /assets/js/configs/logout.js [32m200 [0m0.633 ms - 422[0m
+[0mGET /lib/pdfmake/build/pdfmake.min.js [32m200 [0m0.588 ms - 426297[0m
+[0mGET /assets/js/configs/icons.js [32m200 [0m0.623 ms - 304[0m
+[0mGET /assets/js/configs/loadingConfig.js [32m200 [0m0.622 ms - 621[0m
+[0mGET /assets/js/configs/interceptorsConfig.js [32m200 [0m0.611 ms - 200[0m
+[0mGET /assets/js/controllers/homeCtrl.js [32m200 [0m0.615 ms - 20317[0m
+[0mGET /assets/js/controllers/registroCtrl.js [32m200 [0m0.608 ms - 10089[0m
+[0mGET /assets/js/controllers/loginCtrl.js [32m200 [0m0.616 ms - 2421[0m
+[0mGET /assets/js/controllers/redefinirCtrl.js [32m200 [0m0.663 ms - 2201[0m
+[0mGET /assets/js/services/projetosAPIService.js [32m200 [0m0.622 ms - 4437[0m
+[0mGET /lib/pdfmake/build/vfs_fonts.js [32m200 [0m0.543 ms - 567638[0m
+[0mGET /alpha/images/logo4-b.png [32m200 [0m0.578 ms - 16765[0m
+[0mGET /alpha/images/ifsul.png [32m200 [0m0.577 ms - 29691[0m
+[0mGET /bower_components/angular-material/angular-material.js [32m200 [0m0.603 ms - 936638[0m
+[0mGET /assets/images/Certificado_MOVACI5.jpeg [32m200 [0m0.673 ms - 203874[0m
+[0mGET /assets/images/Certificado_MOVACI4.jpeg 

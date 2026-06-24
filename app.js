@@ -21,12 +21,20 @@ const express = require('express'),
       db = require('./configs/db-config'),
       app = express();
 
+/**
+ * PDIAP - Fase 6: Integração da Manutenção Automática
+ * * Funcionamento Geral:
+ * Importa o script de correção e o executa após a conexão com o banco ser estabilizada.
+ * * Alterado por: Geovane Griesang
+ * Data: 07/04/2026
+ * Descrição: Chamada da rotina de manutenção para a coleção avaliadores.
+ */
+const { corrigirTokensCertificados } = require('./fixTokens');
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json({limit : '10mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit : '10mb' }));
@@ -62,14 +70,8 @@ app.use(expressValidator({
   }
 }));
 
-// Connect Flash
-//app.use(flash());
-
 // Global Vars
 app.use((req, res, next) => {
-  //res.locals.success_msg = req.flash('success_msg');
-  //res.locals.error_msg = req.flash('error_msg');
- // res.locals.error = req.flash('error');
   res.locals.user = req.user || null;
   next();
 });
@@ -80,54 +82,18 @@ app.use('/avaliadores', avaliadores);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
 
+// Manutenção preventiva da MOVACI 2026
+// Aguarda o carregamento do db-config para garantir conexão ativa
+setTimeout(() => {
+    corrigirTokensCertificados().catch(err => console.error(err));
+}, 3000);
 
-          /*// Set Port
-          app.set('port', (process.env.PORT || 3000));
-
-          app.listen(app.get('port'), () => {
-            console.log('Servidor iniciado em: '+app.get('port'));
-          });
-          process.on('SIGINT', () => {
-            console.log('\tServidor desligado.');
-            process.exit(0);
-          });*/
-
-//Mateus Roberto Algayer - 30/11/2022 :: Mudei de ideia, Vou deixar isso rodando mas vou printar, assim da pra ver o que está acontecendo.
-//Mateus Roberto Algayer - 07/09/2022 :: Isso aqui quebra tudo
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  console.log(req);
-  console.log(res);
-  console.log(next);
-
   res.redirect('/404');
   const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
-
-// error handlers
-
-// development error handler
-// will print stacktrace
-// if (app.get('env') === 'development') {
-//   app.use(function(err, req, res, next) {
-//     res.status(err.status || 500);
-//     res.render('error', {
-//       message: err.message,
-//       error: err
-//     });
-//   });
-// }
-
-// // production error handler
-// // no stacktraces leaked to user
-// app.use(function(err, req, res, next) {
-//   res.status(err.status || 500);
-//   res.render('error', {
-//     message: err.message,
-//     error: {}
-//   });
-// });
 
 module.exports = app;

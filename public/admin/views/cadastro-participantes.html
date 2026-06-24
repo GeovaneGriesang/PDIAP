@@ -48,13 +48,13 @@
             </md-input-container>
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
-              <label>CPF</label>
-              <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="14" maxlength="14" cpf-mask/>
+              <label>Doc. identificação</label>
+              <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="5" maxlength="20"/>
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.cpf.$dirty">
                   <div class="message-error" data-ng-show="participantesForm.cpf.$error.required">Obrigatório.</div>
-                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.minlength && participantesForm.cpf.$touched">CPF inválido.</div>
-                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.duplicado">CPF já está cadastrado.</div>
+                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.minlength && participantesForm.cpf.$touched">Documento inválido.</div>
+                  <div class="message-error" data-ng-show="participantesForm.cpf.$error.duplicado">Documento já está cadastrado.</div>
                 </div>
               </div>
             </md-input-container>

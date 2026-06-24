@@ -188,10 +188,10 @@
 		};
 
 		$scope.dynamicFields1 = [
-			{nome:'nomeOrientador1', email:'emailOrientador1', cpf:'cpfOrientador1', telefone:'telefoneOrientador1', camiseta:'tamCamisetaOrientador1'}
+			{nome:'nomeOrientador1', email:'emailOrientador1', cpf:'cpfOrientador1', telefone:'telefoneOrientador1', camiseta:'tamCamisetaOrientador1', nacionalidade:'nacionalidadeOrientador1'}
 		];
 		$scope.dynamicFields2 = [
-			{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1'}
+			{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1', nacionalidade:'nacionalidadeAluno1'}
 		];
 
 		$scope.btnAdd1 = true;
@@ -202,7 +202,7 @@
 		$scope.addOrientador = function() {
 			$scope.count1++;
 			$scope.dynamicFields1.push(
-				{nome:'nomeOrientador'+$scope.count1, email:'emailOrientador'+$scope.count1, cpf:'cpfOrientador'+$scope.count1, telefone:'telefoneOrientador'+$scope.count1, camiseta:'tamCamisetaOrientador'+$scope.count1}
+				{nome:'nomeOrientador'+$scope.count1, email:'emailOrientador'+$scope.count1, cpf:'cpfOrientador'+$scope.count1, telefone:'telefoneOrientador'+$scope.count1, camiseta:'tamCamisetaOrientador'+$scope.count1, nacionalidade:'nacionalidadeOrientador'+$scope.count1}
 			);
 			if ($scope.count1 === 2) {
 				$scope.btnAdd1 = false;
@@ -211,7 +211,7 @@
 		$scope.addAluno = function() {
 			$scope.count2++;
 			$scope.dynamicFields2.push(
-				{nome:'nomeAluno'+$scope.count2, email:'emailAluno'+$scope.count2, cpf:'cpfAluno'+$scope.count2, telefone:'telefoneAluno'+$scope.count2, camiseta:'tamCamisetaAluno'+$scope.count2}
+				{nome:'nomeAluno'+$scope.count2, email:'emailAluno'+$scope.count2, cpf:'cpfAluno'+$scope.count2, telefone:'telefoneAluno'+$scope.count2, camiseta:'tamCamisetaAluno'+$scope.count2, nacionalidade:'nacionalidadeAluno'+$scope.count2}
 			);
 			if ($scope.count2 === 3) {
 				$scope.btnAdd2 = false;
@@ -292,6 +292,59 @@
 			}
 		};
       
+
+		// Validar documento (CPF para brasileiros, validação simples para outros)
+		function _validateCPF(cpf) {
+			cpf = cpf.replace(/\D+/g, '');
+			if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
+			var sum = 0, rest;
+			for (var i = 1; i <= 9; i++) sum = sum + parseInt(cpf.substring(i-1, i)) * (11 - i);
+			rest = (sum * 10) % 11;
+			if ((rest === 10) || (rest === 11)) rest = 0;
+			if (rest !== parseInt(cpf.substring(9, 10))) return false;
+			sum = 0;
+			for (i = 1; i <= 10; i++) sum = sum + parseInt(cpf.substring(i-1, i)) * (12 - i);
+			rest = (sum * 10) % 11;
+			if ((rest === 10) || (rest === 11)) rest = 0;
+			if (rest !== parseInt(cpf.substring(10, 11))) return false;
+			return true;
+		}
+
+		$scope.validarDocumento = function(valor, nacionalidade, index, tipo) {
+			var digits = (valor || '').toString().replace(/\D+/g, '');
+			var fieldName = '';
+			if (tipo === 'orientador') {
+				fieldName = 'cpfOrientador' + (index + 1);
+			} else {
+				fieldName = 'cpfAluno' + (index + 1);
+			}
+			var valido = false;
+			if (nacionalidade === 'brasileiro') {
+				valido = _validateCPF(digits);
+			} else {
+				valido = digits.length >= 5;
+			}
+
+			// Try to get ngModelController from DOM element (robust for dynamic names/ng-forms)
+			try {
+				var els = document.getElementsByName(fieldName);
+				if (els && els.length > 0) {
+					var el = els[0];
+					var ngModelCtrl = angular.element(el).controller('ngModel');
+					if (ngModelCtrl && typeof ngModelCtrl.$setValidity === 'function') {
+						ngModelCtrl.$setValidity('documento', valido);
+					}
+				}
+			} catch (e) {
+				// fallback: try setting on projetoForm if available
+				var control = $scope.projetoForm && $scope.projetoForm[fieldName];
+				if (control && typeof control.$setValidity === 'function') {
+					control.$setValidity('documento', valido);
+				}
+			}
+
+			return valido;
+		};
 		
 //        $scope.showRequisitosDialog = function(ev) {
 //			$mdDialog.show(
@@ -316,10 +369,10 @@
 			$scope.count1 = 1;
 			$scope.count2 = 1;
 			$scope.dynamicFields1 = [
-				{nome:'nomeOrientador1', email:'emailOrientador1', cpf:'cpfOrientador1', telefone:'telefoneOrientador1', camiseta:'tamCamisetaOrientador1'}
+				{nome:'nomeOrientador1', email:'emailOrientador1', cpf:'cpfOrientador1', telefone:'telefoneOrientador1', camiseta:'tamCamisetaOrientador1', nacionalidade:'nacionalidadeOrientador1'}
 			];
 			$scope.dynamicFields2 = [
-				{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1'}
+				{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1', nacionalidade:'nacionalidadeAluno1'}
 			];
 			$scope.palavrasChave = [];
 			$scope.eixos = [];

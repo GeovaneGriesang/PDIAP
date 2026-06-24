@@ -60,17 +60,17 @@
             </md-input-container>
           </div>
           <div layout-gt-xs="row">
-            <md-input-container class="md-block" flex-gt-xs>
+            <!-- <md-input-container class="md-block" flex-gt-xs>
               <label>RG</label>
               <input type="text" name="rg" data-ng-model="avaliador.rg" minlength="10" maxlength="10" rg-mask/>
               <div class="md-errors-spacer">
-                <div data-ng-show="avaliadoresForm.rg.$dirty">
+                <div data-ng-show="avaliadoresForm.rg.$dirty"> -->
                   <!-- <div class="message-error" data-ng-show="avaliadoresForm.rg.$error.required">Obrigatório.</div> -->
-                  <div class="message-error" data-ng-show="avaliadoresForm.rg.$error.minlength && avaliadoresForm.rg.$touched">RG inválido.</div>
+                  <!-- <div class="message-error" data-ng-show="avaliadoresForm.rg.$error.minlength && avaliadoresForm.rg.$touched">RG inválido.</div>
                 </div>
               </div>
-            </md-input-container>
-            <div flex="5" hide-xs></div>
+            </md-input-container> -->
+            <!-- <div flex="5" hide-xs></div> -->
             <md-input-container class="md-block" flex-gt-xs>
               <label>Dt. nascimento</label>
               <input type="text" name="dtNascimento" data-ng-model="avaliador.dtNascimento" minlength="8" maxlength="10" nasc-mask/>
@@ -84,7 +84,7 @@
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
               <label>Telefone</label>
-              <input type="text" name="telefone" data-ng-model="avaliador.telefone" minlength="14" maxlength="14" fone-mask/>
+              <input type="text" name="telefone" data-ng-model="avaliador.telefone" minlength="0" maxlength="20" />
               <div class="md-errors-spacer">
                 <div data-ng-show="avaliadoresForm.telefone.$dirty">
                   <!-- <div class="message-error" data-ng-show="avaliadoresForm.telefone.$error.required">Obrigatório.</div> -->
@@ -95,12 +95,12 @@
           </div>
           <div layout-gt-xs="row">
             <md-input-container class="md-block" flex-gt-xs>
-              <label>CPF*</label>
-              <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="14" maxlength="14" cpf-mask/>
+              <label>Doc. identificação</label>
+              <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"/>
               <div class="md-errors-spacer">
                 <div data-ng-show="avaliadoresForm.cpf.$dirty">
                   <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
-                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.minlength && avaliadoresForm.cpf.$touched">CPF inválido.</div>
+                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.minlength && avaliadoresForm.cpf.$touched">Documento inválido.</div>
                 </div>
               </div>
             </md-input-container>

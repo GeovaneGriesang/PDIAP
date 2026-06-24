@@ -15,12 +15,13 @@
 		$scope.year = CadastraAno();
 
 		let formatCPF = function(cpf) {
-			if (cpf !== undefined) {
-				cpf = cpf.substring(0,3) + "." + cpf.substring(3);
-				cpf = cpf.substring(0,7) + "." + cpf.substring(7);
-				cpf = cpf.substring(0,11) + "-" + cpf.substring(11);
-				return cpf;
-			}
+			return cpf;
+			// if (cpf !== undefined) {
+			// 	cpf = cpf.substring(0,3) + "." + cpf.substring(3);
+			// 	cpf = cpf.substring(0,7) + "." + cpf.substring(7);
+			// 	cpf = cpf.substring(0,11) + "-" + cpf.substring(11);
+			// 	return cpf;
+			// }
 		};
 
 		$scope.toast = function(message,tema) {

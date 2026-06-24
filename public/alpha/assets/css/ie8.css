@@ -97,7 +97,7 @@
 		}
 
 	#header.alt {
-		color: #fff;
+		color: #000000!important;
 	}
 
 		#header.alt nav > ul > li a:not(.button).icon:before {

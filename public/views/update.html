@@ -235,19 +235,19 @@
               </div>
               <div layout-gt-sm="row">
                 <md-input-container class="md-block" data-ng-init="editing11=false" flex-gt-sm>
-                  <label>CPF</label>
-                  <input type="text" name="{{item1.cpf}}" data-ng-model="projeto3[item1.cpf]" data-ng-class="{'input-disabled': !editing11}" data-ng-focus="editing11=true" data-ng-blur="editing11=false" required minlength="14" maxlength="14" cpf-mask/>
+                  <label>Doc. identificação</label>
+                  <input type="text" name="{{item1.cpf}}" data-ng-model="projeto3[item1.cpf]" data-ng-class="{'input-disabled': !editing11}" data-ng-focus="editing11=true" data-ng-blur="editing11=false" required minlength="5" maxlength="20"/>
                   <div class="md-errors-spacer">
                     <div data-ng-show="projetoForm3.{{item1.cpf}}.$dirty">
                       <div class="message-error" data-ng-show="projetoForm3.{{item1.cpf}}.$error.required">Preencha esse campo.</div>
-                      <div class="message-error" data-ng-show="projetoForm3.{{item1.cpf}}.$error.minlength && projetoForm3.{{item1.cpf}}.$touched">CPF inválido.</div>
+                      <div class="message-error" data-ng-show="projetoForm3.{{item1.cpf}}.$error.minlength && projetoForm3.{{item1.cpf}}.$touched">Documento inválido.</div>
                     </div>
                   </div>
                 </md-input-container>
                 <div flex="5" hide-xs hide-sm></div>
                 <md-input-container class="md-block" data-ng-init="editing12=false" flex-gt-sm>
                   <label>Telefone</label>
-                  <input type="text" name="{{item1.telefone}}" data-ng-model="projeto3[item1.telefone]" data-ng-class="{'input-disabled': !editing12}" data-ng-focus="editing12=true" data-ng-blur="editing12=false" required minlength="14" maxlength="15" fone-mask/>
+                  <input type="text" name="{{item1.telefone}}" data-ng-model="projeto3[item1.telefone]" data-ng-class="{'input-disabled': !editing12}" data-ng-focus="editing12=true" data-ng-blur="editing12=false" required minlength="0" maxlength="20"/>
                   <div class="md-errors-spacer">
                     <div data-ng-show="projetoForm3.{{item1.telefone}}.$dirty">
                       <div class="message-error" data-ng-show="projetoForm3.{{item1.telefone}}.$error.required">Preencha esse campo.</div>
