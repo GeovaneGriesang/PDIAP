@@ -37,7 +37,9 @@
 	</div>
 
 	<md-content flex layout="column" layout-align="center center" class="inscricao-content">
+		<!-- Formulário principal de inscrição. O estado é controlado pelo controller AngularJS. -->
 		<form name="projetoForm" novalidate style="width:85%;max-width:900px;padding:8px;">
+			<!-- Seção: dados gerais do projeto -->
 			<div layout="row">
 				<div class="bloco-left" flex="25" hide-xs>
 					<span>Sobre o Projeto</span>
@@ -189,12 +191,13 @@
 				</div>
 			</div>
 			<hr size="3">
+			<!-- Seção: dados dos orientadores, com campos criados dinamicamente -->
 			<div layout="row">
 				<div class="bloco-left" flex="25" hide-xs>
 					<span>Orientador(es)</span>
 				</div>
 				<div class="bloco-right" flex-xs="100" flex="75">
-					<div ng-repeat="item1 in dynamicFields1" ng-form="projetoForm">
+					<div ng-repeat="item1 in dynamicFields1">
 						<h5 class="h5-2">
 							<md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador
 							{{$index+1}}:
@@ -294,12 +297,13 @@
 				</div>
 			</div>
 			<hr size="3">
+			<!-- Seção: dados dos alunos, com campos criados dinamicamente -->
 			<div layout="row">
 				<div class="bloco-left" flex="25" hide-xs>
 					<span>Aluno(s)</span>
 				</div>
 				<div class="bloco-right" flex-xs="100" flex="75">
-					<div ng-repeat="item2 in dynamicFields2" ng-form="projetoForm">
+					<div ng-repeat="item2 in dynamicFields2">
 						<h5 class="h5-2">
 							<md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno
 							{{$index+1}}:

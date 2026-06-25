@@ -5,8 +5,10 @@
 	.module('PDIAP')
 	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, projetosAPI) {
 	
+		// Estado geral da tela de inscrição.
 		$scope.cadastro_projetos = true;
 		
+		// Busca configurações de liberação da página de cadastro.
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
 				if(edits[0].cadastro_projetos == false){
@@ -41,6 +43,7 @@
 		$scope.usernames = [];
 		$scope.escolas = [];
 
+		// Envia o projeto ao backend e trata a resposta de sucesso ou erro.
 		$scope.registrarProjeto = function(projeto) {
 			projeto.palavraChave = $scope.palavrasChave;
 			projetosAPI.saveProjeto(projeto)
@@ -187,6 +190,7 @@
 			});
 		};
 
+		// Estrutura inicial dos campos dinâmicos para orientadores e alunos.
 		$scope.dynamicFields1 = [
 			{nome:'nomeOrientador1', email:'emailOrientador1', cpf:'cpfOrientador1', telefone:'telefoneOrientador1', camiseta:'tamCamisetaOrientador1', nacionalidade:'nacionalidadeOrientador1'}
 		];
@@ -293,7 +297,7 @@
 		};
       
 
-		// Validar documento (CPF para brasileiros, validação simples para outros)
+		// Valida CPF para brasileiros e aceita documentos simples para outros países.
 		function _validateCPF(cpf) {
 			cpf = cpf.replace(/\D+/g, '');
 			if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
@@ -310,6 +314,7 @@
 			return true;
 		}
 
+		// Marca os campos de documento como válidos ou inválidos com base na nacionalidade.
 		$scope.validarDocumento = function(valor, nacionalidade, index, tipo) {
 			var digits = (valor || '').toString().replace(/\D+/g, '');
 			var fieldName = '';
@@ -359,6 +364,7 @@
 //			);
 //		};
 
+		// Limpa os dados do formulário após o cadastro bem-sucedido.
 		let resetForm = function() {
 			delete $scope.projeto;
 			$scope.projetoForm.$setPristine();
