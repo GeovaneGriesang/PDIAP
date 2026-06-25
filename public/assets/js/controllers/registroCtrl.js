@@ -123,6 +123,7 @@
 		}
 
 		$scope.emails = [];
+		// Carrega e organiza os e-mails sugeridos para o login principal.
 		$scope.loadEmails = function() {
 			$scope.emails = [];
 			return $timeout(function() {
@@ -160,6 +161,7 @@
 			console.log(status);
 		});
 
+		// Atualiza a lista de eixos conforme a categoria selecionada.
 		$scope.selectEixos = function(cat) {
 			angular.forEach($scope.listaCategorias, function (value, key){
 				//verifica a categoria selecionada
