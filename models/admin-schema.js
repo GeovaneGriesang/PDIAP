@@ -7,6 +7,7 @@ const opcoesSchema = new Schema({
 	instituicao: {type: Boolean},
 	integrantes: {type: Boolean},
 	hospedagem: {type: Boolean},
+	upload: {type: Boolean},
 	nomeProjeto: {type: Boolean},
 	palavras_chave: {type: Boolean},
 	categoria: {type: Boolean},

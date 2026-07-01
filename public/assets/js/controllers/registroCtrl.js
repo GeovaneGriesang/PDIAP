@@ -38,6 +38,7 @@
 		$scope.registro = false;
 		$scope.loginHabilitado = false;
 		$scope.usernameDuplicado = false;
+		$scope.hospedagemVerify = 'Não';
 		$scope.eixos = [];
 		$scope.cidades = [];
 		$scope.usernames = [];
@@ -110,6 +111,32 @@
 
 		$scope.habilitarLogin = function() {
 			return $scope.loginHabilitado = true;
+		};
+
+		$scope.canAdvanceToLogin = function() {
+			if (!$scope.cadastro_projetos) {
+				return false;
+			}
+			if (!$scope.palavrasChave || $scope.palavrasChave.length === 0) {
+				return false;
+			}
+			if (!$scope.projeto) {
+				return false;
+			}
+			var requiredFields = ['nomeProjeto', 'categoria', 'eixo', 'nomeEscola', 'estado', 'cidade', 'cep'];
+			for (var i = 0; i < requiredFields.length; i++) {
+				var field = requiredFields[i];
+				if (!$scope.projeto[field]) {
+					return false;
+				}
+			}
+			if (!$scope.hospedagemVerify) {
+				return false;
+			}
+			if ($scope.hospedagemVerify === 'Sim' && (!$scope.projeto.hospedagem || $scope.projeto.hospedagem.length === 0)) {
+				return false;
+			}
+			return true;
 		};
 
 		$scope.keys = [$mdConstant.KEY_CODE.ENTER, $mdConstant.KEY_CODE.COMMA];

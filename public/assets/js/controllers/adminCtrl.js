@@ -14,7 +14,21 @@
 		$scope.conta = {};
 		$scope.projetoEmail = '';
 		$scope.integrantes = [];
+		$scope.opcoes = {};
 		$rootScope.header = 'Dashboard';
+
+		$scope.carregarOpcoes = function(callback){
+			projetosAPI.getOpcoes().success(function(op){
+				$scope.opcoes = op || {};
+				if (callback) {
+					callback();
+				}
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		};
+		$scope.carregarOpcoes();
 
 		$scope.mostraResumo = function() {
 			$window.open('http://www.movaci.com.br/alpha/documentos/Modelo_Resumo_MOVACI.doc', '_blank');
@@ -41,6 +55,42 @@
 		let maskCEP = function() {
 			$scope.projeto2.cep = $scope.projeto2.cep.substring(0,2) + "." + $scope.projeto2.cep.substring(2);
 			$scope.projeto2.cep = $scope.projeto2.cep.substring(0,6) + "-" + $scope.projeto2.cep.substring(6);
+		};
+
+		let construirMenu = function() {
+			let actions = [{
+				name: 'Dashboard',
+				icon: 'view-dashboard',
+				link: 'home'
+			}, {
+				name: 'Alterar projeto',
+				icon: 'flask',
+				link: 'home.update'
+			}];
+
+			if ($scope.opcoes.upload === true && $scope.projeto1.categoria === 'Ensino Médio, Técnico e Superior') {
+				actions.push({
+					name: 'Upload',
+					icon: 'upload',
+					link: 'home.fileUpload'
+				});
+			}
+
+			actions.push({
+				name: 'Dados da conta',
+				icon: 'account-settings-variant',
+				link: 'home.conta'
+			});
+
+			$scope.data = {
+				sidenav: {
+					sections: [{
+						name: 'Dashboard',
+						expand: false,
+						actions: actions
+					}]
+				}
+			};
 		};
 
 		let carregarProjeto = function() {
@@ -138,101 +188,9 @@
 				 /*for (var i in projeto.integrantes){
 				 	$scope.integrantes.push(projeto.integrantes[i]);
 				 }*/
-				if ($scope.projeto1.categoria === 'Ensino Médio, Técnico e Superior') {
-					$scope.data = {
-						sidenav: {
-							sections: [{
-								name: 'Dashboard',
-								expand: false,
-								actions: [{
-									name: 'Dashboard',
-									icon: 'view-dashboard',
-									link: 'home'
-								},
-								
-								//Descomentar para aparecer o botão de alterar dados do projeto
-								 {
-								 	name: 'Alterar projeto',
-								 	icon: 'flask',
-								 	link: 'home.update'
-								 },
-								 
-								//Descomentar para aparecer o botão de upload de relatórios
-								 {
-								 	name: 'Upload',
-								 	icon: 'upload',
-								 	link: 'home.fileUpload'
-								 },
-								{
-									name: 'Dados da conta',
-									icon: 'account-settings-variant',
-									link: 'home.conta'
-								}]
-							}//,
-							// {
-							// 	name: 'Avaliação',
-							// 	expand: false,
-							// 	actions: [{
-							// 		name: 'Ensino Fundamental',
-							// 		icon: 'lead-pencil',
-							// 		link: 'home.avaliacao-fundamental'
-							// 	}, {
-							// 		name: 'Ensino Médio',
-							// 		icon: 'pen',
-							// 		link: 'home.avaliacao-medio'
-							// 	}, {
-							// 		name: 'Ensino Médio - Ext',
-							// 		icon: 'pen',
-							// 		link: 'home.avaliacao-medio-extensao'
-							// 	}]
-							// }
-							]
-						}
-					};
-				} else {
-					$scope.data = {
-						sidenav: {
-							sections: [{
-								name: 'Dashboard',
-								expand: false,
-								actions: [{
-									name: 'Dashboard',
-									icon: 'view-dashboard',
-									link: 'home'
-								},
-								
-								//Descomentar para aparecer o botão de alterar dados do projeto
-								 {
-								 	name: 'Alterar projeto',
-								 	icon: 'flask',
-								 	link: 'home.update'
-								},
-								{
-									name: 'Dados da conta',
-									icon: 'account-settings-variant',
-									link: 'home.conta'
-								}]}
-							// },{
-							// 	name: 'Avaliação',
-							// 	expand: false,
-							// 	actions: [{
-							// 		name: 'Ensino Fundamental',
-							// 		icon: 'lead-pencil',
-							// 		link: 'home.avaliacao-fundamental'
-							// 	}, {
-							// 		name: 'Ensino Médio',
-							// 		icon: 'pen',
-							// 		link: 'home.avaliacao-medio'
-							// 	}, {
-							// 		name: 'Ensino Médio - Ext',
-							// 		icon: 'pen',
-							// 		link: 'home.avaliacao-medio-extensao'
-							// 	}]
-							// }
-							]
-						}
-					};
-				}
+				$scope.carregarOpcoes(function() {
+					construirMenu();
+				});
 			});
 		};
 		$scope.carregarProjeto = carregarProjeto;

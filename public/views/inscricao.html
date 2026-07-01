@@ -253,26 +253,25 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
 								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]"
-									ng-blur="validarDocumento(projeto[item1.cpf], projeto[item1.nacionalidade], $index, 'orientador')"
-									placeholder="Digite apenas números" required>
-							</md-input-container>
-							
-							<md-input-container class="md-block" flex-gt-sm>
-								<label>Telefone</label>
-								<input type="text" name="{{item1.telefone}}" data-ng-model="projeto[item1.telefone]"
-									required minlength="0" maxlength="20" />
-								<div class="md-errors-spacer">
-									<div data-ng-show="projetoForm.{{item1.telefone}}.$dirty">
-										<div class="message-error"
-											data-ng-show="projetoForm.{{item1.telefone}}.$error.required">Obrigatório.
-										</div>
-										<div class="message-error"
-											data-ng-show="projetoForm.{{item1.telefone}}.$error.minlength && projetoForm.{{item1.telefone}}.$touched">
-											Telefone inválido.</div>
+								placeholder="Digite apenas números">
+						</md-input-container>
+						<div flex="5" hide-xs hide-sm></div>
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>Telefone</label>
+							<input type="text" name="{{item1.telefone}}" data-ng-model="projeto[item1.telefone]"
+								required minlength="0" maxlength="20" />
+							<div class="md-errors-spacer">
+								<div data-ng-show="projetoForm.{{item1.telefone}}.$dirty">
+									<div class="message-error"
+										data-ng-show="projetoForm.{{item1.telefone}}.$error.required">Obrigatório.
 									</div>
+									<div class="message-error"
+										data-ng-show="projetoForm.{{item1.telefone}}.$error.minlength && projetoForm.{{item1.telefone}}.$touched">
+										Telefone inválido.</div>
 								</div>
-							</md-input-container>
-							<div flex="5" hide-xs hide-sm></div>
+							</div>
+						</md-input-container>
+
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Tam. da camiseta</label>
 								<md-select name="{{item1.camiseta}}" data-ng-model="projeto[item1.camiseta]" required>
@@ -359,15 +358,13 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
 								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]"
-									ng-blur="validarDocumento(projeto[item2.cpf], projeto[item2.nacionalidade], $index, 'aluno')"
-									placeholder="Digite apenas números" required>
+							placeholder="Digite apenas números">
 							</md-input-container>
 						<div layout-gt-sm="row">
 							<div flex="5" hide-xs hide-sm></div>
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Telefone</label>
-								<input type="text" name="{{item2.telefone}}" data-ng-model="projeto[item2.telefone]"
-									required minlength="14" maxlength="15" fone-mask />
+						<input type="text" name="{{item2.telefone}}" data-ng-model="projeto[item2.telefone]" />
 								<div class="md-errors-spacer">
 									<div data-ng-show="projetoForm.{{item2.telefone}}.$dirty">
 										<div class="message-error"
@@ -445,38 +442,9 @@
 				</div>
 			</div>
 			<hr size="3">
-			<!-- Seção: resumo do projeto -->
-			<div layout="row">
-				<div class="bloco-left" flex="25" hide-xs>
-					<span>Resumo</span>
-				</div>
-				<div class="bloco-right" flex-xs="100" flex="75">
-					<div layout-gt-sm="row">
-						<md-input-container class="md-block" flex="100">
-							<label>Resumo do Projeto <br>Requisitos: apresentação do tema, objetivos, metodologia e
-								resultados obtidos/esperados</label>
-							<textarea style="height:200px!important;" name="resumo" data-ng-model="projeto.resumo"
-								ng-minlength="500" md-maxlength="2000" rows="1" md-select-on-focus required></textarea>
-							<div class="md-errors-spacer">
-								<div class="message-error" style="color:rgba(0,0,0,0.87)!important;"
-									data-ng-show="!projetoForm.resumo.$invalid || (projetoForm.resumo.$untouched && !projetoForm.resumo.$dirty)">
-									Mínimo 500 caracteres, máximo 2000 caracteres |</div>
-								<div data-ng-if="projetoForm.resumo.$dirty">
-									<div class="message-error" data-ng-show="projetoForm.resumo.$error.required">
-										Obrigatório |</div>
-									<div class="message-error"
-										data-ng-show="projetoForm.resumo.$invalid && !projetoForm.resumo.$error.required">
-										Mínimo 500 caracteres, máximo 2000 caracteres |</div>
-								</div>
-							</div>
-						</md-input-container>
-					</div>
-				</div>
-			</div>
-
 			<div class="row finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-				<md-button class="md-raised md-primary green lighten-1"
-					data-ng-disabled="!((projetoForm.$valid && palavrasChave.length !== 0) && cadastro_projetos)"
+				<md-button type="button" class="md-raised md-primary green lighten-1"
+					data-ng-disabled="!canAdvanceToLogin()"
 					data-ng-click="habilitarLogin()" data-ng-if="!loginHabilitado">
 					<md-icon md-svg-icon="check"
 						ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Avançar

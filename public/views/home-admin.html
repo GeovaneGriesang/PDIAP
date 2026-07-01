@@ -1,35 +1,16 @@
-<!-- <section>
-	<div layout="column" align-center="center center" class="green darken-1 md-whiteframe-2dp home-container1">
-    <span>O projeto está cadastrado, aguarde por atualizações.</span>
-  </div>
-</section> -->
-<!-- <section>
-  <div layout="column" align-center="center center" class="green darken-1 md-whiteframe-2dp home-container1">
-    <span>A fase de inscrição dos projetos foi <b>encerrada</b>. Em alguns dias será divulgado
-      a lista dos projetos selecionados para participarem da 5ª edição da
-      Mostra Venâncio-airense de Cultura e Inovação.</span>
-    <span style="margin-top:20px;">Att. Equipe Organizadora da V MOVACI.</span>
-  </div>
-</section> -->
-<section style="margin-top:10px;">
-  <div data-ng-if="aviso1_2 !== ''" layout="column" align-center="center center" class="green darken-1 md-whiteframe-2dp home-container1">
-    <h3 data-ng-if="aviso1_1 !== undefined" style="margin-top:0!important;">{{aviso1_1}}</h3>
-    <span>{{aviso1_2}}</span>
-    <!--<span style="margin-top:20px;">Confira a <a href="/alpha/documentos/Lista_Aprovados_MOVACI.pdf" target="_blank">lista de aprovados</a>.</span>-->
-  </div>
-	<!-- <div layout="column" align-center="center center" class="green darken-1 md-whiteframe-2dp home-container1">
-    <h3 data-ng-if="aviso1_1 !== undefined" style="margin-top:0!important;">{{aviso1_1}}</h3>
-    <span>{{aviso1_2}}</span>
-    <span style="margin-top:20px;">Confira a <a href="/alpha/documentos/Lista_Aprovados_MOVACI.pdf" target="_blank">lista de aprovados</a>.</span>
-  </div> -->
-</section>
 <section>
-  <div layout="column" layout-align="center center" align="center" class="md-whiteframe-2dp home-container2">
-    <div class="home-title">
-      <h4>{{projeto.nomeProjeto}}</h4>
-    </div>
-    <div class="home-resumo">
-      <p>{{projeto.resumo}}</p>
-    </div>
-  </div>
+  <div layout="column" layout-align="center center" style="padding: 30px; text-align: center; margin-top: 50px;">
+        <h2 style="color: #2e7d32; font-weight: bold; margin-bottom: 10px;">
+          Bem-vindo(a) à página inicial do participante!
+        </h2>
+        <p style="font-size: 16px; color: #424242; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.5;">
+          Para prosseguir com a inscrição, entre no link abaixo:
+        </p>
+        <md-button class="md-raised" 
+                   ng-href="https://eventos.ifsul.edu.br/movaci2026/" 
+                   target="_blank" 
+                   style="background: #43a047; color: white; padding: 8px 25px; font-weight: bold; text-transform: none; border-radius: 4px;">
+          Acessar Inscrição MOVACI 2026
+        </md-button>
+      </div>
 </section>
