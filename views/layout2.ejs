@@ -34,10 +34,18 @@
 					<li><a href="/contato">Fale Conosco</a></li>
 					<li><a href="/certificados">Validar Certificado</a></li>
 					<!-- <li> <a href="#">Cadastro <span class="icon fa-angle-down"></span></a> <ul> <li><a href="/avaliadores/inscricao">Cadastrar avaliador</a></li> </ul> </li> -->
-					<li> <a href="#">Documentos <span class="icon fa-angle-down"></span></a>
-						<ul> <!-- <li><a href="/alpha/documentos/Regulamento_VI_MOVACI_2017_final.pdf" target="_blank">Regulamento VI MOVACI</a></li> <li><a href="/alpha/documentos/Seleção_de_Avaliadores_VI_MOVACI_2017.pdf" target="_blank">Regulamento para inscrição de avaliadores</a></li> <li><a href="/alpha/documentos/ficha_avaliacao_fundamental_2017.pdf" target="_blank">Avaliação fundamental</a></li> <li><a href="/alpha/documentos/ficha_avaliacao_medio_tecnico_tecnologico_2017.pdf" target="_blank">Avaliação médio, técnico e tecnológico</a></li> <li><a href="alpha/documentos/ficha_avaliacao_EXTENSAO_2017.pdf" target="_blank">Avaliação extensão</a></li> <li><a href="/alpha/documentos/Modelo_de_relatório.pdf" target="_blank">Modelo de relatório</a></li> <li><a href="/alpha/documentos/selecionados_FUNDAMENTAL_I_e_II_2017.pdf" target="_blank" style="font-weight:bold">Selecionados Fundamental I e II</a></li> <li><a href="/alpha/documentos/Programação_Ensino_Médio_Técnico_Tecnológico_Superior.pdf" target="_blank">Programação para Ensino Médio</a></li> -->
-							<li><a href="/alpha/documentos/Projetos_Destaque_2017.pdf" target="_blank">Projetos
-									destaque</a></li>
+					<li> 
+						<a href="localhost">Documentos <span class="icon fa-angle-down"></span></a>
+						<ul> 
+							<li ng-repeat="doc in documentos" ng-show="doc.exibe">
+								<a ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank">
+									{{ doc.titulo }}
+								</a>
+							</li>
+							
+							<li ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length">
+								<a href="javascript:void(0);" style="font-style: italic; color: #999;">Nenhum documento disponível</a>
+							</li>
 						</ul>
 					</li>
 					<li><a href="#" class="button" data-ng-click="showLoginDialog($event)"
@@ -181,7 +189,7 @@
 						<!--script que faz o mapa funcionar-->
 
 						<script>
-							mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+							mapboxgl.accessToken = '';
 							var map = new mapboxgl.Map({
 								container: 'map',
 								style: 'mapbox://styles/mapbox/streets-v11',
