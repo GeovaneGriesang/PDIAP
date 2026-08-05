@@ -102,6 +102,19 @@ function splita(arg){
   }
 }
 
+// Campos que o próprio projeto pode alterar via PUT /update (ver formulário em public/views/update.html).
+// Qualquer outro campo do body (ex: permissao, password, aprovado, premiacao, token) é ignorado
+// para impedir que o usuário se autopromova ou altere dados fora do seu controle.
+const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem'];
+
+function filtrarCamposEditaveis(body) {
+  let filtrado = {};
+  CAMPOS_EDITAVEIS_PROJETO.forEach((campo) => {
+    if (body[campo] !== undefined) filtrado[campo] = body[campo];
+  });
+  return filtrado;
+}
+
 router.all('/*', ensureAuthenticated, miPermiso("1"));
 
 router.get('/loggedin', ensureAuthenticated, (req, res, next) => {
@@ -201,7 +214,7 @@ router.put('/update', (req, res) => {
   if (req.body.cep !== undefined){
     req.body.cep = splita(req.body.cep);
   }
-  let newProject = req.body;
+  let newProject = filtrarCamposEditaveis(req.body);
   console.log(newProject);
 
   ProjetoSchema.update({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
