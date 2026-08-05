@@ -6,8 +6,10 @@ require('dotenv').config();
 
 const express = require('express'),
       path = require('path'),
+      crypto = require('crypto'),
       favicon = require('serve-favicon'),
       logger = require('morgan'),
+      helmet = require('helmet'),
       cookieParser = require('cookie-parser'),
       passport = require('passport'),
       session = require('express-session'),
@@ -37,17 +39,49 @@ const { corrigirTokensCertificados } = require('./fixTokens');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+// Necessário para o cookie de sessão "secure: auto" reconhecer HTTPS quando o
+// app roda atrás do proxy reverso (nginx) do servidor de produção.
+app.set('trust proxy', 1);
+
 app.use(logger('dev'));
+// CSP desabilitado: o front-end (EJS/Angular legado) depende fortemente de
+// estilos/scripts inline e recursos de CDNs externas, que uma CSP padrão bloquearia.
+// Mantém os demais cabeçalhos de segurança do helmet (X-Frame-Options, nosniff, HSTS, etc.).
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.json({limit : '10mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit : '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Proteção CSRF (double-submit cookie). Usa os nomes padrão do AngularJS
+// (cookie XSRF-TOKEN / header X-XSRF-TOKEN), que o $http já envia sozinho
+// em toda requisição same-origin — nenhuma mudança necessária no front-end.
+const METODOS_PROTEGIDOS_CSRF = ['POST', 'PUT', 'DELETE', 'PATCH'];
+app.use((req, res, next) => {
+  let token = req.cookies['XSRF-TOKEN'];
+  if (!token) {
+    token = crypto.randomBytes(24).toString('hex');
+    res.cookie('XSRF-TOKEN', token, { sameSite: 'lax' });
+  }
+  if (METODOS_PROTEGIDOS_CSRF.includes(req.method)) {
+    const headerToken = req.headers['x-xsrf-token'];
+    if (!headerToken || headerToken !== token) {
+      return res.status(403).send('Token CSRF ausente ou inválido');
+    }
+  }
+  next();
+});
+
 // Express Session
 app.use(session({
-    secret: 'secret',
+    secret: process.env.SESSION_SECRET,
     saveUninitialized: true,
-    resave: true
+    resave: true,
+    cookie: {
+      httpOnly: true,
+      secure: 'auto',
+      sameSite: 'lax'
+    }
 }));
 
 // Passport init

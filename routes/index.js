@@ -24,13 +24,28 @@ const express = require('express')
 , EmailTemplate = require('email-templates').EmailTemplate
 , wellknown = require('nodemailer-wellknown')
 , Promise = require('promise')
-, async = require('async');
+, async = require('async')
+, rateLimit = require('express-rate-limit');
+
+// Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
+// e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' }
+});
 
 function splita(arg){
   if (arg !== undefined) {
     let data = arg.replace(/([-.() ])/g,'');
     return data;
   }
+}
+
+function idValido(id) {
+  return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
 function miPermiso(role) {
@@ -436,6 +451,7 @@ router.post('/emitirCertificado', (req, res) => {
 
 router.post('/conferirCertificado', (req, res) => {
   let id = req.body.id
+  if (!idValido(id)) return res.status(400).send({msg: 'ID inválido'});
 
   function pesquisaProjetoAluno(id) {
     return new Promise(function (fulfill, reject) {
@@ -864,7 +880,7 @@ passport.deserializeUser(function(id, done){
   });
 });
 
-router.post('/login', passport.authenticate('unico'), (req, res) => {
+router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) => {
   // res.send(req.session);
   if (req.user.permissao === "1") {
     // res.redirect('/projetos/');
@@ -886,14 +902,14 @@ router.post('/logout', (req, res) => {
   res.redirect('/');
 });
 
-router.post('/redefinir-senha', (req, res) => {
+router.post('/redefinir-senha', authLimiter, (req, res) => {
   let username = req.body.username;
   console.log('meuusuario:'+ username);
   crypto.randomBytes(20, (err, buf) => {
     let token = buf.toString('hex');
 
-    ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {upsert:true, new: true}, function(err, doc){
-      if(err){
+    ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {new: true}, function(err, doc){
+      if(err || !doc){
         return res.status(400).send({ error: 'Não foi possível encontrar o usuário: '+username}) //ARUUMAR A MENSAGEM DE ERRO DO USUARIO
       } else{
         let email = doc.email;

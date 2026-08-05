@@ -63,6 +63,12 @@ function filtrarCamposEditaveis(body) {
   return filtrado;
 }
 
+// Garante que um id vindo do body é uma string simples (formato de ObjectId do Mongo),
+// nunca um objeto (ex: {"$ne": null}), que poderia alterar o comportamento da query.
+function idValido(id) {
+  return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 function miPermiso(role,role2) {
   return function(req, res, next) {
     if(req.user.permissao === role || req.user.permissao === role2)
@@ -122,6 +128,7 @@ router.get('/mostraEvento', miPermiso("3","2"), (req, res) => {
 router.put('/removeEvento', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     eventoSchema.remove({"_id": id}, (err) => {
       if (err) throw new Error('Erro ao remover evento'); //alteração Lucas A. Ferreira
     });
@@ -145,6 +152,7 @@ router.get('/mostraAvaliadores', miPermiso("3","2"), (req, res) => {
 router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     avaliadorSchema.remove({"_id": id}, (err) => {
       if (true) throw new Error('Erro ao remover avaliador'); //alteração Lucas A. Ferreira
     });
@@ -217,9 +225,10 @@ router.get('/mostraParticipante', miPermiso("3","2"), (req, res) => {
   }
 });
 
-router.put('/removeParticipante', (req, res) => {
+router.put('/removeParticipante', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     participanteSchema.remove({"_id": id}, (err) => {
       if (err) throw new Error('Erro ao remover participante'); // Alteração Lucas Ferreira
     });
@@ -360,6 +369,7 @@ router.get('/getDocumentos', (req, res) =>{
 router.put('/putDocumento', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     CadastroDocumentoSchema.remove({"_id": id}, (err) => {
       if (err) throw new Error('Erro ao mostrar certificados'); //alteração Lucas A. Ferreira
     });
@@ -374,8 +384,9 @@ router.put('/putUpdateExibir', miPermiso("3"), (req, res) => {
   try {
   let id = req.body.id;
   let exibe = req.body.exibe;
+  if (!idValido(id)) return res.status(400).send('ID inválido');
 
-  CadastroDocumentoSchema.update({'_id': id}, 
+  CadastroDocumentoSchema.update({'_id': id},
                                  {$set:{'exibe': exibe}},
                                  {multi:false},
                                  (err) =>{
@@ -393,6 +404,7 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
     var id = req.body.id;
     let nome = req.body.nome;
     let cpf = splita(req.body.cpf);
+    if (!idValido(id)) return res.status(400).send('ID inválido');
 
     participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
         if (err) throw new Error('Erro ao atualizar participante'); //alteração Lucas A. Ferreira
@@ -712,6 +724,7 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
       req.body.cep = splita(req.body.cep);
     }
     let id = req.body._id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     let newProject = filtrarCamposEditaveis(req.body);
 
     console.log(newProject);
@@ -729,9 +742,11 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
   try {
     let myArray = req.body
     ,   id = req.body[0].ID;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
 
     myArray.forEach(function (value, i) {
       if (value._id !== undefined) {
+    if (!idValido(value._id)) return;
     let id_subdoc = value._id,
     newIntegrante = ({
       _id: id_subdoc,
@@ -780,6 +795,7 @@ router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), (req, res)
   try {
     let id = req.body.integrantes_id;
     let ID = req.body.ID;
+    if (!idValido(id) || !idValido(ID)) return res.status(400).send('ID inválido');
 
     projetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
       if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
@@ -801,6 +817,7 @@ router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), (req, res)
 router.put('/removeProjeto', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
     projetoSchema.remove({"_id": id}, (err) => {
       if (err) throw new Error('Erro ao remover projeto'); // Alteração Lucas Ferreira
     });

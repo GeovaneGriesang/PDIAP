@@ -115,6 +115,10 @@ function filtrarCamposEditaveis(body) {
   return filtrado;
 }
 
+function idValido(id) {
+  return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 router.all('/*', ensureAuthenticated, miPermiso("1"));
 
 router.get('/loggedin', ensureAuthenticated, (req, res, next) => {
@@ -232,6 +236,7 @@ router.put('/upgreice', (req, res) => {
     //console.log('%d: %s', i);
 
     if (value._id !== undefined) {
+      if (!idValido(value._id)) return;
       let id_subdoc = value._id
       ,   newIntegrante = ({
         _id: id_subdoc,
@@ -368,9 +373,13 @@ res.status(200).json(docs);
 router.put('/removerIntegrante', (req, res) => {
   try {
     let id = req.body.integrantes_id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
 
-    ProjetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
+    // Escopado ao próprio projeto do usuário logado (req.user.id), não a qualquer projeto:
+    // sem isso, um participante poderia remover integrantes de outros projetos só sabendo o _id.
+    ProjetoSchema.findOne({"_id": req.user.id, "integrantes._id": id}, (err, usr) => {
       if (err) throw new Error('Erro ao remover integrante'); // Alteração Lucas Ferreira
+      if (!usr) return res.status(404).send('Integrante não encontrado neste projeto');
       usr.integrantes.id(id).remove()
       usr.save((err, usr) => {
         if (err) throw err;
