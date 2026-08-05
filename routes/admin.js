@@ -32,6 +32,7 @@ const express = require('express')
 , fs = require('fs')
 , async = require('async')
 , { exec } = require("child_process")
+, http = require('http')
 , readline = require('readline');
 
 function ensureAuthenticated(req, res, next) {
@@ -47,6 +48,19 @@ function splita(arg){
     let data = arg.replace(/([-.() ])/g,'');
     return data;
   }
+}
+
+// Campos que o admin pode alterar de um projeto via PUT /update (ver public/admin/views/editar-projetos.html).
+// Qualquer outro campo do body (ex: permissao, password, token) é ignorado; aprovação/premiação
+// já têm rotas próprias (upgreice, setPremiadoProjetos) com a lógica correta.
+const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem'];
+
+function filtrarCamposEditaveis(body) {
+  let filtrado = {};
+  CAMPOS_EDITAVEIS_PROJETO.forEach((campo) => {
+    if (body[campo] !== undefined) filtrado[campo] = body[campo];
+  });
+  return filtrado;
 }
 
 function miPermiso(role,role2) {
@@ -215,7 +229,7 @@ router.put('/removeParticipante', (req, res) => {
   }
 });
 
-router.post('/exportarprojetos', (req, res) => {
+router.post('/exportarprojetos', miPermiso("3"), (req, res) => {
 
     var dadosbrutos = "";
     
@@ -240,8 +254,27 @@ router.post('/exportarprojetos', (req, res) => {
     setTimeout(function(){    
       fs.writeFileSync("../data.json", dadosbrutos);    
 
-    	exec("curl -d \"@../data.json\" -X POST -H \"Content-Type: application/json\"  http://"+req.body.usuario+":"+req.body.senha+"@localhost:8080/Webservice/integrador.php");    
-    }, 10000);  
+    	// Requisição HTTP nativa em vez de `exec("curl ...")`: usuario/senha nunca passam por um
+    	// shell, então não há como injetar comandos através desses campos vindos do formulário.
+    	const payload = Buffer.from(dadosbrutos, 'utf8');
+    	const authHeader = 'Basic ' + Buffer.from(req.body.usuario + ':' + req.body.senha).toString('base64');
+    	const integradorReq = http.request({
+    		hostname: 'localhost',
+    		port: 8080,
+    		path: '/Webservice/integrador.php',
+    		method: 'POST',
+    		headers: {
+    			'Content-Type': 'application/json',
+    			'Content-Length': payload.length,
+    			'Authorization': authHeader
+    		}
+    	}, (integradorRes) => {
+    		integradorRes.on('data', () => {});
+    	});
+    	integradorReq.on('error', (err) => console.error('Erro ao enviar para o integrador:', err));
+    	integradorReq.write(payload);
+    	integradorReq.end();
+    }, 10000);
     setTimeout(function(){
       let codigo = { cod: 1};
       return res.send(codigo);
@@ -678,9 +711,8 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
     if (req.body.cep !== undefined){
       req.body.cep = splita(req.body.cep);
     }
-    let newProject = req.body;
     let id = req.body._id;
-    delete newProject._id;
+    let newProject = filtrarCamposEditaveis(req.body);
 
     console.log(newProject);
 
@@ -809,7 +841,7 @@ router.post('/aprovadosemail', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "no-reply4@movaci.com.br",
-            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
+            pass: process.env.SMTP_ZOHO_PASS
           },
           getSocket: true
         }));
@@ -884,7 +916,7 @@ router.post('/reprovadosemail', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "contato@movaci.com.br",
-            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
+            pass: process.env.SMTP_ZOHO_PASS
           },
           getSocket: true
         }));
@@ -1037,7 +1069,7 @@ router.post('/emailUpload', miPermiso("3"), (req, res) => {
           port: 587,
           auth: {
             user: "no-reply5@movaci.com.br",
-            pass: "lenhqdvbmnqvbqdr" // Alteração senha superApp - Lucas Ferreira
+            pass: process.env.SMTP_ZOHO_PASS
           },
           getSocket: true
         }));
