@@ -27,6 +27,10 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+function idValido(id) {
+  return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 router.get('/', function(req, res, next) {
   res.send('Avaliadores mt loucos nóis');
 });
@@ -65,10 +69,11 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
   res.send('success');
 });
 
-router.put('/addNota', (req, res) => {
+router.put('/addNota', ensureAuthenticated, (req, res) => {
 	try {
 	let id = req.body.id
 	,	arrayNota = req.body.adrovan;
+	if (!idValido(id)) return res.status(400).send('ID inválido');
 
 	ProjetoSchema.findOne({_id: id}, (err, usr) => {
 		if (err) throw new Error('Erro');
