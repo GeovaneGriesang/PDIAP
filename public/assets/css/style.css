@@ -147,7 +147,7 @@ md-dialog.login-content {
   background: #4caf50 !important;
 }
 
-md-dialog-content {
+.login-content md-dialog-content {
   background: #4caf50 !important;
 }
 
@@ -360,7 +360,6 @@ md-dialog-content h2 {
   font-size: 27px !important;
   font-family: 'Brandon', 'Roboto', helvetica;
   margin-top: 25px;
-  color: rgba(255, 255, 255, 0.87);
 }
 
 .md-prompt-input-container {
@@ -397,7 +396,6 @@ md-dialog-actions button {
 
 md-dialog-content p {
   text-align: center;
-  color: rgba(255, 255, 255, 0.87);
 }
 
 .login-content {
@@ -1259,17 +1257,12 @@ background: black !important;
 
 
   /* =====================================
-   FUNDO GERAL
+   FUNDO GERAL (só a janela de login, ver .login-content abaixo)
 ===================================== */
-
-  .md-dialog-container {
-    background: #f4f2ed !important;
-    width: 30%;
-  }
 
   /* dialog fullscreen */
   md-dialog.login-content {
-    width: 30% !important;
+    width: 100% !important;
     height: 100vh !important;
 
     max-width: unset !important;
@@ -1317,8 +1310,8 @@ background: black !important;
    JANELA FLUTUANTE LOGIN APENAS LOGIN
 ===================================== */
 
-md-dialog {
- 
+md-dialog.login-content {
+
   width: 30% !important;
   height: 55% !important;
 
@@ -1347,6 +1340,15 @@ md-dialog {
   background-size: cover !important;
 
   font-size: 23px;
+}
+
+/* Reforça a largura cheia no mobile: como a regra acima tem a mesma especificidade
+   (md-dialog.login-content) e vem depois no arquivo, ela vencia mesmo dentro do
+   media query anterior. Precisa vir depois dela para o mobile prevalecer. */
+@media (max-width: 401px) {
+  md-dialog.login-content {
+    width: 100% !important;
+  }
 }
 
 /* remove fundo material */
