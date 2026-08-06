@@ -149,15 +149,28 @@ router.post('/emitirCertificado', (req, res) => {
   }
 
 
-  function inserirTokenAvaliador(cpf, createdAt, tipo) {
+  function inserirTokenAvaliador(cpf, id, tipo) {
+    // Bug corrigido: antes buscava por {cpf, createdAt}, mas quem chama essa função
+    // (linha abaixo, em "two") sempre passou o _id do avaliador nesse segundo argumento
+    // — nunca batia com nenhum documento (createdAt é uma Data, não um _id), então o
+    // token nunca era gravado e o avaliador ficava permanentemente sem código.
     return new Promise(function (fullfill, reject) {
-      avaliadorSchema.findOneAndUpdate({'cpf':cpf,'createdAt':createdAt},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}],(err, usr) => {})
+      // A Promise nunca era resolvida (callback vazio): quem chamava essa função
+      // nunca esperava a gravação terminar de verdade.
+      avaliadorSchema.findOneAndUpdate({'_id':id},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}],(err, usr) => {
+        if (err) return reject(err);
+        fullfill(usr);
+      })
     })
   }
 
   function pesquisaAvaliador(cpf) {
     return new Promise(function (fullfill, reject) {
-      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome token createdAt _id -_id',(err, usr) => {
+      // Projeção corrigida: tinha "_id -_id" ao mesmo tempo (a exclusão vencia e o _id
+      // sumia do resultado), o que quebrava o inserirTokenAvaliador logo abaixo, que
+      // depende de usr[i]._id para saber QUAL avaliador atualizar. "email" também
+      // estava faltando, apesar de ser usado no map de resposta mais abaixo.
+      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt',(err, usr) => {
         if (err) return reject(err)
         fullfill(usr)
       })	
@@ -247,12 +260,15 @@ router.post('/emitirCertificado', (req, res) => {
 
 
   const two = pesquisaAvaliador(cpf).then(usr =>{
+  	// Espera as gravações terminarem antes de reconsultar: antes disso não era
+  	// esperado, então às vezes a consulta seguinte lia o token ainda vazio.
+  	let gravacoes = [];
   	for(let i in usr){
 		if(usr.length > 0 && usr[i].token === undefined){
-			inserirTokenAvaliador(cpf, usr[i]._id, "Avaliador");
+			gravacoes.push(inserirTokenAvaliador(cpf, usr[i]._id, "Avaliador"));
 		}
-	}	
-	return pesquisaAvaliador(cpf)
+	}
+	return Promise.all(gravacoes).then(() => pesquisaAvaliador(cpf))
   }).then(usr => {
 	let array = [];
 	for(let i in usr){
