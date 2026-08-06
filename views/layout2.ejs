@@ -229,6 +229,25 @@
 				
 			</section>
 		</div>
+
+		<!-- Painel do menu mobile (hambúrguer). Escrito à mão com os mesmos data-ng-click/
+		     ng-repeat do #nav lá em cima: o plugin jQuery do template (navList(), em alpha/assets/js/main.js)
+		     clona os links só como texto puro e perde essas diretivas do Angular, o que fazia
+		     "Logar" não abrir nada e "Documentos" nunca aparecer no mobile.
+		     Precisa ficar FORA do #page-wrapper (irmão dele, direto em <body>): o #page-wrapper
+		     ganha um transform quando o painel abre, e isso quebra o position:fixed de um filho. -->
+		<div id="navPanel">
+			<nav>
+				<a class="link depth-0" href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a>
+				<a class="link depth-0" href="/contato">Fale Conosco</a>
+				<a class="link depth-0" href="/certificados">Validar Certificado</a>
+				<a class="link depth-0" href="https://forms.gle/z2p2bsmKWpMqEyUK8" target="_blank">Agendar Visita</a>
+				<span class="link depth-0">Documentos</span>
+				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
+				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
+				<a class="link depth-0" href="#" data-ng-click="showLoginDialog($event)">Logar</a>
+			</nav>
+		</div>
 <!-- Footer -->
 <footer id="footer">
 	
