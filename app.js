@@ -25,16 +25,6 @@ const express = require('express'),
       db = require('./configs/db-config'),
       app = express();
 
-/**
- * PDIAP - Fase 6: Integração da Manutenção Automática
- * * Funcionamento Geral:
- * Importa o script de correção e o executa após a conexão com o banco ser estabilizada.
- * * Alterado por: Geovane Griesang
- * Data: 07/04/2026
- * Descrição: Chamada da rotina de manutenção para a coleção avaliadores.
- */
-const { corrigirTokensCertificados } = require('./fixTokens');
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -117,12 +107,6 @@ app.use('/projetos', projetos);
 app.use('/avaliadores', avaliadores);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
-
-// Manutenção preventiva da MOVACI 2026
-// Aguarda o carregamento do db-config para garantir conexão ativa
-setTimeout(() => {
-    corrigirTokensCertificados().catch(err => console.error(err));
-}, 3000);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
