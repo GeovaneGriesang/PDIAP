@@ -49,14 +49,26 @@
 					.appendTo($body);
 
 			// Navigation Panel.
-				$(
-					'<div id="navPanel">' +
-						'<nav>' +
-							$('#nav').navList() +
-						'</nav>' +
-					'</div>'
-				)
-					.appendTo($body)
+				// Se a página já trouxe um #navPanel próprio (com bindings reais do Angular,
+				// em vez do clone só-texto que o navList() abaixo produz), reaproveita ele
+				// e só liga o comportamento de abrir/fechar. Caso contrário, mantém o
+				// comportamento original (gera o painel a partir de #nav).
+				var $navPanel = $('#navPanel');
+				if ($navPanel.length === 0) {
+					$navPanel = $(
+						'<div id="navPanel">' +
+							'<nav>' +
+								$('#nav').navList() +
+							'</nav>' +
+						'</div>'
+					);
+				}
+				// Sempre reanexa como último filho direto do <body>: o #navPanel precisa
+				// ficar fora de #page-wrapper (que ganha um transform ao abrir o painel,
+				// quebrando o position:fixed de um filho) e o HTML desta página tem uma
+				// tag não fechada mais acima que faz o parser aninhar tudo dentro dele.
+				$navPanel.appendTo($body);
+				$navPanel
 					.panel({
 						delay: 500,
 						hideOnClick: true,
