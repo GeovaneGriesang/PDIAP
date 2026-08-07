@@ -129,12 +129,44 @@ router.get('/upload', function(req, res, next) { res.render('view-teste.ejs') })
 
 router.post('/upload', function(req, res){
   var form = new formidable.IncomingForm();
+  // Limite de tamanho e validação de tipo: antes aceitava qualquer arquivo, de
+  // qualquer tamanho, e só forçava a extensão ".pdf" no nome ao salvar — o
+  // conteúdo em si nunca era conferido.
+  form.maxFileSize = 10 * 1024 * 1024; // 10MB
   form.parse(req, function(err, fields, files) {
+    var image = files.file;
+
+    if (err || !image) {
+      res.writeHead(400, {'content-type': 'text/plain'});
+      return res.end('Falha no upload (arquivo ausente ou maior que 10MB).');
+    }
+
+    var nomeOriginal = (image.name || '').toLowerCase();
+    var mimetype = image.type || '';
+    var extensaoValida = nomeOriginal.endsWith('.pdf');
+    var mimetypeValido = mimetype === 'application/pdf';
+
+    // Confere a "assinatura" do arquivo (primeiros bytes = %PDF-), já que nome e
+    // mimetype enviados pelo navegador podem ser forjados pelo próprio usuário.
+    var assinaturaValida = false;
+    try {
+      var fd = fs.openSync(image.path, 'r');
+      var buffer = Buffer.alloc(5);
+      fs.readSync(fd, buffer, 0, 5, 0);
+      fs.closeSync(fd);
+      assinaturaValida = buffer.toString('ascii') === '%PDF-';
+    } catch (e) {}
+
+    if (!extensaoValida || !mimetypeValido || !assinaturaValida) {
+      fs.unlink(image.path, function () {});
+      res.writeHead(400, {'content-type': 'text/plain'});
+      return res.end('Arquivo inválido: envie um PDF de até 10MB.');
+    }
+
     res.writeHead(200, {'content-type': 'text/plain'});
     res.write('received upload:\n\n');
 
-    var image = files.file
-    , image_upload_path_old = image.path
+    var image_upload_path_old = image.path
     , image_upload_path_new = '../PDIAP/public/relatorios_2018/'
     , image_upload_name = req.user.numInscricao+'.pdf'
     , image_upload_path_name = image_upload_path_new + image_upload_name;

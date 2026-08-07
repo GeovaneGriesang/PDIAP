@@ -1,13 +1,15 @@
 'use strict';
 
 const mongoose = require('mongoose')
-,	dbURL = 'mongodb://127.0.0.1:27017/loginapp';
-//,	dbURL = 'mongodb://172.17.0.2:27017/loginapp';
+,	dbURL = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/loginapp';
 
 mongoose.connect(dbURL);
 
+// Remove usuário/senha antes de logar a URL (dbURL pode vir de MONGO_URI com credenciais).
+const dbURLSemCredenciais = dbURL.replace(/\/\/[^@]+@/, '//');
+
 mongoose.connection.on('connected', () => {
-  console.log('<<Mongoose>> conectou em: ' + dbURL);
+  console.log('<<Mongoose>> conectou em: ' + dbURLSemCredenciais);
 });
 mongoose.connection.on('error', (err) => {
   console.log('<<Mongoose>> erro ao conectar: ' + err);

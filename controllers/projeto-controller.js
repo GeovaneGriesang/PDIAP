@@ -14,7 +14,6 @@ module.exports.createProject = (newProject, callback) => {
 				newProject.save((err, data) => {
 					if(err) throw err;
 					//new Error('Erro ao criar projeto'); // Alteração Lucas Ferreira
-					console.log(data);
 				});
 			});
 		});
@@ -52,8 +51,7 @@ module.exports.getLoginProjeto = (username, ano_atual, user) => {
 		Projeto.find(query, function(err, document){
 			if(err) throw new Error('Erro ao realizar login'); // Alteração Lucas Ferreira
 			if(document != ''){
-				console.log("DOCUMENT:"+JSON.stringify(document));
-				document.forEach(function(value){		
+				document.forEach(function(value){
 					var data = new Date(value.createdAt);
 					if(ano_atual == data.getFullYear()){				
 						Projeto.findOne({_id:value._id}, user);

@@ -7,3 +7,7 @@
 /nbproject/private/
 .env
 *.pdf
+*.log
+log.txt
+*.swp
+npm-debug.log*
