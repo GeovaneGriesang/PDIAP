@@ -12,7 +12,6 @@ module.exports.createAdmin = (newAdmin, callback) => {
 				//newProject.save(callback);
 				newAdmin.save((err, data) => {
 					if(err) throw new Error('Erro ao criar admin'); // Alteração Lucas Ferreira
-					console.log(data);
 				});
 			});
 		});

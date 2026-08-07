@@ -844,7 +844,6 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
     if(err) throw err;
     if(!user){
       console.log('Usuário não é de projeto');
-      console.log("TESTE:"+JSON.stringify(user));
       Projeto.getLoginAdmin(username, (err, user) => {
         if(err) throw err;
         if(!user){
