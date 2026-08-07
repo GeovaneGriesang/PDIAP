@@ -90,35 +90,19 @@ function testaUsername2(req, res, next) {
 }
 
 router.get('/edit', (req, res) => {
-	return new Promise(function (fulfill, reject) {
-		adminSchema.find({'username':'admin2'},'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text -_id',(err,usr)=>{
-			if(err) return reject(err);
-			if(usr == 0) return reject({err});
-			res.send(usr);
-		})						
-	})
+	Admin.getEdicaoAtual((err, usr) => {
+		if (err || !usr) return res.sendStatus(500);
+		res.send(usr);
+	});
 });
 
 router.get('/getOpcoes', (req, res) => {
-	return new Promise(function (fulfill, reject) {
-		adminSchema.find({'username':'admin2'},'opcoes -_id',(err,usr)=>{
-			if(err) return reject(err);
-			if(usr == 0) return reject({err});
-			res.send(usr[0].opcoes);
-		})						
-	})
+	Admin.getOpcoesAtuais((err, usr) => {
+		if (err || !usr || !usr[0]) return res.sendStatus(500);
+		res.send(usr[0].opcoes);
+	});
 });
 
-// router.post('/registro2', (req, res) => {
-//   let newAdmin = new adminSchema({
-//       username: req.body.username,
-//       password: req.body.password,
-//       permissao: 3
-//     });
-//     Admin.createAdmin(newAdmin);
-//     //res.redirect('/admin/login');
-//   res.send('OK');
-// });
 
 router.post('/emitirCertificado', (req, res) => {
   let cpf = splita(req.body.cpf)

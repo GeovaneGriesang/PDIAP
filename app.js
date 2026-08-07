@@ -108,12 +108,12 @@ app.use('/avaliadores', avaliadores);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+// catch 404
+// Antes, tentava redirecionar E chamar next(err) para um error handler que não existe:
+// como o redirect já envia a resposta, o next(err) sobrava tentando escrever de novo
+// numa resposta já finalizada (gerava erros de "headers already sent" no log).
+app.use(function(req, res) {
   res.redirect('/404');
-  const err = new Error('Not Found');
-  err.status = 404;
-  next(err);
 });
 
 module.exports = app;

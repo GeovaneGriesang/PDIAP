@@ -49,3 +49,13 @@ module.exports.comparePassword = (candidatePassword, hash, callback) => {
 		console.log('findOne error--> ${error}');
 	}
 }
+
+// Usadas tanto pela home pública (routes/index.js) quanto pelo painel admin
+// (routes/admin.js) — antes cada arquivo tinha sua própria cópia da mesma query.
+module.exports.getEdicaoAtual = (callback) => {
+	Admin.find({'username':'admin2'}, 'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text -_id', callback);
+}
+
+module.exports.getOpcoesAtuais = (callback) => {
+	Admin.find({'username':'admin2'}, 'opcoes -_id', callback);
+}
