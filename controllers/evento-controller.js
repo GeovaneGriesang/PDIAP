@@ -6,8 +6,7 @@ const mongoose = require('mongoose')
 module.exports.createEvento = (newEvento, callback) => {
 	try {
 		newEvento.save((err, data) => {
-			if(err) throw new Error('Erro ao salvar salvar Schema preenchido na base do mongo'); // Alteração Lucas Ferreira
-			console.log(data);
+			if (err) { console.error('Erro ao salvar salvar Schema preenchido na base do mongo', err); return; }
 		});
 	} catch (error) {
 		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira

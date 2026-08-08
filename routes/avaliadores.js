@@ -76,10 +76,10 @@ router.put('/addNota', ensureAuthenticated, (req, res) => {
 	if (!idValido(id)) return res.status(400).send('ID inválido');
 
 	ProjetoSchema.findOne({_id: id}, (err, usr) => {
-		if (err) throw new Error('Erro');
+		if (err) { console.error('Erro', err); return; }
 		usr.avaliacao = arrayNota;
 		usr.save((err, usr) => {
-			if (err) throw new Error('Erro'); // Alteração Lucas Ferreira
+			if (err) { console.error('Erro', err); return; }
 		});
 	});
 	res.send(200);

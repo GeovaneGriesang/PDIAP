@@ -202,11 +202,11 @@ router.post('/upload', function(req, res){
     uploadAt: files.file.lastModifiedDate
   };
 
-  if (err) throw err;
+  if (err) { console.error(err); return; }
   ProjetoSchema.findOne({'_id': req.user.id}, (err, usr) => {
     usr.relatorio2 = dadosRelatorio;
     usr.save((err, usr) => {
-      if (err) throw err;
+      if (err) { console.error(err); return; }
     });
   });
   });
@@ -221,14 +221,14 @@ router.post('/confirma/:id/:situacao', (req, res) => {
       if (usr.aprovado === true && usr.participa_updated === undefined) {
         if(req.params.situacao === '2456') {
           ProjetoSchema.update({'_id': req.params.id}, {$set:{'participa':true, 'participa_updated':true}}, {upsert:true,new: true}, (err,docs) => {
-            if (err) throw err;
+            if (err) { console.error(err); return; }
             res.send(docs.nomeProjeto);
           });
         }
 
         if(req.params.situacao === '9877') { //------------------------------------------------------------------9877 cod não participa
           ProjetoSchema.update({'_id': req.params.id}, {$set:{'participa':false, 'participa_updated':true}}, {upsert:true,new: true}, (err,docs) => {
-            if (err) throw err;
+            if (err) { console.error(err); return; }
             res.send(docs.nomeProjeto);
           });
         }
@@ -254,7 +254,7 @@ router.put('/update', (req, res) => {
   console.log(newProject);
 
   ProjetoSchema.update({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
-    if (err) throw err;
+    if (err) { console.error(err); return; }
     res.status(200).json(docs);
   });
 });
@@ -282,7 +282,7 @@ router.put('/upgreice', (req, res) => {
       ProjetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
       {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
       (err, doc) => {
-        if (err) throw err;
+        if (err) { console.error(err); return; }
       }
     );	
   } else if (value._id === undefined) {
@@ -296,15 +296,15 @@ router.put('/upgreice', (req, res) => {
     });
 
     ProjetoSchema.findOne({_id: id}, (err, usr) => {
-      if (err) throw err;
+      if (err) { console.error(err); return; }
       usr.integrantes.push(newIntegrante);
       usr.save((err, usr) => {
-        if (err) throw err;
+        if (err) { console.error(err); return; }
       });
     });
 
     ProjetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
-      if (err) throw err;
+      if (err) { console.error(err); return; }
     });
   }
   });

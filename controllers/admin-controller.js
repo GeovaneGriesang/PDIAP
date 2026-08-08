@@ -11,7 +11,7 @@ module.exports.createAdmin = (newAdmin, callback) => {
 				newAdmin.password = hash;
 				//newProject.save(callback);
 				newAdmin.save((err, data) => {
-					if(err) throw new Error('Erro ao criar admin'); // Alteração Lucas Ferreira
+					if (err) { console.error('Erro ao criar admin', err); return; }
 				});
 			});
 		});
@@ -42,7 +42,7 @@ module.exports.getAdminById = (id, callback) => {
 module.exports.comparePassword = (candidatePassword, hash, callback) => {
 	try {
 		bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-			if(err) throw new Error('Erro ao comparar senha'); // Alteração Lucas Ferreira
+			if (err) { console.error('Erro ao comparar senha', err); return; }
 			callback(null, isMatch);
 		});
 	} catch (error) {
