@@ -540,9 +540,10 @@ router.get('/getOpcoes', (req, res) => {
 
 router.get('/projetos', miPermiso("2","3"), (req, res) => {
   try {
-    //console.log("ANO:"+JSON.stringify(req.body));
-    projetoSchema.find((err, usr) => {
-      
+    // Antes mandava o documento inteiro pro navegador, incluindo o hash da senha de
+    // TODOS os 957 projetos — em toda tentativa de listar/avaliar/rankear projetos no
+    // painel. Nenhuma tela do admin usa esse campo; só exclui.
+    projetoSchema.find({}, '-password', (err, usr) => {
       if (err) { console.error('Erro em projetos', err); return; }
       res.send(usr);
     });

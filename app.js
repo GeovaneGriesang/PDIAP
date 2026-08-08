@@ -127,4 +127,17 @@ app.use(function(req, res) {
   res.redirect('/404');
 });
 
+// Handler de erro central (precisa ter 4 argumentos para o Express reconhecer como tal).
+// Antes não existia nenhum: erros passados via next(err) — ex: JSON malformado no corpo da
+// requisição, capturado pelo body-parser — caíam no handler padrão do Express, que em alguns
+// casos devolve stack trace pro cliente. Também serve de rede de segurança caso algum next(err)
+// apareça em código futuro.
+app.use(function(err, req, res, next) {
+  console.error(err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).send('Erro interno do servidor');
+});
+
 module.exports = app;
