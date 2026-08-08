@@ -12,7 +12,7 @@ module.exports.createProject = (newProject, callback) => {
 				newProject.password = hash;
 				//newProject.save(callback);
 				newProject.save((err, data) => {
-					if(err) throw err;
+					if (err) { console.error(err); return; }
 					//new Error('Erro ao criar projeto'); // Alteração Lucas Ferreira
 				});
 			});
@@ -49,7 +49,7 @@ module.exports.getLoginProjeto = (username, ano_atual, user) => {
 	try {
 		let query = {username: username};
 		Projeto.find(query, function(err, document){
-			if(err) throw new Error('Erro ao realizar login'); // Alteração Lucas Ferreira
+			if (err) { console.error('Erro ao realizar login', err); return; }
 			if(document != ''){
 				document.forEach(function(value){
 					var data = new Date(value.createdAt);
@@ -77,7 +77,7 @@ module.exports.getLoginAdmin = (username, user) => {
 module.exports.compareLogin = (candidatePassword, hash, callback) => {
 	try {
 	bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-    	if(err) throw new Error('Erro ao realizar login'); // Alteração Lucas Ferreira
+    	if (err) { console.error('Erro ao realizar login', err); return; }
     	callback(null, isMatch);
 	});
 } catch (error) {
@@ -101,7 +101,7 @@ module.exports.getProjectById = (id, callback) => {
 module.exports.comparePassword = (candidatePassword, hash, callback) => {
 	try {
 		bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
-			if(err) throw new Error('Erro ao comparar senhas'); // Alteração Lucas Ferreira
+			if (err) { console.error('Erro ao comparar senhas', err); return; }
 			callback(null, isMatch);
 		});
 	} catch (error) {

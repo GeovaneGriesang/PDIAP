@@ -6,9 +6,10 @@ const mongoose = require('mongoose')
 ,	Schema = mongoose.Schema;
 	mongoose.plugin(schema => { schema.options.usePushEach = true });
 
-var connection = mongoose.createConnection(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/loginapp");
-
-autoIncrement.initialize(connection);
+// Antes abria uma segunda conexão própria com o banco só pra isso (mongoose.createConnection),
+// além da conexão principal já aberta por configs/db-config.js. Reaproveita a conexão padrão
+// do Mongoose (que app.js garante estar aberta antes de qualquer model ser carregado).
+autoIncrement.initialize(mongoose.connection);
 
 const certificadoSchema = new Schema({
 	_id: {type: Schema.Types.ObjectId, ref: 'Certificado'},
@@ -76,8 +77,12 @@ const ProjetoSchema = new Schema({
 }, { collection: 'projetos'});
 
 ProjetoSchema.methods.hasExpired = function(){
-    let now = new Date().now;
-    return (now - ProjetoSchema.resetPasswordCreatedDate) > 1;
+    // Bug corrigido: "new Date().now" é undefined (Date não tem essa propriedade,
+    // só a classe tem o método estático Date.now()) e "ProjetoSchema.resetPasswordCreatedDate"
+    // referenciava o Schema em vez do documento (this) — o resultado era sempre NaN > 1,
+    // ou seja, sempre false: o token de redefinição de senha nunca expirava.
+    // resetPasswordCreatedDate guarda o instante de expiração (createdAt + 1h), não a criação.
+    return Date.now() > this.resetPasswordCreatedDate;
 };
 
 ProjetoSchema.plugin(autoIncrement.plugin, {model: 'Projeto', field: 'numInscricao'});

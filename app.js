@@ -13,16 +13,20 @@ const express = require('express'),
       cookieParser = require('cookie-parser'),
       passport = require('passport'),
       session = require('express-session'),
+      { MongoStore } = require('connect-mongo'),
       LocalStrategy = require('passport-local').Strategy,
       expressValidator = require('express-validator'),
       //flash = require('connect-flash'),
       bodyParser = require('body-parser'),
+      // db-config precisa ser carregado antes das rotas/models: abre a conexão padrão do
+      // Mongoose que os models (incluindo o plugin de auto-incremento em projeto-schema.js)
+      // passam a reaproveitar, em vez de cada um abrir sua própria conexão com o banco.
+      db = require('./configs/db-config'),
       routes = require('./routes/index'),
       projetos = require('./routes/projetos'),
       avaliadores = require('./routes/avaliadores'),
       saberes = require('./routes/saberes-docentes'),
       admin = require('./routes/admin'),
-      db = require('./configs/db-config'),
       app = express();
 
 // view engine setup
@@ -63,8 +67,15 @@ app.use((req, res, next) => {
 });
 
 // Express Session
+// Antes usava o MemoryStore padrão do express-session, que a própria lib desaconselha pra
+// produção: vaza memória, derruba todas as sessões a cada restart do processo (que aqui
+// acontece toda hora, já que o nodemon reinicia a cada mudança de arquivo) e não escala.
 app.use(session({
     secret: process.env.SESSION_SECRET,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/loginapp',
+      collectionName: 'sessions'
+    }),
     saveUninitialized: true,
     resave: true,
     cookie: {

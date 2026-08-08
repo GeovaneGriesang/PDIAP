@@ -12,7 +12,6 @@ const express = require('express')
 , avaliadorSchema = require('../models/avaliador-schema')
 , participanteSchema = require('../models/participante-schema')
 , eventoSchema = require('../models/evento-schema')
-, premiadoSchema = require('../models/premiados2016-schema')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , Admin = require('../controllers/admin-controller')
@@ -805,7 +804,7 @@ router.post('/registro', testaUsername2, (req, res) => {
     //se o programa crasha para mandar o email de confirmação de inscrição é porque a máquina não está com direito para acessar o email
     
     template.render(locals, function (err, results) {
-      if (err) throw err;
+      if (err) { console.error(err); return; }
      	transport.sendMail({
         	from: 'MOVACI <contatomovaci@gmail.com>',
        		to: locals.email,
@@ -813,7 +812,7 @@ router.post('/registro', testaUsername2, (req, res) => {
         	html: results.html,
         	text: results.text
      	}, function (err, responseStatus) {	
-        if (err) throw err;
+        if (err) { console.error(err); return; }
       	})
     });
      res.redirect('/projetos/login');
@@ -825,18 +824,18 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
   var ano_atual = new Date(Date.now());
   console.log('Usuário:'+username);
   Projeto.getLoginProjeto(username, ano_atual.getFullYear(), (err, user) => {    
-    if(err) throw err;
+    if (err) { console.error(err); return; }
     if(!user){
       console.log('Usuário não é de projeto');
       Projeto.getLoginAdmin(username, (err, user) => {
-        if(err) throw err;
+        if (err) { console.error(err); return; }
         if(!user){
           console.log('Usuário não é admin. Usuário desconhecido');
           return done(null, false, {message: 'Unknown User'});
         }
         Projeto.compareLogin(password, user.password, (err, isMatch) => {
           console.log('Usuário é admin / Comparação de senha sendo realizada');
-          if(err) throw err;
+          if (err) { console.error(err); return; }
           if(isMatch){
 	    console.log("Admin conectado");
             return done(null, user);            
@@ -849,7 +848,7 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
       // return done(null, false, {message: 'Unknown User'});
     } else {
       Projeto.compareLogin(password, user.password, (err, isMatch) => {
-        if(err) throw err;
+        if (err) { console.error(err); return; }
 	console.log("Usuário é de projeto");
         if(isMatch){
 	  console.log("Usuário(Projeto) conectado");
@@ -977,7 +976,7 @@ router.post('/nova-senha/:token', (req, res) => {
           bcrypt.hash(password, salt, (err, hash) => {
             usr.password = hash;
             usr.save((err, usr) => {
-              if(err) throw err;
+              if (err) { console.error(err); return; }
               //console.log(usr);
               res.status(200).send('Senha alterada');
             });
@@ -994,7 +993,7 @@ router.post('/nova-senha/:token', (req, res) => {
 //Função para recuperar os dados da mostra na base de dados 
 router.get('/getMostraInfo', function(req, res){
   CadastroMostraSchema.find(function(err ,data){
-    if(err) throw err;
+    if (err) { console.error(err); return; }
     res.status(200).send(data);
   });
 
@@ -1002,7 +1001,7 @@ router.get('/getMostraInfo', function(req, res){
 
 router.get('/getDocumentosInfo', function(req, res){
   CadastroDocumentoSchema.find({'exibe': true}, function(err ,data){
-    if(err) throw err;
+    if (err) { console.error(err); return; }
     res.status(200).send(data);
   });
 
