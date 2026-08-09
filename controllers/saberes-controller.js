@@ -3,11 +3,8 @@
 const mongoose = require('mongoose')
 
 module.exports.createSaberes = (newSaberes, callback) => {
-	newSaberes.save((callback) => {
-		//if (err) { console.error(err); return; }
-		//res.status(200).send("success");
-		//return data;
-		//console.log(data);
+	newSaberes.save((err) => {
+		if (err) { console.error('Erro ao criar registro de Saberes Docentes', err); return; }
 	});
 };
 

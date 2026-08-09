@@ -6,7 +6,10 @@ const express = require('express')
 , LocalStrategy = require('passport-local').Strategy
 , Saberes = require('../controllers/saberes-controller')
 , session = require('express-session')
-, SaberesSchema = require('../models/saberes-schema');
+, SaberesSchema = require('../models/saberes-schema')
+, nodemailer = require('nodemailer')
+, EmailTemplate = require('email-templates').EmailTemplate
+, path = require('path');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -40,6 +43,36 @@ router.post('/registro', (req, res) => {
 	});
 
 	Saberes.createSaberes(newSaberes, (callback) => {});
+
+	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos/avaliadores.
+	// Antes não existia nenhum envio aqui.
+	var templatesDir = path.resolve(__dirname, '..', 'templates');
+	var template = new EmailTemplate(path.join(templatesDir, 'inscricaosaberes'));
+	const transport = nodemailer.createTransport({
+		host: 'smtp.gmail.com',
+		port: 587,
+		auth: {
+			user: "contatomovaci@gmail.com",
+			pass: process.env.SMTP_GMAIL_PASS
+		}
+	});
+	var locals = {
+		nome: req.body.nome,
+		email: req.body.email
+	};
+	template.render(locals, function (err, results) {
+		if (err) { console.error(err); return; }
+		transport.sendMail({
+			from: 'MOVACI <contatomovaci@gmail.com>',
+			to: locals.email,
+			subject: 'MOVACI - Confirmação de inscrição em Saberes Docentes',
+			html: results.html,
+			text: results.text
+		}, function (err) {
+			if (err) { console.error(err); return; }
+		});
+	});
+
 	res.send('success');
 });
 
