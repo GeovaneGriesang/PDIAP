@@ -4,6 +4,7 @@ const express = require('express')
 , nodemailer = require('nodemailer')
 , smtpTransport = require('nodemailer-smtp-transport')
 , EmailTemplate = require('email-templates').EmailTemplate
+, path = require('path')
 , router = express.Router()
 , passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy
@@ -56,6 +57,37 @@ router.post('/registro', (req, res) => {
 		
 
 	Avaliador.createAvaliador(newAvaliador, (callback) => {});
+
+	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos (routes/index.js).
+	// O template já existia (templates/inscricaoavaliador) mas nunca tinha sido escrito nem
+	// conectado a esta rota — o e-mail nunca era enviado de fato.
+	var templatesDir = path.resolve(__dirname, '..', 'templates');
+	var template = new EmailTemplate(path.join(templatesDir, 'inscricaoavaliador'));
+	const transport = nodemailer.createTransport({
+		host: 'smtp.gmail.com',
+		port: 587,
+		auth: {
+			user: "contatomovaci@gmail.com",
+			pass: process.env.SMTP_GMAIL_PASS
+		}
+	});
+	var locals = {
+		nome: req.body.nome,
+		email: req.body.email
+	};
+	template.render(locals, function (err, results) {
+		if (err) { console.error(err); return; }
+		transport.sendMail({
+			from: 'MOVACI <contatomovaci@gmail.com>',
+			to: locals.email,
+			subject: 'MOVACI - Confirmação de inscrição de avaliador',
+			html: results.html,
+			text: results.text
+		}, function (err) {
+			if (err) { console.error(err); return; }
+		});
+	});
+
 	res.send('success');
 });
 
