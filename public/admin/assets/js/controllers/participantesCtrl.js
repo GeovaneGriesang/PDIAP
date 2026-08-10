@@ -141,6 +141,9 @@
 		}
 
 		$scope.cadastrarParticipante = function(participante) {
+			// Cadastra o participante no ano selecionado no filtro do cabeçalho, em vez de
+			// sempre no ano atual (permite inserir participantes de anos anteriores).
+			participante.ano = $scope.ano;
 			adminAPI.postParticipante(participante)
 			.success(function(data) {
 				$scope.toast('Participante cadastrado com sucesso!','success-toast');

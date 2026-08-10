@@ -165,10 +165,16 @@ router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
 
 router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração Lucas A. Ferreira
   try {
+    // Mesmo esquema usado em /avaliadores/registro: permite cadastrar o participante em um
+    // ano anterior usando o filtro de ano já existente na tela (ex: cadastro-participantes.html).
+    let anoInformado = parseInt(req.body.ano, 10);
+    let anoValido = !isNaN(anoInformado) && anoInformado >= 2016 && anoInformado <= new Date().getFullYear();
+    let createdAt = anoValido ? new Date(new Date().setFullYear(anoInformado)) : Date.now();
+
     let newParticipante = new participanteSchema({
       nome: req.body.nome
       ,cpf: splita(req.body.cpf)
-      ,createdAt: Date.now()
+      ,createdAt: createdAt
     });
 
     if (req.body.eventos !== undefined) {
