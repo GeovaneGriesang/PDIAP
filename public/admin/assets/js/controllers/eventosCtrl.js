@@ -98,13 +98,17 @@
 				responsavel.push(evento.responsavel[i]);
 			}
 
+			// Cadastra o evento no ano selecionado no filtro do cabeçalho, em vez de sempre
+			// no ano atual (permite inserir eventos de anos anteriores).
+			let createdAt = $scope.ano ? new Date(new Date().setFullYear($scope.ano)) : Date.now();
+
 			let evt = ({
 				titulo: evento.titulo,
 				tipo: evento.tipo,
 				cargaHoraria: hh+":"+mm,
 				data: dia+"/"+mes+"/"+ano,
 				responsavel: responsavel,
-				createdAt: Date.now()
+				createdAt: createdAt
 			});
 
 			adminAPI.postEvento(evt)
