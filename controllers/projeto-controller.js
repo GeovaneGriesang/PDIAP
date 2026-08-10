@@ -6,20 +6,17 @@ const mongoose = require('mongoose')
 ,	Admin = require('../models/admin-schema');
 
 module.exports.createProject = (newProject, callback) => {
-	//try {
-		bcrypt.genSalt(10, (err, salt) => {
-			bcrypt.hash(newProject.password, salt, (err, hash) => {
-				newProject.password = hash;
-				//newProject.save(callback);
-				newProject.save((err, data) => {
-					if (err) { console.error(err); return; }
-					//new Error('Erro ao criar projeto'); // Alteração Lucas Ferreira
-				});
+	bcrypt.genSalt(10, (err, salt) => {
+		if (err) { console.error(err); return callback(err); }
+		bcrypt.hash(newProject.password, salt, (err, hash) => {
+			if (err) { console.error(err); return callback(err); }
+			newProject.password = hash;
+			newProject.save((err, data) => {
+				if (err) { console.error(err); return callback(err); }
+				callback(null, data);
 			});
 		});
-	//} catch (error) {
-	//	console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
-	//}
+	});
 }
 
 // module.exports.createProject = (newProject, callback) => {

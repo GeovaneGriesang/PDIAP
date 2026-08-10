@@ -82,7 +82,6 @@ function testaUsername2(req, res, next) {
     } else if(usernames != 0) {
       res.status(202).send("Username já cadastrado");
     } else {
-      res.status(200).send("show");
       return next();
     }
   });
@@ -697,8 +696,8 @@ router.post('/registro', testaUsername2, (req, res) => {
   let errors = req.validationErrors();
 
   if(errors){
-    //res.status(501).send('error');
     console.log("Errors: "+errors);
+    return res.status(400).send('error');
   } else {
     let newIntegrante = ({
       tipo: "Orientador",
@@ -779,45 +778,58 @@ router.post('/registro', testaUsername2, (req, res) => {
       newProject.integrantes.push(newIntegrante5);
     }
 
-    Projeto.createProject(newProject);
-
-    let email = req.body.email
-    let nomeProjeto = req.body.nomeProjeto
-    let username = req.body.username
-    var templatesDir = path.resolve(__dirname, '..', 'templates');
-    var template = new EmailTemplate(path.join(templatesDir, 'inscricao'));
-    const transport = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      auth: {
-        user: "contatomovaci@gmail.com",
-        pass: process.env.SMTP_GMAIL_PASS
+    Projeto.createProject(newProject, (err, savedProject) => {
+      if (err || !savedProject) {
+        console.error('Erro ao criar projeto', err);
+        return res.status(500).send('error');
       }
-    });
 
-    var locals = {
-      email: email,
-      projeto: nomeProjeto,
-      username: username
-    }
+      let email = req.body.email
+      let nomeProjeto = req.body.nomeProjeto
+      let username = req.body.username
+      var templatesDir = path.resolve(__dirname, '..', 'templates');
+      var template = new EmailTemplate(path.join(templatesDir, 'inscricao'));
+      const transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+          user: "contatomovaci@gmail.com",
+          pass: process.env.SMTP_GMAIL_PASS
+        }
+      });
 
-    //se o programa crasha para mandar o email de confirmação de inscrição é porque a máquina não está com direito para acessar o email
-    
-    template.render(locals, function (err, results) {
-      if (err) { console.error(err); return; }
-     	transport.sendMail({
-        	from: 'MOVACI <contatomovaci@gmail.com>',
-       		to: locals.email,
-        	subject: 'MOVACI - Confirmação de inscrição',
-        	html: results.html,
-        	text: results.text
-     	}, function (err, responseStatus) {	
+      var locals = {
+        email: email,
+        projeto: nomeProjeto,
+        username: username
+      }
+
+      //se o programa crasha para mandar o email de confirmação de inscrição é porque a máquina não está com direito para acessar o email
+
+      template.render(locals, function (err, results) {
         if (err) { console.error(err); return; }
-      	})
+       	transport.sendMail({
+          	from: 'MOVACI <contatomovaci@gmail.com>',
+         		to: locals.email,
+          	subject: 'MOVACI - Confirmação de inscrição',
+          	html: results.html,
+          	text: results.text
+       	}, function (err, responseStatus) {
+          if (err) { console.error(err); return; }
+        	})
+      });
+
+      // Autentica o projeto recém-criado na sessão atual, para que o usuário já
+      // caia logado na página do projeto em vez de precisar logar manualmente.
+      req.login(savedProject, function(err) {
+        if (err) {
+          console.error('Erro ao autenticar após inscrição', err);
+          return res.send({redirect: '/'});
+        }
+        res.send({redirect: '/projetos'});
+      });
     });
-     res.redirect('/projetos/login');
   }
-  res.send('OK');
 });
 
 passport.use('unico', new LocalStrategy(function(username, password, done) {
