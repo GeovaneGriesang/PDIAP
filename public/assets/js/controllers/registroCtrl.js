@@ -48,27 +48,27 @@
 		$scope.registrarProjeto = function(projeto) {
 			projeto.palavraChave = $scope.palavrasChave;
 			projetosAPI.saveProjeto(projeto)
-			.success(function(projeto, status) {
+			.success(function(data, status) {
 				if (status === 202) {
 					$scope.usernameDuplicado = true;
 					$scope.projetoForm.username.$setValidity('duplicado',false);
 					// console.log('user duplicado: '+$scope.usernameDuplicado);
-				} else if (projeto !== 'error') {
+				} else if (data && data.redirect) {
 					$scope.registro = true;
+					// O backend já autenticou o projeto recém-criado nesta sessão, então
+					// o redirect (normalmente /projetos) já cai na página logada.
 					let showConfirmDialog = function(ev) {
-						var confirm = $mdDialog.confirm()
+						var confirm = $mdDialog.alert()
 						.title('Parabéns!')
-						.textContent('Inscrição realizada com sucesso!')
+						.textContent('Inscrição realizada com sucesso! Você será direcionado à página do seu projeto.')
 						.ariaLabel('Inscrição realizada com sucesso!')
 						.targetEvent(ev)
-						.ok('OK, Voltar')
-						.cancel('Nova Inscrição');
+						.ok('OK');
 						$mdDialog.show(confirm).then(function() {
-							$window.location.href="http://movaci.com.br/";
-						}, function() {});
+							$window.location.href = data.redirect;
+						});
 					};
 					showConfirmDialog();
-					resetForm();
 				} else {
 					$scope.registro = false;
 					let showConfirmDialog = function(ev) {
