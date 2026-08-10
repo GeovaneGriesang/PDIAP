@@ -11,6 +11,9 @@
 		$scope.year = CadastraAno();
 
 		$scope.registrarAvaliador = function(avaliador) {
+			// Cadastra o avaliador no ano selecionado no filtro do cabeçalho, em vez de
+			// sempre no ano atual (permite inserir avaliadores de anos anteriores).
+			avaliador.ano = $scope.ano;
 			adminAPI.saveAvaliador(avaliador)
 			.success(function(data, status) {
 				if (data === 'success') {

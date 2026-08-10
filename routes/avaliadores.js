@@ -37,6 +37,14 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/registro', (req, res) => {
+	// A tela de inscrição de avaliadores do master (public/admin/views/avaliadores.html) reusa
+	// esta mesma rota e já tem um filtro de ano no cabeçalho; permite que esse ano seja usado
+	// para cadastrar avaliadores em anos anteriores, em vez de sempre cair no ano atual.
+	// Na inscrição pública normal (site), "ano" nunca é enviado e o comportamento não muda.
+	let anoInformado = parseInt(req.body.ano, 10);
+	let anoValido = !isNaN(anoInformado) && anoInformado >= 2016 && anoInformado <= new Date().getFullYear();
+	let createdAt = anoValido ? new Date(new Date().setFullYear(anoInformado)) : Date.now();
+
 	let newAvaliador = AvaliadorSchema({
 		nome: req.body.nome,
 		email: req.body.email,
@@ -52,7 +60,7 @@ router.post('/registro', (req, res) => {
 		curriculo: req.body.curriculo,
 		turnos: req.body.turnos,
 		avaliacao: req.body.avaliacao,
-		createdAt: Date.now()
+		createdAt: createdAt
 	});
 		
 
