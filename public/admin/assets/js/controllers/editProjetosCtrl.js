@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('editProjetosCtrl', function($scope, $rootScope, $parse, $location, $mdDialog, $mdToast, adminAPI) {
+	.controller('editProjetosCtrl', function($scope, $rootScope, $parse, $location, $mdDialog, $mdToast, $timeout, adminAPI) {
 
 
 		// $rootScope.header = 'Alterar projeto';
@@ -24,6 +24,15 @@
 		$scope.integrantes = [];
 
 		$scope.year = CadastraAno();
+
+		// Mesmo esquema usado em projetosCtrl.js (Selecionar aprovados/Presença/Premiação):
+		// o ano fica no $rootScope pra persistir ao navegar entre as páginas de "Projetos",
+		// e o valor persistido só é reaplicado depois de um $timeout porque o próprio
+		// <md-select> com as opções de ano, ao ser recriado do zero nesta página, religa
+		// cada <md-option> e reescreve o ng-model a cada uma (bug do Angular Material com
+		// ng-repeat dentro de md-select), travando no último ano da lista.
+		let anoPersistido = $rootScope.ano;
+		$rootScope.ano = anoPersistido || new Date().getFullYear();
 
 		$scope.recarregar = function(){
 			resetForm();
@@ -146,16 +155,21 @@
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(ano == $rootScope.ano){
 						$rootScope.projetos.push(value);
-					}	
+					}
 				});
 			})
 			.error(function(status) {
 				console.log(status);
 			});
 		};
-		$scope.carregarProjetos();
+		$timeout(function() {
+			if (anoPersistido) {
+				$rootScope.ano = anoPersistido;
+			}
+			$scope.carregarProjetos();
+		});
 		
 
 		$scope.update = function(projeto) {
