@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('projetosCtrl', function($scope, $rootScope, $q, $window, $mdDialog, adminAPI) {
+	.controller('projetosCtrl', function($scope, $rootScope, $q, $window, $mdDialog, $timeout, adminAPI) {
 
 		$rootScope.projetos = [];
 		$scope.searchProject = "";
@@ -12,6 +12,20 @@
 
 		$scope.year = CadastraAno();
 
+		// O ano do filtro fica no $rootScope (em vez de $scope) para persistir ao navegar entre
+		// "Selecionar aprovados", "Presença" e "Premiação" - as três usam este mesmo controller,
+		// mas o ui-router recria a instância a cada troca de página, então um $scope.ano se
+		// perderia a cada navegação. Sem seleção prévia nesta sessão, cai no ano atual.
+		//
+		// O valor persistido precisa ser guardado ANTES e reaplicado só depois de um $timeout:
+		// o próprio <md-select>+ng-repeat de opções de ano, ao ser recriado do zero nesta troca
+		// de página, religa cada <md-option> (2016, 2017, ..., ano atual) e no processo reescreve
+		// o ng-model a cada uma (bug conhecido do Angular Material com ng-repeat dentro de
+		// md-select), deixando o modelo travado no último ano da lista se não corrigirmos depois
+		// que essa religação (síncrona) terminar.
+		let anoPersistido = $rootScope.ano;
+		$rootScope.ano = anoPersistido || new Date().getFullYear();
+
 		let countTotal = 0;
 		$scope.hosp = [];
 		let carregarProjetos = function() {
@@ -19,7 +33,7 @@
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(ano == $rootScope.ano){
 						let obj = ({
 							_id: value._id,
 							numInscricao: value.numInscricao,
@@ -282,7 +296,12 @@
 			$scope.query = campo;
 		}
 
-		carregarProjetos();
+		$timeout(function() {
+			if (anoPersistido) {
+				$rootScope.ano = anoPersistido;
+			}
+			carregarProjetos();
+		});
 
 	});
 })();
