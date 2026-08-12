@@ -138,19 +138,22 @@
 						<div class="linha vermelha"></div>
 						<p>Relembrar é inspirar. Confira os momentos que marcaram a MOVACI!</p>
 					</div>
-					<div class="imgmovaci">
-						<div class="cima2">
-							<img src="alpha/images/movaci2015.jpg" width="30%" style=" margin-left: 5%; border-radius: 10px;">
-							<img src="alpha/images/movaci2016.png" width="30%" style=" margin-left: 2%; border-radius: 10px;">
-							<img src="alpha/images/movaci2023.jpg" width="25%" style=" margin-left: 2%; border-radius: 10px;">
+					<!-- Carrossel da galeria: as imagens vêm de public/alpha/images/galeria/, lidas pelo
+					     servidor a cada carregamento da página (routes/index.js). Basta adicionar ou
+					     remover arquivos de imagem nessa pasta para atualizar o carrossel. -->
+					<div class="galeria-carousel" data-ng-if="galeriaImagens.length > 0">
+						<div class="galeria-carousel-track">
+							<img data-ng-repeat="img in galeriaImagens" ng-src="/alpha/images/galeria/{{img}}"
+								data-ng-class="{ativa: $index === galeriaSlideAtual}"
+								alt="Foto de edição anterior da MOVACI">
 						</div>
-						<div class="baixo2">
-							<img src="alpha/images/movaci2018.jpg" width="22%" style=" margin-left: 2%; border-radius: 10px;">
-							<img src="alpha/images/movaci2015_2.jpg" width="22%" style=" margin-left: 1%; border-radius: 10px;">
-							<img src="alpha/images/movaci2015_3.jpg" width="22%" style=" margin-left: 1%; border-radius: 10px;">
-							<img src="alpha/images/movaci2015_4.jpg" width="25%" style=" margin-left: 1%; border-radius: 10px;">
+						<button type="button" class="galeria-carousel-seta esquerda" ng-click="galeriaAnterior()" data-ng-if="galeriaImagens.length > 1" aria-label="Foto anterior">&#10094;</button>
+						<button type="button" class="galeria-carousel-seta direita" ng-click="galeriaProxima()" data-ng-if="galeriaImagens.length > 1" aria-label="Próxima foto">&#10095;</button>
+						<div class="galeria-carousel-pontos" data-ng-if="galeriaImagens.length > 1">
+							<span data-ng-repeat="img in galeriaImagens" data-ng-class="{ativo: $index === galeriaSlideAtual}" ng-click="galeriaIrPara($index)"></span>
 						</div>
 					</div>
+					<script>window.__GALERIA_IMAGENS__ = <%- JSON.stringify(galeriaImagens) %>;</script>
 					<div style="margin-top: 10%;">
 						<section id="local" class="box special features" style="padding:0!important; background-color: #F4F0EA!important; margin-left: 5%; margin-right: 5%;">
 							<div class="features-row" style="height:350px;">

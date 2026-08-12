@@ -7,7 +7,34 @@
 	
 		// Estado geral da tela de inscrição.
 		$scope.cadastro_projetos = true;
-		
+
+		// Vídeo tutorial "como se inscrever": abre num diálogo ao clicar, em vez de ficar
+		// tocando/visível direto na página.
+		$scope.mostrarVideoTutorial = function(ev) {
+			$mdDialog.show({
+				template:
+					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:800px;width:90vw;">' +
+						'<md-dialog-content style="padding:0;">' +
+							'<video controls autoplay preload="auto" style="width:100%;display:block;">' +
+								'<source src="/assets/videos/como-se-inscrever.mp4" type="video/mp4">' +
+								'Seu navegador não suporta a exibição de vídeos.' +
+							'</video>' +
+						'</md-dialog-content>' +
+						'<md-dialog-actions layout="row">' +
+							'<span flex></span>' +
+							'<md-button ng-click="fechar()">Fechar</md-button>' +
+						'</md-dialog-actions>' +
+					'</md-dialog>',
+				controller: function($scope, $mdDialog) {
+					$scope.fechar = function() {
+						$mdDialog.hide();
+					};
+				},
+				targetEvent: ev,
+				clickOutsideToClose: true
+			});
+		};
+
 		// Busca configurações de liberação da página de cadastro.
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){

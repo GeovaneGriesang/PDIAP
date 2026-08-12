@@ -20,6 +20,7 @@ const express = require('express')
 , mongoose = require('mongoose')
 , smtpTransport = require('nodemailer-smtp-transport')
 , path = require('path')
+, fs = require('fs')
 , EmailTemplate = require('email-templates').EmailTemplate
 , wellknown = require('nodemailer-wellknown')
 , Promise = require('promise')
@@ -1022,7 +1023,18 @@ router.get('/getDocumentosInfo', function(req, res){
 
 //GET na homepage (/).
 router.all('/', function(req, res, next) {
-  res.render('layout2.ejs');
+  // Galeria de "Edições Anteriores": lista as imagens direto da pasta, então basta
+  // adicionar/remover arquivos em public/alpha/images/galeria para atualizar o carrossel,
+  // sem precisar editar o HTML.
+  let galeriaImagens = [];
+  try {
+    galeriaImagens = fs.readdirSync(path.join(__dirname, '..', 'public', 'alpha', 'images', 'galeria'))
+      .filter((nome) => /\.(jpe?g|png|webp)$/i.test(nome))
+      .sort();
+  } catch (err) {
+    console.error('Erro ao listar galeria de imagens', err);
+  }
+  res.render('layout2.ejs', { galeriaImagens: galeriaImagens });
 });
 
 // administração interna ==================================================== //

@@ -37,14 +37,13 @@
 	</div>
 
 	<md-content flex layout="column" layout-align="center center" class="inscricao-content">
-		<!-- Vídeo tutorial explicando como preencher a inscrição, exibido antes do formulário. -->
-		<div style="width:85%;max-width:900px;margin-bottom:32px;text-align:center;">
-			<h3 style="margin:0 0 12px 0;color:rgba(0,0,0,0.87);">Como se inscrever</h3>
-			<p style="margin:0 0 16px 0;color:rgba(0,0,0,0.6);">Assista ao vídeo abaixo para ver o passo a passo de como preencher a inscrição.</p>
-			<video controls preload="metadata" style="width:100%;max-width:720px;border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,0.25);">
-				<source src="/assets/videos/como-se-inscrever.mp4" type="video/mp4">
-				Seu navegador não suporta a exibição de vídeos.
-			</video>
+		<!-- Vídeo tutorial: fica escondido atrás de um botão em vez de já vir tocando/visível
+		     na página, que ficava "agressivo" demais. Abre num diálogo ao clicar. -->
+		<div style="width:85%;max-width:900px;margin-bottom:24px;text-align:center;">
+			<md-button class="md-raised md-primary" ng-click="mostrarVideoTutorial($event)" style="text-transform:none;">
+				<md-icon md-svg-icon="play-circle-outline" style="margin-right:8px;"></md-icon>
+				Assista ao vídeo: como se inscrever
+			</md-button>
 		</div>
 		<!-- Formulário principal de inscrição. O estado é controlado pelo controller AngularJS. -->
 		<form name="projetoForm" novalidate style="width:85%;max-width:900px;padding:8px;">

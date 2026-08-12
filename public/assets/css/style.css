@@ -1492,3 +1492,99 @@ md-dialog-content,
   text-transform: none !important;
   box-shadow: none !important;
 }
+
+/* =====================================
+   CARROSSEL DA GALERIA (Edições Anteriores)
+===================================== */
+
+.galeria-carousel {
+  position: relative;
+  width: 90%;
+  max-width: 900px;
+  height: 400px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.galeria-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.galeria-carousel-track img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.galeria-carousel-track img.ativa {
+  opacity: 1;
+}
+
+.galeria-carousel-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.galeria-carousel-seta:hover {
+  background: rgba(0,0,0,0.65);
+}
+
+.galeria-carousel-seta.esquerda {
+  left: 15px;
+}
+
+.galeria-carousel-seta.direita {
+  right: 15px;
+}
+
+.galeria-carousel-pontos {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.galeria-carousel-pontos span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  display: inline-block;
+}
+
+.galeria-carousel-pontos span.ativo {
+  background: #fff;
+}
+
+@media (max-width: 599px) {
+  .galeria-carousel {
+    height: 240px;
+  }
+}
