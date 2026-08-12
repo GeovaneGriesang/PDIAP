@@ -3,15 +3,37 @@
 
 	angular
 	.module('PDIAP')
-	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, projetosAPI) {
-		
+	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, $interval, projetosAPI) {
+
 		projetosAPI.getDocumentos().success(function(documentos){
 			$scope.documentos = documentos;
 
 			$scope.ExibeDocumentos = documentos.length > 0;
 		}
-			
+
 		)
+
+		// Carrossel da galeria "Edições Anteriores" (imagens injetadas pelo servidor,
+		// ver views/layout2.ejs e routes/index.js).
+		$scope.galeriaImagens = window.__GALERIA_IMAGENS__ || [];
+		$scope.galeriaSlideAtual = 0;
+
+		$scope.galeriaProxima = function() {
+			$scope.galeriaSlideAtual = ($scope.galeriaSlideAtual + 1) % $scope.galeriaImagens.length;
+		};
+		$scope.galeriaAnterior = function() {
+			$scope.galeriaSlideAtual = ($scope.galeriaSlideAtual - 1 + $scope.galeriaImagens.length) % $scope.galeriaImagens.length;
+		};
+		$scope.galeriaIrPara = function(index) {
+			$scope.galeriaSlideAtual = index;
+		};
+
+		if ($scope.galeriaImagens.length > 1) {
+			var galeriaAutoPlay = $interval($scope.galeriaProxima, 5000);
+			$scope.$on('$destroy', function() {
+				$interval.cancel(galeriaAutoPlay);
+			});
+		}
 
 		$scope.edits = [];
 
