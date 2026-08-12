@@ -45,6 +45,11 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.json({limit : '10mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit : '10mb' }));
 app.use(cookieParser());
+// Vídeos precisam de um Cache-Control com max-age > 0: o padrão do Express (max-age=0)
+// faz o navegador revalidar com If-None-Match a cada requisição de range, e como o
+// vídeo não muda, o servidor responde 304 (sem corpo) - o elemento <video> não sabe
+// lidar com isso no meio de uma requisição de range e simplesmente para de carregar.
+app.use('/assets/videos', express.static(path.join(__dirname, 'public', 'assets', 'videos'), { maxAge: '7d' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Proteção CSRF (double-submit cookie). Usa os nomes padrão do AngularJS
