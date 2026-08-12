@@ -12,13 +12,17 @@
 		// tocando/visível direto na página. O vídeo é vertical (gravação de celular,
 		// 882x1920) - limitado por altura (max-height), não largura, senão a esticar pra
 		// 100% de largura ele fica gigantesco verticalmente e estoura a tela.
+		//
+		// Sem autoplay e com o src setado só depois que o diálogo termina de abrir
+		// (onComplete), em vez de já vir no template: evita que o navegador comece a buscar
+		// o vídeo enquanto o elemento ainda está sendo compilado/movido pelo $mdDialog (que
+		// monta o conteúdo fora da árvore visível antes de anexar no lugar final).
 		$scope.mostrarVideoTutorial = function(ev) {
 			$mdDialog.show({
 				template:
 					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:420px;width:90vw;">' +
 						'<md-dialog-content style="padding:0;display:flex;justify-content:center;">' +
-							'<video controls autoplay preload="auto" style="max-width:100%;max-height:70vh;display:block;">' +
-								'<source src="/assets/videos/como-se-inscrever.mp4" type="video/mp4">' +
+							'<video id="videoTutorialInscricao" controls style="max-width:100%;max-height:70vh;display:block;">' +
 								'Seu navegador não suporta a exibição de vídeos.' +
 							'</video>' +
 						'</md-dialog-content>' +
@@ -33,7 +37,14 @@
 					};
 				},
 				targetEvent: ev,
-				clickOutsideToClose: true
+				clickOutsideToClose: true,
+				onComplete: function() {
+					var video = document.getElementById('videoTutorialInscricao');
+					if (video) {
+						video.src = '/assets/videos/como-se-inscrever.mp4';
+						video.load();
+					}
+				}
 			});
 		};
 
