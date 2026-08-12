@@ -16,8 +16,6 @@
 	<link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
 	<link rel="stylesheet" href="/assets/css/style.css">
 	<link rel="stylesheet" href="/alpha/assets/css/main.css" />
-	<link rel="stylesheet" href="/alpha/assets/css/mapbox.css" />
-	<script src="/alpha/assets/js/mapbox.js"></script>
 </head>
 
 <body class="landing homepage" data-ng-controller="homeCtrl" style="height:initial!important; background-color: #FFFCF7;">
@@ -185,19 +183,18 @@
 								</section>
 							</div>
 						</section>
-						<script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
-						<!--script que faz o mapa funcionar-->
-						<link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
-						<!--script que faz o mapa funcionar-->
+						<!-- Mapa via Leaflet + OpenStreetMap: gratuito, sem conta nem chave de API
+						     (ao contrário do Mapbox GL JS usado antes). -->
+						<link href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' rel='stylesheet' />
+						<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
 
 						<script>
-							mapboxgl.accessToken = '';
-							var map = new mapboxgl.Map({
-								container: 'map',
-								style: 'mapbox://styles/mapbox/streets-v11',
-								center: [-52.169943, -29.637026], // coordenadas
-								zoom: 15 // zoom do mapa
-							});
+							var map = L.map('map').setView([-29.637026, -52.169943], 15);
+							L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+								attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+							}).addTo(map);
+							L.marker([-29.637026, -52.169943]).addTo(map)
+								.bindPopup('IFSul - Câmpus Venâncio Aires');
 						</script>
 					</div>
 				</div>
