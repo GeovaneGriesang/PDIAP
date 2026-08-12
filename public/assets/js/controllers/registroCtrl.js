@@ -8,50 +8,13 @@
 		// Estado geral da tela de inscrição.
 		$scope.cadastro_projetos = true;
 
-		// Vídeo tutorial "como se inscrever": abre num diálogo ao clicar, em vez de ficar
-		// tocando/visível direto na página. O vídeo é vertical (gravação de celular,
-		// 882x1920) - limitado por altura (max-height), não largura, senão a esticar pra
-		// 100% de largura ele fica gigantesco verticalmente e estoura a tela.
-		//
-		// O max-height do vídeo precisa deixar espaço pro botão "Fechar" (md-dialog-actions)
-		// dentro do teto de altura do próprio md-dialog (max-height:80% por padrão do Angular
-		// Material) - com o vídeo em 70vh, o total (vídeo + ações) estourava esse teto e o
-		// diálogo cortava/rolava o vídeo sem uma barra de rolagem óbvia. Reduzido e com uma
-		// margem de folga fixa pra sempre caber.
-		//
-		// Sem autoplay e com o src setado só depois que o diálogo termina de abrir
-		// (onComplete), em vez de já vir no template: evita que o navegador comece a buscar
-		// o vídeo enquanto o elemento ainda está sendo compilado/movido pelo $mdDialog (que
-		// monta o conteúdo fora da árvore visível antes de anexar no lugar final).
-		$scope.mostrarVideoTutorial = function(ev) {
-			$mdDialog.show({
-				template:
-					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:420px;width:90vw;">' +
-						'<md-dialog-content style="padding:0;display:flex;align-items:center;justify-content:center;">' +
-							'<video id="videoTutorialInscricao" controls style="max-width:100%;max-height:calc(80vh - 90px);width:auto;height:auto;object-fit:contain;display:block;">' +
-								'Seu navegador não suporta a exibição de vídeos.' +
-							'</video>' +
-						'</md-dialog-content>' +
-						'<md-dialog-actions layout="row">' +
-							'<span flex></span>' +
-							'<md-button ng-click="fechar()">Fechar</md-button>' +
-						'</md-dialog-actions>' +
-					'</md-dialog>',
-				controller: function($scope, $mdDialog) {
-					$scope.fechar = function() {
-						$mdDialog.hide();
-					};
-				},
-				targetEvent: ev,
-				clickOutsideToClose: true,
-				onComplete: function() {
-					var video = document.getElementById('videoTutorialInscricao');
-					if (video) {
-						video.src = '/assets/videos/como-se-inscrever.mp4';
-						video.load();
-					}
-				}
-			});
+		// Vídeo tutorial "como se inscrever": fica escondido por padrão e expande/recolhe na
+		// própria página ao clicar no botão (mesmo padrão de "+/-" já usado em outras telas),
+		// em vez de abrir num diálogo à parte - o diálogo (md-dialog) tinha limite de altura
+		// próprio que cortava o vídeo, já que ele é vertical (gravação de celular, 882x1920).
+		$scope.videoTutorialAberto = false;
+		$scope.alternarVideoTutorial = function() {
+			$scope.videoTutorialAberto = !$scope.videoTutorialAberto;
 		};
 
 		// Busca configurações de liberação da página de cadastro.

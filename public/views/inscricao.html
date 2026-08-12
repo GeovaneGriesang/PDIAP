@@ -38,12 +38,20 @@
 
 	<md-content flex layout="column" layout-align="center center" class="inscricao-content">
 		<!-- Vídeo tutorial: fica escondido atrás de um botão em vez de já vir tocando/visível
-		     na página, que ficava "agressivo" demais. Abre num diálogo ao clicar. -->
+		     na página, que ficava "agressivo" demais. Expande/recolhe na própria página (em
+		     vez de abrir num diálogo à parte, que cortava o vídeo). -->
 		<div style="width:85%;max-width:900px;margin-bottom:24px;text-align:center;">
-			<md-button class="md-raised md-primary" ng-click="mostrarVideoTutorial($event)" style="text-transform:none;">
-				<md-icon md-svg-icon="play-circle-outline" style="margin-right:8px;"></md-icon>
-				Assista ao vídeo: como se inscrever
+			<md-button class="md-raised md-primary" ng-click="alternarVideoTutorial()" style="text-transform:none;">
+				<md-icon md-svg-icon="{{videoTutorialAberto ? 'chevron-up' : 'chevron-down'}}" style="margin-right:8px;"></md-icon>
+				<span data-ng-if="!videoTutorialAberto">Assista ao vídeo: como se inscrever</span>
+				<span data-ng-if="videoTutorialAberto">Esconder vídeo</span>
 			</md-button>
+			<div data-ng-if="videoTutorialAberto" style="margin-top:16px;display:flex;justify-content:center;">
+				<video controls style="max-width:100%;max-height:70vh;width:auto;height:auto;object-fit:contain;display:block;border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,0.25);">
+					<source src="/assets/videos/como-se-inscrever.mp4" type="video/mp4">
+					Seu navegador não suporta a exibição de vídeos.
+				</video>
+			</div>
 		</div>
 		<!-- Formulário principal de inscrição. O estado é controlado pelo controller AngularJS. -->
 		<form name="projetoForm" novalidate style="width:85%;max-width:900px;padding:8px;">
