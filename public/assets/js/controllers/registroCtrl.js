@@ -9,13 +9,15 @@
 		$scope.cadastro_projetos = true;
 
 		// Vídeo tutorial "como se inscrever": abre num diálogo ao clicar, em vez de ficar
-		// tocando/visível direto na página.
+		// tocando/visível direto na página. O vídeo é vertical (gravação de celular,
+		// 882x1920) - limitado por altura (max-height), não largura, senão a esticar pra
+		// 100% de largura ele fica gigantesco verticalmente e estoura a tela.
 		$scope.mostrarVideoTutorial = function(ev) {
 			$mdDialog.show({
 				template:
-					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:800px;width:90vw;">' +
-						'<md-dialog-content style="padding:0;">' +
-							'<video controls autoplay preload="auto" style="width:100%;display:block;">' +
+					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:420px;width:90vw;">' +
+						'<md-dialog-content style="padding:0;display:flex;justify-content:center;">' +
+							'<video controls autoplay preload="auto" style="max-width:100%;max-height:70vh;display:block;">' +
 								'<source src="/assets/videos/como-se-inscrever.mp4" type="video/mp4">' +
 								'Seu navegador não suporta a exibição de vídeos.' +
 							'</video>' +
