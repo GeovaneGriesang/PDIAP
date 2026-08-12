@@ -13,6 +13,7 @@ const express = require('express')
 , adminSchema = require('../models/admin-schema')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
+, feiraSchema = require('../models/feira-schema')
 , participanteSchema = require('../models/participante-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
@@ -128,6 +129,51 @@ router.put('/removeEvento', miPermiso("3"), (req, res) => {
     if (!idValido(id)) return res.status(400).send('ID inválido');
     eventoSchema.remove({"_id": id}, (err) => {
       if (err) { console.error('Erro ao remover evento', err); return; }
+    });
+    res.send('success');
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
+});
+
+// Feiras externas (Mostratec, Mostratec Júnior, MOCITEC, etc) para as quais um projeto pode
+// ser classificado - cadastradas por ano, com as categorias às quais se aplicam e o texto do
+// certificado de classificação (ver premiacao.html/details.premiacao.html e getFeirasInfo).
+router.post('/criarFeira', miPermiso("3"), (req, res) => {
+  try {
+    let newFeira = new feiraSchema({
+      nome: req.body.nome,
+      categorias: req.body.categorias,
+      textoCertificado: req.body.textoCertificado,
+      ano: req.body.ano,
+      createdAt: req.body.createdAt
+    });
+    newFeira.save((err, data) => {
+      if (err) { console.error('Erro ao criar feira', err); return; }
+    });
+    res.send('success');
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
+});
+
+router.get('/mostraFeiras', miPermiso("3","2"), (req, res) => {
+  try {
+    feiraSchema.find((err, usr) => {
+      if (err) { console.error('Erro ao mostrar feiras', err); return; }
+      res.send(usr);
+    });
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
+});
+
+router.put('/removeFeira', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    feiraSchema.remove({"_id": id}, (err) => {
+      if (err) { console.error('Erro ao remover feira', err); return; }
     });
     res.send('success');
   } catch (error){
@@ -421,15 +467,22 @@ router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
     let premiacao = req.body;
     if(premiacao.premiacao === 'Premiado'){
     if(premiacao.colocacao === undefined){premiacao.colocacao = null;}
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
       if (err) { console.error('Erro ao atribuir premiação', err); return; }
     });
     } else if(premiacao.premiacao === 'Mencao_honrosa'){
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"mostratec":premiacao.mostratec}},{new:true}, (err, doc) =>{
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
       if (err) { console.error('Erro ao atribuir premiação', err); return; }
-    });		
+    });
     } else if(premiacao.premiacao === '') {
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","mostratec":"", "token":""}}, (err, doc) =>{
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","feirasClassificadas":"", "token":""}}, (err, doc) =>{
+      if (err) { console.error('Erro ao atribuir premiação', err); return; }
+    });
+    } else {
+    // Projeto sem Premiação/Menção Honrosa marcada (premiacao.premiacao vazio/undefined) ainda
+    // pode ter sido classificado pra uma ou mais feiras - esses dois conceitos são independentes
+    // (ver details.premiacao.html), então salva a classificação mesmo sem prêmio.
+    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
       if (err) { console.error('Erro ao atribuir premiação', err); return; }
     });
     }

@@ -12,6 +12,7 @@ const express = require('express')
 , avaliadorSchema = require('../models/avaliador-schema')
 , participanteSchema = require('../models/participante-schema')
 , eventoSchema = require('../models/evento-schema')
+, feiraSchema = require('../models/feira-schema')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , Admin = require('../controllers/admin-controller')
@@ -196,7 +197,9 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaPremiado(cpf) {
     return new Promise(function (fullfill, reject) {
-      ProjetoSchema.find({'integrantes.cpf':cpf, 'premiacao':{$exists:true}}, 'integrantes.$ categoria eixo premiacao colocacao token nomeProjeto numInscricao _id createdAt',(err, usr) => {
+      // Também busca projetos sem premiacao/menção mas classificados pra alguma feira (ver
+      // feirasClassificadas em projeto-schema.js) - os dois conceitos são independentes.
+      ProjetoSchema.find({'integrantes.cpf':cpf, $or:[{'premiacao':{$exists:true}}, {'feirasClassificadas':{$exists:true,$not:{$size:0}}}]}, 'integrantes.$ categoria eixo premiacao colocacao feirasClassificadas token nomeProjeto numInscricao _id createdAt',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
         fullfill(usr)
@@ -413,6 +416,53 @@ router.post('/emitirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada em menção honrosa. " + err.message))
 
+  // Classificações pra feiras externas (Mostratec, Mostratec Júnior, MOCITEC etc - ver
+  // feira-schema.js), independente de premiação/menção honrosa. Um projeto pode estar
+  // classificado em mais de uma feira, então gera uma entrada por feira classificada.
+  const five3 = pesquisaPremiado(cpf).then(usr => {
+    for (let i in usr) {
+        if (usr[i].token == undefined) {
+         	inserirTokenPremiado(cpf, usr[i]._id);
+      	}
+    }
+    return pesquisaPremiado(cpf);
+  }).then(usr => {
+	let feiraIds = [];
+	for (let i in usr) {
+		if (usr[i].feirasClassificadas && usr[i].feirasClassificadas.length > 0) {
+			usr[i].feirasClassificadas.forEach(id => feiraIds.push(id));
+		}
+	}
+	return feiraSchema.find({'_id':{$in:feiraIds}}, 'nome').then(feiras => ({usr, feiras}));
+  }).then(({usr, feiras}) => {
+	let array = [];
+	for (let i in usr) {
+		if (usr[i].feirasClassificadas && usr[i].feirasClassificadas.length > 0) {
+			var ano = new Date(usr[i].createdAt).getFullYear();
+			usr[i].feirasClassificadas.forEach(feiraId => {
+				let feira = feiras.find(f => String(f._id) === String(feiraId));
+				if (!feira) return;
+				array.push({
+					nome: usr[i].integrantes[0].nome,
+					nomeProjeto: usr[i].nomeProjeto,
+					categoria: usr[i].categoria,
+					eixo: usr[i].eixo,
+					token: usr[i].token,
+					createdAt: usr[i].createdAt,
+					ano: ano,
+					feiraId: feira._id,
+					feiraNome: feira.nome
+				});
+			});
+		}
+	}
+	return {
+		tipo: 'Feira',
+		projetos: array
+	}
+  })
+  .catch(err => console.log("Não encontrou nada nas classificações de feira. " + err.message))
+
   const six = pesquisaProjetoOrientador(cpf).then(usr => {
 	console.log("USR:"+JSON.stringify(usr));
     	for (let i in usr) {
@@ -442,7 +492,7 @@ router.post('/emitirCertificado', (req, res) => {
     	}
   }).catch(err => console.log("Não encontrou nada nos projetos - orientadores. " + err.message))
 
-  Promise.all([one, two, three, four, five, five2, six])
+  Promise.all([one, two, three, four, five, five2, five3, six])
   .then(arr => {
     res.send(arr.filter(val => val !== undefined))
   })
@@ -1010,6 +1060,15 @@ router.get('/getMostraInfo', function(req, res){
     res.status(200).send(data);
   });
 
+});
+
+// Feiras cadastradas (nome, categorias e texto do certificado de classificação) - público,
+// mesmo padrão de exposição de /getMostraInfo, usado na emissão de certificado de classificação.
+router.get('/getFeirasInfo', function(req, res){
+  feiraSchema.find(function(err ,data){
+    if (err) { console.error(err); return; }
+    res.status(200).send(data);
+  });
 });
 
 router.get('/getDocumentosInfo', function(req, res){

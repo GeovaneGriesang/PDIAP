@@ -58,6 +58,7 @@
 		var presenca_oficina = undefined;
 		var premiados = [];
 		var mencao_honrosa = [];
+		var classificacoesFeira = [];
 		var presenca_saberes = undefined;
 
 		var somaHora = function(horaInicio, horaSomada) {
@@ -113,6 +114,7 @@
 				presenca_oficina = undefined;
 				premiados = [];
 				mencao_honrosa = [];
+				classificacoesFeira = [];
 				presenca_saberes = undefined;
 				
 				if (data.length > 0) {
@@ -211,10 +213,20 @@
 							mencao_honrosa.push(value);
 						});
 					}
-					//Antes de passar para a criação do certificado puxa os dados das mostras 
+					i = data.map(function(e) { return e.tipo; }).indexOf('Feira');
+					if (i !== -1) {
+						angular.forEach(data[i].projetos, function (value, key){
+							countCertificados++;
+							classificacoesFeira.push(value);
+						});
+					}
+					//Antes de passar para a criação do certificado puxa os dados das mostras e das feiras cadastradas
 					projetosAPI.getMostra()
 					.success(function(dadosMostra){
-						visualizarCertificados(dadosMostra,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,countCertificados);
+						projetosAPI.getFeiras()
+						.success(function(dadosFeiras){
+							visualizarCertificados(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,countCertificados);
+						});
 					});
 				} else {
 					let showAlert = function(ev) {
@@ -261,7 +273,7 @@
 			}, function() {});
 		};
 
-		let visualizarCertificados = function(dadosMostra,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,presenca_saberes,numCertificados,ev) {
+		let visualizarCertificados = function(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,numCertificados,ev) {
 			$mdDialog.show({
 				controller: function dialogCertificateController($scope, $window, $mdDialog) {
 					$scope.avaliador = [];
@@ -274,6 +286,7 @@
 					$scope.presenca_oficina = [];
 					$scope.premiados = [];
 					$scope.mencao_honrosa = [];
+					$scope.classificacoesFeira = [];
 					$scope.presenca_saberes = [];
 
 					$scope.avaliador = avaliador;
@@ -287,6 +300,7 @@
 					$scope.presenca_oficina = presenca_oficina;
 					$scope.premiados = premiados;
 					$scope.mencao_honrosa = mencao_honrosa;
+					$scope.classificacoesFeira = classificacoesFeira;
 					$scope.presenca_saberes = presenca_saberes;
 
 					var date = new Date();
@@ -374,6 +388,11 @@
 							// ', durante a ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, '+
 							// 'Ciência e Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
 							texto = dados_certificado.textoMencao;
+						} else if (tipo === 'Feira') {
+							// O layout/imagem do certificado continua vindo de dados_certificado (mostra do
+							// ano), só o texto vem da feira em que o projeto foi classificado (ver feira-schema.js).
+							var feiraEncontrada = dadosFeiras.filter(function(f) { return f._id === dados.feiraId; })[0];
+							texto = feiraEncontrada ? feiraEncontrada.textoCertificado : '';
 						} else if (tipo === 'Responsavel-saberes') {
 							// var texto = ['Certificamos que ' +dados.responsavel.toUpperCase()+ ' atuou como conferencista, abordando tema '+
 							// dados.titulo.toUpperCase()+ ' do Seminário Saberes Docentes, realizado na ', {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura '+
