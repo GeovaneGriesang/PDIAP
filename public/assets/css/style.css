@@ -1551,11 +1551,14 @@ md-dialog-content,
   background: rgba(0,0,0,0.65);
 }
 
-.galeria-carousel-seta.esquerda {
+/* Nomes com prefixo (não "esquerda"/"direita" soltos): o template alpha já tem uma
+   classe genérica ".esquerda { width:50%; height:auto; }" usada em outra seção da
+   página, que colidia com a seta e esticava o botão. */
+.galeria-carousel-seta--esquerda {
   left: 15px;
 }
 
-.galeria-carousel-seta.direita {
+.galeria-carousel-seta--direita {
   right: 15px;
 }
 

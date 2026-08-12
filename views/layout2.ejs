@@ -147,8 +147,8 @@
 								data-ng-class="{ativa: $index === galeriaSlideAtual}"
 								alt="Foto de edição anterior da MOVACI">
 						</div>
-						<button type="button" class="galeria-carousel-seta esquerda" ng-click="galeriaAnterior()" data-ng-if="galeriaImagens.length > 1" aria-label="Foto anterior">&#10094;</button>
-						<button type="button" class="galeria-carousel-seta direita" ng-click="galeriaProxima()" data-ng-if="galeriaImagens.length > 1" aria-label="Próxima foto">&#10095;</button>
+						<button type="button" class="galeria-carousel-seta galeria-carousel-seta--esquerda" ng-click="galeriaAnterior()" data-ng-if="galeriaImagens.length > 1" aria-label="Foto anterior">&#10094;</button>
+						<button type="button" class="galeria-carousel-seta galeria-carousel-seta--direita" ng-click="galeriaProxima()" data-ng-if="galeriaImagens.length > 1" aria-label="Próxima foto">&#10095;</button>
 						<div class="galeria-carousel-pontos" data-ng-if="galeriaImagens.length > 1">
 							<span data-ng-repeat="img in galeriaImagens" data-ng-class="{ativo: $index === galeriaSlideAtual}" ng-click="galeriaIrPara($index)"></span>
 						</div>
