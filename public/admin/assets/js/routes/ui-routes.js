@@ -85,11 +85,6 @@
 			templateUrl: 'admin/views/premiacao.html',
 			controller: 'projetosCtrl'
 		})
-		.state('master.exportar', {
-			url: "/projetos/exportar",
-			templateUrl: 'admin/views/exportar.html',
-			controller: 'ExportarCtrl'
-		})
 		.state('master.cadastro-eventos', {
 			url: "/cadastro-eventos",
 			templateUrl: 'admin/views/cadastro-eventos.html',
