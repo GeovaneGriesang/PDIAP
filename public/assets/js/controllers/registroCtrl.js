@@ -13,6 +13,12 @@
 		// 882x1920) - limitado por altura (max-height), não largura, senão a esticar pra
 		// 100% de largura ele fica gigantesco verticalmente e estoura a tela.
 		//
+		// O max-height do vídeo precisa deixar espaço pro botão "Fechar" (md-dialog-actions)
+		// dentro do teto de altura do próprio md-dialog (max-height:80% por padrão do Angular
+		// Material) - com o vídeo em 70vh, o total (vídeo + ações) estourava esse teto e o
+		// diálogo cortava/rolava o vídeo sem uma barra de rolagem óbvia. Reduzido e com uma
+		// margem de folga fixa pra sempre caber.
+		//
 		// Sem autoplay e com o src setado só depois que o diálogo termina de abrir
 		// (onComplete), em vez de já vir no template: evita que o navegador comece a buscar
 		// o vídeo enquanto o elemento ainda está sendo compilado/movido pelo $mdDialog (que
@@ -21,8 +27,8 @@
 			$mdDialog.show({
 				template:
 					'<md-dialog aria-label="Vídeo: como se inscrever" style="max-width:420px;width:90vw;">' +
-						'<md-dialog-content style="padding:0;display:flex;justify-content:center;">' +
-							'<video id="videoTutorialInscricao" controls style="max-width:100%;max-height:70vh;display:block;">' +
+						'<md-dialog-content style="padding:0;display:flex;align-items:center;justify-content:center;">' +
+							'<video id="videoTutorialInscricao" controls style="max-width:100%;max-height:calc(80vh - 90px);width:auto;height:auto;object-fit:contain;display:block;">' +
 								'Seu navegador não suporta a exibição de vídeos.' +
 							'</video>' +
 						'</md-dialog-content>' +
