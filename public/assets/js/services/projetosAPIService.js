@@ -190,6 +190,16 @@
 			return $http(request);
 		}
 
+		// Feiras cadastradas (nome, categorias, texto do certificado de classificação) -
+		// usado na emissão do certificado de classificação (ver homeCtrl.js).
+		let _getFeiras = function(){
+			const request = {
+				url: '/getFeirasInfo',
+				method: 'GET',
+			}
+			return $http(request);
+		}
+
 		return {
 			getEdits: _getEdits,
 			getOpcoes: _getOpcoes,
@@ -213,6 +223,7 @@
 			postConferirCertificado: _postConferirCertificado,
 			getMostra: _getMostra,
 			getDocumentos: _getDocumentos,
+			getFeiras: _getFeiras,
 		};
 	});
 })();

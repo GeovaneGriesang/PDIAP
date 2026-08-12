@@ -70,6 +70,7 @@ const ProjetoSchema = new Schema({
 	premiacao: {type: String},
 	colocacao: {type: Number},
 	mostratec: {type: Boolean},
+	feirasClassificadas: [{type: Schema.Types.ObjectId, ref: 'Feira'}],
 	token: {type:String}
 
 // }, { collection: 'betaPorcaoAPI' });

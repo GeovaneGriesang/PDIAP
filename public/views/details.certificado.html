@@ -137,6 +137,16 @@
         </md-button>
       </div>
     </div>
+    <!-- Classificação para feira -->
+    <div layout="row" layout-align="center center" data-ng-if="classificacoesFeira.length > 0" data-ng-repeat="clas in classificacoesFeira" style="margin:40px 0 20px 0;">
+      <p class="text-certificado">Classificado(a) para {{clas.feiraNome}} {{clas.ano}}</p>
+      <div style="width:50%;">
+        <md-button class="md-raised md-primary btn-certificado" style="border-radius:50px 50px 50px 50px; color:#43a047;background:transparent;" aria-label="Baixar" data-ng-click="emitirCertificado1('Feira',2,clas)">
+          <md-icon md-svg-icon="download" style="width:20px;height:20px;color:#43a047;margin-bottom:3px;"></md-icon>
+          <span style="vertical-align:middle;">Baixar</span>
+        </md-button>
+      </div>
+    </div>
     <!-- Presença Saberes -->
     <div layout="row" layout-align="center center" data-ng-if="presenca_saberes !== undefined" style="margin:40px 0 20px 0;">
       <p class="text-certificado">Participação em Sem. Saberes Docentes {{presenca_saberes.ano}}</p>

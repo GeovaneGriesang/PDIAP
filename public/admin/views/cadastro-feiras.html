@@ -1,0 +1,110 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Eventos | Cadastrar Feiras</h4>
+      </div>
+
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+
+	<div style="width:85px;">
+          <md-select data-ng-model="ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year" data-ng-click="recarregar()">{{years}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+
+      </div>
+      </md-toolbar>
+
+    </md-toolbar>
+
+    <md-content>
+      <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Nova Feira</span>
+        </h3>
+        <form name="feirasForm" novalidate class="eventos-form">
+          <md-input-container class="md-block" flex-gt-xs>
+            <label>Nome da feira</label>
+            <input type="text" name="nome" data-ng-model="feira.nome" required/>
+            <div class="md-errors-spacer">
+              <div data-ng-if="feirasForm.nome.$dirty">
+                <div class="message-error" data-ng-if="feirasForm.nome.$error.required">Obrigatório.</div>
+              </div>
+            </div>
+          </md-input-container>
+
+          <div layout="row" style="margin-top:10px;">
+            <div class="bloco-left" flex="20" hide-xs>
+              <span>Categorias</span>
+            </div>
+            <div class="bloco-right" flex-xs="100" flex="80">
+              <md-checkbox aria-label="Fundamental I" data-ng-model="feira.categoriaFundamentalI" style="display:flex;margin-right:0;">Fundamental I (1º ao 5º anos)</md-checkbox>
+              <md-checkbox aria-label="Fundamental II" data-ng-model="feira.categoriaFundamentalII" style="display:flex;margin-right:0;">Fundamental II (6º ao 9º anos)</md-checkbox>
+              <md-checkbox aria-label="Ensino Médio" data-ng-model="feira.categoriaEnsinoMedio" style="display:flex;margin-right:0;">Ensino Médio, Técnico e Superior</md-checkbox>
+            </div>
+          </div>
+
+          <md-input-container class="md-block" flex-gt-xs style="margin-top:15px;">
+            <label>Texto do certificado de classificação</label>
+            <textarea data-ng-model="feira.textoCertificado" style="overflow:hidden;resize:none;" required></textarea>
+            <div class="md-errors-spacer">
+              <div data-ng-if="feirasForm.textoCertificado.$dirty">
+                <div class="message-error" data-ng-if="feirasForm.textoCertificado.$error.required">Obrigatório.</div>
+              </div>
+            </div>
+          </md-input-container>
+
+          <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+            <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!feirasForm.$valid" data-ng-click="cadastrarFeira(feira)">
+              <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+              <span style="vertical-align:middle;">Salvar</span>
+            </md-button>
+          </div>
+          <span us-spinner>
+            <div layout="row" layout-sm="column" layout-align="space-around">
+              <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+            </div>
+          </span>
+        </form>
+      </div>
+      <div style="background:rgba(128,128,128,0.07);padding:30px 30px 15px 30px;">
+        <h3 style="text-align:center;border-top:1px solid grey;margin:0 0 -5px 0;font-size:15px;width:100%;">
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Feiras cadastradas</span>
+        </h3>
+      </div>
+      <md-list flex style="margin-bottom:50px;">
+        <md-divider></md-divider>
+        <div data-ng-if="feiras.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
+          <p>Nenhuma feira cadastrada :(</p>
+        </div>
+        <md-list-item class="md-3-line" data-ng-repeat="fei in feiras track by fei._id"
+        style="padding:0 45px;">
+        <div class="md-list-item-text" layout="column" style="padding-right:15px;">
+          <h3>{{::fei.nome}}</h3>
+          <p>{{::fei.categorias.join(', ')}}</p>
+        </div>
+        <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+          <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover feira" ng-click="removerFeira($event,fei._id,fei.nome)">
+            <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+            <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Apagar</span>
+          </md-button>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </md-content>
+  </section>
+</div>

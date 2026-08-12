@@ -177,6 +177,32 @@
 			return $http(request);
 		};
 
+		let _postFeira = function(feira) {
+			const request = {
+				url: '/admin/criarFeira',
+				method: 'POST',
+				data: feira
+			}
+			return $http(request);
+		};
+
+		let _getFeiras = function() {
+			const request = {
+				url: '/admin/mostraFeiras',
+				method: 'GET'
+			}
+			return $http(request);
+		};
+
+		let _removeFeira = function(id) {
+			const request = {
+				url: '/admin/removeFeira',
+				method: 'PUT',
+				data: { id: id }
+			}
+			return $http(request);
+		};
+
 		let _getAvaliadores = function() {
 			const request = {
 				url: '/admin/mostraAvaliadores',
@@ -396,6 +422,9 @@
 			putPremiadoProjetos: _putPremiadoProjetos,
 			postEvento: _postEvento,
 			getEventos: _getEventos,
+			postFeira: _postFeira,
+			getFeiras: _getFeiras,
+			removeFeira: _removeFeira,
 			getAvaliadores: _getAvaliadores,
 			putRemoveEvento: _putRemoveEvento,
 			postParticipante: _postParticipante,

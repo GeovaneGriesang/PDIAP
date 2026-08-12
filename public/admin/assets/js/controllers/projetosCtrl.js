@@ -47,6 +47,7 @@
 							createdAt: ano,
 							premiacao: value.premiacao,
 							mostratec: value.mostratec,
+							feirasClassificadas: value.feirasClassificadas,
 							colocacao: value.colocacao
 						});
 						$rootScope.projetos.push(obj);
@@ -215,16 +216,36 @@
 				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
 					$scope.details = projeto;
 					$scope.premiacao = {_id:projeto._id};
+
+					// Feiras aplicáveis a este projeto: só as cadastradas pro ano/categoria dele
+					// (ver "Eventos > Cadastrar Feiras") - cada uma vira um checkbox independente
+					// de Premiação/Menção Honrosa (details.premiacao.html).
+					$scope.feirasDisponiveis = [];
+					$scope.premiacao.feirasSelecionadas = {};
+					adminAPI.getFeiras().success(function(feiras) {
+						angular.forEach(feiras, function (feira) {
+							if (feira.ano == $rootScope.ano && feira.categorias.indexOf(projeto.categoria) !== -1) {
+								$scope.feirasDisponiveis.push(feira);
+								if (projeto.feirasClassificadas && projeto.feirasClassificadas.indexOf(feira._id) !== -1) {
+									$scope.premiacao.feirasSelecionadas[feira._id] = true;
+								}
+							}
+						});
+					});
+
 					$scope.setPremiado = function() {
+						$scope.premiacao.feirasClassificadas = Object.keys($scope.premiacao.feirasSelecionadas).filter(function(id) {
+							return $scope.premiacao.feirasSelecionadas[id];
+						});
 						adminAPI.putPremiadoProjetos($scope.premiacao).success(function(data, status) {
 							$scope.toast('Projeto premiado com sucesso!','success-toast');
-							
+
 							setTimeout($rootScope.recarregar, 750);
 						}).error(function(status) {
 							$scope.toast('Falha.','failed-toast');
 							console.log('Error: '+status);
 						});
-					};				
+					};
 					$scope.toast = function(message,tema) {
 						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000);
 						$mdToast.show(toast);
