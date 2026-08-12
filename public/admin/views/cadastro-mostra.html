@@ -31,7 +31,8 @@
                             <img data-ng-src="{{previewImagem || imagemExistente}}" style="max-height:120px;max-width:220px;border:1px solid #ccc;border-radius:4px;display:block;" alt="Prévia do layout do certificado">
                             <p style="font-size:12px;color:#666;margin:4px 0 0 0;">
                                 <span data-ng-if="previewImagemNome">Nova imagem selecionada: {{previewImagemNome}}</span>
-                                <span data-ng-if="!previewImagemNome && imagemExistente">Imagem já cadastrada para o ano {{ano}}.</span>
+                                <span data-ng-if="!previewImagemNome && imagemExistente && confereCertificado(ano)">Imagem já cadastrada para o ano {{ano}}.</span>
+                                <span data-ng-if="!previewImagemNome && imagemExistente && !confereCertificado(ano)">Imagem de outro ano (será usada se você salvar sem trocar).</span>
                             </p>
                         </div>
                         <div class="md-errors-spacer">
@@ -47,7 +48,8 @@
                             <img data-ng-src="{{previewImagemFundo || imagemFundoExistente}}" style="max-height:120px;max-width:220px;border:1px solid #ccc;border-radius:4px;display:block;" alt="Prévia do layout do certificado (fundo)">
                             <p style="font-size:12px;color:#666;margin:4px 0 0 0;">
                                 <span data-ng-if="previewImagemFundoNome">Nova imagem selecionada: {{previewImagemFundoNome}}</span>
-                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente">Imagem já cadastrada para o ano {{ano}}.</span>
+                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && confereCertificado(ano)">Imagem já cadastrada para o ano {{ano}}.</span>
+                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && !confereCertificado(ano)">Imagem de outro ano (será usada se você salvar sem trocar).</span>
                             </p>
                         </div>
                         <div class="md-errors-spacer">

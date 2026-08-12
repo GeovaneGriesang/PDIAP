@@ -31,9 +31,13 @@
       $scope.previewImagemFundoNome = null;
 
       //carregaDado explicacao
+      //
+      // Se o ano selecionado não tem certificado cadastrado, os campos (textos e imagens)
+      // mantêm o que já estava preenchido em vez de limpar - de propósito, pra dar pra
+      // duplicar as informações de um ano pro outro alterando só o que precisa. Por isso
+      // as imagens não são zeradas aqui: só são sobrescritas dentro do "if" quando existe
+      // mesmo um certificado pro ano, igual já acontecia com os campos de texto.
       $scope.carregaDado = function (ano) {
-        $scope.imagemExistente = null;
-        $scope.imagemFundoExistente = null;
         for (var i = 0; i < $scope.certificados.length; i++){
           if($scope.certificados[i].ano_certificado == ano){
              $scope.textocertificado_avaliador = $scope.certificados[i].textoAvaliador;
