@@ -316,17 +316,6 @@
 			return $http(request);
 		};
 
-		//função da API para exportação dos projetos - Mateus Algayer 30/09/2021
-
-		let _postExportarprojetos = function(username, password) {
-			const request = {
-				url: '/admin/exportarprojetos',
-				method: 'POST',
-				data: { usuario: username, senha: password }
-			}
-			return $http(request);
-		};
-
 		//função da API para levar as informações do controlador cadastromostraCtrl.js para admin.js através de um request usando método POST
 		//Mateus Algayer 30/09/2021
 		let _postCertificado = function(data){
@@ -422,7 +411,6 @@
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,
 			removeIntegrante: _removeIntegrante,
-			exportaProjetos: _postExportarprojetos,
 			postCertificado: _postCertificado,
 			getCertificado: _getCertificado,
 			postDocumento: _postDocumento,

@@ -30,10 +30,7 @@ const express = require('express')
 , CadastroDocumento = require('../controllers/documento-controller')
 , pdf = require('pdfkit')
 , fs = require('fs')
-, async = require('async')
-, { exec } = require("child_process")
-, http = require('http')
-, readline = require('readline');
+, async = require('async');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -221,58 +218,6 @@ router.put('/removeParticipante', miPermiso("3"), (req, res) => {
   } catch (error) {
     console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
-});
-
-router.post('/exportarprojetos', miPermiso("3"), (req, res) => {
-
-    var dadosbrutos = "";
-    
-    exec("mongo ../PDIAP/exportar.js > ../dados.json");
-      
-    setTimeout(function() {      
-      var manipuladados = readline.createInterface({
-        input: fs.createReadStream("../dados.json"),
-        crflDelay: Infinity   
-      });    
-      var comecaput = false;    
-      manipuladados.on("line", function(line){   
-        if(line == "["){   
-          comecaput = true;
-        }    
-        if(comecaput == true){    
-          dadosbrutos += line.toString();
-          console.log(line);   
-        }    
-      });    
-    }, 5000);    
-    setTimeout(function(){    
-      fs.writeFileSync("../data.json", dadosbrutos);    
-
-    	// Requisição HTTP nativa em vez de `exec("curl ...")`: usuario/senha nunca passam por um
-    	// shell, então não há como injetar comandos através desses campos vindos do formulário.
-    	const payload = Buffer.from(dadosbrutos, 'utf8');
-    	const authHeader = 'Basic ' + Buffer.from(req.body.usuario + ':' + req.body.senha).toString('base64');
-    	const integradorReq = http.request({
-    		hostname: 'localhost',
-    		port: 8080,
-    		path: '/Webservice/integrador.php',
-    		method: 'POST',
-    		headers: {
-    			'Content-Type': 'application/json',
-    			'Content-Length': payload.length,
-    			'Authorization': authHeader
-    		}
-    	}, (integradorRes) => {
-    		integradorRes.on('data', () => {});
-    	});
-    	integradorReq.on('error', (err) => console.error('Erro ao enviar para o integrador:', err));
-    	integradorReq.write(payload);
-    	integradorReq.end();
-    }, 10000);
-    setTimeout(function(){
-      let codigo = { cod: 1};
-      return res.send(codigo);
-    }, 15000);  
 });
 
 //Mateus Roberto Algayer - 14/10/2021
