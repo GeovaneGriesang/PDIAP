@@ -107,13 +107,15 @@
                 }
             } 
             
-            // Se for Word (.doc/.docx), força o download imediato para aliviar a RAM
+            // Se for Word (.doc/.docx) ou PowerPoint (.ppt/.pptx), força o download imediato para aliviar a RAM
             var link = document.createElement('a');
             link.href = fileBase64;
-            
+
             var extensao = fileBase64.includes("officedocument.wordprocessingml") ? ".docx" : ".pdf";
             if(fileBase64.includes("msword")) { extensao = ".doc"; }
-            
+            if(fileBase64.includes("officedocument.presentationml")) { extensao = ".pptx"; }
+            if(fileBase64.includes("ms-powerpoint")) { extensao = ".ppt"; }
+
             link.download = (tituloDoc || "documento") + extensao;
             document.body.appendChild(link);
             link.click();
