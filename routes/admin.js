@@ -589,6 +589,76 @@ router.get('/projetos', miPermiso("2","3"), (req, res) => {
   }
 });
 
+// Resolve os destinatários de um projeto para envio de e-mail em massa, conforme o
+// tipo escolhido pelo admin (e-mail principal da conta, orientadores, alunos ou todos).
+function _resolveDestinatarios(projeto, destinatario) {
+  var camposProjeto = {
+    nomeProjeto: projeto.nomeProjeto, categoria: projeto.categoria, eixo: projeto.eixo,
+    numInscricao: projeto.numInscricao, nomeEscola: projeto.nomeEscola, estado: projeto.estado, cidade: projeto.cidade
+  };
+  if (destinatario === 'principal') {
+    return projeto.email ? [Object.assign({ nome: projeto.nomeProjeto, email: projeto.email }, camposProjeto)] : [];
+  }
+  var tipos = destinatario === 'orientadores' ? ['Orientador'] : destinatario === 'alunos' ? ['Aluno'] : ['Orientador', 'Aluno'];
+  return (projeto.integrantes || [])
+    .filter(function(i) { return tipos.indexOf(i.tipo) !== -1 && i.email; })
+    .map(function(i) { return Object.assign({ nome: i.nome, email: i.email }, camposProjeto); });
+}
+
+// Mesmo mecanismo de máscaras ¨chave usado nos textos de certificado (homeCtrl.js), só
+// que rodando no servidor (substituição de uma passada só, em vez do while+replace do original).
+function _aplicaMascaras(texto, dados) {
+  return (texto || '').replace(/¨\w+/g, function(match) {
+    var chave = match.slice(1);
+    return dados[chave] !== undefined && dados[chave] !== null ? String(dados[chave]) : match;
+  });
+}
+
+router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
+  try {
+    var ids = req.body.idsProjetos;
+    var destinatario = req.body.destinatario;
+    var assunto = req.body.assunto;
+    var corpo = req.body.corpo;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um projeto.');
+    if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
+    if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+
+    projetoSchema.find({ _id: { $in: ids } }, '-password', (err, projetos) => {
+      if (err) { console.error('Erro ao buscar projetos para email em massa', err); return; }
+
+      var vistos = {};
+      var destinatarios = [];
+      projetos.forEach(function(projeto) {
+        _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
+          var chave = d.email.toLowerCase();
+          if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
+        });
+      });
+
+      res.send({ total: destinatarios.length });
+
+      var transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com', port: 587,
+        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+      });
+      async.eachSeries(destinatarios, function(d, next) {
+        transport.sendMail({
+          from: 'MOVACI <contatomovaci@gmail.com>',
+          to: d.email,
+          subject: _aplicaMascaras(assunto, d),
+          html: _aplicaMascaras(corpo, d)
+        }, function(err) {
+          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
+        });
+      });
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
+
 router.post('/avaliador', miPermiso("2","3"), (req, res) => {
   try {
     avaliadorSchema.find((err, usr) => {
