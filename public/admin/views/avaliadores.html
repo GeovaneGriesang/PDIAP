@@ -94,17 +94,37 @@
             </md-input-container>
           </div>
           <div layout-gt-xs="row">
-            <md-input-container class="md-block" flex-gt-xs>
-              <label>Doc. identificação</label>
-              <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"/>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs>
+              <label>Nacionalidade</label>
+              <md-select name="nacionalidade" data-ng-model="avaliador.nacionalidade" required style="width:100%!important;"
+                         data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)">
+                <md-option value="brasileiro">Brasileiro</md-option>
+                <md-option value="uruguaio">Uruguaio</md-option>
+              </md-select>
               <div class="md-errors-spacer">
-                <div data-ng-show="avaliadoresForm.cpf.$dirty">
-                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
-                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.minlength && avaliadoresForm.cpf.$touched">Documento inválido.</div>
+                <div data-ng-if="avaliadoresForm.nacionalidade.$touched">
+                  <div class="message-error" data-ng-if="avaliadoresForm.nacionalidade.$error.required">Selecione uma opção.</div>
                 </div>
               </div>
             </md-input-container>
             <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Doc. identificação (CPF ou cédula)</label>
+              <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"
+                     data-ng-if="avaliador.nacionalidade === 'brasileiro'" cpf-mask
+                     data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)" />
+              <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"
+                     data-ng-if="avaliador.nacionalidade !== 'brasileiro'"
+                     data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)" />
+              <div class="md-errors-spacer">
+                <div data-ng-show="avaliadoresForm.cpf.$dirty">
+                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
+                  <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.documento && avaliadoresForm.cpf.$touched">Documento inválido.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
             <md-input-container class="md-block selectCustom1" flex-gt-xs>
               <label>Nível Acadêmico</label>
               <md-select name="nivelAcademico" data-ng-model="avaliador.nivelAcademico" style="width:100%!important;">
@@ -162,7 +182,10 @@
           <div class="md-list-item-text" flex="15">
             <md-checkbox aria-label="Check" data-ng-model="ava.avaliacao" data-ng-click="contador(ava.avaliacao,ava._id)">Presença</md-checkbox>
           </div>
-          <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+          <div flex="20" style="display:flex;align-self:center;justify-content:center;gap:8px;">
+            <md-button no-ink class="md-raised teal md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Editar avaliador" ng-click="editarAvaliador($event,ava)">
+              <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Editar</span>
+            </md-button>
             <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover avaliador" ng-click="removerAvaliador($event,ava._id,ava.nome)">
               <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
               <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Remover</span>

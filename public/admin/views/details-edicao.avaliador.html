@@ -1,0 +1,138 @@
+<md-dialog aria-label="Editar avaliador" class="details2">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;padding-left:2em;"></md-icon>
+  </div>
+  <div style="overflow:auto!important;">
+    <form name="avaliadorEditForm" novalidate style="padding:30px;">
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Nome completo*</label>
+          <input type="text" name="nome" data-ng-model="avaliador.nome" required />
+          <div class="md-errors-spacer">
+            <div data-ng-show="avaliadorEditForm.nome.$dirty">
+              <div class="message-error" data-ng-show="avaliadorEditForm.nome.$error.required">Obrigatório.</div>
+            </div>
+          </div>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>E-mail*</label>
+          <input type="email" name="email" data-ng-model="avaliador.email" required data-ng-pattern="/^.+@.+\..+$/" />
+          <div class="md-errors-spacer">
+            <div data-ng-show="avaliadorEditForm.email.$dirty">
+              <div class="message-error" data-ng-show="avaliadorEditForm.email.$error.required">Obrigatório.</div>
+              <div class="message-error" data-ng-show="avaliadorEditForm.email.$error.pattern && avaliadorEditForm.email.$touched">Email inválido.</div>
+            </div>
+          </div>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block selectCustom1" flex-gt-xs>
+          <label>Nacionalidade*</label>
+          <md-select name="nacionalidade" data-ng-model="avaliador.nacionalidade" required style="width:100%!important;"
+                     data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)">
+            <md-option value="brasileiro">Brasileiro</md-option>
+            <md-option value="uruguaio">Uruguaio</md-option>
+          </md-select>
+          <div class="md-errors-spacer">
+            <div data-ng-if="avaliadorEditForm.nacionalidade.$touched">
+              <div class="message-error" data-ng-if="avaliadorEditForm.nacionalidade.$error.required">Selecione uma opção.</div>
+            </div>
+          </div>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Doc. identificação* (CPF ou cédula)</label>
+          <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"
+                 data-ng-if="avaliador.nacionalidade === 'brasileiro'" cpf-mask
+                 data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)" />
+          <input type="text" name="cpf" data-ng-model="avaliador.cpf" required minlength="5" maxlength="20"
+                 data-ng-if="avaliador.nacionalidade !== 'brasileiro'"
+                 data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)" />
+          <div class="md-errors-spacer">
+            <div data-ng-show="avaliadorEditForm.cpf.$dirty">
+              <div class="message-error" data-ng-show="avaliadorEditForm.cpf.$error.required">Obrigatório.</div>
+              <div class="message-error" data-ng-show="avaliadorEditForm.cpf.$error.documento && avaliadorEditForm.cpf.$touched">Documento inválido.</div>
+            </div>
+          </div>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>RG</label>
+          <input type="text" name="rg" data-ng-model="avaliador.rg" />
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Dt. nascimento</label>
+          <input type="text" name="dtNascimento" data-ng-model="avaliador.dtNascimento" minlength="8" maxlength="10" nasc-mask />
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Telefone</label>
+          <input type="text" name="telefone" data-ng-model="avaliador.telefone" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block selectCustom1" flex-gt-xs>
+          <label>Nível Acadêmico</label>
+          <md-select name="nivelAcademico" data-ng-model="avaliador.nivelAcademico" style="width:100%!important;">
+            <md-option value="Graduação">Graduação</md-option>
+            <md-option value="Especialização">Especialização</md-option>
+            <md-option value="Mestrado">Mestrado</md-option>
+            <md-option value="Doutorado">Doutorado</md-option>
+          </md-select>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Tempo de atuação (anos)</label>
+          <input type="number" name="tempoAtuacao" data-ng-model="avaliador.tempoAtuacao" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-xs="row">
+        <md-input-container class="md-block selectCustom1" flex-gt-xs>
+          <label>Categoria</label>
+          <md-select name="categoria" data-ng-model="avaliador.categoria" style="width:100%!important;" data-ng-change="selectEixos(avaliador.categoria)">
+            <md-optgroup label="Categorias">
+              <md-option data-ng-value="x.categoria" data-ng-repeat="x in listaCategorias">{{x.categoria}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </md-input-container>
+        <div flex="5" hide-xs></div>
+        <md-input-container class="md-block selectCustom1" flex-gt-xs>
+          <label>Eixo Temático</label>
+          <md-select name="eixo" data-ng-model="avaliador.eixo" style="width:100%!important;">
+            <md-optgroup label="Eixos Temáticos">
+              <md-option data-ng-value="y" data-ng-repeat="y in eixos">{{y}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <md-input-container class="md-block" flex="100">
+        <label>Atuação profissional</label>
+        <textarea name="atuacaoProfissional" data-ng-model="avaliador.atuacaoProfissional" rows="1" md-select-on-focus></textarea>
+      </md-input-container>
+
+      <md-input-container class="md-block" flex="100">
+        <label>Currículo (link ou resumo)</label>
+        <textarea name="curriculo" data-ng-model="avaliador.curriculo" rows="1" md-select-on-focus></textarea>
+      </md-input-container>
+
+      <p style="text-align:left;font-size:13px;">* Obrigatório</p>
+
+      <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0 20px 0;">
+        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar"
+                   data-ng-disabled="!avaliadorEditForm.$valid" data-ng-click="alterarAvaliador(avaliador)">
+          <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+          <span style="vertical-align:middle;">Salvar</span>
+        </md-button>
+      </div>
+    </form>
+  </div>
+</md-dialog>

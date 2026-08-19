@@ -7,6 +7,10 @@ const mongoose = require('mongoose')
 const AvaliadorSchema = new Schema({
 	nome: { type: String },
 	email: { type: String },
+	// 'brasileiro' | 'uruguaio'. Sem 'required' aqui porque as rotas montam o objeto
+	// campo a campo a partir de req.body — a obrigatoriedade real (nacionalidade + cpf)
+	// é validada em controllers/avaliador-controller.js#validarDocumento.
+	nacionalidade: { type: String },
 	cpf: { type: String },
 	rg: { type: String },
 	dtNascimento: { type: String },

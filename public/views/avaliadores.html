@@ -96,17 +96,37 @@
       </md-input-container>
     </div>
     <div layout-gt-xs="row">
-      <md-input-container class="md-block" flex-gt-xs>
-        <label>Doc. identificação</label>
-        <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"/>
+      <md-input-container class="md-block selectCustom1" flex-gt-xs>
+        <label>Nacionalidade</label>
+        <md-select name="nacionalidade" data-ng-model="avaliadores.nacionalidade" required style="width:100%!important;"
+                   data-ng-change="validarDocumento(avaliadores.cpf, avaliadores.nacionalidade)">
+          <md-option value="brasileiro">Brasileiro</md-option>
+          <md-option value="uruguaio">Uruguaio</md-option>
+        </md-select>
         <div class="md-errors-spacer">
-          <div data-ng-show="avaliadoresForm.cpf.$dirty">
-            <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
-            <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.minlength && avaliadoresForm.cpf.$touched">Documento inválido.</div>
+          <div data-ng-if="avaliadoresForm.nacionalidade.$touched">
+            <div class="message-error" data-ng-if="avaliadoresForm.nacionalidade.$error.required">Selecione uma opção.</div>
           </div>
         </div>
       </md-input-container>
       <div flex="5" hide-xs></div>
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>Doc. identificação (CPF ou cédula)</label>
+        <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"
+               data-ng-if="avaliadores.nacionalidade === 'brasileiro'" cpf-mask
+               data-ng-change="validarDocumento(avaliadores.cpf, avaliadores.nacionalidade)" />
+        <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"
+               data-ng-if="avaliadores.nacionalidade !== 'brasileiro'"
+               data-ng-change="validarDocumento(avaliadores.cpf, avaliadores.nacionalidade)" />
+        <div class="md-errors-spacer">
+          <div data-ng-show="avaliadoresForm.cpf.$dirty">
+            <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
+            <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.documento && avaliadoresForm.cpf.$touched">Documento inválido.</div>
+          </div>
+        </div>
+      </md-input-container>
+    </div>
+    <div layout-gt-xs="row">
       <md-input-container class="md-block" flex-gt-xs>
         <label>Nível Acadêmico</label>
         <md-select name="nivelAcademico" data-ng-model="avaliadores.nivelAcademico" required style="width:100%!important;">
