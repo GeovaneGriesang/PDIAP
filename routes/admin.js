@@ -531,11 +531,13 @@ router.post('/edit', miPermiso("3"), (req, res) => {
       dias: req.body[0].dias,
       edicao: req.body[0].edicao,
       text: req.body[0].text,
-      cadastro_projetos: req.body[0].cadastro_projetos,
-      cadastro_avaliadores: req.body[0].cadastro_avaliadores,
-      saberes_docentes: req.body[0].saberes_docentes
-    };	
-    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text, 'cadastro_projetos':obj.cadastro_projetos,'cadastro_avaliadores':obj.cadastro_avaliadores,'saberes_docentes':obj.saberes_docentes}}, [{new:true}], (err, usr) =>{
+      saberes_docentes: req.body[0].saberes_docentes,
+      prazoProjetos: req.body[0].prazoProjetos,
+      prazoAvaliadores: req.body[0].prazoAvaliadores,
+      botoes: req.body[0].botoes,
+      destaques: req.body[0].destaques
+    };
+    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}], (err, usr) =>{
       if (err) { console.error('Erro ao editar', err); return; }
       else {
         res.send('success');	

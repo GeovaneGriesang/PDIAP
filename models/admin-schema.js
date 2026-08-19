@@ -50,6 +50,34 @@ const AdminSchema = new Schema({
 	saberes_docentes: {
 		type: Boolean
 	},
+	// Prazo de inscrição com 2 estágios (prazo -> prorrogação opcional -> encerrado),
+	// calculado no servidor em controllers/admin-controller.js#getEdicaoAtual.
+	// 'ativo' é a chave geral: false força "encerrado" independente das datas.
+	prazoProjetos: {
+		ativo: { type: Boolean, default: true },
+		dataPrazo: { type: Date },
+		textoPrazo: { type: String },
+		dataProrrogacao: { type: Date },
+		textoProrrogacao: { type: String },
+		textoEncerrado: { type: String }
+	},
+	prazoAvaliadores: {
+		ativo: { type: Boolean, default: true },
+		dataPrazo: { type: Date },
+		textoPrazo: { type: String },
+		dataProrrogacao: { type: Date },
+		textoProrrogacao: { type: String },
+		textoEncerrado: { type: String }
+	},
+	// Botões configuráveis da home/menu (ex.: "Agendar Visita"), texto + link.
+	botoes: [{
+		texto: { type: String },
+		link: { type: String }
+	}],
+	// Mensagens de destaque exibidas na home (ex.: classificações para a Mostratec).
+	destaques: [{
+		texto: { type: String }
+	}],
 	opcoes: opcoesSchema
 }, { collection: 'adminCollection' });
 

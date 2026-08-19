@@ -50,10 +50,35 @@ module.exports.comparePassword = (candidatePassword, hash, callback) => {
 	}
 }
 
+// Calcula o estágio atual (aberto / prorrogado / encerrado) de um prazo de inscrição.
+// 'fallbackAtivo' é o boolean manual antigo (cadastro_projetos/cadastro_avaliadores),
+// usado só enquanto o admin não configurou um prazoProjetos/prazoAvaliadores novo.
+function _computaPrazo(prazo, fallbackAtivo) {
+	var ativo = (prazo && prazo.ativo !== undefined) ? prazo.ativo : (fallbackAtivo !== undefined ? fallbackAtivo : true);
+	if (!ativo) return { visivel: false, texto: (prazo && prazo.textoEncerrado) || '' };
+	if (!prazo || !prazo.dataPrazo) return { visivel: true, texto: (prazo && prazo.textoPrazo) || '' };
+	var agora = new Date();
+	if (agora <= new Date(prazo.dataPrazo)) return { visivel: true, texto: prazo.textoPrazo || '' };
+	if (prazo.dataProrrogacao && agora <= new Date(prazo.dataProrrogacao)) return { visivel: true, texto: prazo.textoProrrogacao || '' };
+	return { visivel: false, texto: prazo.textoEncerrado || '' };
+}
+
 // Usadas tanto pela home pública (routes/index.js) quanto pelo painel admin
 // (routes/admin.js) — antes cada arquivo tinha sua própria cópia da mesma query.
 module.exports.getEdicaoAtual = (callback) => {
-	Admin.find({'username':'admin2'}, 'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text -_id', callback);
+	Admin.find({'username':'admin2'},
+		'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text prazoProjetos prazoAvaliadores botoes destaques -_id',
+		(err, docs) => {
+			if (err || !docs || !docs[0]) return callback(err, docs);
+			var raw = docs[0].toObject();
+			var statusProjetos = _computaPrazo(raw.prazoProjetos, raw.cadastro_projetos);
+			var statusAvaliadores = _computaPrazo(raw.prazoAvaliadores, raw.cadastro_avaliadores);
+			raw.cadastro_projetos = statusProjetos.visivel;
+			raw.cadastro_avaliadores = statusAvaliadores.visivel;
+			raw.textoProjetos = statusProjetos.texto;
+			raw.textoAvaliadores = statusAvaliadores.texto;
+			callback(err, [raw]);
+		});
 }
 
 module.exports.getOpcoesAtuais = (callback) => {

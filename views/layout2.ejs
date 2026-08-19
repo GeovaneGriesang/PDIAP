@@ -31,7 +31,7 @@
 					<li><a href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a></li>
 					<li><a href="/contato">Fale Conosco</a></li>
 					<li><a href="/certificados">Validar Certificado</a></li>
-					<li><a href="https://forms.gle/z2p2bsmKWpMqEyUK8" target="_blank">Agendar Visita</a></li>
+					<li ng-repeat="btn in edits[0].botoes"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
 					<!-- <li> <a href="#">Cadastro <span class="icon fa-angle-down"></span></a> <ul> <li><a href="/avaliadores/inscricao">Cadastrar avaliador</a></li> </ul> </li> -->
 					<li> 
 						<a href="localhost">Documentos <span class="icon fa-angle-down"></span></a>
@@ -61,13 +61,18 @@
 					<p style="color:#000000!important; font-weight:bold;" ng-bind ="edits[0].edicao + ' Mostra Venâncio-airense '"></p>
 					<p style="color:#000000!important; font-weight:bold;"> de Cultura e Inovação</p>
 			        <h4 id="prorrog" ng-bind-html="edits[0].text"></h4>
+					<ul class="destaques-home" data-ng-if="edits[0].destaques.length > 0" style="list-style:none;padding:0;margin:10px 0;">
+						<li data-ng-repeat="d in edits[0].destaques" style="font-weight:bold;color:#225024;">{{d.texto}}</li>
+					</ul>
 
 				</div>
 				<div class="baixo">
-					<a href="/projetos/inscricao" class="button special" style="margin-top:3em;margin-right:0.5" target="_blank" data-ng-if="edits[0].cadastro_projetos == true">Cadastrar projeto</a>
-					<a href="/avaliadores/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].cadastro_avaliadores == true">Cadastrar avaliador</a>
+					<p data-ng-if="edits[0].textoProjetos" style="font-size:0.6em;margin:0.5em 0 0 0;">{{edits[0].textoProjetos}}</p>
+					<a href="/projetos/inscricao" class="button special" style="margin-top:0.5em;margin-right:0.5" target="_blank" data-ng-if="edits[0].cadastro_projetos == true">Cadastrar projeto</a>
+					<p data-ng-if="edits[0].textoAvaliadores" style="font-size:0.6em;margin:0.5em 0 0 0;">{{edits[0].textoAvaliadores}}</p>
+					<a href="/avaliadores/inscricao" class="button special" style="margin-top:0.5em" target="_blank" data-ng-if="edits[0].cadastro_avaliadores == true">Cadastrar avaliador</a>
 					<a href="/saberes-docentes/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].saberes_docentes == true">Saberes Docentes</a>
-					<a href="https://forms.gle/z2p2bsmKWpMqEyUK8" class="button special" style="margin-top:3em" target="_blank">Agendar Visita de Escola</a>
+					<a ng-href="{{btn.link}}" class="button special" style="margin-top:3em" target="_blank" data-ng-repeat="btn in edits[0].botoes">{{btn.texto}}</a>
 
 					<div class="infos" style="display: flex; margin-left: 80px; margin-top: 90px;">
 						<img class="icone-info" src="alpha/images/calendario.png" width="35px" height="35px" style="margin-right: 1%">
@@ -244,7 +249,7 @@
 				<a class="link depth-0" href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a>
 				<a class="link depth-0" href="/contato">Fale Conosco</a>
 				<a class="link depth-0" href="/certificados">Validar Certificado</a>
-				<a class="link depth-0" href="https://forms.gle/z2p2bsmKWpMqEyUK8" target="_blank">Agendar Visita</a>
+				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
 				<span class="link depth-0">Documentos</span>
 				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
