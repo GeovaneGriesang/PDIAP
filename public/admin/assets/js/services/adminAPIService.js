@@ -72,7 +72,16 @@
 			return $http(request);
 		};
 
-		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {			
+		let _postEnviarEmailProjetos = function(payload) {
+			const request = {
+				url: '/admin/enviarEmailProjetos',
+				method: 'POST',
+				data: payload
+			}
+			return $http(request);
+		};
+
+		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {
 			const request = {
 				url: '/admin/upgreice',
 				method: 'PUT',
@@ -421,6 +430,7 @@
 			getTodosSaberes: _getTodosSaberes,
 			getTodosAvaliadores: _getTodosAvaliadores,
 			putSetAprovados: _putSetAprovados,
+			postEnviarEmailProjetos: _postEnviarEmailProjetos,
 			putSetAvaliadores: _putSetAvaliadores,
 			putUnsetAprovados: _putUnsetAprovados,
 			postConfirmacao: _postConfirmacao,

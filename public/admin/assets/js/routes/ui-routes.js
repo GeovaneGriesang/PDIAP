@@ -125,6 +125,11 @@
 			templateUrl:'admin/views/editar-projetos.html',
 			controller: 'editProjetosCtrl'
 		})
+		.state('master.enviar-email-projetos', {
+			url: "/enviar-email-projetos",
+			templateUrl: 'admin/views/enviar-email-projetos.html',
+			controller: 'enviarEmailProjetosCtrl'
+		})
 		.state('confirmando', {
 			url: "/projetos/confirma/:idProjeto/:situacao",
 			templateUrl: 'admin/views/confirmando.html',
