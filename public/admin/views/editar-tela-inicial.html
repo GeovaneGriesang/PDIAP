@@ -68,11 +68,114 @@
           </div>
 
 	  <div layout-align="center center" layout="row">
-		<md-checkbox aria-label="Check" data-ng-model="edits[0].cadastro_projetos">Botão de cadastro de projetos</md-checkbox>
-		<div flex="5" hide-xs></div>
-		<md-checkbox aria-label="Check" data-ng-model="edits[0].cadastro_avaliadores">Botão de cadastro de avaliadores</md-checkbox>
-		<div flex="5" hide-xs></div>
 		<md-checkbox aria-label="Check" data-ng-model="edits[0].saberes_docentes">Botão saberes docentes</md-checkbox>
+	  </div>
+
+	  <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+	  <h3 style="text-align:center;font-size:15px;">Prazo — Cadastro de Projetos</h3>
+	  <div layout-align="center center" layout="row">
+	    <md-checkbox aria-label="Check" data-ng-model="edits[0].prazoProjetos.ativo">Botão habilitado</md-checkbox>
+	  </div>
+	  <div layout-gt-xs="row">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Prazo até</label>
+	      <input type="datetime-local" name="dataPrazoProjetos" data-ng-model="edits[0].prazoProjetos.dataPrazo" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="60">
+	      <label>Texto exibido até o prazo</label>
+	      <input type="text" name="textoPrazoProjetos" data-ng-model="edits[0].prazoProjetos.textoPrazo" placeholder="Ex: Inscrições até 23/08 às 23:59" />
+	    </md-input-container>
+	  </div>
+	  <div layout-gt-xs="row">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Prorrogação até (opcional)</label>
+	      <input type="datetime-local" name="dataProrrogacaoProjetos" data-ng-model="edits[0].prazoProjetos.dataProrrogacao" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="60">
+	      <label>Texto exibido durante a prorrogação</label>
+	      <input type="text" name="textoProrrogacaoProjetos" data-ng-model="edits[0].prazoProjetos.textoProrrogacao" placeholder="Ex: Inscrições prorrogadas até dia xx/xx, às 23:59h" />
+	    </md-input-container>
+	  </div>
+	  <md-input-container class="md-block" flex="100">
+	    <label>Texto exibido após o encerramento</label>
+	    <input type="text" name="textoEncerradoProjetos" data-ng-model="edits[0].prazoProjetos.textoEncerrado" placeholder="Ex: Inscrições encerradas" />
+	  </md-input-container>
+
+	  <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+	  <h3 style="text-align:center;font-size:15px;">Prazo — Cadastro de Avaliadores</h3>
+	  <div layout-align="center center" layout="row">
+	    <md-checkbox aria-label="Check" data-ng-model="edits[0].prazoAvaliadores.ativo">Botão habilitado</md-checkbox>
+	  </div>
+	  <div layout-gt-xs="row">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Prazo até</label>
+	      <input type="datetime-local" name="dataPrazoAvaliadores" data-ng-model="edits[0].prazoAvaliadores.dataPrazo" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="60">
+	      <label>Texto exibido até o prazo</label>
+	      <input type="text" name="textoPrazoAvaliadores" data-ng-model="edits[0].prazoAvaliadores.textoPrazo" placeholder="Ex: Inscrições até 23/08 às 23:59" />
+	    </md-input-container>
+	  </div>
+	  <div layout-gt-xs="row">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Prorrogação até (opcional)</label>
+	      <input type="datetime-local" name="dataProrrogacaoAvaliadores" data-ng-model="edits[0].prazoAvaliadores.dataProrrogacao" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="60">
+	      <label>Texto exibido durante a prorrogação</label>
+	      <input type="text" name="textoProrrogacaoAvaliadores" data-ng-model="edits[0].prazoAvaliadores.textoProrrogacao" placeholder="Ex: Inscrições prorrogadas até dia xx/xx, às 23:59h" />
+	    </md-input-container>
+	  </div>
+	  <md-input-container class="md-block" flex="100">
+	    <label>Texto exibido após o encerramento</label>
+	    <input type="text" name="textoEncerradoAvaliadores" data-ng-model="edits[0].prazoAvaliadores.textoEncerrado" placeholder="Ex: Inscrições encerradas" />
+	  </md-input-container>
+
+	  <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+	  <h3 style="text-align:center;font-size:15px;">Botões (ex: Agendar Visita)</h3>
+	  <div ng-repeat="item in edits[0].botoes" ng-form="botoesForm" layout-gt-xs="row" layout-align="center center">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Texto do botão</label>
+	      <input type="text" name="{{'botaoTexto'+$index}}" data-ng-model="edits[0].botoes[$index].texto" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Link</label>
+	      <input type="url" name="{{'botaoLink'+$index}}" data-ng-model="edits[0].botoes[$index].link" />
+	    </md-input-container>
+	    <md-button class="md-fab md-mini md-warn" aria-label="Remover" data-ng-click="removeBotao($index)">
+	      <md-tooltip md-direction="right">Remover</md-tooltip>
+	      <md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;display:flex;"></md-icon>
+	    </md-button>
+	  </div>
+	  <div layout="column" layout-align="center center">
+	    <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar" data-ng-click="addBotao()">
+	      <md-tooltip md-direction="left">Adicionar</md-tooltip>
+	      <md-icon md-svg-src="plus" style="color:#fdfdfd!important;display:flex;"></md-icon>
+	    </md-button>
+	  </div>
+
+	  <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+	  <h3 style="text-align:center;font-size:15px;">Mensagens de destaque</h3>
+	  <div ng-repeat="item in edits[0].destaques" ng-form="destaquesForm" layout-gt-xs="row" layout-align="center center">
+	    <md-input-container class="md-block" flex-gt-xs>
+	      <label>Texto</label>
+	      <input type="text" name="{{'destaqueTexto'+$index}}" data-ng-model="edits[0].destaques[$index].texto" placeholder="Ex: 1 trabalho classificado para a Mostratec" />
+	    </md-input-container>
+	    <md-button class="md-fab md-mini md-warn" aria-label="Remover" data-ng-click="removeDestaque($index)">
+	      <md-tooltip md-direction="right">Remover</md-tooltip>
+	      <md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;display:flex;"></md-icon>
+	    </md-button>
+	  </div>
+	  <div layout="column" layout-align="center center">
+	    <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar" data-ng-click="addDestaque()">
+	      <md-tooltip md-direction="left">Adicionar</md-tooltip>
+	      <md-icon md-svg-src="plus" style="color:#fdfdfd!important;display:flex;"></md-icon>
+	    </md-button>
 	  </div>
 
       <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
