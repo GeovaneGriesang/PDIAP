@@ -10,6 +10,38 @@
 
 		$scope.year = CadastraAno();
 
+		$scope.listaCategorias = [];
+		adminAPI.getCategorias()
+		.success(function(data) {
+			$scope.listaCategorias = data.categorias;
+		})
+		.error(function(status) {
+			console.log(status);
+		});
+
+		function _validateCPF(cpf) {
+			cpf = (cpf || '').replace(/\D+/g, '');
+			if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
+			var sum = 0, rest;
+			for (var i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
+			rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
+			if (rest !== parseInt(cpf.substring(9, 10))) return false;
+			sum = 0;
+			for (i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
+			rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
+			if (rest !== parseInt(cpf.substring(10, 11))) return false;
+			return true;
+		}
+
+		$scope.validarDocumento = function(valor, nacionalidade) {
+			var digits = (valor || '').toString().replace(/\D+/g, '');
+			var valido = (nacionalidade === 'brasileiro') ? _validateCPF(digits) : digits.length >= 5;
+			if ($scope.avaliadoresForm && $scope.avaliadoresForm.cpf) {
+				$scope.avaliadoresForm.cpf.$setValidity('documento', valido);
+			}
+			return valido;
+		};
+
 		$scope.registrarAvaliador = function(avaliador) {
 			// Cadastra o avaliador no ano selecionado no filtro do cabeçalho, em vez de
 			// sempre no ano atual (permite inserir avaliadores de anos anteriores).
@@ -74,7 +106,19 @@
 							let avaliador = ({
 								_id: value._id,
 								nome: value.nome,
+								email: value.email,
+								nacionalidade: value.nacionalidade,
 								cpf: cpf,
+								cpfCru: value.cpf,
+								rg: value.rg,
+								dtNascimento: value.dtNascimento,
+								nivelAcademico: value.nivelAcademico,
+								categoria: value.categoria,
+								eixo: value.eixo,
+								atuacaoProfissional: value.atuacaoProfissional,
+								tempoAtuacao: value.tempoAtuacao,
+								telefone: value.telefone,
+								curriculo: value.curriculo,
 								avaliacao: value.avaliacao,
 								ano: ano
 							});
@@ -181,6 +225,102 @@
 					console.log("Error: "+status);
 				});
 			}, function() {});
+		};
+
+		$scope.editarAvaliador = function(ev, avaliador) {
+			var listaCategorias = $scope.listaCategorias;
+			var recarregar = $scope.recarregar;
+			$mdDialog.show({
+				controller: function dialogAvaliadorController($scope, $mdDialog, $mdToast, adminAPI) {
+					$scope.toast = function(message, tema) {
+						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
+						$mdToast.show(toast);
+					};
+					$scope.avaliador = angular.copy(avaliador);
+					$scope.avaliador.cpf = avaliador.cpfCru;
+					$scope.listaCategorias = listaCategorias;
+					$scope.eixos = [];
+					angular.forEach(listaCategorias, function(value) {
+						if (value.categoria === $scope.avaliador.categoria) {
+							$scope.eixos = value.eixos;
+						}
+					});
+					$scope.selectEixos = function(cat) {
+						angular.forEach($scope.listaCategorias, function(value) {
+							if (cat === value.categoria) {
+								$scope.eixos = value.eixos;
+							}
+						});
+					};
+
+					function _validateCPF(cpf) {
+						cpf = (cpf || '').replace(/\D+/g, '');
+						if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
+						var sum = 0, rest;
+						for (var i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
+						rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
+						if (rest !== parseInt(cpf.substring(9, 10))) return false;
+						sum = 0;
+						for (i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
+						rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
+						if (rest !== parseInt(cpf.substring(10, 11))) return false;
+						return true;
+					}
+
+					$scope.validarDocumento = function(valor, nacionalidade) {
+						var digits = (valor || '').toString().replace(/\D+/g, '');
+						var valido = (nacionalidade === 'brasileiro') ? _validateCPF(digits) : digits.length >= 5;
+						if ($scope.avaliadorEditForm && $scope.avaliadorEditForm.cpf) {
+							$scope.avaliadorEditForm.cpf.$setValidity('documento', valido);
+						}
+						return valido;
+					};
+
+					$scope.alterarAvaliador = function(avaliador) {
+						let pacote = ({
+							id: avaliador._id,
+							nome: avaliador.nome,
+							email: avaliador.email,
+							nacionalidade: avaliador.nacionalidade,
+							cpf: avaliador.cpf,
+							rg: avaliador.rg,
+							dtNascimento: avaliador.dtNascimento,
+							nivelAcademico: avaliador.nivelAcademico,
+							categoria: avaliador.categoria,
+							eixo: avaliador.eixo,
+							atuacaoProfissional: avaliador.atuacaoProfissional,
+							tempoAtuacao: avaliador.tempoAtuacao,
+							telefone: avaliador.telefone,
+							curriculo: avaliador.curriculo
+						});
+						adminAPI.putAtualizaAvaliador(pacote)
+						.success(function(data) {
+							if (data === 'success') {
+								$scope.toast('Avaliador atualizado com sucesso!', 'success-toast');
+								$mdDialog.hide();
+								recarregar();
+							} else {
+								$scope.toast('Falha ao atualizar. Verifique o documento informado.', 'failed-toast');
+							}
+						})
+						.error(function(status) {
+							$scope.toast('Falha ao atualizar. Verifique o documento informado.', 'failed-toast');
+							console.log('Error: ' + status);
+						});
+					};
+					$scope.hide = function() {
+						$mdDialog.hide();
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: 'admin/views/details-edicao.avaliador.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false,
+				fullscreen: true
+			});
 		};
 
 		let resetForm = function() {

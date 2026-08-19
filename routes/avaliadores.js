@@ -37,6 +37,9 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/registro', (req, res) => {
+	let checagem = Avaliador.validarDocumento(req.body.nacionalidade, req.body.cpf);
+	if (!checagem.valido) return res.status(400).send(checagem.mensagem);
+
 	// A tela de inscrição de avaliadores do master (public/admin/views/avaliadores.html) reusa
 	// esta mesma rota e já tem um filtro de ano no cabeçalho; permite que esse ano seja usado
 	// para cadastrar avaliadores em anos anteriores, em vez de sempre cair no ano atual.
@@ -48,6 +51,7 @@ router.post('/registro', (req, res) => {
 	let newAvaliador = AvaliadorSchema({
 		nome: req.body.nome,
 		email: req.body.email,
+		nacionalidade: req.body.nacionalidade,
 		cpf: splita(req.body.cpf),
 		rg: splita(req.body.rg),
 		dtNascimento: req.body.dtNascimento,

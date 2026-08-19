@@ -25,6 +25,7 @@ const express = require('express')
 , EmailTemplate = require('email-templates').EmailTemplate
 , wellknown = require('nodemailer-wellknown')
 , avaliadorSchema = require('../models/avaliador-schema')
+, AvaliadorController = require('../controllers/avaliador-controller')
 , saberesSchema = require('../models/saberes-schema')
 , cadastroMostraSchema = require('../models/cMostra-schema')
 , cadastroMostra = require('../controllers/cMostra-controller')
@@ -205,6 +206,36 @@ router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
   }
 });
 
+router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+
+    let checagem = AvaliadorController.validarDocumento(req.body.nacionalidade, req.body.cpf);
+    if (!checagem.valido) return res.status(400).send(checagem.mensagem);
+
+    avaliadorSchema.findOneAndUpdate({"_id": id}, {"$set": {
+      "nome": req.body.nome,
+      "email": req.body.email,
+      "nacionalidade": req.body.nacionalidade,
+      "cpf": splita(req.body.cpf),
+      "rg": splita(req.body.rg),
+      "dtNascimento": req.body.dtNascimento,
+      "nivelAcademico": req.body.nivelAcademico,
+      "categoria": req.body.categoria,
+      "eixo": req.body.eixo,
+      "atuacaoProfissional": req.body.atuacaoProfissional,
+      "tempoAtuacao": req.body.tempoAtuacao,
+      "telefone": splita(req.body.telefone),
+      "curriculo": req.body.curriculo
+    }}, {new:true}, (err, doc) => {
+      if (err) { console.error('Erro ao atualizar avaliador', err); return; }
+    });
+    res.send('success');
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
 
 router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração Lucas A. Ferreira
   try {

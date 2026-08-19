@@ -274,6 +274,15 @@
 			return $http(request);
 		};
 
+		let _putAtualizaAvaliador = function(avaliador) {
+			const request = {
+				url: '/admin/atualizaAvaliador',
+				method: 'PUT',
+				data: avaliador
+			}
+			return $http(request);
+		};
+
 		let _getCPFparticipantes = function() {
 			const request = {
 				url: '/admin/mostraCPFparticipantes',
@@ -433,6 +442,7 @@
 			putRemoveAvaliador: _putRemoveAvaliador,
 			putRemoveProjeto: _putRemoveProjeto,
 			putAtualizaParticipante: _putAtualizaParticipante,
+			putAtualizaAvaliador: _putAtualizaAvaliador,
 			getCPFparticipantes: _getCPFparticipantes,
 			getCPFsaberes: _getCPFsaberes,
 			getCategorias: _getCategorias,
