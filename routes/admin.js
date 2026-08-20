@@ -246,6 +246,7 @@ router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração 
     let newParticipante = new participanteSchema({
       nome: req.body.nome
       ,cpf: splita(req.body.cpf)
+      ,email: req.body.email
       ,createdAt: createdAt
     });
 
@@ -409,9 +410,10 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
     var id = req.body.id;
     let nome = req.body.nome;
     let cpf = splita(req.body.cpf);
+    let email = req.body.email;
     if (!idValido(id)) return res.status(400).send('ID inválido');
 
-    participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
+    participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
         if (err) { console.error('Erro ao atualizar participante', err); return; }
       });
 
@@ -682,6 +684,53 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
           nome: avaliador.nome, email: avaliador.email, categoria: avaliador.categoria,
           eixo: avaliador.eixo, nivelAcademico: avaliador.nivelAcademico
         });
+      });
+
+      res.send({ total: destinatarios.length });
+
+      var transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com', port: 587,
+        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+      });
+      async.eachSeries(destinatarios, function(d, next) {
+        transport.sendMail({
+          from: 'MOVACI <contatomovaci@gmail.com>',
+          to: d.email,
+          subject: _aplicaMascaras(assunto, d),
+          html: _aplicaMascaras(corpo, d)
+        }, function(err) {
+          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
+        });
+      });
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
+
+// Mesmo espírito de /enviarEmailAvaliadores - participante só entra na lista de destinatários
+// se tiver e-mail cadastrado (campo novo, opcional, muitos registros antigos não têm).
+router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
+  try {
+    var ids = req.body.idsParticipantes;
+    var assunto = req.body.assunto;
+    var corpo = req.body.corpo;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um participante.');
+    if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
+    if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+
+    participanteSchema.find({ _id: { $in: ids } }, (err, participantes) => {
+      if (err) { console.error('Erro ao buscar participantes para email em massa', err); return; }
+
+      var vistos = {};
+      var destinatarios = [];
+      participantes.forEach(function(participante) {
+        if (!participante.email) return;
+        var chave = participante.email.toLowerCase();
+        if (vistos[chave]) return;
+        vistos[chave] = true;
+        destinatarios.push({ nome: participante.nome, email: participante.email });
       });
 
       res.send({ total: destinatarios.length });

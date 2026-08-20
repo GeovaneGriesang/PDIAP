@@ -29,6 +29,17 @@
         </md-input-container>
       </div>
       <div layout-gt-xs="row">
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>E-mail</label>
+          <input type="email" name="email" data-ng-model="participante.email" data-ng-pattern="/^.+@.+\..+$/" />
+          <div class="md-errors-spacer">
+            <div data-ng-show="participantesAltForm.email.$dirty">
+              <div class="message-error" data-ng-show="participantesAltForm.email.$error.pattern">E-mail inválido.</div>
+            </div>
+          </div>
+        </md-input-container>
+      </div>
+      <div layout-gt-xs="row">
         <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
           <label>Semana Acadêmica</label>
           <md-select name="tipo" data-ng-model="participante.eventos1" multiple>
