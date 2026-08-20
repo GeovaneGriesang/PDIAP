@@ -659,6 +659,56 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
   }
 });
 
+// Mesmo espírito de /enviarEmailProjetos, mas pra avaliadores - schema mais simples (um
+// e-mail por avaliador, sem integrantes aninhados), então não precisa de destinatário/tipo.
+router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
+  try {
+    var ids = req.body.idsAvaliadores;
+    var assunto = req.body.assunto;
+    var corpo = req.body.corpo;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um avaliador.');
+    if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
+    if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+
+    avaliadorSchema.find({ _id: { $in: ids } }, (err, avaliadores) => {
+      if (err) { console.error('Erro ao buscar avaliadores para email em massa', err); return; }
+
+      var vistos = {};
+      var destinatarios = [];
+      avaliadores.forEach(function(avaliador) {
+        if (!avaliador.email) return;
+        var chave = avaliador.email.toLowerCase();
+        if (vistos[chave]) return;
+        vistos[chave] = true;
+        destinatarios.push({
+          nome: avaliador.nome, email: avaliador.email, categoria: avaliador.categoria,
+          eixo: avaliador.eixo, nivelAcademico: avaliador.nivelAcademico
+        });
+      });
+
+      res.send({ total: destinatarios.length });
+
+      var transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com', port: 587,
+        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+      });
+      async.eachSeries(destinatarios, function(d, next) {
+        transport.sendMail({
+          from: 'MOVACI <contatomovaci@gmail.com>',
+          to: d.email,
+          subject: _aplicaMascaras(assunto, d),
+          html: _aplicaMascaras(corpo, d)
+        }, function(err) {
+          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
+        });
+      });
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
+
 router.post('/avaliador', miPermiso("2","3"), (req, res) => {
   try {
     avaliadorSchema.find((err, usr) => {

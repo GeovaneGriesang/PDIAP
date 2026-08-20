@@ -444,6 +444,33 @@ md-list-item .md-button {
   background: #fff8e1 !important;
   border-left: 4px solid #f9a825;
 }
+/* Máscaras (¨chave) usadas em envio de e-mail e cadastro de certificados - chips clicáveis
+   que inserem a máscara no campo de texto ativo (ver mascaras.js). */
+.mascaras-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 16px 0;
+}
+.mascara-chip {
+  display: inline-block;
+  background: #43a047;
+  color: #fff !important;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-family: monospace;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.mascara-chip:hover {
+  background: #2e7d32;
+}
+md-dialog .md-dialog-content-body p {
+  white-space: pre-line;
+}
 .grey {
   background: #757575;
 }

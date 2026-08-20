@@ -80,6 +80,11 @@
 			templateUrl: 'admin/views/avaliacao.html',
 			controller: 'avaliacaoInserirCtrl'
 		})
+		.state('master.enviar-email-avaliadores', {
+			url: "/avaliadores/enviar-email",
+			templateUrl: 'admin/views/enviar-email-avaliadores.html',
+			controller: 'enviarEmailAvaliadoresCtrl'
+		})
 		.state('master.presenca-projetos', {
 			url: "/projetos/presenca",
 			templateUrl: 'admin/views/presenca_projetos.html',

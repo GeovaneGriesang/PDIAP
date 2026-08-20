@@ -70,6 +70,20 @@
 			$scope.idsSelecionados = [];
 		};
 
+		// Máscaras disponíveis pra essa tela - mostradas como chips clicáveis (ver directive
+		// mascarasLegenda.js) logo abaixo do Assunto/Corpo, substituídas pelo dado de cada
+		// destinatário na hora do envio (mesma lógica em routes/admin.js#_aplicaMascaras).
+		$scope.mascarasDisponiveis = [
+			{chave:'nome', desc:'Nome do destinatário (aluno, orientador ou nome do projeto, conforme o destinatário escolhido)'},
+			{chave:'nomeProjeto', desc:'Nome do projeto'},
+			{chave:'categoria', desc:'Categoria do projeto'},
+			{chave:'eixo', desc:'Eixo do projeto'},
+			{chave:'numInscricao', desc:'Número de inscrição do projeto'},
+			{chave:'nomeEscola', desc:'Nome da escola'},
+			{chave:'estado', desc:'Estado do projeto'},
+			{chave:'cidade', desc:'Cidade do projeto'}
+		];
+
 		// Mesmo mecanismo de máscaras ¨chave usado nos textos de certificado (homeCtrl.js),
 		// aqui só para a pré-visualização — o envio de verdade roda a mesma lógica no servidor.
 		function _aplicaMascaras(texto, dados) {

@@ -20,6 +20,63 @@
       $scope.textocertificado_academica;
       $scope.textocertificado_docentes;
 
+      // Máscaras disponíveis por campo de texto - variam porque cada certificado é emitido
+      // pra um tipo diferente de destinatário/evento (ver homeCtrl.js#emitirCertificado1),
+      // então nem todo campo tem os mesmos dados disponíveis pra substituir.
+      $scope.mascaras = {
+        avaliador: [
+          {chave:'nome', desc:'Nome do avaliador'},
+          {chave:'email', desc:'E-mail do avaliador'}
+        ],
+        orientador: [
+          {chave:'nome', desc:'Nome do orientador'},
+          {chave:'nomeProjeto', desc:'Nome do projeto'}
+        ],
+        apresentacao: [
+          {chave:'nome', desc:'Nome do aluno'},
+          {chave:'nomeProjeto', desc:'Nome do projeto'},
+          {chave:'categoria', desc:'Categoria do projeto'}
+        ],
+        premiado: [
+          {chave:'nome', desc:'Nome do integrante'},
+          {chave:'nomeProjeto', desc:'Nome do projeto'},
+          {chave:'categoria', desc:'Categoria do projeto'},
+          {chave:'eixo', desc:'Eixo do projeto'},
+          {chave:'colocacao', desc:'Colocação (1º, 2º, 3º lugar)'}
+        ],
+        mencao: [
+          {chave:'nome', desc:'Nome do integrante'},
+          {chave:'nomeProjeto', desc:'Nome do projeto'},
+          {chave:'categoria', desc:'Categoria do projeto'},
+          {chave:'eixo', desc:'Eixo do projeto'}
+        ],
+        saberes: [
+          {chave:'responsavel', desc:'Nome do responsável/conferencista'},
+          {chave:'titulo', desc:'Título da apresentação'},
+          {chave:'cargaHoraria', desc:'Carga horária'}
+        ],
+        poficinas: [
+          {chave:'nome', desc:'Nome do participante'},
+          {chave:'eventos', desc:'Nome da(s) oficina(s)'},
+          {chave:'cargaHoraria', desc:'Carga horária total'}
+        ],
+        roficinas: [
+          {chave:'responsavel', desc:'Nome do responsável pela oficina'},
+          {chave:'titulo', desc:'Título da oficina'},
+          {chave:'cargaHoraria', desc:'Carga horária'}
+        ],
+        academica: [
+          {chave:'responsavel', desc:'Nome do responsável/conferencista'},
+          {chave:'titulo', desc:'Título da apresentação'},
+          {chave:'cargaHoraria', desc:'Carga horária'}
+        ],
+        docentes: [
+          {chave:'nome', desc:'Nome do participante'},
+          {chave:'eventos', desc:'Descrição da participação'},
+          {chave:'cargaHoraria', desc:'Carga horária'}
+        ]
+      };
+
       // Imagens já cadastradas pro ano selecionado (vêm prontas em base64 do banco,
       // então dá pra usar direto como miniatura) e prévia de um arquivo novo recém
       // escolhido, antes de salvar.

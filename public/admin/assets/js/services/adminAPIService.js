@@ -81,6 +81,15 @@
 			return $http(request);
 		};
 
+		let _postEnviarEmailAvaliadores = function(payload) {
+			const request = {
+				url: '/admin/enviarEmailAvaliadores',
+				method: 'POST',
+				data: payload
+			}
+			return $http(request);
+		};
+
 		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {
 			const request = {
 				url: '/admin/upgreice',
@@ -442,6 +451,7 @@
 			getTodosAvaliadores: _getTodosAvaliadores,
 			putSetAprovados: _putSetAprovados,
 			postEnviarEmailProjetos: _postEnviarEmailProjetos,
+			postEnviarEmailAvaliadores: _postEnviarEmailAvaliadores,
 			putSetAvaliadores: _putSetAvaliadores,
 			putUnsetAprovados: _putUnsetAprovados,
 			postConfirmacao: _postConfirmacao,
