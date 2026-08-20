@@ -120,6 +120,11 @@
 			templateUrl: 'admin/views/cadastro-participantes.html',
 			controller: 'participantesCtrl'
 		})
+		.state('master.enviar-email-participantes', {
+			url: "/participantes/enviar-email",
+			templateUrl: 'admin/views/enviar-email-participantes.html',
+			controller: 'enviarEmailParticipantesCtrl'
+		})
 		.state('master.editar-tela-inicial', {
 			url: "/editar-tela-inicial",
 			templateUrl:'admin/views/editar-tela-inicial.html',

@@ -203,6 +203,7 @@
 							let pacote = ({
 								nome: participante.nome,
 								cpf: participante.cpf,
+								email: participante.email,
 								eventos: eventos
 							});
 							adminAPI.postParticipante(pacote)
@@ -227,6 +228,7 @@
 								id: participante._id,
 								nome: participante.nome,
 								cpf: participante.cpf,
+								email: participante.email,
 								eventos: eventos
 							});
 							// console.log(pacote);
