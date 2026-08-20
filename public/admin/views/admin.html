@@ -30,10 +30,6 @@
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Premiação</p>
         </md-list-item>
-	<md-list-item data-ng-show="section.expand">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <a class="md-body-2 submenu" style="color:#f5f5f5;" href="/avaliacao/2016/:Id">Avaliação</a>
-        </md-list-item>
         <md-list-item data-ng-show="section.expand" ui-sref="master.editar-projetos">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Editar</p>
@@ -51,7 +47,18 @@
         </md-list-item>
         <md-list-item data-ng-show="section2.expand" ui-sref="master.inscricao-avaliadores">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Inscrição</p>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Avaliadores</p>
+        </md-list-item>
+      </md-list>
+      <md-list>
+        <md-list-item ng-click="section6.expand = !section6.expand">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Avaliação</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{section6.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="section6.expand">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <a class="md-body-2 submenu" style="color:#f5f5f5;" href="/avaliacao/2016/:Id" target="_self">Inserir</a>
         </md-list-item>
       </md-list>
       <md-list>
