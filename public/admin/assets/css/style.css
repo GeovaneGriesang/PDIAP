@@ -440,6 +440,10 @@ md-list-item .md-button {
 .red {
   background: #f44336 !important;
 }
+.avaliador-duplicado {
+  background: #fff8e1 !important;
+  border-left: 4px solid #f9a825;
+}
 .grey {
   background: #757575;
 }

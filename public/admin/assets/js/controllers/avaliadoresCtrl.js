@@ -91,6 +91,34 @@
 			});
 		};
 
+		// Marca como duplicado qualquer avaliador cujo nome OU documento se repita na lista -
+		// ver captura de tela do usuário: mesmo nome com documentos diferentes também conta,
+		// já que costuma ser a mesma pessoa cadastrada mais de uma vez.
+		let marcarDuplicados = function() {
+			var contagemNome = {}, contagemDoc = {};
+			angular.forEach($scope.avaliadores, function(a) {
+				var chaveNome = (a.nome || '').trim().toLowerCase();
+				var chaveDoc = (a.cpfCru || '').trim();
+				if (chaveNome) contagemNome[chaveNome] = (contagemNome[chaveNome] || 0) + 1;
+				if (chaveDoc) contagemDoc[chaveDoc] = (contagemDoc[chaveDoc] || 0) + 1;
+			});
+			angular.forEach($scope.avaliadores, function(a) {
+				var chaveNome = (a.nome || '').trim().toLowerCase();
+				var chaveDoc = (a.cpfCru || '').trim();
+				a.duplicado = (chaveNome && contagemNome[chaveNome] > 1) || (chaveDoc && contagemDoc[chaveDoc] > 1);
+			});
+		};
+
+		// Filtro de busca por nome ou documento (CPF/cédula), usado no campo de busca da tela.
+		$scope.buscaTexto = '';
+		$scope.filtroAvaliador = function(ava) {
+			if (!$scope.buscaTexto) return true;
+			var termo = $scope.buscaTexto.trim().toLowerCase();
+			var nome = (ava.nome || '').toLowerCase();
+			var doc = (ava.cpfCru || '').toLowerCase();
+			return nome.indexOf(termo) !== -1 || doc.indexOf(termo) !== -1;
+		};
+
 		let mostraAvaliadores = function() {
 			adminAPI.getAvaliadores()
 			.success(function(avaliadores){
@@ -123,9 +151,10 @@
 								ano: ano
 							});
 							$scope.avaliadores.push(avaliador);
-						}						
+						}
 					}
-				});				
+				});
+				marcarDuplicados();
 			})
 			.error(function(status) {
 				console.log("Error: "+status);

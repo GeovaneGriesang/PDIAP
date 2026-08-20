@@ -186,6 +186,17 @@
 			return $http(request);
 		};
 
+		// Salva as notas de avaliação de um projeto (mesma rota já usada pelo app
+		// autônomo de avaliação em admin/avaliacao/assets/js/services/avaliacaoAPIService.js).
+		let _putAvaliacao = function(id, notas) {
+			const request = {
+				url: '/avaliadores/addNota',
+				method: 'PUT',
+				data: { id: id, adrovan: notas }
+			}
+			return $http(request);
+		};
+
 		let _postFeira = function(feira) {
 			const request = {
 				url: '/admin/criarFeira',
@@ -441,6 +452,7 @@
 			putPremiadoProjetos: _putPremiadoProjetos,
 			postEvento: _postEvento,
 			getEventos: _getEventos,
+			putAvaliacao: _putAvaliacao,
 			postFeira: _postFeira,
 			getFeiras: _getFeiras,
 			removeFeira: _removeFeira,

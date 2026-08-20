@@ -75,6 +75,11 @@
 			templateUrl: 'admin/views/avaliadores.html',
 			controller: 'avaliadoresCtrl'
 		})
+		.state('master.avaliacao-inserir', {
+			url: "/avaliacao/inserir",
+			templateUrl: 'admin/views/avaliacao.html',
+			controller: 'avaliacaoInserirCtrl'
+		})
 		.state('master.presenca-projetos', {
 			url: "/projetos/presenca",
 			templateUrl: 'admin/views/presenca_projetos.html',
