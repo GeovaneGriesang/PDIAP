@@ -448,10 +448,15 @@ md-list-item .md-button {
    que inserem a máscara no campo de texto ativo (ver mascaras.js). */
 .mascaras-legenda {
   display: flex;
+  align-items: center;
+  margin: 8px 0 16px 0;
+}
+.mascaras-legenda-chips {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin: 8px 0 16px 0;
+  flex: 1 1 auto;
 }
 .mascara-chip {
   display: inline-block;
@@ -467,6 +472,15 @@ md-list-item .md-button {
 }
 .mascara-chip:hover {
   background: #2e7d32;
+}
+.mascara-ajuda-icon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  color: #43a047;
+  cursor: pointer;
+  margin-left: 12px;
+  flex: none;
 }
 md-dialog .md-dialog-content-body p {
   white-space: pre-line;

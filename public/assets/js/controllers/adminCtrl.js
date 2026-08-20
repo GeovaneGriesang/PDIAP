@@ -52,7 +52,12 @@
 			$window.open('http://www.movaci.com.br/alpha/documentos/Apresentação_eixos_e_salas_MOVACI.pdf', '_blank');
 		}
 
+		// Projetos sem CEP preenchido (endereço incompleto, ou estudante estrangeiro sem CEP)
+		// faziam essa função estourar um TypeError, o que interrompia o carregamento do
+		// projeto no meio - o restante do fluxo (incluindo carregarOpcoes/construirMenu logo
+		// abaixo) nunca rodava, e o menu lateral do dashboard ficava vazio pro usuário.
 		let maskCEP = function() {
+			if (!$scope.projeto2.cep) return;
 			$scope.projeto2.cep = $scope.projeto2.cep.substring(0,2) + "." + $scope.projeto2.cep.substring(2);
 			$scope.projeto2.cep = $scope.projeto2.cep.substring(0,6) + "-" + $scope.projeto2.cep.substring(6);
 		};

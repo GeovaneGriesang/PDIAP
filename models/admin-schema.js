@@ -13,7 +13,14 @@ const opcoesSchema = new Schema({
 	categoria: {type: Boolean},
 	eixo: {type: Boolean},
 	participa: {type: Boolean},
-	resumo: {type: Boolean}
+	resumo: {type: Boolean},
+	// "Link" e "Texto inicial" exibidos na tela principal do dashboard do projeto (não são
+	// campos editáveis pelo grupo, ao contrário dos demais - são configurados aqui pelo admin
+	// e só habilitados/desabilitados de exibição via esses dois booleans).
+	link: {type: Boolean},
+	linkValor: {type: String},
+	textoInicial: {type: Boolean},
+	textoInicialValor: {type: String}
 });
 
 const AdminSchema = new Schema({
