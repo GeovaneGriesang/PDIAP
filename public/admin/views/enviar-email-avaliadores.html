@@ -10,7 +10,7 @@
         <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
           <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
         </md-button>
-        <h4 class="md-title" style="color:#225024;margin:0!important;">Projetos | Enviar E-mail</h4>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Enviar E-mail</h4>
       </div>
     </md-toolbar>
     <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
@@ -30,16 +30,13 @@
             <md-menu-content width="3">
               <md-subheader class="md-no-sticky">CRITÉRIO DE BUSCA</md-subheader>
               <md-menu-item>
-                <md-button data-ng-click="setBusca('numInscricao')" class="grey-text darken-3">Nº de Inscrição</md-button>
+                <md-button data-ng-click="setBusca('nome')" class="grey-text darken-3">Nome</md-button>
               </md-menu-item>
               <md-menu-item>
-                <md-button data-ng-click="setBusca('nomeProjeto')" class="grey-text darken-3">Nome do projeto</md-button>
+                <md-button data-ng-click="setBusca('email')" class="grey-text darken-3">E-mail</md-button>
               </md-menu-item>
               <md-menu-item>
                 <md-button data-ng-click="setBusca('categoria')" class="grey-text darken-3">Categoria</md-button>
-              </md-menu-item>
-              <md-menu-item>
-                <md-button data-ng-click="setBusca('eixo')" class="grey-text darken-3">Eixo</md-button>
               </md-menu-item>
             </md-menu-content>
           </md-menu>
@@ -58,14 +55,14 @@
 
     <md-content>
       <div layout="row" layout-align="center center" style="justify-content:center;padding:20px 0;background:rgba(128,128,128,0.07);gap:16px;">
-        <span>TOTAL: {{projetos.length}}</span>
-        <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(projetos | filter:search)">Selecionar todos os filtrados</md-button>
+        <span>TOTAL: {{avaliadores.length}}</span>
+        <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(avaliadores | filter:search)">Selecionar todos os filtrados</md-button>
         <md-button class="md-raised" data-ng-click="limparSelecao()">Limpar seleção</md-button>
       </div>
-      <md-list flex data-ng-init="ordenacao = ['categoria','eixo']">
+      <md-list flex data-ng-init="ordenacao = ['nome']">
         <md-list-item class="list-header">
           <div class="md-list-item-text" flex="80" layout="column" style="text-align:center;">
-            <p>Projetos</p>
+            <p>Avaliadores</p>
           </div>
           <div class="md-list-item-text" flex="20" layout="column" style="text-align:center;">
             <p>Enviar</p>
@@ -73,13 +70,13 @@
           <md-divider></md-divider>
         </md-list-item>
         <md-divider></md-divider>
-        <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj._id">
+        <md-list-item class="md-3-line" data-ng-repeat="ava in avaliadores | filter:search | orderBy:ordenacao track by ava._id">
           <div class="md-list-item-text" layout="column">
-            <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
-            <p>{{::proj.categoria}} / {{::proj.eixo}}</p>
+            <h3>{{::ava.nome}}</h3>
+            <p>{{::ava.email}}</p>
           </div>
           <div layout flex="20" layout-align="center center" style="align-self:center;">
-            <md-checkbox aria-label="Check" data-ng-model="proj.selecionado" data-ng-click="contador(proj.selecionado, proj._id)"></md-checkbox>
+            <md-checkbox aria-label="Check" data-ng-model="ava.selecionado" data-ng-click="contador(ava.selecionado, ava._id)"></md-checkbox>
           </div>
           <md-divider></md-divider>
         </md-list-item>
@@ -90,27 +87,15 @@
           <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Compor e-mail</span>
         </h3>
 
-        <div layout-gt-xs="row">
-          <md-input-container class="md-block selectCustom1" flex-gt-xs>
-            <label>Destinatário</label>
-            <md-select name="destinatario" data-ng-model="destinatario" style="width:100%!important;">
-              <md-option value="principal">E-mail principal do projeto</md-option>
-              <md-option value="orientadores">Orientadores</md-option>
-              <md-option value="alunos">Alunos</md-option>
-              <md-option value="todosIntegrantes">Todos os integrantes</md-option>
-            </md-select>
-          </md-input-container>
-        </div>
-
         <md-input-container class="md-block" flex="100">
           <label>Assunto</label>
-          <input type="text" name="assunto" data-ng-model="assunto" placeholder="Ex: Aviso importante sobre o projeto ¨nomeProjeto" />
+          <input type="text" name="assunto" data-ng-model="assunto" placeholder="Ex: Aviso importante para avaliadores" />
         </md-input-container>
         <div data-mascaras-legenda="mascarasDisponiveis"></div>
 
         <md-input-container class="md-block" flex="100">
           <label>Corpo</label>
-          <textarea name="corpo" data-ng-model="corpo" rows="8" placeholder="Ex: Olá ¨nome, o projeto ¨nomeProjeto..."></textarea>
+          <textarea name="corpo" data-ng-model="corpo" rows="8" placeholder="Ex: Olá ¨nome, ..."></textarea>
         </md-input-container>
         <div data-mascaras-legenda="mascarasDisponiveis"></div>
 
@@ -132,7 +117,7 @@
       </div>
       <div flex="50">
         <md-button flex="50" aria-label="Enviar" class="md-raised md-primary white green darken-1 btnCustom1"
-                   data-ng-disabled="idsSelecionados.length === 0 || !destinatario || !assunto || !corpo"
+                   data-ng-disabled="idsSelecionados.length === 0 || !assunto || !corpo"
                    data-ng-click="enviar($event)">
           <span>Enviar</span>
         </md-button>

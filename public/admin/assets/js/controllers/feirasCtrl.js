@@ -14,6 +14,16 @@
 		$scope.ano = new Date().getFullYear();
 		$scope.year = CadastraAno();
 
+		// Máscaras disponíveis pro texto de certificado de classificação (ver
+		// homeCtrl.js#emitirCertificado1, tipo 'Feira').
+		$scope.mascarasDisponiveis = [
+			{chave:'nome', desc:'Nome do integrante'},
+			{chave:'nomeProjeto', desc:'Nome do projeto'},
+			{chave:'categoria', desc:'Categoria do projeto'},
+			{chave:'eixo', desc:'Eixo do projeto'},
+			{chave:'feiraNome', desc:'Nome da feira (ex: Mostratec)'}
+		];
+
 		let mostraFeiras = function() {
 			$scope.feiras = [];
 			adminAPI.getFeiras()
