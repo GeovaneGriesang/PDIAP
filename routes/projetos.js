@@ -166,8 +166,10 @@ router.post('/upload', function(req, res){
     res.writeHead(200, {'content-type': 'text/plain'});
     res.write('received upload:\n\n');
 
+    // Pasta era fixa em "relatorios_2018" (numInscricao é global e auto-incrementado, nunca
+    // reinicia por ano - então nunca colidiu entre edições, só ficava com nome enganoso).
     var image_upload_path_old = image.path
-    , image_upload_path_new = '../PDIAP/public/relatorios_2018/'
+    , image_upload_path_new = '../PDIAP/public/relatorios/'
     , image_upload_name = req.user.numInscricao+'.pdf'
     , image_upload_path_name = image_upload_path_new + image_upload_name;
 

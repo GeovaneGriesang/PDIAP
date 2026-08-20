@@ -102,17 +102,17 @@
           </md-input-container>
         </div>
 
+        <div data-mascaras-legenda="mascarasDisponiveis"></div>
         <md-input-container class="md-block" flex="100">
           <label>Assunto</label>
           <input type="text" name="assunto" data-ng-model="assunto" placeholder="Ex: Aviso importante sobre o projeto ¨nomeProjeto" />
         </md-input-container>
-        <div data-mascaras-legenda="mascarasDisponiveis"></div>
 
+        <div data-mascaras-legenda="mascarasDisponiveis"></div>
         <md-input-container class="md-block" flex="100">
           <label>Corpo</label>
           <textarea name="corpo" data-ng-model="corpo" rows="8" placeholder="Ex: Olá ¨nome, o projeto ¨nomeProjeto..."></textarea>
         </md-input-container>
-        <div data-mascaras-legenda="mascarasDisponiveis"></div>
 
         <div layout="row" layout-align="center center" style="margin:10px 0 20px 0;">
           <md-button class="md-raised" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>

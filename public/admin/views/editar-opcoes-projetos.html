@@ -10,7 +10,7 @@
         <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
           <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
         </md-button>
-        <h4 class="md-title" style="color:#225024;margin:0!important;">Editar | Atualizações de projetos</h4>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Editar | Campos editáveis</h4>
       </div>
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
       <div class="md-toolbar-tools">
@@ -36,6 +36,24 @@
                     <md-checkbox aria-label="Check" data-ng-model="opcoes.hospedagem">Hospedagem</md-checkbox>
                     <md-checkbox aria-label="Check" data-ng-model="opcoes.upload">Upload</md-checkbox>
                 </div>
+
+                <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+                    <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Tela principal do projeto</span>
+                </h3>
+                <div layout="column" style="margin-top:15px;">
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.link">Link</md-checkbox>
+                    <md-input-container class="md-block" flex-gt-xs="110" data-ng-if="opcoes.link" style="margin-left:40px;max-width:500px;">
+                        <label>Endereço do link</label>
+                        <input type="text" name="linkValor" data-ng-model="opcoes.linkValor" placeholder="https://..."/>
+                    </md-input-container>
+
+                    <md-checkbox aria-label="Check" data-ng-model="opcoes.textoInicial">Texto inicial</md-checkbox>
+                    <md-input-container class="md-block" flex-gt-xs="110" data-ng-if="opcoes.textoInicial" style="margin-left:40px;max-width:700px;">
+                        <label>Texto inicial (exibido na tela principal do projeto)</label>
+                        <textarea data-ng-model="opcoes.textoInicialValor" rows="4"></textarea>
+                    </md-input-container>
+                </div>
+
                 <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
                     <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!opcoesForm.$valid" data-ng-click="atualizarOpcoes(opcoes)">
                         <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"> </md-icon>

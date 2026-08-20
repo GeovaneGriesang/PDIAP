@@ -3,14 +3,28 @@
         <h2 style="color: #2e7d32; font-weight: bold; margin-bottom: 10px;">
           Bem-vindo(a) à página inicial do participante!
         </h2>
+
+        <p data-ng-if="opcoes.textoInicial && opcoes.textoInicialValor" style="font-size: 16px; color: #424242; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.5; white-space: pre-wrap;">
+          {{opcoes.textoInicialValor}}
+        </p>
+
         <p style="font-size: 16px; color: #424242; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.5;">
           Para prosseguir com a inscrição, entre no link abaixo:
         </p>
-        <md-button class="md-raised" 
-                   ng-href="https://eventos.ifsul.edu.br/movaci2026/" 
-                   target="_blank" 
+        <md-button class="md-raised"
+                   ng-href="https://eventos.ifsul.edu.br/movaci2026/"
+                   target="_blank"
                    style="background: #43a047; color: white; padding: 8px 25px; font-weight: bold; text-transform: none; border-radius: 4px;">
           Acessar Inscrição MOVACI 2026
         </md-button>
+
+        <div data-ng-if="opcoes.link && opcoes.linkValor" style="margin-top:16px;">
+          <md-button class="md-raised"
+                     ng-href="{{opcoes.linkValor}}"
+                     target="_blank"
+                     style="background: #2e7d32; color: white; padding: 8px 25px; font-weight: bold; text-transform: none; border-radius: 4px;">
+            Acessar link
+          </md-button>
+        </div>
       </div>
 </section>
