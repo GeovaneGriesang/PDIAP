@@ -9,13 +9,22 @@
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
       <div class="md-toolbar-tools">
 
+	<div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
+          <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
+        </div>
+        <div class="search-field" flex="30">
+          <input placeholder="Buscar por nome ou documento" style="width:100%!important;" ng-model="buscaTexto" ng-model-options="{ debounce: 400 }"/>
+        </div>
+
+        <span flex></span>
+
 	<div style="width:85px;">
           <md-select data-ng-model="ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
               <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year" data-ng-click="recarregar()">{{years}}</md-option>
             </md-optgroup>
           </md-select>
-        </div>	
+        </div>
 
       </div>
       </md-toolbar>
@@ -166,7 +175,8 @@
         <div data-ng-if="avaliadores.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
           <p>Nenhum avaliador cadastrado :(</p>
         </div>
-        <md-list-item class="md-3-line" data-ng-repeat="ava in avaliadores | orderBy:ordenacao track by ava._id"
+        <md-list-item class="md-3-line" data-ng-repeat="ava in avaliadores | filter:filtroAvaliador | orderBy:ordenacao track by ava._id"
+        data-ng-class="{'avaliador-duplicado': ava.duplicado}"
         style="padding:0 45px;">
           <div layout flex="5" layout-align="center center" style="align-self:center;">
             <div style="width:15px;height:15px;border-radius:50%;"
@@ -176,7 +186,12 @@
             </div>
           </div>
           <div class="md-list-item-text" style="margin-right:5px;text-align:left;">
-            <h3>{{::ava.nome}}</h3>
+            <h3 style="display:flex;align-items:center;gap:6px;">
+              {{::ava.nome}}
+              <md-icon data-ng-if="ava.duplicado" md-svg-src="alert-circle" style="width:18px;height:18px;color:#f9a825;" aria-label="Possível avaliador duplicado">
+                <md-tooltip md-direction="right">Possível cadastro duplicado (mesmo nome ou documento)</md-tooltip>
+              </md-icon>
+            </h3>
             <p>CPF: {{::ava.cpf}}</p>
           </div>
           <div class="md-list-item-text" flex="15">
