@@ -66,6 +66,13 @@ module.exports.compareLoginOuBootstrap = (candidatePassword, avaliador, callback
 	callback(null, documento.length > 0 && documento === tentativa);
 };
 
+// Formata a lista de combinações categoria+eixo de um avaliador pro texto de certificado/
+// e-mail (ex: "CATEGORIA A - EIXO X; CATEGORIA B - EIXO Y"). Usada tanto pro que o avaliador
+// se inscreveu (categoriasEixos) quanto pro que foi efetivamente avaliado (categoriasEixosAvaliados).
+module.exports.formatarCategoriasEixos = (lista) => {
+	return (lista || []).map((ce) => ce.categoria + ' - ' + ce.eixo).join('; ');
+};
+
 // Senha forte: 8 a 12 caracteres, exigindo maiúscula, minúscula, número e símbolo.
 module.exports.senhaForte = (senha) => {
 	if (typeof senha !== 'string' || senha.length < 8 || senha.length > 12) return false;

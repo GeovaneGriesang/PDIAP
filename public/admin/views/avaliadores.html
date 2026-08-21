@@ -151,12 +151,16 @@
               </div>
             </md-input-container>	    
           </div>
+
+          <p style="text-align:left;">Categoria(s) e eixo(s) que vai avaliar:</p>
+          <div data-categoria-eixo-picker="avaliador.categoriasEixos" data-lista-categorias="listaCategorias"></div>
+
 	  <md-checkbox aria-label="Check" name="avaliacao" data-ng-model="avaliador.avaliacao">Presença</md-checkbox>
           <p style="text-align:left;font-size:13px;">* Obrigatório</p>
 
           <!-- Finalizar inscrição -->
           <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 0 0;">
-            <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!avaliadoresForm.$valid" data-ng-click="registrarAvaliador(avaliador)">
+            <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!avaliadoresForm.$valid || !avaliador.categoriasEixos.length" data-ng-click="registrarAvaliador(avaliador)">
               <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87) !important'}"></md-icon> Finalizar
             </md-button>
           </div>
@@ -195,6 +199,9 @@
               </md-icon>
             </h3>
             <p>CPF: {{::ava.cpf}}</p>
+            <p data-ng-if="ava.categoriasEixos.length" style="font-size:12px;color:rgba(0,0,0,0.5);">
+              {{ava.categoriasEixos.length}} categoria(s)/eixo(s)
+            </p>
           </div>
           <div class="md-list-item-text" flex="15">
             <md-checkbox aria-label="Check" data-ng-model="ava.avaliacao" data-ng-click="contador(ava.avaliacao,ava._id)">Presença</md-checkbox>

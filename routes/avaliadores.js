@@ -52,6 +52,12 @@ router.post('/registro', (req, res) => {
 	let checagem = Avaliador.validarDocumento(req.body.nacionalidade, req.body.cpf);
 	if (!checagem.valido) return res.status(400).send(checagem.mensagem);
 
+	// Precisa se inscrever pra avaliar pelo menos uma combinação categoria+eixo, e cada uma
+	// precisa ter os dois campos preenchidos (evita registro incompleto vindo de fora do form).
+	let categoriasEixos = Array.isArray(req.body.categoriasEixos) ? req.body.categoriasEixos : [];
+	let categoriasEixosValidas = categoriasEixos.length > 0 && categoriasEixos.every((ce) => ce && ce.categoria && ce.eixo);
+	if (!categoriasEixosValidas) return res.status(400).send('Selecione ao menos uma categoria e eixo temático.');
+
 	// A tela de inscrição de avaliadores do master (public/admin/views/avaliadores.html) reusa
 	// esta mesma rota e já tem um filtro de ano no cabeçalho; permite que esse ano seja usado
 	// para cadastrar avaliadores em anos anteriores, em vez de sempre cair no ano atual.
@@ -68,8 +74,7 @@ router.post('/registro', (req, res) => {
 		rg: splita(req.body.rg),
 		dtNascimento: req.body.dtNascimento,
 		nivelAcademico: req.body.nivelAcademico,
-		categoria: req.body.categoria,
-		eixo: req.body.eixo,
+		categoriasEixos: categoriasEixos,
 		atuacaoProfissional: req.body.atuacaoProfissional,
 		tempoAtuacao: req.body.tempoAtuacao,
 		telefone: splita(req.body.telefone),
@@ -251,8 +256,6 @@ router.put('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
   let campos = {
     telefone: splita(req.body.telefone),
     nivelAcademico: req.body.nivelAcademico,
-    categoria: req.body.categoria,
-    eixo: req.body.eixo,
     atuacaoProfissional: req.body.atuacaoProfissional,
     tempoAtuacao: req.body.tempoAtuacao,
     curriculo: req.body.curriculo
@@ -269,12 +272,16 @@ router.put('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
 // schema), então aqui não precisa gerar nada, só devolver os dados de quem já está logado.
 router.get('/dashboard/meus-certificados', ensureAvaliador, (req, res) => {
   if (!req.user.avaliacao) return res.send([]);
+  let avaliadas = (req.user.categoriasEixosAvaliados && req.user.categoriasEixosAvaliados.length)
+    ? req.user.categoriasEixosAvaliados
+    : req.user.categoriasEixos;
   res.send([{
     nome: req.user.nome,
     email: req.user.email,
     token: req.user.token,
     createdAt: req.user.createdAt,
-    ano: new Date(req.user.createdAt).getFullYear()
+    ano: new Date(req.user.createdAt).getFullYear(),
+    categoriasAvaliadas: Avaliador.formatarCategoriasEixos(avaliadas)
   }]);
 });
 

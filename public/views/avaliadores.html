@@ -197,40 +197,11 @@
     </md-input-container>
   </div>
   <hr size="3" style="background:green!important;margin-top:2.5em!important;">
-  <p style="position:relative;top:20px;margin-bottom:40px;">Informe a categoria e o eixo que deseja avaliar.</p></p></p>
+  <p style="position:relative;top:20px;margin-bottom:10px;">Informe a(s) categoria(s) e eixo(s) que deseja avaliar. Pode adicionar mais de uma combinação.</p>
   <div layout="row">
-    <md-input-container class="md-block" flex-xs="100" flex="80">
-      <label>Categoria</label>
-      <md-select name="categoria" data-ng-model="avaliadores.categoria" required style="width:100%!important;">
-        <md-optgroup label="Categorias">
-          <md-option data-ng-value="x.categoria" data-ng-repeat="x in listaCategorias" data-ng-click="selectEixos(x.categoria)">{{x.categoria}}</md-option>
-        </md-optgroup>
-      </md-select>
-      <div class="md-errors-spacer">
-        <div data-ng-if="avaliadoresForm.categoria.$touched">
-          <div class="message-error" data-ng-if="avaliadoresForm.categoria.$error.required">Selecione uma opção.</div>
-        </div>
-      </div>
-    </md-input-container>
-    <div flex layout="column" layout-align="center center" hide-xs>
-      <md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
+    <div flex-xs="100" flex="80">
+      <div data-categoria-eixo-picker="avaliadores.categoriasEixos" data-lista-categorias="listaCategorias"></div>
     </div>
-  </div>
-  <div layout="row">
-    <md-input-container class="md-block" flex-xs="100" flex="80">
-      <label>Eixo Temático...</label>
-      <md-select name="eixo" data-ng-model="avaliadores.eixo" required style="width:100%!important;">
-        <md-optgroup label="Eixos Temáticos" data-ng-if="avaliadores.categoria !== undefined">
-          <md-option data-ng-value="y" data-ng-repeat="y in eixos">{{y}}</md-option>
-        </md-optgroup>
-        <md-option value="" disabled data-ng-if="avaliadores.categoria === undefined">Selecione uma Categoria</md-option>
-      </md-select>
-      <div class="md-errors-spacer">
-        <div data-ng-if="avaliadoresForm.eixo.$touched">
-          <div class="message-error" data-ng-if="avaliadoresForm.eixo.$error.required">Selecione uma opção.</div>
-        </div>
-      </div>
-    </md-input-container>
     <div flex layout="column" layout-align="center center" hide-xs>
       <md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
     </div>
@@ -264,7 +235,7 @@
 
   <!-- Finalizar inscrição -->
   <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
-    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!(avaliadoresForm.$valid && cadastro_avaliadores)" data-ng-click="registrarAvaliador(avaliadores)">
+    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!(avaliadoresForm.$valid && cadastro_avaliadores && avaliadores.categoriasEixos.length > 0)" data-ng-click="registrarAvaliador(avaliadores)">
       <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Finalizar
     </md-button>
   </div>

@@ -56,7 +56,8 @@
 		}
 		$scope.carregarEdits();		
 
-		$scope.eixos = [];
+		$scope.avaliadores = $scope.avaliadores || {};
+		$scope.avaliadores.categoriasEixos = [];
 
 		projetosAPI.getCategorias()
 		.success(function(data) {
@@ -65,19 +66,6 @@
 		.error(function(status) {
 			console.log(status);
 		});
-
-		$scope.selectEixos = function(cat) {
-			angular.forEach($scope.listaCategorias, function (value, key){
-				//verifica a categoria selecionada
-				if(cat === value.categoria){
-					$scope.eixos = [];
-					//adiciona os eixos em $scope.eixos
-					for (var i in value.eixos) {
-						$scope.eixos.push(value.eixos[i]);
-					}
-				}
-			});
-		};
 
 		$scope.registrarAvaliador = function(avaliador) {
 			let curriculo1 = '';
@@ -97,8 +85,7 @@
 				nivelAcademico: avaliador.nivelAcademico,
 				atuacaoProfissional: avaliador.atuacaoProfissional,
 				tempoAtuacao: avaliador.tempoAtuacao,
-				categoria: avaliador.categoria,
-				eixo: avaliador.eixo,
+				categoriasEixos: avaliador.categoriasEixos,
 				curriculo: curriculo1,
 				turnos: avaliador.turnos,
 				createdAt: Date.now()
@@ -160,6 +147,7 @@
 
 		let resetForm = function() {
 			delete $scope.avaliadores;
+			$scope.avaliadores = { categoriasEixos: [] };
 			$scope.avaliadoresForm.$setPristine();
 			$scope.avaliadoresForm.$setUntouched();
 			$scope.avaliadoresForm.turnos.$setUntouched();

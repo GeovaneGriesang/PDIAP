@@ -15,8 +15,12 @@ const AvaliadorSchema = new Schema({
 	rg: { type: String },
 	dtNascimento: { type: String },
 	nivelAcademico: { type: String },
-	categoria: { type: String },
-	eixo: { type: String },
+	// Um avaliador pode se inscrever pra avaliar mais de uma combinação categoria+eixo
+	// (evita cadastro duplicado só pra cobrir uma segunda categoria/eixo). categoriasEixos
+	// é tudo que ele se inscreveu; categoriasEixosAvaliados é o subconjunto que o admin
+	// confirma que ele avaliou de fato (usado no texto do certificado).
+	categoriasEixos: [{ categoria: String, eixo: String, _id: false }],
+	categoriasEixosAvaliados: [{ categoria: String, eixo: String, _id: false }],
 	atuacaoProfissional: { type: String },
 	tempoAtuacao: { type: String },
 	telefone: { type: String },

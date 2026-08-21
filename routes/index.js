@@ -155,7 +155,7 @@ router.post('/emitirCertificado', (req, res) => {
       // sumia do resultado), o que quebrava o inserirTokenAvaliador logo abaixo, que
       // depende de usr[i]._id para saber QUAL avaliador atualizar. "email" também
       // estava faltando, apesar de ser usado no map de resposta mais abaixo.
-      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt',(err, usr) => {
+      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt categoriasEixos categoriasEixosAvaliados',(err, usr) => {
         if (err) return reject(err)
         fullfill(usr)
       })	
@@ -260,12 +260,16 @@ router.post('/emitirCertificado', (req, res) => {
 	let array = [];
 	for(let i in usr){
 		var ano = new Date(usr[i].createdAt).getFullYear()
+		let avaliadas = (usr[i].categoriasEixosAvaliados && usr[i].categoriasEixosAvaliados.length)
+			? usr[i].categoriasEixosAvaliados
+			: usr[i].categoriasEixos;
 		var avaliador = {
 			email: usr[i].email,
-			nome: usr[i].nome,	
+			nome: usr[i].nome,
 			token: usr[i].token,
 			createdAt: usr[i].createdAt,
-			ano: ano
+			ano: ano,
+			categoriasAvaliadas: Avaliador.formatarCategoriasEixos(avaliadas)
 		};
 		array.push(avaliador);
 	}

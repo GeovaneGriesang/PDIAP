@@ -96,24 +96,14 @@
         </md-input-container>
       </div>
 
-      <div layout-gt-xs="row">
-        <md-input-container class="md-block selectCustom1" flex-gt-xs>
-          <label>Categoria</label>
-          <md-select name="categoria" data-ng-model="avaliador.categoria" style="width:100%!important;" data-ng-change="selectEixos(avaliador.categoria)">
-            <md-optgroup label="Categorias">
-              <md-option data-ng-value="x.categoria" data-ng-repeat="x in listaCategorias">{{x.categoria}}</md-option>
-            </md-optgroup>
-          </md-select>
-        </md-input-container>
-        <div flex="5" hide-xs></div>
-        <md-input-container class="md-block selectCustom1" flex-gt-xs>
-          <label>Eixo Temático</label>
-          <md-select name="eixo" data-ng-model="avaliador.eixo" style="width:100%!important;">
-            <md-optgroup label="Eixos Temáticos">
-              <md-option data-ng-value="y" data-ng-repeat="y in eixos">{{y}}</md-option>
-            </md-optgroup>
-          </md-select>
-        </md-input-container>
+      <p style="text-align:left;">Categoria(s) e eixo(s) que vai avaliar:</p>
+      <div data-categoria-eixo-picker="avaliador.categoriasEixos" data-lista-categorias="listaCategorias"></div>
+
+      <div data-ng-if="avaliador.categoriasEixos.length > 0">
+        <p style="text-align:left;">Categoria(s)/eixo(s) que avaliou de fato (usado no certificado):</p>
+        <md-checkbox data-ng-repeat="ce in avaliador.categoriasEixos" data-ng-checked="estaAvaliada(ce)" data-ng-click="toggleAvaliada(ce)">
+          {{ce.categoria}} - {{ce.eixo}}
+        </md-checkbox>
       </div>
 
       <md-input-container class="md-block" flex="100">
