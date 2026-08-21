@@ -26,7 +26,8 @@
       $scope.mascaras = {
         avaliador: [
           {chave:'nome', desc:'Nome do avaliador'},
-          {chave:'email', desc:'E-mail do avaliador'}
+          {chave:'email', desc:'E-mail do avaliador'},
+          {chave:'categoriasAvaliadas', desc:'Categorias e eixos que avaliou'}
         ],
         orientador: [
           {chave:'nome', desc:'Nome do orientador'},

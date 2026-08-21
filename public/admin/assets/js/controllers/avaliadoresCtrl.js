@@ -7,6 +7,7 @@
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
+		$scope.avaliador = { categoriasEixos: [] };
 
 		$scope.year = CadastraAno();
 
@@ -141,8 +142,8 @@
 								rg: value.rg,
 								dtNascimento: value.dtNascimento,
 								nivelAcademico: value.nivelAcademico,
-								categoria: value.categoria,
-								eixo: value.eixo,
+								categoriasEixos: value.categoriasEixos || [],
+								categoriasEixosAvaliados: value.categoriasEixosAvaliados || [],
 								atuacaoProfissional: value.atuacaoProfissional,
 								tempoAtuacao: value.tempoAtuacao,
 								telefone: value.telefone,
@@ -267,19 +268,22 @@
 					};
 					$scope.avaliador = angular.copy(avaliador);
 					$scope.avaliador.cpf = avaliador.cpfCru;
+					$scope.avaliador.categoriasEixos = $scope.avaliador.categoriasEixos || [];
+					$scope.avaliador.categoriasEixosAvaliados = $scope.avaliador.categoriasEixosAvaliados || [];
 					$scope.listaCategorias = listaCategorias;
-					$scope.eixos = [];
-					angular.forEach(listaCategorias, function(value) {
-						if (value.categoria === $scope.avaliador.categoria) {
-							$scope.eixos = value.eixos;
-						}
-					});
-					$scope.selectEixos = function(cat) {
-						angular.forEach($scope.listaCategorias, function(value) {
-							if (cat === value.categoria) {
-								$scope.eixos = value.eixos;
-							}
+
+					// Marcação de quais combinações registradas ele avaliou de fato - separado
+					// da presença em massa (checkbox da lista), pra não atrapalhar aquele fluxo.
+					$scope.estaAvaliada = function(ce) {
+						return $scope.avaliador.categoriasEixosAvaliados.some(function(a) {
+							return a.categoria === ce.categoria && a.eixo === ce.eixo;
 						});
+					};
+					$scope.toggleAvaliada = function(ce) {
+						var lista = $scope.avaliador.categoriasEixosAvaliados;
+						var index = lista.findIndex(function(a) { return a.categoria === ce.categoria && a.eixo === ce.eixo; });
+						if (index === -1) lista.push({ categoria: ce.categoria, eixo: ce.eixo });
+						else lista.splice(index, 1);
 					};
 
 					function _validateCPF(cpf) {
@@ -306,6 +310,11 @@
 					};
 
 					$scope.alterarAvaliador = function(avaliador) {
+						// Só mantém como "avaliada" o que ainda está entre as combinações
+						// registradas (ex: admin removeu uma combinação que já estava marcada).
+						let categoriasEixosAvaliados = avaliador.categoriasEixosAvaliados.filter(function(a) {
+							return avaliador.categoriasEixos.some(function(ce) { return ce.categoria === a.categoria && ce.eixo === a.eixo; });
+						});
 						let pacote = ({
 							id: avaliador._id,
 							nome: avaliador.nome,
@@ -315,8 +324,8 @@
 							rg: avaliador.rg,
 							dtNascimento: avaliador.dtNascimento,
 							nivelAcademico: avaliador.nivelAcademico,
-							categoria: avaliador.categoria,
-							eixo: avaliador.eixo,
+							categoriasEixos: avaliador.categoriasEixos,
+							categoriasEixosAvaliados: categoriasEixosAvaliados,
 							atuacaoProfissional: avaliador.atuacaoProfissional,
 							tempoAtuacao: avaliador.tempoAtuacao,
 							telefone: avaliador.telefone,
@@ -354,6 +363,7 @@
 
 		let resetForm = function() {
 			delete $scope.avaliador;
+			$scope.avaliador = { categoriasEixos: [] };
 			$scope.avaliadoresForm.$setPristine();
 			$scope.avaliadoresForm.$setUntouched();
 		};

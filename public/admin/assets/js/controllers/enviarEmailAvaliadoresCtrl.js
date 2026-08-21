@@ -20,8 +20,7 @@
 							_id: value._id,
 							nome: value.nome,
 							email: value.email,
-							categoria: value.categoria,
-							eixo: value.eixo,
+							categorias: (value.categoriasEixos || []).map(function(ce) { return ce.categoria + ' - ' + ce.eixo; }).join('; '),
 							nivelAcademico: value.nivelAcademico
 						});
 					}
@@ -70,8 +69,7 @@
 		$scope.mascarasDisponiveis = [
 			{chave:'nome', desc:'Nome do avaliador'},
 			{chave:'email', desc:'E-mail do avaliador'},
-			{chave:'categoria', desc:'Categoria em que avalia'},
-			{chave:'eixo', desc:'Eixo em que avalia'},
+			{chave:'categorias', desc:'Categorias e eixos em que se inscreveu pra avaliar'},
 			{chave:'nivelAcademico', desc:'Nível acadêmico do avaliador'}
 		];
 

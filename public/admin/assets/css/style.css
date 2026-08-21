@@ -739,3 +739,27 @@ md-radio-button .md-off {
 md-radio-button .md-label {
   color: #616161 !important;
 }
+.categoria-eixo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.categoria-eixo-chip {
+  display: flex;
+  align-items: center;
+  background: rgba(46,125,50,0.1);
+  border-radius: 20px;
+  padding: 4px 8px 4px 14px;
+  font-size: 13px;
+}
+.categoria-eixo-chip md-icon {
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.categoria-eixo-chip md-icon:hover {
+  opacity: 1;
+}

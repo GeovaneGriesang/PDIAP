@@ -26,8 +26,6 @@
 			var dados = {
 				telefone: avaliador.telefone,
 				nivelAcademico: avaliador.nivelAcademico,
-				categoria: avaliador.categoria,
-				eixo: avaliador.eixo,
 				atuacaoProfissional: avaliador.atuacaoProfissional,
 				tempoAtuacao: avaliador.tempoAtuacao,
 				curriculo: avaliador.curriculo
