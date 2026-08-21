@@ -61,9 +61,10 @@
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
               <label>E-mail</label>
-              <input type="email" name="email" data-ng-model="participante.email" data-ng-pattern="/^.+@.+\..+$/" />
+              <input type="email" name="email" data-ng-model="participante.email" required data-ng-pattern="/^.+@.+\..+$/" />
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.email.$dirty">
+                  <div class="message-error" data-ng-show="participantesForm.email.$error.required">Obrigatório.</div>
                   <div class="message-error" data-ng-show="participantesForm.email.$error.pattern">E-mail inválido.</div>
                 </div>
               </div>

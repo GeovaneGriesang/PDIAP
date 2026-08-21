@@ -25,6 +25,7 @@ const express = require('express'),
       routes = require('./routes/index'),
       projetos = require('./routes/projetos'),
       avaliadores = require('./routes/avaliadores'),
+      participantes = require('./routes/participantes'),
       saberes = require('./routes/saberes-docentes'),
       admin = require('./routes/admin'),
       app = express();
@@ -121,6 +122,7 @@ app.use((req, res, next) => {
 app.use('/', routes);
 app.use('/projetos', projetos);
 app.use('/avaliadores', avaliadores);
+app.use('/participantes', participantes);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
 

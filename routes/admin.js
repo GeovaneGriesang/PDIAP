@@ -237,6 +237,13 @@ router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
 
 router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração Lucas A. Ferreira
   try {
+    // E-mail é o identificador de login do participante (dashboard próprio) - exigido a
+    // partir de agora pra todo cadastro novo, cadastros antigos sem e-mail só não conseguem
+    // logar até o admin completar o dado.
+    if (!req.body.email || !/^.+@.+\..+$/.test(req.body.email)) {
+      return res.status(400).send('Informe um e-mail válido.');
+    }
+
     // Mesmo esquema usado em /avaliadores/registro: permite cadastrar o participante em um
     // ano anterior usando o filtro de ano já existente na tela (ex: cadastro-participantes.html).
     let anoInformado = parseInt(req.body.ano, 10);
@@ -412,6 +419,7 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
     let cpf = splita(req.body.cpf);
     let email = req.body.email;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (!email || !/^.+@.+\..+$/.test(email)) return res.status(400).send('Informe um e-mail válido.');
 
     participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
         if (err) { console.error('Erro ao atualizar participante', err); return; }

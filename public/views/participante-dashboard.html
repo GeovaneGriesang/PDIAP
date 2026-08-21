@@ -1,0 +1,42 @@
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Meu painel (Participante)</span>
+      <span flex></span>
+      <md-button data-ng-click="logout()" class="md-raised" style="text-transform:none;">Sair</md-button>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:700px;width:100%;">
+      <h2 style="color:#2e7d32;">Olá, {{participante.nome}}!</h2>
+
+      <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
+        <h3 style="margin-top:0;color:#225024;">Certificados</h3>
+        <p data-ng-if="!certificados.oficina && !certificados.saberes" style="color:rgba(0,0,0,0.6);">
+          Nenhum certificado disponível ainda.
+        </p>
+
+        <div data-ng-if="certificados.oficina" layout="row" layout-align="space-between center" style="padding:8px 0;border-bottom:1px solid #eee;">
+          <span>Certificado de Oficina(s) - {{certificados.oficina.ano}}</span>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-click="baixarCertificadoOficina()">
+            <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+            Baixar
+          </md-button>
+        </div>
+
+        <div data-ng-if="certificados.saberes" layout="row" layout-align="space-between center" style="padding:8px 0;border-bottom:1px solid #eee;">
+          <span>Certificado de Seminário Saberes Docentes - {{certificados.saberes.ano}}</span>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-click="baixarCertificadoSaberes()">
+            <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+            Baixar
+          </md-button>
+        </div>
+      </div>
+
+      <div layout="row" layout-align="center center">
+        <md-button ui-sref="participanteTrocarSenha" class="md-raised" style="text-transform:none;">Trocar minha senha</md-button>
+      </div>
+    </div>
+  </div>
+</div>
