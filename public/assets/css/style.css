@@ -1591,3 +1591,30 @@ md-dialog-content,
     height: 240px;
   }
 }
+
+/* Medidor de força de senha (dashboard do avaliador) - ver directives/passwordStrength.js */
+.password-strength {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 8px 0 16px 0;
+}
+.password-strength-regra {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #c62828;
+}
+.password-strength-regra md-icon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  color: #c62828;
+}
+.password-strength-regra.ok {
+  color: #2e7d32;
+}
+.password-strength-regra.ok md-icon {
+  color: #2e7d32;
+}

@@ -24,8 +24,23 @@ const AvaliadorSchema = new Schema({
 	turnos: { type: Array },
 	avaliacao: { type: Boolean },
 	token: { type: String }, // Adicionado
-	createdAt:{ type: Date }
+	createdAt:{ type: Date },
+
+	// Login do avaliador (dashboard próprio) - avaliador não tem senha própria até o
+	// primeiro acesso: nesse momento a "senha" aceita é o próprio documento (campo cpf,
+	// só dígitos - ver controllers/avaliador-controller.js#compareLoginOuBootstrap), e o
+	// login obriga trocar pra uma senha de verdade antes de liberar o resto do dashboard.
+	// Registros antigos ficam com senhaDefinida undefined (tratado como false), então
+	// funcionam com o primeiro acesso sem precisar de migração.
+	password: { type: String },
+	senhaDefinida: { type: Boolean, default: false },
+	resetPasswordToken: { type: String },
+	resetPasswordCreatedDate: { type: Date } // guarda a expiração, não a criação (mesmo padrão de projeto-schema.js)
 }, { collection: 'avaliadores' });
+
+AvaliadorSchema.methods.hasExpired = function(){
+	return Date.now() > this.resetPasswordCreatedDate;
+};
 
 /**
  * Geovane Griesang - 07/04/2026

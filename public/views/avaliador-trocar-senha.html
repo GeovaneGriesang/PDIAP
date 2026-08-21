@@ -1,0 +1,47 @@
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - {{modoToken ? 'Definir nova senha' : (exigeSenhaAtual ? 'Trocar senha' : 'Definir sua senha')}}</span>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:450px;width:100%;" class="md-whiteframe-2dp" ng-if="!enviado">
+      <div style="background:#fff;border-radius:6px;padding:24px;">
+        <p data-ng-if="!modoToken && !exigeSenhaAtual" style="color:rgba(0,0,0,0.7);">
+          Esse é o seu primeiro acesso. Antes de continuar, defina uma senha só sua.
+        </p>
+
+        <form name="senhaForm" novalidate>
+          <md-input-container class="md-block" data-ng-if="exigeSenhaAtual">
+            <label>Senha atual</label>
+            <input type="password" name="atual" data-ng-model="senha.atual" required/>
+          </md-input-container>
+
+          <md-input-container class="md-block">
+            <label>Nova senha</label>
+            <input type="password" name="nova" data-ng-model="senha.nova" data-senha-forte required/>
+          </md-input-container>
+          <div data-password-strength="senha.nova"></div>
+
+          <md-input-container class="md-block">
+            <label>Confirmar nova senha</label>
+            <input type="password" name="confirmacao" data-ng-model="senha.confirmacao" data-password-verify="senha.nova" required/>
+            <div class="md-errors-spacer">
+              <div class="message-error" data-ng-show="senhaForm.confirmacao.$error.passwordVerify && senhaForm.confirmacao.$dirty">As senhas não conferem.</div>
+            </div>
+          </md-input-container>
+
+          <p class="message-error" data-ng-if="mensagemErro">{{mensagemErro}}</p>
+
+          <div layout="row" layout-align="center center" style="margin-top:20px;">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;"
+                       data-ng-disabled="!senhaForm.$valid" data-ng-click="salvar()">
+              Salvar
+            </md-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

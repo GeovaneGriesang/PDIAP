@@ -5,6 +5,7 @@ const express = require('express')
 , passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy
 , Projeto = require('../controllers/projeto-controller')
+, Avaliador = require('../controllers/avaliador-controller')
 , session = require('express-session')
 , ProjetoSchema = require('../models/projeto-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
@@ -893,15 +894,32 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
       Projeto.getLoginAdmin(username, (err, user) => {
         if (err) { console.error(err); return; }
         if(!user){
-          console.log('Usuário não é admin. Usuário desconhecido');
-          return done(null, false, {message: 'Unknown User'});
+          console.log('Usuário não é admin. Tentando avaliador.');
+          Avaliador.getLoginAvaliador(username, (err, avaliador) => {
+            if (err) { console.error(err); return; }
+            if (!avaliador) {
+              console.log('Usuário não é avaliador. Usuário desconhecido');
+              return done(null, false, {message: 'Unknown User'});
+            }
+            Avaliador.compareLoginOuBootstrap(password, avaliador, (err, isMatch) => {
+              if (err) { console.error(err); return; }
+              if (isMatch) {
+                console.log("Avaliador conectado");
+                return done(null, avaliador);
+              } else {
+                console.log("Erro ao conectar como avaliador");
+                return done(null, false, {message: 'Invalid password'});
+              }
+            });
+          });
+          return;
         }
         Projeto.compareLogin(password, user.password, (err, isMatch) => {
           console.log('Usuário é admin / Comparação de senha sendo realizada');
           if (err) { console.error(err); return; }
           if(isMatch){
 	    console.log("Admin conectado");
-            return done(null, user);            
+            return done(null, user);
           } else {
             console.log("Erro ao conectar como admin");
             return done(null, false, {message: 'Invalid password'});
@@ -935,7 +953,14 @@ passport.deserializeUser(function(id, done){
     } else {
       ProjetoSchema.findById(id, function(err, user){
         if(err) done(err);
-        done(null, user);
+        if (user) {
+          done(null, user);
+        } else {
+          avaliadorSchema.findById(id, function(err, user){
+            if(err) done(err);
+            done(null, user);
+          });
+        }
       })
     }
   });
@@ -943,7 +968,9 @@ passport.deserializeUser(function(id, done){
 
 router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) => {
   // res.send(req.session);
-  if (req.user.permissao === "1") {
+  if (req.user.constructor.modelName === 'Avaliador') {
+    res.send({redirect: req.user.senhaDefinida ? '/avaliadores/dashboard' : '/avaliadores/dashboard/trocar-senha'});
+  } else if (req.user.permissao === "1") {
     // res.redirect('/projetos/');
     res.send({redirect:'/projetos'});
   } else if (req.user.permissao === "2") {
@@ -1183,6 +1210,20 @@ router.get('/saberes-docentes/inscricao', function(req, res, next) {
 });
 
 router.get('/avaliadores/inscricao', function(req, res, next) {
+  res.render('layout.ejs');
+});
+
+// Dashboard do avaliador (login próprio) - só as telas de verdade do lado do cliente
+// (ui-routes.js), listadas uma a uma: um wildcard aqui bateria também com as rotas de
+// API que routes/avaliadores.js expõe sob esse mesmo prefixo (ex: GET .../loggedin),
+// que são casadas depois já que esse router é montado em '/' antes de '/avaliadores'.
+router.get([
+  '/avaliadores/dashboard',
+  '/avaliadores/dashboard/trocar-senha',
+  '/avaliadores/dashboard/dados',
+  '/avaliadores/dashboard/esqueci-senha',
+  '/avaliadores/dashboard/nova-senha/:token'
+], function(req, res, next) {
   res.render('layout.ejs');
 });
 
