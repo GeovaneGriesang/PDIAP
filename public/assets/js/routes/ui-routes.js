@@ -156,10 +156,6 @@
           url: '/regulamento',
           templateUrl: '/views/regulamento.html',
         })
-        .state('home.categorias-eixos', {
-          url: '/categorias-eixos',
-          templateUrl: '/views/categorias-eixos.html',
-        })
         .state('home.avaliacao-fundamental', {
           url: '/avaliacao-fundamental',
           templateUrl: '/views/avaliacao-fundamental.html',
