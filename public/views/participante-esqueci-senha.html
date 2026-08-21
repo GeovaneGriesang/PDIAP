@@ -1,0 +1,36 @@
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Recuperar senha (Participante)</span>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:450px;width:100%;" class="md-whiteframe-2dp">
+      <div style="background:#fff;border-radius:6px;padding:24px;">
+
+        <div data-ng-if="!enviado">
+          <p style="color:rgba(0,0,0,0.7);">Informe o e-mail cadastrado. Vamos enviar um link pra você redefinir sua senha.</p>
+          <form name="esqueciForm" novalidate>
+            <md-input-container class="md-block">
+              <label>E-mail</label>
+              <input type="email" name="email" data-ng-model="senha.email" required/>
+            </md-input-container>
+            <p class="message-error" data-ng-if="mensagemErro">{{mensagemErro}}</p>
+            <div layout="row" layout-align="center center" style="margin-top:20px;">
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;"
+                         data-ng-disabled="!esqueciForm.$valid" data-ng-click="pedirRecuperacao()">
+                Enviar link de recuperação
+              </md-button>
+            </div>
+          </form>
+        </div>
+
+        <div data-ng-if="enviado">
+          <p style="color:#2e7d32;">Se o e-mail informado estiver cadastrado, você vai receber um link pra redefinir sua senha em instantes.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

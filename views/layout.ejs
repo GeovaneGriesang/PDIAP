@@ -32,6 +32,11 @@
   <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
   <script type="text/javascript" src="bower_components/ng-file-upload/ng-file-upload.min.js"></script>
+  <!-- Necessário pra geração de certificado em PDF no dashboard (avaliador/participante) -
+  antes só existia em layout2.ejs (fluxo público de busca de certificado por CPF), então
+  pdfMake ficava undefined quando o dashboard era aberto direto (fora daquele fluxo). -->
+  <script type="text/javascript" src="bower_components/pdfmake/build/pdfmake.min.js"></script>
+  <script type="text/javascript" src="bower_components/pdfmake/build/vfs_fonts.js"></script>
   <script type="text/javascript" src="assets/js/auth.js"></script>
   <script type="text/javascript" src="assets/js/app.js"></script>
   <script type="text/javascript" src="assets/js/routes/ui-routes.js"></script>
@@ -54,8 +59,11 @@
   <script type="text/javascript" src="assets/js/controllers/avaliadorDashboardCtrl.js"></script>
   <script type="text/javascript" src="assets/js/controllers/avaliadorSenhaCtrl.js"></script>
   <script type="text/javascript" src="assets/js/controllers/avaliadorDadosCtrl.js"></script>
+  <script type="text/javascript" src="assets/js/controllers/participanteDashboardCtrl.js"></script>
+  <script type="text/javascript" src="assets/js/controllers/participanteSenhaCtrl.js"></script>
   <script type="text/javascript" src="assets/js/services/projetosAPIService.js"></script>
   <script type="text/javascript" src="assets/js/services/avaliadorAPIService.js"></script>
+  <script type="text/javascript" src="assets/js/services/participanteAPIService.js"></script>
   <script type="text/javascript" src="assets/js/directives/cepMask.js"></script>
   <script type="text/javascript" src="assets/js/directives/foneMask.js"></script>
   <script type="text/javascript" src="assets/js/directives/cpfMask.js"></script>

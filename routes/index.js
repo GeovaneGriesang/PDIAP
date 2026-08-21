@@ -6,6 +6,7 @@ const express = require('express')
 , LocalStrategy = require('passport-local').Strategy
 , Projeto = require('../controllers/projeto-controller')
 , Avaliador = require('../controllers/avaliador-controller')
+, Participante = require('../controllers/participante-controller')
 , session = require('express-session')
 , ProjetoSchema = require('../models/projeto-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
@@ -902,8 +903,25 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
           Avaliador.getLoginAvaliador(username, (err, avaliador) => {
             if (err) { console.error(err); return; }
             if (!avaliador) {
-              console.log('Usuário não é avaliador. Usuário desconhecido');
-              return done(null, false, {message: 'Unknown User'});
+              console.log('Usuário não é avaliador. Tentando participante.');
+              Participante.getLoginParticipante(username, (err, participante) => {
+                if (err) { console.error(err); return; }
+                if (!participante) {
+                  console.log('Usuário não é participante. Usuário desconhecido');
+                  return done(null, false, {message: 'Unknown User'});
+                }
+                Participante.compareLoginOuBootstrap(password, participante, (err, isMatch) => {
+                  if (err) { console.error(err); return; }
+                  if (isMatch) {
+                    console.log("Participante conectado");
+                    return done(null, participante);
+                  } else {
+                    console.log("Erro ao conectar como participante");
+                    return done(null, false, {message: 'Invalid password'});
+                  }
+                });
+              });
+              return;
             }
             Avaliador.compareLoginOuBootstrap(password, avaliador, (err, isMatch) => {
               if (err) { console.error(err); return; }
@@ -962,7 +980,14 @@ passport.deserializeUser(function(id, done){
         } else {
           avaliadorSchema.findById(id, function(err, user){
             if(err) done(err);
-            done(null, user);
+            if (user) {
+              done(null, user);
+            } else {
+              participanteSchema.findById(id, function(err, user){
+                if(err) done(err);
+                done(null, user);
+              });
+            }
           });
         }
       })
@@ -974,6 +999,8 @@ router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) =>
   // res.send(req.session);
   if (req.user.constructor.modelName === 'Avaliador') {
     res.send({redirect: req.user.senhaDefinida ? '/avaliadores/dashboard' : '/avaliadores/dashboard/trocar-senha'});
+  } else if (req.user.constructor.modelName === 'Participante') {
+    res.send({redirect: req.user.senhaDefinida ? '/participantes/dashboard' : '/participantes/dashboard/trocar-senha'});
   } else if (req.user.permissao === "1") {
     // res.redirect('/projetos/');
     res.send({redirect:'/projetos'});
@@ -1227,6 +1254,17 @@ router.get([
   '/avaliadores/dashboard/dados',
   '/avaliadores/dashboard/esqueci-senha',
   '/avaliadores/dashboard/nova-senha/:token'
+], function(req, res, next) {
+  res.render('layout.ejs');
+});
+
+// Dashboard do participante (login próprio) - mesmo cuidado do avaliador acima: lista
+// explícita, não wildcard, pra não interceptar as rotas de API de routes/participantes.js.
+router.get([
+  '/participantes/dashboard',
+  '/participantes/dashboard/trocar-senha',
+  '/participantes/dashboard/esqueci-senha',
+  '/participantes/dashboard/nova-senha/:token'
 ], function(req, res, next) {
   res.render('layout.ejs');
 });

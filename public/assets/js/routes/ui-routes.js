@@ -67,6 +67,31 @@
         return deferred.promise;
       };
 
+      // Mesmo padrão de checkLoggedinAvaliador, mas pro dashboard do participante (login
+      // próprio) - ver routes/participantes.js#ensureParticipante.
+      let checkLoggedinParticipante = function ($q, $rootScope, $http, $window) {
+        var deferred = $q.defer();
+        $rootScope.logadoParticipante = false;
+
+        $http
+          .get('/participantes/dashboard/loggedin')
+          .success(function (participante, status) {
+            if (status !== 403) {
+              $rootScope.logadoParticipante = true;
+              $rootScope.participanteLogado = participante;
+              deferred.resolve();
+            } else {
+              $window.location.href = 'http://movaci.com.br';
+              deferred.reject();
+            }
+          })
+          .error(function (status) {
+            $window.location.href = 'http://movaci.com.br';
+            deferred.reject();
+          });
+        return deferred.promise;
+      };
+
       $stateProvider
         .state('index', {
           url: '/',
@@ -216,6 +241,36 @@
           url: '/avaliadores/dashboard/nova-senha/:token',
           templateUrl: '/views/avaliador-trocar-senha.html',
           controller: 'avaliadorSenhaCtrl',
+        })
+        // ======================================================================
+
+        // Dashboard do participante (login próprio) - mesmo padrão do avaliador acima,
+        // sem tela de "dados" (participante não tem campo próprio pra editar). =========
+        .state('participanteDashboard', {
+          url: '/participantes/dashboard',
+          templateUrl: '/views/participante-dashboard.html',
+          controller: 'participanteDashboardCtrl',
+          resolve: {
+            loggedin: checkLoggedinParticipante,
+          },
+        })
+        .state('participanteTrocarSenha', {
+          url: '/participantes/dashboard/trocar-senha',
+          templateUrl: '/views/participante-trocar-senha.html',
+          controller: 'participanteSenhaCtrl',
+          resolve: {
+            loggedin: checkLoggedinParticipante,
+          },
+        })
+        .state('participanteEsqueciSenha', {
+          url: '/participantes/dashboard/esqueci-senha',
+          templateUrl: '/views/participante-esqueci-senha.html',
+          controller: 'participanteSenhaCtrl',
+        })
+        .state('participanteNovaSenha', {
+          url: '/participantes/dashboard/nova-senha/:token',
+          templateUrl: '/views/participante-trocar-senha.html',
+          controller: 'participanteSenhaCtrl',
         })
         // ======================================================================
         .state('consulta_certificado', {
