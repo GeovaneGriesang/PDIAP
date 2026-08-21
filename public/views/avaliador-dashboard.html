@@ -1,0 +1,45 @@
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Meu painel (Avaliador)</span>
+      <span flex></span>
+      <md-button ui-sref="avaliadorDados" class="md-raised" style="text-transform:none;">Meus dados</md-button>
+      <md-button data-ng-click="logout()" class="md-raised" style="text-transform:none;">Sair</md-button>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:700px;width:100%;">
+      <h2 style="color:#2e7d32;">Olá, {{avaliador.nome}}!</h2>
+
+      <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
+        <h3 style="margin-top:0;color:#225024;">Presença</h3>
+        <p data-ng-if="avaliador.avaliacao" style="color:#2e7d32;">
+          <md-icon md-svg-icon="checkbox-marked-circle-outline" style="color:#2e7d32;width:18px;height:18px;vertical-align:middle;"></md-icon>
+          Presença confirmada pela organização.
+        </p>
+        <p data-ng-if="!avaliador.avaliacao" style="color:rgba(0,0,0,0.6);">
+          Presença ainda não confirmada pela organização.
+        </p>
+      </div>
+
+      <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
+        <h3 style="margin-top:0;color:#225024;">Certificados</h3>
+        <p data-ng-if="certificados.length === 0" style="color:rgba(0,0,0,0.6);">
+          Nenhum certificado disponível ainda.
+        </p>
+        <div data-ng-repeat="cert in certificados" layout="row" layout-align="space-between center" style="padding:8px 0;border-bottom:1px solid #eee;">
+          <span>Certificado de avaliador(a) - {{cert.ano}}</span>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-click="baixarCertificado(cert)">
+            <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+            Baixar
+          </md-button>
+        </div>
+      </div>
+
+      <div layout="row" layout-align="center center">
+        <md-button ui-sref="avaliadorTrocarSenha" class="md-raised" style="text-transform:none;">Trocar minha senha</md-button>
+      </div>
+    </div>
+  </div>
+</div>

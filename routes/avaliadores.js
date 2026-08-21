@@ -10,6 +10,8 @@ const express = require('express')
 , LocalStrategy = require('passport-local').Strategy
 , Avaliador = require('../controllers/avaliador-controller')
 , session = require('express-session')
+, crypto = require('crypto')
+, bcrypt = require('bcryptjs')
 , ProjetoSchema = require('../models/projeto-schema')
 , AvaliadorSchema = require('../models/avaliador-schema');
 
@@ -30,6 +32,16 @@ function ensureAuthenticated(req, res, next) {
 
 function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
+// Garante que quem está autenticado é mesmo um Avaliador (não Projeto/Admin) - login
+// único acontece em routes/index.js (strategy 'unico'), aqui só protege as rotas do
+// dashboard próprio do avaliador.
+function ensureAvaliador(req, res, next) {
+  if (req.isAuthenticated() && req.user.constructor.modelName === 'Avaliador') {
+    return next();
+  }
+  res.sendStatus(403);
 }
 
 router.get('/', function(req, res, next) {
@@ -103,14 +115,167 @@ router.post('/registro', (req, res) => {
 	res.send('success');
 });
 
-router.post('/login', passport.authenticate('admin2'), (req, res) => {
-  res.send(req.user);
-  //res.redirect('/home');
-  //res.cookie('userid', user.id, { maxAge: 2592000000 });  // Expires in one month
-});
-
 router.get('/loggedin', ensureAuthenticated, (req, res) => {
   res.send('success');
+});
+
+// DASHBOARD DO AVALIADOR (login próprio) ===================================
+
+router.get('/dashboard/loggedin', ensureAvaliador, (req, res) => {
+  res.send({
+    nome: req.user.nome,
+    email: req.user.email,
+    senhaDefinida: !!req.user.senhaDefinida,
+    avaliacao: !!req.user.avaliacao
+  });
+});
+
+// Troca de senha - funciona tanto pro primeiro acesso (senhaDefinida false, não exige
+// senhaAtual - a "senha" usada pra logar nesse caso foi o documento) quanto pra troca
+// voluntária estando logado (senhaDefinida true, exige senhaAtual correta).
+router.post('/dashboard/trocar-senha', ensureAvaliador, (req, res) => {
+  let novaSenha = req.body.novaSenha;
+  if (!Avaliador.senhaForte(novaSenha)) {
+    return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
+  }
+
+  AvaliadorSchema.findById(req.user._id, (err, avaliador) => {
+    if (err) { console.error('Erro ao trocar senha de avaliador', err); return res.status(500).send('Erro ao trocar senha.'); }
+    if (!avaliador) return res.status(404).send('Avaliador não encontrado.');
+
+    let prosseguir = () => {
+      bcrypt.genSalt(10, (err, salt) => {
+        if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
+        bcrypt.hash(novaSenha, salt, (err, hash) => {
+          if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
+          avaliador.password = hash;
+          avaliador.senhaDefinida = true;
+          avaliador.save((err) => {
+            if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
+            res.send('success');
+          });
+        });
+      });
+    };
+
+    if (avaliador.senhaDefinida) {
+      if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
+      bcrypt.compare(req.body.senhaAtual, avaliador.password, (err, isMatch) => {
+        if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
+        if (!isMatch) return res.status(400).send('Senha atual incorreta.');
+        prosseguir();
+      });
+    } else {
+      prosseguir();
+    }
+  });
+});
+
+// Recuperação de senha (esqueci a senha) - mesmo padrão de routes/index.js pro Projeto:
+// token aleatório com expiração de 1h, enviado por e-mail.
+router.post('/dashboard/redefinir-senha', (req, res) => {
+  let email = req.body.email;
+  AvaliadorSchema.findOne({ email: email }, (err, avaliador) => {
+    if (err) { console.error('Erro ao redefinir senha de avaliador', err); return; }
+    if (!avaliador) return res.status(404).send('E-mail não encontrado.');
+
+    let token = crypto.randomBytes(20).toString('hex');
+    AvaliadorSchema.findOneAndUpdate(
+      { email: email },
+      { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } },
+      (err) => {
+        if (err) { console.error(err); return; }
+      }
+    );
+
+    res.send(email);
+
+    var templatesDir = path.resolve(__dirname, '..', 'templates');
+    var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-avaliador'));
+    const transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587,
+      auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+    });
+    var locals = { email: email, nome: avaliador.nome, url: "http://www.movaci.com.br/avaliadores/dashboard/nova-senha/" + token };
+    template.render(locals, function (err, results) {
+      if (err) { console.error(err); return; }
+      transport.sendMail({
+        from: 'MOVACI <contatomovaci@gmail.com>',
+        to: email,
+        subject: 'MOVACI - Redefinição de senha (avaliador)',
+        html: results.html,
+        text: results.text
+      }, function (err) {
+        if (err) { console.error(err); return; }
+      });
+    });
+  });
+});
+
+router.post('/dashboard/nova-senha/:token', (req, res) => {
+  AvaliadorSchema.findOne({ resetPasswordToken: req.params.token }, (err, avaliador) => {
+    if (err) { console.error('Erro ao definir nova senha de avaliador', err); return res.send('erro'); }
+    if (!avaliador) return res.send('erro2');
+    if (avaliador.hasExpired()) return res.send('erro3');
+    if (!Avaliador.senhaForte(req.body.password)) {
+      return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
+    }
+
+    bcrypt.genSalt(10, (err, salt) => {
+      if (err) { console.error(err); return res.send('erro'); }
+      bcrypt.hash(req.body.password, salt, (err, hash) => {
+        if (err) { console.error(err); return res.send('erro'); }
+        avaliador.password = hash;
+        avaliador.senhaDefinida = true;
+        avaliador.resetPasswordToken = undefined;
+        avaliador.resetPasswordCreatedDate = undefined;
+        avaliador.save((err) => {
+          if (err) { console.error(err); return res.send('erro'); }
+          res.send('Senha alterada');
+        });
+      });
+    });
+  });
+});
+
+// Dados pessoais - GET pra carregar a tela, PUT pra editar (campos de identidade como
+// cpf/email/nome ficam de fora, só o admin altera esses hoje).
+router.get('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
+  AvaliadorSchema.findById(req.user._id, '-password -resetPasswordToken -resetPasswordCreatedDate', (err, avaliador) => {
+    if (err) { console.error('Erro ao buscar dados do avaliador', err); return; }
+    res.send(avaliador);
+  });
+});
+
+router.put('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
+  let campos = {
+    telefone: splita(req.body.telefone),
+    nivelAcademico: req.body.nivelAcademico,
+    categoria: req.body.categoria,
+    eixo: req.body.eixo,
+    atuacaoProfissional: req.body.atuacaoProfissional,
+    tempoAtuacao: req.body.tempoAtuacao,
+    curriculo: req.body.curriculo
+  };
+  AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true }, (err, avaliador) => {
+    if (err) { console.error('Erro ao atualizar dados do avaliador', err); return res.status(500).send('Erro ao salvar.'); }
+    res.send('success');
+  });
+});
+
+// Certificados disponíveis - mesma regra já usada na emissão pública por CPF
+// (routes/index.js#pesquisaAvaliador): só quem tem presença confirmada (avaliacao:true)
+// tem certificado. O token já existe sempre (gerado automaticamente no pre-save do
+// schema), então aqui não precisa gerar nada, só devolver os dados de quem já está logado.
+router.get('/dashboard/meus-certificados', ensureAvaliador, (req, res) => {
+  if (!req.user.avaliacao) return res.send([]);
+  res.send([{
+    nome: req.user.nome,
+    email: req.user.email,
+    token: req.user.token,
+    createdAt: req.user.createdAt,
+    ano: new Date(req.user.createdAt).getFullYear()
+  }]);
 });
 
 router.put('/addNota', ensureAuthenticated, (req, res) => {

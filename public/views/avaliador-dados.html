@@ -1,0 +1,63 @@
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Meus dados</span>
+      <span flex></span>
+      <md-button ui-sref="avaliadorDashboard" class="md-raised" style="text-transform:none;">Voltar ao painel</md-button>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:600px;width:100%;" class="md-whiteframe-2dp">
+      <div style="background:#fff;border-radius:6px;padding:24px;">
+        <form name="dadosForm" novalidate>
+          <md-input-container class="md-block">
+            <label>Nome</label>
+            <input type="text" data-ng-model="avaliador.nome" disabled/>
+          </md-input-container>
+          <md-input-container class="md-block">
+            <label>E-mail</label>
+            <input type="email" data-ng-model="avaliador.email" disabled/>
+          </md-input-container>
+          <p style="font-size:12px;color:rgba(0,0,0,0.5);margin-top:-10px;">Nome, e-mail e documento só podem ser alterados pela organização.</p>
+
+          <md-input-container class="md-block">
+            <label>Telefone</label>
+            <input type="text" data-ng-model="avaliador.telefone"/>
+          </md-input-container>
+
+          <md-input-container class="md-block">
+            <label>Nível acadêmico</label>
+            <md-select data-ng-model="avaliador.nivelAcademico">
+              <md-option value="Graduação">Graduação</md-option>
+              <md-option value="Especialização">Especialização</md-option>
+              <md-option value="Mestrado">Mestrado</md-option>
+              <md-option value="Doutorado">Doutorado</md-option>
+            </md-select>
+          </md-input-container>
+
+          <md-input-container class="md-block">
+            <label>Atuação profissional</label>
+            <input type="text" data-ng-model="avaliador.atuacaoProfissional"/>
+          </md-input-container>
+
+          <md-input-container class="md-block">
+            <label>Tempo de atuação</label>
+            <input type="text" data-ng-model="avaliador.tempoAtuacao"/>
+          </md-input-container>
+
+          <md-input-container class="md-block">
+            <label>Currículo (link)</label>
+            <input type="text" data-ng-model="avaliador.curriculo"/>
+          </md-input-container>
+
+          <div layout="row" layout-align="center center" style="margin-top:20px;">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-click="salvar(avaliador)">
+              Salvar
+            </md-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -42,6 +42,31 @@
         return deferred.promise;
       };
 
+      // Mesmo padrão de checkLoggedin, mas pro dashboard do avaliador (login próprio,
+      // separado do login de projeto) - ver routes/avaliadores.js#ensureAvaliador.
+      let checkLoggedinAvaliador = function ($q, $rootScope, $http, $window) {
+        var deferred = $q.defer();
+        $rootScope.logadoAvaliador = false;
+
+        $http
+          .get('/avaliadores/dashboard/loggedin')
+          .success(function (avaliador, status) {
+            if (status !== 403) {
+              $rootScope.logadoAvaliador = true;
+              $rootScope.avaliadorLogado = avaliador;
+              deferred.resolve();
+            } else {
+              $window.location.href = 'http://movaci.com.br';
+              deferred.reject();
+            }
+          })
+          .error(function (status) {
+            $window.location.href = 'http://movaci.com.br';
+            deferred.reject();
+          });
+        return deferred.promise;
+      };
+
       $stateProvider
         .state('index', {
           url: '/',
@@ -156,6 +181,47 @@
           templateUrl: '/views/nova-senha.html',
           controller: 'redefinirCtrl',
         })
+
+        // Dashboard do avaliador (login próprio) - estados soltos (não aninhados) de
+        // propósito, cada tela já vem com seu próprio cabeçalho simples (ver views), sem
+        // precisar de um shell com sidenav como o do Projeto (home/admin.html). =========
+        .state('avaliadorDashboard', {
+          url: '/avaliadores/dashboard',
+          templateUrl: '/views/avaliador-dashboard.html',
+          controller: 'avaliadorDashboardCtrl',
+          resolve: {
+            loggedin: checkLoggedinAvaliador,
+          },
+        })
+        .state('avaliadorTrocarSenha', {
+          url: '/avaliadores/dashboard/trocar-senha',
+          templateUrl: '/views/avaliador-trocar-senha.html',
+          controller: 'avaliadorSenhaCtrl',
+          resolve: {
+            loggedin: checkLoggedinAvaliador,
+          },
+        })
+        .state('avaliadorDados', {
+          url: '/avaliadores/dashboard/dados',
+          templateUrl: '/views/avaliador-dados.html',
+          controller: 'avaliadorDadosCtrl',
+          resolve: {
+            loggedin: checkLoggedinAvaliador,
+          },
+        })
+        // As duas abaixo precisam funcionar sem estar logado (esqueceu a senha / veio de
+        // um link de e-mail) - por isso não têm o resolve de loggedin.
+        .state('avaliadorEsqueciSenha', {
+          url: '/avaliadores/dashboard/esqueci-senha',
+          templateUrl: '/views/avaliador-esqueci-senha.html',
+          controller: 'avaliadorSenhaCtrl',
+        })
+        .state('avaliadorNovaSenha', {
+          url: '/avaliadores/dashboard/nova-senha/:token',
+          templateUrl: '/views/avaliador-trocar-senha.html',
+          controller: 'avaliadorSenhaCtrl',
+        })
+        // ======================================================================
         .state('consulta_certificado', {
           url: '/certificados',
           templateUrl: '/views/consulta_certificado.html',
