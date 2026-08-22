@@ -25,16 +25,16 @@
       // então nem todo campo tem os mesmos dados disponíveis pra substituir.
       $scope.mascaras = {
         avaliador: [
-          {chave:'nome', desc:'Nome do avaliador'},
+          {chave:'nome', desc:'Nome do(a) avaliador(a)'},
           {chave:'email', desc:'E-mail do avaliador'},
           {chave:'categoriasAvaliadas', desc:'Categorias e eixos que avaliou'}
         ],
         orientador: [
-          {chave:'nome', desc:'Nome do orientador'},
+          {chave:'nome', desc:'Nome do(a) orientador(a)'},
           {chave:'nomeProjeto', desc:'Nome do projeto'}
         ],
         apresentacao: [
-          {chave:'nome', desc:'Nome do aluno'},
+          {chave:'nome', desc:'Nome do(a) aluno(a)'},
           {chave:'nomeProjeto', desc:'Nome do projeto'},
           {chave:'categoria', desc:'Categoria do projeto'}
         ],
