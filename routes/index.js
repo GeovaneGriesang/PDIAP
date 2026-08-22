@@ -717,7 +717,7 @@ router.post('/contato', (req, res) => {
     host: 'smtp.gmail.com',
     port: 587,
     auth: {
-      user: "contatomovaci@gmail.com",
+      user: process.env.SMTP_GMAIL_USER,
       pass: process.env.SMTP_GMAIL_PASS
     }
   }));
@@ -850,7 +850,7 @@ router.post('/registro', testaUsername2, (req, res) => {
         host: 'smtp.gmail.com',
         port: 587,
         auth: {
-          user: "contatomovaci@gmail.com",
+          user: process.env.SMTP_GMAIL_USER,
           pass: process.env.SMTP_GMAIL_PASS
         }
       });
@@ -1043,7 +1043,7 @@ router.post('/redefinir-senha', authLimiter, (req, res) => {
           host: 'smtp.gmail.com',
           port: 587,
           auth: {
-            user: "contatomovaci@gmail.com",
+            user: process.env.SMTP_GMAIL_USER,
             pass: process.env.SMTP_GMAIL_PASS
           }
         }));

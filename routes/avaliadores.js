@@ -96,7 +96,7 @@ router.post('/registro', (req, res) => {
 		host: 'smtp.gmail.com',
 		port: 587,
 		auth: {
-			user: "contatomovaci@gmail.com",
+			user: process.env.SMTP_GMAIL_USER,
 			pass: process.env.SMTP_GMAIL_PASS
 		}
 	});
@@ -199,7 +199,7 @@ router.post('/dashboard/redefinir-senha', (req, res) => {
     var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-avaliador'));
     const transport = nodemailer.createTransport({
       host: 'smtp.gmail.com', port: 587,
-      auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
     });
     var locals = { email: email, nome: avaliador.nome, url: "http://www.movaci.com.br/avaliadores/dashboard/nova-senha/" + token };
     template.render(locals, function (err, results) {

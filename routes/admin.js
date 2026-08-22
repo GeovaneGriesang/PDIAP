@@ -707,7 +707,7 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
-        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
@@ -757,7 +757,7 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
-        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
@@ -804,7 +804,7 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
-        auth: { user: "contatomovaci@gmail.com", pass: process.env.SMTP_GMAIL_PASS }
+        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
