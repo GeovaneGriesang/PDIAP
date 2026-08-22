@@ -28,11 +28,26 @@
 			</a>
 			<nav id="nav">
 				<ul> <!-- <li> <a href="#" class="icon fa-angle-down">nome</a> <ul> <li><a>Item 1</a></li> <li><a>Item 2</a></li> </ul> </li> -->
-					<li><a href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a></li>
+					<li>
+						<a href="javascript:void(0);">Certificados <span class="icon fa-angle-down"></span></a>
+						<ul>
+							<li><a href="" data-ng-click="showEmitCertificate($event)">Gerar</a></li>
+							<li><a href="/certificados">Validar</a></li>
+						</ul>
+					</li>
 					<li><a href="/contato">Fale Conosco</a></li>
-					<li><a href="/certificados">Validar Certificado</a></li>
-					<li ng-repeat="btn in edits[0].botoes"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
-					<!-- <li> <a href="#">Cadastro <span class="icon fa-angle-down"></span></a> <ul> <li><a href="/avaliadores/inscricao">Cadastrar avaliador</a></li> </ul> </li> -->
+					<li>
+						<a href="javascript:void(0);">Botões <span class="icon fa-angle-down"></span></a>
+						<ul>
+							<li ng-repeat="btn in edits[0].botoes"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
+							<li ng-if="edits[0].cadastro_projetos"><a href="/projetos/inscricao" target="_blank">Cadastrar projeto</a></li>
+							<li ng-if="edits[0].cadastro_avaliadores"><a href="/avaliadores/inscricao" target="_blank">Cadastrar avaliador</a></li>
+							<li ng-if="edits[0].saberes_docentes"><a href="/saberes-docentes/inscricao" target="_blank">Saberes Docentes</a></li>
+							<li ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes">
+								<a href="javascript:void(0);" style="font-style: italic; color: #999;">Nenhum botão disponível</a>
+							</li>
+						</ul>
+					</li>
 					<li> 
 						<a href="localhost">Documentos <span class="icon fa-angle-down"></span></a>
 						<ul> 
@@ -246,10 +261,16 @@
 		     ganha um transform quando o painel abre, e isso quebra o position:fixed de um filho. -->
 		<div id="navPanel">
 			<nav>
-				<a class="link depth-0" href="" data-ng-click="showEmitCertificate($event)">Emitir Certificado</a>
+				<span class="link depth-0">Certificados</span>
+				<a class="link depth-1" href="" data-ng-click="showEmitCertificate($event)"><span class="indent-1"></span>Gerar</a>
+				<a class="link depth-1" href="/certificados"><span class="indent-1"></span>Validar</a>
 				<a class="link depth-0" href="/contato">Fale Conosco</a>
-				<a class="link depth-0" href="/certificados">Validar Certificado</a>
-				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
+				<span class="link depth-0">Botões</span>
+				<a class="link depth-1" data-ng-repeat="btn in edits[0].botoes" ng-href="{{btn.link}}" target="_blank"><span class="indent-1"></span>{{btn.texto}}</a>
+				<a class="link depth-1" data-ng-if="edits[0].cadastro_projetos" href="/projetos/inscricao" target="_blank"><span class="indent-1"></span>Cadastrar projeto</a>
+				<a class="link depth-1" data-ng-if="edits[0].cadastro_avaliadores" href="/avaliadores/inscricao" target="_blank"><span class="indent-1"></span>Cadastrar avaliador</a>
+				<a class="link depth-1" data-ng-if="edits[0].saberes_docentes" href="/saberes-docentes/inscricao" target="_blank"><span class="indent-1"></span>Saberes Docentes</a>
+				<a class="link depth-1" data-ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
 				<span class="link depth-0">Documentos</span>
 				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
