@@ -33,22 +33,7 @@
 			return deferred.promise;
 		};
 
-		$stateProvider 
-		.state('home', {
-			url: "/admin/home",
-			views: {
-				'': {
-					templateUrl: '/admin/views/admin2.html',
-					controller: 'admin2Ctrl'
-				},
-				'projetos@home': { templateUrl: '/admin/views/list-projetos.html' },
-				'saberes@home': { templateUrl: '/admin/views/list-saberes.html' },
-				'avaliadores@home': { templateUrl: '/admin/views/list-avaliadores.html' }
-			},
-			resolve: {
-				loggedin: checkLoggedin
-			}
-		})
+		$stateProvider
 		.state('master', {
 			url: "/master",
 			views: {
