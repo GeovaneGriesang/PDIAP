@@ -1,0 +1,230 @@
+<style>
+	.relatorios-barra-linha {
+		display: flex;
+		align-items: center;
+		margin: 10px 0;
+	}
+	.relatorios-barra-label {
+		flex: 0 0 260px;
+		font-size: 14px;
+		color: rgba(0,0,0,0.7);
+		padding-right: 12px;
+		text-align: right;
+	}
+	.relatorios-barra-trilha {
+		flex: 1 1 auto;
+		height: 20px;
+		background: rgba(46,125,50,0.08);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+	.relatorios-barra-fill {
+		height: 100%;
+		background: #43a047;
+		border-radius: 3px 0 0 3px;
+		min-width: 2px;
+	}
+	.relatorios-barra-valor {
+		flex: 0 0 60px;
+		text-align: left;
+		padding-left: 10px;
+		font-weight: bold;
+		color: #225024;
+		font-variant-numeric: tabular-nums;
+	}
+	.relatorios-kpi {
+		background: #fff;
+		border-radius: 6px;
+		padding: 18px 10px;
+		text-align: center;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+	}
+	.relatorios-kpi h2 {
+		margin: 0;
+		font-size: 34px;
+		color: #2e7d32;
+	}
+	.relatorios-kpi p {
+		margin: 4px 0 0 0;
+		color: rgba(0,0,0,0.6);
+		font-size: 13px;
+	}
+	.relatorios-secao {
+		background: #fff;
+		border-radius: 6px;
+		padding: 20px 24px;
+		margin-bottom: 20px;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+		page-break-inside: avoid;
+	}
+	.relatorios-secao h3 {
+		margin: 0 0 12px 0;
+		color: #225024;
+		font-size: 16px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 8px;
+	}
+	.relatorios-tabela-escolas {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.relatorios-tabela-escolas th {
+		text-align: left;
+		color: rgba(0,0,0,0.5);
+		font-weight: normal;
+		font-size: 12px;
+		text-transform: uppercase;
+		border-bottom: 1px solid #ddd;
+		padding: 6px 8px;
+	}
+	.relatorios-tabela-escolas td {
+		padding: 6px 8px;
+		border-bottom: 1px solid #f0f0f0;
+	}
+	.relatorios-tabela-escolas td.num {
+		text-align: right;
+		font-weight: bold;
+		font-variant-numeric: tabular-nums;
+		width: 80px;
+	}
+
+	@media print {
+		.home-sidenav, .toolbar-admin, md-tabs-wrapper {
+			display: none !important;
+		}
+		md-tab-item[aria-selected="false"] { display: none !important; }
+		.relatorios-imprimir-btn { display: none !important; }
+		.relatorios-secao { box-shadow: none; border: 1px solid #ccc; }
+	}
+</style>
+
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <!-- conteúdo da página -->
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Projetos | Relatórios</h4>
+      </div>
+    </md-toolbar>
+    <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+        <span flex></span>
+        <md-button class="md-raised relatorios-imprimir-btn" style="text-transform:none;" data-ng-click="imprimir()">
+          <md-icon md-svg-src="printer" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></md-icon>
+          Imprimir
+        </md-button>
+        <div style="width:85px;">
+          <md-select data-ng-model="$root.ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year track by years" data-ng-click="recarregar()">{{years}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+      </div>
+    </md-toolbar>
+
+    <md-content style="padding:24px;background:#fdfdfd;">
+
+	<!-- Resumo geral - sempre visivel, independente da aba selecionada -->
+	<div layout="row" layout-wrap style="margin-bottom:24px;gap:16px;">
+		<div flex class="relatorios-kpi">
+			<h2>{{abas[0].countTotal}}</h2>
+			<p>Projetos no total</p>
+		</div>
+		<div flex class="relatorios-kpi">
+			<h2>{{relatorio.countAprovados}}</h2>
+			<p>Aprovados</p>
+		</div>
+		<div flex class="relatorios-kpi">
+			<h2>{{relatorio.countParticipaSim}}</h2>
+			<p>Confirmados</p>
+		</div>
+		<div flex class="relatorios-kpi">
+			<h2>{{relatorio.countParticipaNao}}</h2>
+			<p>Cancelados</p>
+		</div>
+		<div flex class="relatorios-kpi">
+			<h2>{{relatorio.countPendente}}</h2>
+			<p>Pendentes</p>
+		</div>
+	</div>
+
+	<md-tabs md-stretch-tabs="always" md-dynamic-height md-border-bottom>
+		<md-tab ng-repeat="aba in abas" label="{{aba.nome}}">
+			<div style="padding:20px 0;">
+
+				<div class="relatorios-secao">
+					<h3>Total e hospedagem</h3>
+					<div class="relatorios-barra-linha">
+						<span class="relatorios-barra-label">Total de projetos</span>
+						<span class="relatorios-barra-valor">{{aba.countTotal}}</span>
+					</div>
+					<div class="relatorios-barra-linha">
+						<span class="relatorios-barra-label">Pessoas com hospedagem solicitada</span>
+						<span class="relatorios-barra-valor">{{aba.countHospedagem}}</span>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>Por categoria</h3>
+					<div class="relatorios-barra-linha" data-ng-repeat="c in aba.categoriasArray">
+						<span class="relatorios-barra-label">{{c.nome}}</span>
+						<div class="relatorios-barra-trilha">
+							<div class="relatorios-barra-fill" style="width: {{ (c.num / c.max) * 100 }}%"></div>
+						</div>
+						<span class="relatorios-barra-valor">{{c.num}}</span>
+					</div>
+				</div>
+
+				<div class="relatorios-secao" data-ng-repeat="grupo in aba.eixosPorCategoria">
+					<h3>Eixos - {{grupo.categoria}}</h3>
+					<div class="relatorios-barra-linha" data-ng-repeat="e in grupo.eixos">
+						<span class="relatorios-barra-label">{{e.nome}}</span>
+						<div class="relatorios-barra-trilha">
+							<div class="relatorios-barra-fill" style="width: {{ (e.num / e.max) * 100 }}%"></div>
+						</div>
+						<span class="relatorios-barra-valor">{{e.num}}</span>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>Camisetas</h3>
+					<div class="relatorios-barra-linha" data-ng-repeat="cm in aba.camisetasArray">
+						<span class="relatorios-barra-label">Tamanho {{cm.nome}}</span>
+						<div class="relatorios-barra-trilha">
+							<div class="relatorios-barra-fill" style="width: {{ (cm.num / cm.max) * 100 }}%"></div>
+						</div>
+						<span class="relatorios-barra-valor">{{cm.num}}</span>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>Escolas ({{aba.escolasArray.length}})</h3>
+					<table class="relatorios-tabela-escolas">
+						<thead>
+							<tr><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="esc in aba.escolasArray">
+								<td>{{esc.nome}}</td>
+								<td class="num">{{esc.num}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+		</md-tab>
+	</md-tabs>
+
+    </md-content>
+  </section>
+</div>
