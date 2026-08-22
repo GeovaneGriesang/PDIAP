@@ -130,6 +130,11 @@
 			templateUrl: 'admin/views/enviar-email-projetos.html',
 			controller: 'enviarEmailProjetosCtrl'
 		})
+		.state('master.relatorios-projetos', {
+			url: "/projetos/relatorios",
+			templateUrl: 'admin/views/relatorios-projetos.html',
+			controller: 'relatoriosCtrl'
+		})
 		.state('confirmando', {
 			url: "/projetos/confirma/:idProjeto/:situacao",
 			templateUrl: 'admin/views/confirmando.html',
