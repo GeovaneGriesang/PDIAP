@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('projetosCtrl', function($scope, $rootScope, $q, $window, $mdDialog, $timeout, adminAPI) {
+	.controller('projetosCtrl', function($scope, $rootScope, $q, $window, $mdDialog, $timeout, $filter, adminAPI) {
 
 		$rootScope.projetos = [];
 		$scope.searchProject = "";
@@ -320,6 +320,17 @@
 				console.log('Error: '+status);
 			});
 		}
+
+		// Baixa em zip os relatórios (PDF) dos projetos aprovados. Sem filtro aplicado,
+		// baixa todos os aprovados do ano; filtrando antes (categoria, orientador, etc.),
+		// baixa só os que estão visíveis no momento - o servidor sempre garante que só
+		// projetos aprovados entram no zip, mesmo que a lista visível mostre outros também.
+		$scope.baixarZip = function() {
+			var visiveis = $filter('filter')($rootScope.projetos, $scope.search || {});
+			var ids = visiveis.map(function(p) { return p._id; });
+			var url = adminAPI.getUrlZipRelatorios(ids, $rootScope.ano);
+			$window.open(url, '_blank');
+		};
 
 		// $scope.ordenacao = ['categoria','eixo'];
 		$scope.ordenarPor = function(campo) {
