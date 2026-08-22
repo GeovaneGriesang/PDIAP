@@ -74,7 +74,7 @@
 		// mascarasLegenda.js) logo abaixo do Assunto/Corpo, substituídas pelo dado de cada
 		// destinatário na hora do envio (mesma lógica em routes/admin.js#_aplicaMascaras).
 		$scope.mascarasDisponiveis = [
-			{chave:'nome', desc:'Nome do destinatário (aluno, orientador ou nome do projeto, conforme o destinatário escolhido)'},
+			{chave:'nome', desc:'Nome do destinatário (aluno(a), orientador(a) ou nome do projeto, conforme o destinatário escolhido)'},
 			{chave:'nomeProjeto', desc:'Nome do projeto'},
 			{chave:'categoria', desc:'Categoria do projeto'},
 			{chave:'eixo', desc:'Eixo do projeto'},

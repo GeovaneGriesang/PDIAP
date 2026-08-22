@@ -43,7 +43,7 @@
     <md-content>
       <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
         <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
-          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo Avaliador</span>
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo(a) Avaliador(a)</span>
         </h3>
         <form name="avaliadoresForm" novalidate>
           <div layout-gt-xs="row">
@@ -107,10 +107,10 @@
               <label>Nacionalidade</label>
               <md-select name="nacionalidade" data-ng-model="avaliador.nacionalidade" required style="width:100%!important;"
                          data-ng-change="validarDocumento(avaliador.cpf, avaliador.nacionalidade)">
-                <md-option value="brasileiro">Brasileiro</md-option>
-                <md-option value="paraguaio">Paraguaio</md-option>
-                <md-option value="uruguaio">Uruguaio</md-option>
-                <md-option value="venezuelano">Venezuelano</md-option>
+                <md-option value="brasileiro">Brasileiro(a)</md-option>
+                <md-option value="paraguaio">Paraguaio(a)</md-option>
+                <md-option value="uruguaio">Uruguaio(a)</md-option>
+                <md-option value="venezuelano">Venezuelano(a)</md-option>
               </md-select>
               <div class="md-errors-spacer">
                 <div data-ng-if="avaliadoresForm.nacionalidade.$touched">
@@ -179,7 +179,7 @@
       <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = ['nome','cpf']">
         <md-divider></md-divider>
         <div data-ng-if="avaliadores.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
-          <p>Nenhum avaliador cadastrado :(</p>
+          <p>Nenhum(a) avaliador(a) cadastrado(a) :(</p>
         </div>
         <md-list-item class="md-3-line" data-ng-repeat="ava in avaliadores | filter:filtroAvaliador | orderBy:ordenacao track by ava._id"
         data-ng-class="{'avaliador-duplicado': ava.duplicado}"

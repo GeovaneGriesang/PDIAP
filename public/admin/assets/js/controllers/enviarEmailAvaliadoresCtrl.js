@@ -67,10 +67,10 @@
 		// Máscaras disponíveis pra essa tela (ver diretiva mascarasLegenda.js) - "nome do
 		// avaliador" é a mais pedida, mas dá pra usar qualquer campo do avaliador abaixo.
 		$scope.mascarasDisponiveis = [
-			{chave:'nome', desc:'Nome do avaliador'},
-			{chave:'email', desc:'E-mail do avaliador'},
+			{chave:'nome', desc:'Nome do(a) avaliador(a)'},
+			{chave:'email', desc:'E-mail do(a) avaliador(a)'},
 			{chave:'categorias', desc:'Categorias e eixos em que se inscreveu pra avaliar'},
-			{chave:'nivelAcademico', desc:'Nível acadêmico do avaliador'}
+			{chave:'nivelAcademico', desc:'Nível acadêmico do(a) avaliador(a)'}
 		];
 
 		function _aplicaMascaras(texto, dados) {

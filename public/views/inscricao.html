@@ -218,11 +218,11 @@
 				<div class="bloco-right" flex-xs="100" flex="75">
 					<div ng-repeat="item1 in dynamicFields1">
 						<h5 class="h5-2">
-							<md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador
+							<md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador(a)
 							{{$index+1}}:
 							<md-button data-ng-if="!$first" class="md-fab md-mini md-warn"
-								aria-label="Remover orientador" data-ng-click="removeOrientador($index)">
-								<md-tooltip md-direction="right">Remover orientador</md-tooltip>
+								aria-label="Remover orientador(a)" data-ng-click="removeOrientador($index)">
+								<md-tooltip md-direction="right">Remover orientador(a)</md-tooltip>
 								<md-icon md-svg-src="close"
 									style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
 							</md-button>
@@ -260,10 +260,10 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Nacionalidade</label>
 								<md-select ng-model="projeto[item1.nacionalidade]" required>
-									<md-option value="brasileiro">Brasileiro</md-option>
-									<md-option value="paraguaio">Paraguaio</md-option>
-									<md-option value="uruguaio">Uruguaio</md-option>
-									<md-option value="venezuelano">Venezuelano</md-option>
+									<md-option value="brasileiro">Brasileiro(a)</md-option>
+									<md-option value="paraguaio">Paraguaio(a)</md-option>
+									<md-option value="uruguaio">Uruguaio(a)</md-option>
+									<md-option value="venezuelano">Venezuelano(a)</md-option>
 								</md-select>
 							</md-input-container>
 
@@ -307,9 +307,9 @@
 						</div>
 					</div>
 					<div layout="column" layout-align="center center" data-ng-if="btnAdd1">
-						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar orientador"
+						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar orientador(a)"
 							data-ng-click="addOrientador()">
-							<md-tooltip md-direction="left">Adicionar orientador</md-tooltip>
+							<md-tooltip md-direction="left">Adicionar orientador(a)</md-tooltip>
 							<md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
 						</md-button>
 					</div>
@@ -324,11 +324,11 @@
 				<div class="bloco-right" flex-xs="100" flex="75">
 					<div ng-repeat="item2 in dynamicFields2">
 						<h5 class="h5-2">
-							<md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno
+							<md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno(a)
 							{{$index+1}}:
-							<md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover aluno"
+							<md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover aluno(a)"
 								data-ng-click="removeAluno($index)">
-								<md-tooltip md-direction="right">Remover aluno</md-tooltip>
+								<md-tooltip md-direction="right">Remover aluno(a)</md-tooltip>
 								<md-icon md-svg-src="close"
 									style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
 							</md-button>
@@ -366,10 +366,10 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Nacionalidade</label>
 								<md-select ng-model="projeto[item2.nacionalidade]" required>
-									<md-option value="brasileiro">Brasileiro</md-option>
-									<md-option value="paraguaio">Paraguaio</md-option>
-									<md-option value="uruguaio">Uruguaio</md-option>
-									<md-option value="venezuelano">Venezuelano</md-option>
+									<md-option value="brasileiro">Brasileiro(a)</md-option>
+									<md-option value="paraguaio">Paraguaio(a)</md-option>
+									<md-option value="uruguaio">Uruguaio(a)</md-option>
+									<md-option value="venezuelano">Venezuelano(a)</md-option>
 								</md-select>
 							</md-input-container>
 
@@ -413,9 +413,9 @@
 						</div>
 					</div>
 					<div layout="column" layout-align="center center" data-ng-if="btnAdd2">
-						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar aluno"
+						<md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar aluno(a)"
 							data-ng-click="addAluno()">
-							<md-tooltip md-direction="left">Adicionar aluno</md-tooltip>
+							<md-tooltip md-direction="left">Adicionar aluno(a)</md-tooltip>
 							<md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
 						</md-button>
 					</div>

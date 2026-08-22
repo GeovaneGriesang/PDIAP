@@ -43,10 +43,10 @@
                 <md-button data-ng-click="setBusca('eixo')" class="grey-text darken-3">Eixo</md-button>
               </md-menu-item>
               <md-menu-item>
-                <md-button data-ng-click="setBusca('orientadores')" class="grey-text darken-3">Orientador</md-button>
+                <md-button data-ng-click="setBusca('orientadores')" class="grey-text darken-3">Orientador(a)</md-button>
               </md-menu-item>
               <md-menu-item>
-                <md-button data-ng-click="setBusca('alunos')" class="grey-text darken-3">Aluno</md-button>
+                <md-button data-ng-click="setBusca('alunos')" class="grey-text darken-3">Aluno(a)</md-button>
               </md-menu-item>
             </md-menu-content>
           </md-menu>
@@ -312,8 +312,8 @@
           <div class="bloco-right" flex>
             <div ng-repeat="item1 in dynamicFields11" ng-form="projetoForm3">
               <h5 class="h5-2">
-                <md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador {{$index+1}}:
-                <md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover orientador" data-ng-click="removeOrientadorUpdate($index,item1.id)">
+                <md-icon md-svg-icon="account-box-outline" class="icon-integrantes"></md-icon> Orientador(a) {{$index+1}}:
+                <md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover orientador(a)" data-ng-click="removeOrientadorUpdate($index,item1.id)">
                   <md-tooltip md-direction="right">Remover orientador</md-tooltip>
                   <md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
                 </md-button>
@@ -375,7 +375,7 @@
           </div>
         </div>
         <div layout="column" layout-align="center center" data-ng-if="btnAdd11">
-          <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar orientador" data-ng-click="addOrientadorUpdate()">
+          <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar orientador(a)" data-ng-click="addOrientadorUpdate()">
             <md-tooltip md-direction="left">Adicionar orientador</md-tooltip>
             <md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
           </md-button>
@@ -400,8 +400,8 @@
           <div class="bloco-right" flex>
             <div ng-repeat="item2 in dynamicFields22" ng-form="projetoForm4">
               <h5 class="h5-2">
-                <md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno {{$index+1}}:
-                <md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover aluno" data-ng-click="removeAlunoUpdate($index,item2.id)">
+                <md-icon md-svg-icon="account-multiple" class="icon-integrantes"></md-icon> Aluno(a) {{$index+1}}:
+                <md-button data-ng-if="!$first" class="md-fab md-mini md-warn" aria-label="Remover aluno(a)" data-ng-click="removeAlunoUpdate($index,item2.id)">
                   <md-tooltip md-direction="right">Remover aluno</md-tooltip>
                   <md-icon md-svg-src="close" style="color:#fdfdfd!important;width:19px;height:19px;"></md-icon>
                 </md-button>
@@ -463,7 +463,7 @@
           </div>
         </div>
         <div layout="column" layout-align="center center" data-ng-if="btnAdd22">
-          <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar aluno" data-ng-click="addAlunoUpdate()">
+          <md-button class="md-fab md-mini" style="background:#66bb6a;" aria-label="Adicionar aluno(a)" data-ng-click="addAlunoUpdate()">
             <md-tooltip md-direction="left">Adicionar aluno</md-tooltip>
             <md-icon md-svg-src="plus" style="color:#fdfdfd!important;"></md-icon>
           </md-button>
