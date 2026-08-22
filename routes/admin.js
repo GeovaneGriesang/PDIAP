@@ -30,6 +30,8 @@ const express = require('express')
 , CadastroDocumento = require('../controllers/documento-controller')
 , pdf = require('pdfkit')
 , fs = require('fs')
+, path = require('path')
+, archiver = require('archiver')
 , async = require('async');
 
 function ensureAuthenticated(req, res, next) {
@@ -595,6 +597,63 @@ router.get('/projetos', miPermiso("2","3"), (req, res) => {
   } catch (error) {
     console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
   }
+});
+
+// Download em zip dos PDFs de relatório de projetos aprovados. Sempre restringe a
+// aprovado:true no servidor, não importa o que vier em "ids" - a tela só manda pra cá o
+// que está visível/filtrado no momento (ver public/admin/assets/js/controllers/projetosCtrl.js
+// #baixarZip), mas a garantia de segurança real (nunca vazar relatório de projeto não
+// aprovado) precisa estar aqui, não só confiar no que o cliente filtrou.
+router.get('/projetos/relatorios.zip', miPermiso("3"), (req, res) => {
+  let filtro = { aprovado: true };
+
+  if (req.query.ids) {
+    let ids = req.query.ids.split(',').filter(idValido);
+    if (ids.length === 0) return res.status(400).send('Nenhum ID válido informado.');
+    filtro._id = { $in: ids };
+  } else {
+    let anoInformado = parseInt(req.query.ano, 10);
+    if (!isNaN(anoInformado)) {
+      filtro.createdAt = {
+        $gte: new Date(anoInformado, 0, 1),
+        $lt: new Date(anoInformado + 1, 0, 1)
+      };
+    }
+  }
+
+  projetoSchema.find(filtro, 'numInscricao nomeProjeto', (err, projetos) => {
+    if (err) { console.error('Erro ao buscar projetos pro zip', err); return res.status(500).send('Erro ao gerar o zip.'); }
+
+    let pastaRelatorios = path.join(__dirname, '..', 'public', 'relatorios');
+    let encontrados = projetos.filter((p) => fs.existsSync(path.join(pastaRelatorios, p.numInscricao + '.pdf')));
+
+    if (encontrados.length === 0) {
+      return res.status(404).send('Nenhum relatório encontrado pros projetos selecionados.');
+    }
+
+    let anoZip = req.query.ano || new Date().getFullYear();
+    res.attachment('projetos-aprovados-' + anoZip + '.zip');
+
+    let archive = archiver('zip');
+    archive.on('error', (err) => {
+      console.error('Erro ao gerar zip de relatórios', err);
+      if (!res.headersSent) res.status(500).send('Erro ao gerar o zip.');
+    });
+    archive.pipe(res);
+
+    encontrados.forEach((p) => {
+      // Sanitiza o nome do projeto pro nome do arquivo dentro do zip - troca só os
+      // caracteres realmente inválidos em nome de arquivo (path traversal, etc.) por "_",
+      // preservando acentos. Baseado em blocklist (não em \p{L}/\p{N} - o babel 6 usado
+      // neste projeto não suporta Unicode property escapes, viraria lixo em produção).
+      let nomeSanitizado = (p.nomeProjeto || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
+      archive.file(path.join(pastaRelatorios, p.numInscricao + '.pdf'), {
+        name: p.numInscricao + '_' + nomeSanitizado + '.pdf'
+      });
+    });
+
+    archive.finalize();
+  });
 });
 
 // Resolve os destinatários de um projeto para envio de e-mail em massa, conforme o

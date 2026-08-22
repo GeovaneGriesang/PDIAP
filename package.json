@@ -8,6 +8,7 @@
     "test:nacionalidade": "node tests/test-nacionalidade.js"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "async": "^2.0.1",
     "bcryptjs": "^2.3.0",
     "body-parser": "~1.13.2",

@@ -47,6 +47,14 @@
 			return $http(request);
 		}
 
+		// Só monta a URL - o download em si é feito via navegação direta (window.open),
+		// não XHR, então não passa por $http (GET é isento de CSRF e leva o cookie de
+		// sessão automaticamente por ser mesma origem).
+		let _getUrlZipRelatorios = function(ids, ano) {
+			let params = ids && ids.length ? 'ids=' + ids.join(',') : 'ano=' + ano;
+			return '/admin/projetos/relatorios.zip?' + params;
+		};
+
 		let _getTodosProjetos = function(ano) {
 			const request = {
 				url: '/admin/projetos',
@@ -453,6 +461,7 @@
 			//postLoginAdmin: _postLoginAdmin,
 			postEdit: _postEdit,
 			getTodosProjetos: _getTodosProjetos,
+			getUrlZipRelatorios: _getUrlZipRelatorios,
 			getEdits: _getEdits,
 			getOpcoes: _getOpcoes,
 			postOpcoes: _postOpcoes,

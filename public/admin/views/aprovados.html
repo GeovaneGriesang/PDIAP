@@ -139,10 +139,16 @@
   </md-content>
 
   <div layout="row" class="footer-admin" style="position:fixed;width:calc(100% - 260px);height:50px;background:#424242;bottom:0!important;color:#f5f5f5;" align="center">
-    <div flex="50">
+    <div flex="34">
       <p>Selecionados: {{count}}</p>
     </div>
-    <div flex="50">
+    <div flex="33">
+      <md-button flex="50" aria-label="Baixar relatórios" class="md-raised btnCustom1" style="text-transform:none;" data-ng-click="baixarZip()">
+        <md-icon md-svg-src="folder-download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+        <span>Baixar relatórios (.zip)</span>
+      </md-button>
+    </div>
+    <div flex="33">
       <md-button flex="50" aria-label="Salvar Aprovados" class="md-raised md-primary white green darken-1 btnCustom1" data-ng-disabled="count == 0" data-ng-click="update()">
         <span>Salvar</span>
       </md-button>
