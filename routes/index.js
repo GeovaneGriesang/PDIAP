@@ -1004,9 +1004,6 @@ router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) =>
   } else if (req.user.permissao === "1") {
     // res.redirect('/projetos/');
     res.send({redirect:'/projetos'});
-  } else if (req.user.permissao === "2") {
-    // res.redirect('/admin/');
-    res.send({redirect:'/admin/home'});
   } else if (req.user.permissao === "3") {
     // res.redirect('/admin/');
     res.send({redirect:'/master'});
@@ -1158,10 +1155,6 @@ router.all('/', function(req, res, next) {
 // router.get('/admin', function(req, res, next) {
 //   res.render('layout_admin.ejs');
 // });
-
-router.get('/admin/home', function(req, res, next) {
-  res.render('layout_admin2.ejs');
-});
 
 // router.get('/admin/master', function(req, res, next) {
 //   res.render('layout_master.ejs');

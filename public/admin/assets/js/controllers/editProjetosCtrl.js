@@ -156,6 +156,17 @@
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $rootScope.ano){
+						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js e
+						// projetosCtrl.js) pra permitir filtrar por orientador/aluno.
+						value.orientadores = "";
+						value.alunos = "";
+						angular.forEach(value.integrantes, function (integrante) {
+							if (integrante.tipo === 'Orientador') {
+								value.orientadores = value.orientadores === "" ? integrante.nome : value.orientadores + ", " + integrante.nome;
+							} else if (integrante.tipo === 'Aluno') {
+								value.alunos = value.alunos === "" ? integrante.nome : value.alunos + ", " + integrante.nome;
+							}
+						});
 						$rootScope.projetos.push(value);
 					}
 				});

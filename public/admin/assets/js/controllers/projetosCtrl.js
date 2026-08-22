@@ -34,6 +34,18 @@
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $rootScope.ano){
+						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js) pra
+						// permitir filtrar por orientador/aluno no menu de busca - o filtro genérico
+						// do Angular (filter:search) só alcança campos escalares de primeiro nível.
+						let orientadores = "";
+						let alunos = "";
+						angular.forEach(value.integrantes, function (integrante) {
+							if (integrante.tipo === 'Orientador') {
+								orientadores = orientadores === "" ? integrante.nome : orientadores + ", " + integrante.nome;
+							} else if (integrante.tipo === 'Aluno') {
+								alunos = alunos === "" ? integrante.nome : alunos + ", " + integrante.nome;
+							}
+						});
 						let obj = ({
 							_id: value._id,
 							numInscricao: value.numInscricao,
@@ -41,6 +53,8 @@
 							nomeEscola: value.nomeEscola,
 							categoria: value.categoria,
 							eixo: value.eixo,
+							orientadores: orientadores,
+							alunos: alunos,
 							aprovado: value.aprovado,
 							participa: value.participa,
 							integrantes: value.integrantes,
@@ -315,6 +329,10 @@
 		$scope.query = 'nomeProjeto';
 		$scope.setBusca = function(campo) {
 			$scope.query = campo;
+			// Limpa o texto do critério anterior - senão ele fica "preso" no objeto search
+			// (o filtro genérico do Angular exige todas as chaves batendo ao mesmo tempo),
+			// escondendo resultados do novo critério até a pessoa apagar o texto na mão.
+			delete $scope.search;
 		}
 
 		$timeout(function() {
