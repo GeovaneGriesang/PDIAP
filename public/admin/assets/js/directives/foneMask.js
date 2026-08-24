@@ -8,7 +8,7 @@
 				require: "ngModel",
 				link: function (scope, element, attrs, ctrl) {
 					let _formatFone = function (fone) {
-						fone = fone.replace(/[^0-9]+/g, "");
+						fone = (fone || '').replace(/[^0-9]+/g, "");
 						if(fone.length > 0) {
 							fone = "(" + fone.substring(0);
 						}
@@ -24,7 +24,17 @@
 						return fone;
 					};
 
+					// Mesmo esquema do cpf-mask (ver cpfMask.js) - atributo vira uma expressão
+					// booleana opcional pra ligar/desligar a máscara sem precisar de dois <input>
+					// irmãos com o mesmo name alternados por ng-if (causava bug de campo sendo
+					// limpo/trocado ao mudar de foco).
+					let _ativo = function () {
+						if (attrs.foneMask === '' || attrs.foneMask === undefined) return true;
+						return !!scope.$eval(attrs.foneMask);
+					};
+
 					element.bind("keyup", function () {
+						if (!_ativo()) return;
 						ctrl.$setViewValue(_formatFone(ctrl.$viewValue));
 						ctrl.$render();
 					});

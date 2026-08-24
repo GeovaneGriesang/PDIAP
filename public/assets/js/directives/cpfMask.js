@@ -8,7 +8,7 @@
 				require: "ngModel",
 				link: function (scope, element, attrs, ctrl) {
 					let _formatCpf = function (cpf) {
-						cpf = cpf.replace(/[^0-9]+/g, "");
+						cpf = (cpf || '').replace(/[^0-9]+/g, "");
 						if(cpf.length > 3) {
 							cpf = cpf.substring(0,3) + "." + cpf.substring(3);
 						}
@@ -21,7 +21,20 @@
 						return cpf;
 					};
 
+					// O atributo cpf-mask pode ser uma expressão booleana (ex: só ativa a máscara
+					// pra nacionalidade brasileira) ou vazio (sempre ativa - uso antigo). Antes
+					// existiam DOIS <input> irmãos com o mesmo name, um mascarado e outro não,
+					// alternados por ng-if conforme a nacionalidade - causava bug real de campo
+					// sendo limpo/trocado ao trocar de foco (provável interferência de
+					// autocomplete do navegador com dois campos de mesmo name no DOM). Agora é
+					// um único <input> sempre presente; a máscara liga/desliga sozinha.
+					let _ativo = function () {
+						if (attrs.cpfMask === '' || attrs.cpfMask === undefined) return true;
+						return !!scope.$eval(attrs.cpfMask);
+					};
+
 					element.bind("keyup", function () {
+						if (!_ativo()) return;
 						ctrl.$setViewValue(_formatCpf(ctrl.$viewValue));
 						ctrl.$render();
 					});

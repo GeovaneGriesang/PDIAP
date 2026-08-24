@@ -274,11 +274,7 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
 								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]"
-									data-ng-if="projeto[item1.nacionalidade] === 'brasileiro'" cpf-mask
-									data-ng-change="validarDocumento(projeto[item1.cpf], $index, 'orientador')"
-									placeholder="Digite apenas números">
-								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]"
-									data-ng-if="projeto[item1.nacionalidade] !== 'brasileiro'"
+									cpf-mask="projeto[item1.nacionalidade] === 'brasileiro'"
 									data-ng-change="validarDocumento(projeto[item1.cpf], $index, 'orientador')"
 									placeholder="Digite apenas números">
 						</md-input-container>
@@ -286,10 +282,7 @@
 						<md-input-container class="md-block" flex-gt-sm>
 							<label>Telefone</label>
 							<input type="text" name="{{item1.telefone}}" data-ng-model="projeto[item1.telefone]"
-								data-ng-if="projeto[item1.nacionalidade] === 'brasileiro'" fone-mask
-								required minlength="0" maxlength="20" />
-							<input type="text" name="{{item1.telefone}}" data-ng-model="projeto[item1.telefone]"
-								data-ng-if="projeto[item1.nacionalidade] !== 'brasileiro'"
+								fone-mask="projeto[item1.nacionalidade] === 'brasileiro'"
 								required minlength="0" maxlength="20" />
 							<div class="md-errors-spacer">
 								<div data-ng-show="projetoForm.{{item1.telefone}}.$dirty">
@@ -391,11 +384,7 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
 								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]"
-									data-ng-if="projeto[item2.nacionalidade] === 'brasileiro'" cpf-mask
-									data-ng-change="validarDocumento(projeto[item2.cpf], $index, 'aluno')"
-									placeholder="Digite apenas números">
-								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]"
-									data-ng-if="projeto[item2.nacionalidade] !== 'brasileiro'"
+									cpf-mask="projeto[item2.nacionalidade] === 'brasileiro'"
 									data-ng-change="validarDocumento(projeto[item2.cpf], $index, 'aluno')"
 									placeholder="Digite apenas números">
 							</md-input-container>
@@ -404,9 +393,7 @@
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Telefone</label>
 						<input type="text" name="{{item2.telefone}}" data-ng-model="projeto[item2.telefone]"
-							data-ng-if="projeto[item2.nacionalidade] === 'brasileiro'" fone-mask />
-						<input type="text" name="{{item2.telefone}}" data-ng-model="projeto[item2.telefone]"
-							data-ng-if="projeto[item2.nacionalidade] !== 'brasileiro'" />
+							fone-mask="projeto[item2.nacionalidade] === 'brasileiro'" />
 								<div class="md-errors-spacer">
 									<div data-ng-show="projetoForm.{{item2.telefone}}.$dirty">
 										<div class="message-error"
