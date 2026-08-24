@@ -5,6 +5,12 @@ const mongoose = require('mongoose')
 ,	Schema = mongoose.Schema;
 
 const AvaliadorSchema = new Schema({
+	// Referencia a identidade central (login único - ver models/pessoa-schema.js). Enquanto a migração não roda pra um registro
+	// antigo, fica undefined - por isso ainda não é 'required'. nome/email/cpf/telefone
+	// abaixo continuam existindo por enquanto como cópia de exibição (evita reescrever
+	// toda tela que já lê avaliador.nome etc.), mas autenticação passa a ser sempre via
+	// Pessoa.
+	pessoa: { type: Schema.Types.ObjectId, ref: 'Pessoa' },
 	nome: { type: String },
 	email: { type: String },
 	// 'brasileiro' | 'uruguaio'. Sem 'required' aqui porque as rotas montam o objeto
