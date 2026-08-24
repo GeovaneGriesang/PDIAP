@@ -20,6 +20,7 @@ const IntegranteSchema = new Schema({
 	tipo: {type: String},
 	nome: {type: String},
 	email: {type: String},
+	nacionalidade: {type: String},
 	cpf: {type: String},
 	telefone: {type: String},
 	tamCamiseta: {type: String},

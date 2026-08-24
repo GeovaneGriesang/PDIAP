@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, adminAPI) {
+	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, adminAPI, documentoValidatorService) {
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
@@ -20,27 +20,14 @@
 			console.log(status);
 		});
 
-		function _validateCPF(cpf) {
-			cpf = (cpf || '').replace(/\D+/g, '');
-			if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
-			var sum = 0, rest;
-			for (var i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
-			rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
-			if (rest !== parseInt(cpf.substring(9, 10))) return false;
-			sum = 0;
-			for (i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
-			rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
-			if (rest !== parseInt(cpf.substring(10, 11))) return false;
-			return true;
-		}
-
-		$scope.validarDocumento = function(valor, nacionalidade) {
-			var digits = (valor || '').toString().replace(/\D+/g, '');
-			var valido = (nacionalidade === 'brasileiro') ? _validateCPF(digits) : digits.length >= 5;
+		// Valida o documento contra QUALQUER nacionalidade suportada, não só a
+		// selecionada no form (ver documentoValidatorService).
+		$scope.validarDocumento = function(valor) {
+			var checagem = documentoValidatorService.validarDocumento(valor);
 			if ($scope.avaliadoresForm && $scope.avaliadoresForm.cpf) {
-				$scope.avaliadoresForm.cpf.$setValidity('documento', valido);
+				$scope.avaliadoresForm.cpf.$setValidity('documento', checagem.valido);
 			}
-			return valido;
+			return checagem.valido;
 		};
 
 		$scope.registrarAvaliador = function(avaliador) {
@@ -261,7 +248,7 @@
 			var listaCategorias = $scope.listaCategorias;
 			var recarregar = $scope.recarregar;
 			$mdDialog.show({
-				controller: function dialogAvaliadorController($scope, $mdDialog, $mdToast, adminAPI) {
+				controller: function dialogAvaliadorController($scope, $mdDialog, $mdToast, adminAPI, documentoValidatorService) {
 					$scope.toast = function(message, tema) {
 						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
 						$mdToast.show(toast);
@@ -286,27 +273,12 @@
 						else lista.splice(index, 1);
 					};
 
-					function _validateCPF(cpf) {
-						cpf = (cpf || '').replace(/\D+/g, '');
-						if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
-						var sum = 0, rest;
-						for (var i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
-						rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
-						if (rest !== parseInt(cpf.substring(9, 10))) return false;
-						sum = 0;
-						for (i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
-						rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
-						if (rest !== parseInt(cpf.substring(10, 11))) return false;
-						return true;
-					}
-
-					$scope.validarDocumento = function(valor, nacionalidade) {
-						var digits = (valor || '').toString().replace(/\D+/g, '');
-						var valido = (nacionalidade === 'brasileiro') ? _validateCPF(digits) : digits.length >= 5;
+					$scope.validarDocumento = function(valor) {
+						var checagem = documentoValidatorService.validarDocumento(valor);
 						if ($scope.avaliadorEditForm && $scope.avaliadorEditForm.cpf) {
-							$scope.avaliadorEditForm.cpf.$setValidity('documento', valido);
+							$scope.avaliadorEditForm.cpf.$setValidity('documento', checagem.valido);
 						}
-						return valido;
+						return checagem.valido;
 					};
 
 					$scope.alterarAvaliador = function(avaliador) {

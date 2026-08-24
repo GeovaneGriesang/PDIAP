@@ -18,7 +18,8 @@ const express = require('express')
 , wellknown = require('nodemailer-wellknown')
 , formidable = require('formidable')
 , fs = require('fs')
-, async = require('async');
+, async = require('async')
+, documentoValidator = require('../utils/documentoValidator');
 
 function testaEmail(req, res) {
   ProjetoSchema.find('email','email -_id', (error, emails) => {
@@ -266,6 +267,19 @@ router.put('/upgreice', (req, res) => {
   let myArray = req.body
   ,   id = req.user.id;
   console.log("TESTE:"+JSON.stringify(myArray));
+
+  for (let j = 0; j < myArray.length; j++) {
+    let v = myArray[j];
+    if (v.cpf !== undefined) {
+      let checagemDoc = documentoValidator.validarDocumento(v.cpf);
+      if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+    }
+    if (v.telefone !== undefined) {
+      let checagemTelefone = documentoValidator.validarTelefone(v.telefone);
+      if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
+    }
+  }
+
   myArray.forEach(function (value, i) {
     //console.log('%d: %s', i);
 
@@ -277,6 +291,7 @@ router.put('/upgreice', (req, res) => {
         tipo: value.tipo,
         nome: value.nome,
         email: value.email,
+        nacionalidade: value.nacionalidade,
         cpf: splita(value.cpf),
         telefone: splita(value.telefone),
         tamCamiseta: value.tamCamiseta
@@ -286,12 +301,13 @@ router.put('/upgreice', (req, res) => {
       (err, doc) => {
         if (err) { console.error(err); return; }
       }
-    );	
+    );
   } else if (value._id === undefined) {
     let newIntegrante = ({
       tipo: value.tipo,
       nome: value.nome,
       email: value.email,
+      nacionalidade: value.nacionalidade,
       cpf: splita(value.cpf),
       telefone: splita(value.telefone),
       tamCamiseta: value.tamCamiseta

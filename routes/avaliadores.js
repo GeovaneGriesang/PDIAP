@@ -49,8 +49,11 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/registro', (req, res) => {
-	let checagem = Avaliador.validarDocumento(req.body.nacionalidade, req.body.cpf);
+	let checagem = Avaliador.validarDocumento(req.body.cpf);
 	if (!checagem.valido) return res.status(400).send(checagem.mensagem);
+
+	let checagemTelefone = Avaliador.validarTelefone(req.body.telefone);
+	if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
 
 	// Precisa se inscrever pra avaliar pelo menos uma combinação categoria+eixo, e cada uma
 	// precisa ter os dois campos preenchidos (evita registro incompleto vindo de fora do form).
