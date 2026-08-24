@@ -30,6 +30,16 @@
 			{nome:"Engenharias", categoria: "Ensino Médio, Técnico e Superior"}
 		];
 
+		var CATEGORIAS = ['Fundamental I (1º ao 5º anos)', 'Fundamental II (6º ao 9º anos)', 'Ensino Médio, Técnico e Superior'];
+
+		// Contador de camiseta por tamanho: além do total, guarda o cruzamento com
+		// categoria e com tipo (aluno/orientador) pro detalhamento da tela.
+		function novoContadorCamiseta() {
+			var porCategoria = {};
+			CATEGORIAS.forEach(function(c) { porCategoria[c] = 0; });
+			return { total: 0, porCategoria: porCategoria, aluno: 0, orientador: 0 };
+		}
+
 		function novaAgregacao(nome) {
 			return {
 				nome: nome,
@@ -38,9 +48,7 @@
 				countFundamentalI: 0,
 				countFundamentalII: 0,
 				countEnsinoMedio: 0,
-				countCamisetasP: 0,
-				countCamisetasM: 0,
-				countCamisetasG: 0,
+				camisetas: { P: novoContadorCamiseta(), M: novoContadorCamiseta(), G: novoContadorCamiseta() },
 				escolas: {},
 				escolasArray: [],
 				eixos: EIXOS.map(function(e) { return { nome: e.nome, categoria: e.categoria, num: 0 }; })
@@ -68,9 +76,14 @@
 			agregado.escolas[chaveEscola] = (agregado.escolas[chaveEscola] || 0) + 1;
 
 			angular.forEach(proj.integrantes, function(integrante) {
-				if (integrante.tamCamiseta === 'P') agregado.countCamisetasP++;
-				else if (integrante.tamCamiseta === 'M') agregado.countCamisetasM++;
-				else if (integrante.tamCamiseta === 'G') agregado.countCamisetasG++;
+				var c = agregado.camisetas[integrante.tamCamiseta];
+				if (!c) return;
+				c.total++;
+				if (proj.categoria && c.porCategoria.hasOwnProperty(proj.categoria)) {
+					c.porCategoria[proj.categoria]++;
+				}
+				if (integrante.tipo === 'Aluno') c.aluno++;
+				else if (integrante.tipo === 'Orientador') c.orientador++;
 			});
 
 			angular.forEach(agregado.eixos, function(e) {
@@ -105,11 +118,20 @@
 				{ nome: 'Ensino Médio, Técnico e Superior', num: agregado.countEnsinoMedio }
 			]);
 
-			agregado.camisetasArray = ordenarComMax([
-				{ nome: 'P', num: agregado.countCamisetasP },
-				{ nome: 'M', num: agregado.countCamisetasM },
-				{ nome: 'G', num: agregado.countCamisetasG }
-			]);
+			// Detalhamento por categoria fica em ordem fixa (não por quantidade) - é um
+			// relatório pra reler várias vezes, não um ranking; categoria pulando de
+			// posição a cada recarregamento atrapalharia mais do que ajudaria.
+			agregado.camisetasArray = ordenarComMax(['P', 'M', 'G'].map(function(tam) {
+				var c = agregado.camisetas[tam];
+				return {
+					nome: tam,
+					num: c.total,
+					detalheCategoria: CATEGORIAS.map(function(cat) { return { nome: cat, num: c.porCategoria[cat] }; }),
+					aluno: c.aluno,
+					orientador: c.orientador,
+					expandido: false
+				};
+			}));
 
 			var porCategoria = {};
 			agregado.eixos.forEach(function(e) {
