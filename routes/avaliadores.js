@@ -110,7 +110,7 @@ router.post('/registro', (req, res) => {
 	template.render(locals, function (err, results) {
 		if (err) { console.error(err); return; }
 		transport.sendMail({
-			from: 'MOVACI <contatomovaci@gmail.com>',
+			from: 'MOVACI <va-movaci@ifsul.edu.br>',
 			to: locals.email,
 			subject: 'MOVACI - Confirmação de inscrição de avaliador',
 			html: results.html,
@@ -208,7 +208,7 @@ router.post('/dashboard/redefinir-senha', (req, res) => {
     template.render(locals, function (err, results) {
       if (err) { console.error(err); return; }
       transport.sendMail({
-        from: 'MOVACI <contatomovaci@gmail.com>',
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
         to: email,
         subject: 'MOVACI - Redefinição de senha (avaliador)',
         html: results.html,

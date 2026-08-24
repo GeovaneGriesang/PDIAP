@@ -63,7 +63,7 @@ router.post('/registro', (req, res) => {
 	template.render(locals, function (err, results) {
 		if (err) { console.error(err); return; }
 		transport.sendMail({
-			from: 'MOVACI <contatomovaci@gmail.com>',
+			from: 'MOVACI <va-movaci@ifsul.edu.br>',
 			to: locals.email,
 			subject: 'MOVACI - Confirmação de inscrição em Saberes Docentes',
 			html: results.html,
