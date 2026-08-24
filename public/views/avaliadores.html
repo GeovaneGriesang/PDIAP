@@ -115,10 +115,7 @@
       <md-input-container class="md-block" flex-gt-xs>
         <label>Doc. identificação (CPF ou cédula)</label>
         <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"
-               data-ng-if="avaliadores.nacionalidade === 'brasileiro'" cpf-mask
-               data-ng-change="validarDocumento(avaliadores.cpf)" />
-        <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"
-               data-ng-if="avaliadores.nacionalidade !== 'brasileiro'"
+               cpf-mask="avaliadores.nacionalidade === 'brasileiro'"
                data-ng-change="validarDocumento(avaliadores.cpf)" />
         <div class="md-errors-spacer">
           <div data-ng-show="avaliadoresForm.cpf.$dirty">
