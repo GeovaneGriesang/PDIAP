@@ -184,18 +184,36 @@ router.post('/emitirCertificado', (req, res) => {
     })
   }
 
+  // Bug corrigido (mesma classe do já corrigido em inserirTokenAvaliador, logo abaixo):
+  // essas duas funções não retornavam Promise nenhuma, então quem chamava seguia direto
+  // pra reconsulta (pesquisaProjetoAluno/pesquisaEvento) sem esperar a gravação terminar
+  // - corrida entre escrever e reler, que às vezes lia o certificado ainda undefined,
+  // jogava um TypeError (usr[i]....certificados._id de undefined) que o .catch mais
+  // abaixo engolia silenciosamente, sumindo com esse tipo de certificado da resposta pro
+  // usuário (o caso relatado: aluno com certificado de premiação mas sem o de
+  // participação, porque exatamente essa gravação perdeu a corrida).
   function inserirToken(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
+    return new Promise(function (fullfill, reject) {
       ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf,'_id':id}}},
         {'$set': {'integrantes.$.certificados': obj}}, [{new:true}],
-        (err, usr) => {})
+        (err, usr) => {
+          if (err) return reject(err);
+          fullfill(usr);
+        })
+    });
   }
 
   function inserirTokenEvento(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
+    return new Promise(function (fullfill, reject) {
       eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf,'_id':id}}},
         {'$set': {'responsavel.$.certificados': obj}}, [{new:true}],
-        (err, usr) => {	})
+        (err, usr) => {
+          if (err) return reject(err);
+          fullfill(usr);
+        })
+    });
   }
 
   function pesquisaPremiado(cpf) {
@@ -212,18 +230,24 @@ router.post('/emitirCertificado', (req, res) => {
 
   function inserirTokenPremiado(cpf, id) {
       var newId = new mongoose.mongo.ObjectId()
-      ProjetoSchema.findOneAndUpdate({'_id':id},
-        {'$set': {'token': newId}}, [{new:true}],
-        (err, usr) => {})
+      return new Promise(function (fullfill, reject) {
+        ProjetoSchema.findOneAndUpdate({'_id':id},
+          {'$set': {'token': newId}}, [{new:true}],
+          (err, usr) => {
+            if (err) return reject(err);
+            fullfill(usr);
+          })
+      });
   }
 
   const one = pesquisaProjetoAluno(cpf).then(usr => {
+    let gravacoes = [];
     for (let i in usr) {
-        if (usr[i].integrantes[0].certificados == undefined || usr[i].integrantes[0].certificados._id == undefined) {          
-		inserirToken(cpf, usr[i].integrantes[0]._id, "ProjetoAluno");
+        if (usr[i].integrantes[0].certificados == undefined || usr[i].integrantes[0].certificados._id == undefined) {
+		gravacoes.push(inserirToken(cpf, usr[i].integrantes[0]._id, "ProjetoAluno"));
         }
     }
-    return pesquisaProjetoAluno(cpf);
+    return Promise.all(gravacoes).then(() => pesquisaProjetoAluno(cpf));
   }).then(usr => {
 	let array = [];
 	for(let i in usr){
@@ -295,23 +319,30 @@ router.post('/emitirCertificado', (req, res) => {
         }
       }
     }
+    let gravacoes = [];
     if (usr[0].tokenSaberes === undefined && contador2) {
       let newId = new mongoose.mongo.ObjectId()
-      participanteSchema.findOneAndUpdate({'cpf':cpf},
-        {'$set': {'tokenSaberes': newId}}, [{new:true}],
-        (err, usr) => {
-          console.log("OK")
-      })
+      gravacoes.push(new Promise((fullfill, reject) => {
+        participanteSchema.findOneAndUpdate({'cpf':cpf},
+          {'$set': {'tokenSaberes': newId}}, [{new:true}],
+          (err, usr) => {
+            if (err) return reject(err);
+            fullfill(usr);
+        })
+      }));
     }
     if (usr[0].tokenOficinas === undefined && contador1) {
       let newId = new mongoose.mongo.ObjectId()
-      participanteSchema.findOneAndUpdate({'cpf':cpf},
-        {'$set': {'tokenOficinas': newId}}, [{new:true}],
-        (err, usr) => {
-          console.log("OK")
-      })
+      gravacoes.push(new Promise((fullfill, reject) => {
+        participanteSchema.findOneAndUpdate({'cpf':cpf},
+          {'$set': {'tokenOficinas': newId}}, [{new:true}],
+          (err, usr) => {
+            if (err) return reject(err);
+            fullfill(usr);
+        })
+      }));
     }
-    return pesquisaParticipante(cpf)
+    return Promise.all(gravacoes).then(() => pesquisaParticipante(cpf))
   })
   .then(usr => {
     // let array = []
@@ -330,12 +361,13 @@ router.post('/emitirCertificado', (req, res) => {
   .catch(err => console.log("Não encontrou nada nos participantes dos eventos. " + err.message))
 
   const four = pesquisaEvento(cpf).then(usr => {
+    let gravacoes = [];
     for (let i in usr) {
       if (usr[i].responsavel[0].certificados == undefined || usr[i].responsavel[0].certificados._id == undefined) {
-        inserirTokenEvento(cpf, usr[i].responsavel[0]._id, "Evento");
+        gravacoes.push(inserirTokenEvento(cpf, usr[i].responsavel[0]._id, "Evento"));
       }
     }
-    return pesquisaEvento(cpf);
+    return Promise.all(gravacoes).then(() => pesquisaEvento(cpf));
   }).then(usr => {
 	let array = [];
 	for (let i in usr) {
@@ -359,12 +391,13 @@ router.post('/emitirCertificado', (req, res) => {
   }).catch(err => console.log("Não encontrou nada nos responsáveis de eventos. " + err.message))
 
   const five = pesquisaPremiado(cpf).then(usr => {
+    let gravacoes = [];
     for (let i in usr) {
-        if (usr[i].token == undefined) {          		
-         	inserirTokenPremiado(cpf, usr[i]._id);			
+        if (usr[i].token == undefined) {
+         	gravacoes.push(inserirTokenPremiado(cpf, usr[i]._id));
       	}
     }
-    return pesquisaPremiado(cpf);
+    return Promise.all(gravacoes).then(() => pesquisaPremiado(cpf));
   }).then(usr => {
 	let array = [];
     	for (let i in usr) {
@@ -392,12 +425,13 @@ router.post('/emitirCertificado', (req, res) => {
   .catch(err => console.log("Não encontrou nada nos premiados. " + err.message))
 
   const five2 = pesquisaPremiado(cpf).then(usr => {//Menção honrosa
+    let gravacoes = [];
     for (let i in usr) {
-        if (usr[i].token == undefined) {          		
-         	inserirTokenPremiado(cpf, usr[i]._id);	
+        if (usr[i].token == undefined) {
+         	gravacoes.push(inserirTokenPremiado(cpf, usr[i]._id));
       	}
     }
-    return pesquisaPremiado(cpf);
+    return Promise.all(gravacoes).then(() => pesquisaPremiado(cpf));
   }).then(usr => {
 	let array = [];
     	for (let i in usr) {		
@@ -427,12 +461,13 @@ router.post('/emitirCertificado', (req, res) => {
   // feira-schema.js), independente de premiação/menção honrosa. Um projeto pode estar
   // classificado em mais de uma feira, então gera uma entrada por feira classificada.
   const five3 = pesquisaPremiado(cpf).then(usr => {
+    let gravacoes = [];
     for (let i in usr) {
         if (usr[i].token == undefined) {
-         	inserirTokenPremiado(cpf, usr[i]._id);
+         	gravacoes.push(inserirTokenPremiado(cpf, usr[i]._id));
       	}
     }
-    return pesquisaPremiado(cpf);
+    return Promise.all(gravacoes).then(() => pesquisaPremiado(cpf));
   }).then(usr => {
 	let feiraIds = [];
 	for (let i in usr) {
@@ -472,12 +507,13 @@ router.post('/emitirCertificado', (req, res) => {
 
   const six = pesquisaProjetoOrientador(cpf).then(usr => {
 	console.log("USR:"+JSON.stringify(usr));
+	let gravacoes = [];
     	for (let i in usr) {
         	if (usr[i].integrantes[0].certificados == undefined || usr[i].integrantes[0].certificados._id == undefined) {
-			inserirToken(cpf, usr[i].integrantes[0]._id, "ProjetoOrientador");
+			gravacoes.push(inserirToken(cpf, usr[i].integrantes[0]._id, "ProjetoOrientador"));
       		}
     	}
-	return pesquisaProjetoOrientador(cpf);
+	return Promise.all(gravacoes).then(() => pesquisaProjetoOrientador(cpf));
   }).then(usr => {
 	let array = [];
 	for(let i in usr) {
