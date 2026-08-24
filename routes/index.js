@@ -760,8 +760,8 @@ router.post('/contato', (req, res) => {
   }));
 
   var mailOptions = {
-    from: 'contatomovaci@gmail.com',
-    to: 'contatomovaci@gmail.com',
+    from: 'va-movaci@ifsul.edu.br',
+    to: 'va-movaci@ifsul.edu.br',
     subject: assunto,
     text: '',
     html: '<b> Contato via site:</b><br><b>De: </b>'+nome+' '+email+'<br><b>Assunto: </b>'+assunto+'<br><b>Mensagem: </b>'+mensagem
@@ -931,7 +931,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       template.render(locals, function (err, results) {
         if (err) { console.error(err); return; }
        	transport.sendMail({
-          	from: 'MOVACI <contatomovaci@gmail.com>',
+          	from: 'MOVACI <va-movaci@ifsul.edu.br>',
          		to: locals.email,
           	subject: 'MOVACI - Confirmação de inscrição',
           	html: results.html,
@@ -1125,7 +1125,7 @@ router.post('/redefinir-senha', authLimiter, (req, res) => {
           }
 
           transport.sendMail({
-            from: 'MOVACI <contatomovaci@gmail.com>',
+            from: 'MOVACI <va-movaci@ifsul.edu.br>',
             to: locals.email,
             subject: 'MOVACI - Redefinição de senha',
             html: results.html,

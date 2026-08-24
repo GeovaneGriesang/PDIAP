@@ -727,7 +727,7 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
-          from: 'MOVACI <contatomovaci@gmail.com>',
+          from: 'MOVACI <va-movaci@ifsul.edu.br>',
           to: d.email,
           subject: _aplicaMascaras(assunto, d),
           html: _aplicaMascaras(corpo, d)
@@ -777,7 +777,7 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
-          from: 'MOVACI <contatomovaci@gmail.com>',
+          from: 'MOVACI <va-movaci@ifsul.edu.br>',
           to: d.email,
           subject: _aplicaMascaras(assunto, d),
           html: _aplicaMascaras(corpo, d)
@@ -824,7 +824,7 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
       });
       async.eachSeries(destinatarios, function(d, next) {
         transport.sendMail({
-          from: 'MOVACI <contatomovaci@gmail.com>',
+          from: 'MOVACI <va-movaci@ifsul.edu.br>',
           to: d.email,
           subject: _aplicaMascaras(assunto, d),
           html: _aplicaMascaras(corpo, d)
@@ -977,12 +977,13 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
         {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
         (err, doc) => {
           if (err) { console.error('Erro ao editar projeto', err); return; }
-        });	
+        });
       } else if (value._id === undefined) {
         let newIntegrante = ({
           tipo: value.tipo,
           nome: value.nome,
           email: value.email,
+          nacionalidade: value.nacionalidade,
           cpf: splita(value.cpf),
           telefone: splita(value.telefone),
           tamCamiseta: value.tamCamiseta
