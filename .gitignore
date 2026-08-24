@@ -5,6 +5,7 @@
 /backups/
 /relatorios/
 /nbproject/private/
+/scripts/relatorio-divergencias-*.json
 .env
 *.pdf
 *.log
