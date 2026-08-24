@@ -28,7 +28,8 @@ const express = require('express')
 , wellknown = require('nodemailer-wellknown')
 , Promise = require('promise')
 , async = require('async')
-, rateLimit = require('express-rate-limit');
+, rateLimit = require('express-rate-limit')
+, documentoValidator = require('../utils/documentoValidator');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -756,10 +757,34 @@ router.post('/registro', testaUsername2, (req, res) => {
     console.log("Errors: "+errors);
     return res.status(400).send('error');
   } else {
+    // Orientador2/Aluno2/Aluno3 são opcionais - só valida documento/telefone deles se
+    // o integrante foi de fato preenchido (mesmo critério usado mais abaixo pra decidir
+    // se ele entra na lista de integrantes).
+    let integrantesParaValidar = [
+      { cpf: req.body.cpfOrientador1, telefone: req.body.telefoneOrientador1 },
+      { cpf: req.body.cpfAluno1, telefone: req.body.telefoneAluno1 }
+    ];
+    if (req.body.nomeOrientador2 && req.body.emailOrientador2 && req.body.cpfOrientador2 && req.body.telefoneOrientador2 && req.body.tamCamisetaOrientador2) {
+      integrantesParaValidar.push({ cpf: req.body.cpfOrientador2, telefone: req.body.telefoneOrientador2 });
+    }
+    if (req.body.nomeAluno2 && req.body.emailAluno2 && req.body.cpfAluno2 && req.body.telefoneAluno2 && req.body.tamCamisetaAluno2) {
+      integrantesParaValidar.push({ cpf: req.body.cpfAluno2, telefone: req.body.telefoneAluno2 });
+    }
+    if (req.body.nomeAluno3 && req.body.emailAluno3 && req.body.cpfAluno3 && req.body.telefoneAluno3 && req.body.tamCamisetaAluno3) {
+      integrantesParaValidar.push({ cpf: req.body.cpfAluno3, telefone: req.body.telefoneAluno3 });
+    }
+    for (let j = 0; j < integrantesParaValidar.length; j++) {
+      let checagemDoc = documentoValidator.validarDocumento(integrantesParaValidar[j].cpf);
+      if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+      let checagemTelefone = documentoValidator.validarTelefone(integrantesParaValidar[j].telefone);
+      if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
+    }
+
     let newIntegrante = ({
       tipo: "Orientador",
       nome: req.body.nomeOrientador1,
       email: req.body.emailOrientador1,
+      nacionalidade: req.body.nacionalidadeOrientador1,
       cpf: splita(req.body.cpfOrientador1),
       telefone: splita(req.body.telefoneOrientador1),
       tamCamiseta: req.body.tamCamisetaOrientador1
@@ -769,6 +794,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       tipo: "Orientador",
       nome: req.body.nomeOrientador2,
       email: req.body.emailOrientador2,
+      nacionalidade: req.body.nacionalidadeOrientador2,
       cpf: splita(req.body.cpfOrientador2),
       telefone: splita(req.body.telefoneOrientador2),
       tamCamiseta: req.body.tamCamisetaOrientador2
@@ -778,6 +804,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       tipo: "Aluno",
       nome: req.body.nomeAluno1,
       email: req.body.emailAluno1,
+      nacionalidade: req.body.nacionalidadeAluno1,
       cpf: splita(req.body.cpfAluno1),
       telefone: splita(req.body.telefoneAluno1),
       tamCamiseta: req.body.tamCamisetaAluno1
@@ -787,6 +814,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       tipo: "Aluno",
       nome: req.body.nomeAluno2,
       email: req.body.emailAluno2,
+      nacionalidade: req.body.nacionalidadeAluno2,
       cpf: splita(req.body.cpfAluno2),
       telefone: splita(req.body.telefoneAluno2),
       tamCamiseta: req.body.tamCamisetaAluno2
@@ -796,6 +824,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       tipo: "Aluno",
       nome: req.body.nomeAluno3,
       email: req.body.emailAluno3,
+      nacionalidade: req.body.nacionalidadeAluno3,
       cpf: splita(req.body.cpfAluno3),
       telefone: splita(req.body.telefoneAluno3),
       tamCamiseta: req.body.tamCamisetaAluno3

@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAP')
-	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, projetosAPI) {
+	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, projetosAPI, documentoValidatorService) {
 	
 		// Estado geral da tela de inscrição.
 		$scope.cadastro_projetos = true;
@@ -335,38 +335,16 @@
 		};
       
 
-		// Valida CPF para brasileiros e aceita documentos simples para outros países.
-		function _validateCPF(cpf) {
-			cpf = cpf.replace(/\D+/g, '');
-			if (cpf.length !== 11 || /^([0-9])\1+$/.test(cpf)) return false;
-			var sum = 0, rest;
-			for (var i = 1; i <= 9; i++) sum = sum + parseInt(cpf.substring(i-1, i)) * (11 - i);
-			rest = (sum * 10) % 11;
-			if ((rest === 10) || (rest === 11)) rest = 0;
-			if (rest !== parseInt(cpf.substring(9, 10))) return false;
-			sum = 0;
-			for (i = 1; i <= 10; i++) sum = sum + parseInt(cpf.substring(i-1, i)) * (12 - i);
-			rest = (sum * 10) % 11;
-			if ((rest === 10) || (rest === 11)) rest = 0;
-			if (rest !== parseInt(cpf.substring(10, 11))) return false;
-			return true;
-		}
-
-		// Marca os campos de documento como válidos ou inválidos com base na nacionalidade.
-		$scope.validarDocumento = function(valor, nacionalidade, index, tipo) {
-			var digits = (valor || '').toString().replace(/\D+/g, '');
+		// Marca os campos de documento como válidos ou inválidos, aceitando o valor se
+		// bater com QUALQUER nacionalidade suportada (não só a selecionada no form).
+		$scope.validarDocumento = function(valor, index, tipo) {
 			var fieldName = '';
 			if (tipo === 'orientador') {
 				fieldName = 'cpfOrientador' + (index + 1);
 			} else {
 				fieldName = 'cpfAluno' + (index + 1);
 			}
-			var valido = false;
-			if (nacionalidade === 'brasileiro') {
-				valido = _validateCPF(digits);
-			} else {
-				valido = digits.length >= 5;
-			}
+			var valido = documentoValidatorService.validarDocumento(valor).valido;
 
 			// Try to get ngModelController from DOM element (robust for dynamic names/ng-forms)
 			try {

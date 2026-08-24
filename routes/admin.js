@@ -32,7 +32,8 @@ const express = require('express')
 , fs = require('fs')
 , path = require('path')
 , archiver = require('archiver')
-, async = require('async');
+, async = require('async')
+, documentoValidator = require('../utils/documentoValidator');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -211,8 +212,11 @@ router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
 
-    let checagem = AvaliadorController.validarDocumento(req.body.nacionalidade, req.body.cpf);
+    let checagem = AvaliadorController.validarDocumento(req.body.cpf);
     if (!checagem.valido) return res.status(400).send(checagem.mensagem);
+
+    let checagemTelefone = AvaliadorController.validarTelefone(req.body.telefone);
+    if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
 
     avaliadorSchema.findOneAndUpdate({"_id": id}, {"$set": {
       "nome": req.body.nome,
@@ -245,6 +249,9 @@ router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração 
     if (!req.body.email || !/^.+@.+\..+$/.test(req.body.email)) {
       return res.status(400).send('Informe um e-mail válido.');
     }
+
+    let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
+    if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
     // Mesmo esquema usado em /avaliadores/registro: permite cadastrar o participante em um
     // ano anterior usando o filtro de ano já existente na tela (ex: cadastro-participantes.html).
@@ -423,6 +430,9 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
     if (!idValido(id)) return res.status(400).send('ID inválido');
     if (!email || !/^.+@.+\..+$/.test(email)) return res.status(400).send('Informe um e-mail válido.');
 
+    let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
+    if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+
     participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
         if (err) { console.error('Erro ao atualizar participante', err); return; }
       });
@@ -448,6 +458,12 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
 });
 
 router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
+  let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
+  if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+
+  let checagemTelefone = documentoValidator.validarTelefone(req.body.telefone);
+  if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
+
   let newSaberes = new SaberesSchema({
     tipo: req.body.tipo,
     nome: req.body.nome,
@@ -931,6 +947,18 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
     ,   id = req.body[0].ID;
     if (!idValido(id)) return res.status(400).send('ID inválido');
 
+    for (let j = 0; j < myArray.length; j++) {
+      let v = myArray[j];
+      if (v.cpf !== undefined) {
+        let checagemDoc = documentoValidator.validarDocumento(v.cpf);
+        if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+      }
+      if (v.telefone !== undefined) {
+        let checagemTelefone = documentoValidator.validarTelefone(v.telefone);
+        if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
+      }
+    }
+
     myArray.forEach(function (value, i) {
       if (value._id !== undefined) {
     if (!idValido(value._id)) return;
@@ -940,6 +968,7 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
       tipo: value.tipo,
       nome: value.nome,
       email: value.email,
+      nacionalidade: value.nacionalidade,
       cpf: splita(value.cpf),
       telefone: splita(value.telefone),
       tamCamiseta: value.tamCamiseta
