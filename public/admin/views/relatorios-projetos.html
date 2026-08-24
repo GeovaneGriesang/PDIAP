@@ -87,6 +87,31 @@
 		font-variant-numeric: tabular-nums;
 		width: 80px;
 	}
+	.relatorios-barra-clicavel {
+		cursor: pointer;
+	}
+	.relatorios-seta {
+		flex: 0 0 16px;
+		text-align: center;
+		color: rgba(0,0,0,0.4);
+		font-size: 12px;
+		transition: transform 0.15s ease;
+	}
+	.relatorios-seta-aberta {
+		transform: rotate(180deg);
+	}
+	.relatorios-detalhe-camiseta {
+		margin: -4px 0 14px 272px;
+		font-size: 13px;
+		color: rgba(0,0,0,0.65);
+	}
+	.relatorios-detalhe-grupo {
+		margin: 2px 0;
+	}
+	.relatorios-detalhe-titulo {
+		color: rgba(0,0,0,0.45);
+		margin-right: 4px;
+	}
 
 	@media print {
 		.home-sidenav, .toolbar-admin, md-tabs-wrapper {
@@ -95,6 +120,11 @@
 		md-tab-item[aria-selected="false"] { display: none !important; }
 		.relatorios-imprimir-btn { display: none !important; }
 		.relatorios-secao { box-shadow: none; border: 1px solid #ccc; }
+		/* O detalhamento de camisetas é sempre útil no papel - ninguém clica numa
+		   folha impressa, então sai sempre expandido lá, independente do que estava
+		   aberto/fechado na tela. */
+		.relatorios-seta { display: none !important; }
+		.relatorios-detalhe-camiseta.ng-hide { display: block !important; }
 	}
 </style>
 
@@ -197,12 +227,25 @@
 
 				<div class="relatorios-secao">
 					<h3>Camisetas</h3>
-					<div class="relatorios-barra-linha" data-ng-repeat="cm in aba.camisetasArray">
-						<span class="relatorios-barra-label">Tamanho {{cm.nome}}</span>
-						<div class="relatorios-barra-trilha">
-							<div class="relatorios-barra-fill" style="width: {{ (cm.num / cm.max) * 100 }}%"></div>
+					<div data-ng-repeat="cm in aba.camisetasArray">
+						<div class="relatorios-barra-linha relatorios-barra-clicavel" data-ng-click="cm.expandido = !cm.expandido">
+							<span class="relatorios-barra-label">Tamanho {{cm.nome}}</span>
+							<div class="relatorios-barra-trilha">
+								<div class="relatorios-barra-fill" style="width: {{ (cm.num / cm.max) * 100 }}%"></div>
+							</div>
+							<span class="relatorios-barra-valor">{{cm.num}}</span>
+							<span class="relatorios-seta" data-ng-class="{'relatorios-seta-aberta': cm.expandido}">▾</span>
 						</div>
-						<span class="relatorios-barra-valor">{{cm.num}}</span>
+						<div class="relatorios-detalhe-camiseta" data-ng-show="cm.expandido">
+							<div class="relatorios-detalhe-grupo">
+								<span class="relatorios-detalhe-titulo">Por categoria:</span>
+								<span data-ng-repeat="d in cm.detalheCategoria">{{d.nome}} <b>{{d.num}}</b>{{$last ? '' : ' · '}}</span>
+							</div>
+							<div class="relatorios-detalhe-grupo">
+								<span class="relatorios-detalhe-titulo">Por tipo:</span>
+								Aluno(a) <b>{{cm.aluno}}</b> · Orientador(a) <b>{{cm.orientador}}</b>
+							</div>
+						</div>
 					</div>
 				</div>
 
