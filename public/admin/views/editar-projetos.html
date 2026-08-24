@@ -103,25 +103,21 @@
                     </div>
                   </md-input-container>
                   <div class="md-block palavras-chave" data-ng-init="editingAF=false" style="margin-bottom:27px!important;padding-left:2px!important;">
-                    <label style="color:#43a047;padding-left:3px;font-size:12px;vertical-align:top;">Palavras-chave</label>
-                    <md-chips
-                    data-ng-required="true"
-                    ng-class="{'input-disabled3': !editingAF}"
-                    md-focus="editingAF=true"
-                    md-blur="editingAF=false"
-                    name="palavraChave"
-                    data-ng-model="palavraChave"
-                    md-separator-keys="keys"
-                    md-max-chips="6"
-                    placeholder="Palavras-chave (máximo 5)"
-                    secondary-placeholder=""></md-chips>
-                    <div class="md-errors-spacer" style="padding-top:3px!important;">
-                      <div class="message-error" style="padding-bottom:4px!important;color:rgba(0,0,0,0.87)!important;" data-ng-if="palavraChave.length !== 0 && palavraChave.length <= 5 || (projetoForm1.palavraChave.$untouched && !projetoForm1.palavraChave.$dirty)">Utilize ENTER após cada palavra chave.</div>
+                    <label style="color:#43a047;padding-left:3px;font-size:12px;vertical-align:top;">Palavras-chave (separe por vírgula ou ponto e vírgula)</label>
+                    <input type="text" name="palavraChaveTexto" data-ng-model="palavraChaveTexto"
+                      data-ng-change="atualizarPalavraChave(palavraChaveTexto)"
+                      ng-class="{'input-disabled3': !editingAF}"
+                      md-focus="editingAF=true" md-blur="editingAF=false"
+                      data-ng-required="true"
+                      placeholder="Ex: robótica, sustentabilidade, energia solar"
+                      style="width:100%;border:none;border-bottom:1px solid rgba(0,0,0,0.12);padding:6px 0;" />
+                    <div style="font-size:12px;color:rgba(0,0,0,0.6);padding:4px 0;" data-ng-if="palavraChave.length > 0">
+                      <b>{{palavraChave.length}}/5 palavra(s)-chave:</b> {{palavraChave.join(', ')}}
                     </div>
                     <div class="md-errors-spacer" style="padding-top:3px!important;">
-                      <div data-ng-if="projetoForm1.palavraChave.$dirty">
+                      <div data-ng-if="projetoForm1.palavraChaveTexto.$dirty">
                         <div class="message-error" style="padding-bottom:4px!important;float:right!important;" data-ng-show="palavraChave.length === 0">Obrigatório.</div>
-                        <div class="message-error" style="padding-bottom:4px!important;float:right!important;" data-ng-show="palavraChave.length > 5">Excedeu o número de palavras chave.</div>
+                        <div class="message-error" style="padding-bottom:4px!important;float:right!important;" data-ng-show="palavraChave.length > 5">Excedeu o número de palavras-chave (máx. 5) - remova alguma.</div>
                       </div>
                     </div>
                   </div>
