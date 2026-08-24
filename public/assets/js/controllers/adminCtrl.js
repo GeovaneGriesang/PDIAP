@@ -17,6 +17,21 @@
 		$scope.opcoes = {};
 		$rootScope.header = 'Dashboard';
 
+		// Antes exigia apertar Enter/vírgula depois de CADA palavra-chave pra "confirmar"
+		// (mesmo problema já resolvido em registroCtrl.js pra inscrição de projeto novo) -
+		// agora só digita separado por vírgula ou ponto e vírgula, reconhecido em tempo
+		// real. Muta o array em vez de reatribuir `$scope.palavraChave` porque esse
+		// escopo é herdado (prototype chain) por updateCtrl/registroCtrl em update.html.
+		$scope.palavraChave = [];
+		$scope.palavraChaveTexto = '';
+		$scope.atualizarPalavraChave = function(texto) {
+			var partes = (texto || '').split(/[,;]+/)
+				.map(function(p) { return p.trim(); })
+				.filter(function(p) { return p.length > 0; });
+			$scope.palavraChave.length = 0;
+			partes.forEach(function(p) { $scope.palavraChave.push(p); });
+		};
+
 		$scope.carregarOpcoes = function(callback){
 			projetosAPI.getOpcoes().success(function(op){
 				$scope.opcoes = op || {};
@@ -137,6 +152,7 @@
 				} else {
 					$scope.palavraChave = projeto.palavraChave.split(",");
 				}
+				$scope.palavraChaveTexto = $scope.palavraChave.join(', ');
 
 				$scope.projeto2.nomeEscola = projeto.nomeEscola;
 				$scope.projeto2.estado = projeto.estado;

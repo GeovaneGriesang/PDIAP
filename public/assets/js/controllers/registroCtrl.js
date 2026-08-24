@@ -151,6 +151,22 @@
 		$scope.keys = [$mdConstant.KEY_CODE.ENTER, $mdConstant.KEY_CODE.COMMA];
 		$scope.palavrasChave = [];
 
+		// A grande maioria das dúvidas de quem se inscreve travava aqui: o campo de
+		// chips exigia apertar Enter (ou vírgula) depois de CADA palavra-chave pra
+		// "confirmar" ela, e sem isso o botão Avançar nunca liberava. Agora a pessoa só
+		// digita as palavras separadas por vírgula ou ponto e vírgula, sem precisar
+		// confirmar nada - a lista é reconhecida em tempo real. Muta o array em vez de
+		// reatribuir (`$scope.palavrasChave = ...`) pra não quebrar em telas onde esse
+		// array é herdado de um escopo pai via prototype chain (ver update.html).
+		$scope.palavrasChaveTexto = '';
+		$scope.atualizarPalavrasChave = function(texto) {
+			var partes = (texto || '').split(/[,;]+/)
+				.map(function(p) { return p.trim(); })
+				.filter(function(p) { return p.length > 0; });
+			$scope.palavrasChave.length = 0;
+			partes.forEach(function(p) { $scope.palavrasChave.push(p); });
+		};
+
 		$scope.checkValidate = function(palavra) {
 			if (palavra.length === 5) {
 				$scope.palavrasChave.splice(6, 1);
@@ -397,6 +413,7 @@
 				{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1', nacionalidade:'nacionalidadeAluno1'}
 			];
 			$scope.palavrasChave = [];
+			$scope.palavrasChaveTexto = '';
 			$scope.eixos = [];
 			$scope.cidades = [];
 			$scope.loginHabilitado = false;
