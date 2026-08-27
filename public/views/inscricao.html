@@ -471,6 +471,13 @@
 				</div>
 			</div>
 			<hr size="3">
+			<div data-ng-if="!loginHabilitado && (pendenciasAvancarLista = pendenciasAvancar()).length > 0"
+				class="aviso-pendencias" style="max-width:600px;margin:24px auto 0;padding:12px 16px;border-radius:4px;background:#fff3e0;border:1px solid #ffb74d;color:#7a4a00;">
+				<b>Para avançar, complete:</b>
+				<ul style="margin:6px 0 0;padding-left:20px;">
+					<li data-ng-repeat="p in pendenciasAvancarLista">{{p}}</li>
+				</ul>
+			</div>
 			<div class="row finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
 				<md-button type="button" class="md-raised md-primary green lighten-1"
 					data-ng-disabled="!canAdvanceToLogin()"
@@ -564,11 +571,18 @@
 						Para finalizar a inscrição você precisa aceitar os termos estabelecidos no regulamento da feira.
 					</md-checkbox>
 				</div>
+				<div data-ng-if="(pendenciasFinalizarLista = pendenciasFinalizar()).length > 0"
+					class="aviso-pendencias" style="max-width:600px;margin:0 auto 24px;padding:12px 16px;border-radius:4px;background:#fff3e0;border:1px solid #ffb74d;color:#7a4a00;">
+					<b>Para finalizar, complete:</b>
+					<ul style="margin:6px 0 0;padding-left:20px;">
+						<li data-ng-repeat="p in pendenciasFinalizarLista">{{p}}</li>
+					</ul>
+				</div>
 				<!-- Finalizar inscrição -->
 				<div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive"
 					style="margin:40px 0;">
 					<md-button class="md-raised md-primary green lighten-1"
-						data-ng-disabled="!projetoForm.$valid || projetoForm.password2.$error.pwmatch"
+						data-ng-disabled="!projetoForm.$valid || !aceitaRegulamento"
 						data-ng-click="registrarProjeto(projeto);showConfirmDialog($event)">
 						<md-icon md-svg-icon="check"
 							ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon>
