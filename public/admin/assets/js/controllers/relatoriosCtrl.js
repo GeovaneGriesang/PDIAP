@@ -212,27 +212,27 @@
 
 		function textoResumo() {
 			return '*Resumo geral*\n' +
-				'Projetos no total: *' + $scope.abas[0].countTotal + '*\n' +
-				'Aprovados: *' + $scope.relatorio.countAprovados + '*\n' +
-				'Confirmados: *' + $scope.relatorio.countParticipaSim + '*\n' +
-				'Cancelados: *' + $scope.relatorio.countParticipaNao + '*\n' +
-				'Pendentes: *' + $scope.relatorio.countPendente + '*';
+				'- Projetos no total: *' + $scope.abas[0].countTotal + '*\n' +
+				'- Aprovados: *' + $scope.relatorio.countAprovados + '*\n' +
+				'- Confirmados: *' + $scope.relatorio.countParticipaSim + '*\n' +
+				'- Cancelados: *' + $scope.relatorio.countParticipaNao + '*\n' +
+				'- Pendentes: *' + $scope.relatorio.countPendente + '*';
 		}
 
 		function textoTotalHospedagem(aba) {
 			return '*Total e hospedagem — ' + aba.nome + '*\n' +
-				'Total de projetos: *' + aba.countTotal + '*\n' +
-				'Pessoas com hospedagem solicitada: *' + aba.countHospedagem + '*';
+				'- Total de projetos: *' + aba.countTotal + '*\n' +
+				'- Pessoas com hospedagem solicitada: *' + aba.countHospedagem + '*';
 		}
 
 		function textoCategorias(aba) {
 			return '*Por categoria — ' + aba.nome + '*\n' +
-				aba.categoriasArray.map(function(c) { return c.nome + ': *' + c.num + '*'; }).join('\n');
+				aba.categoriasArray.map(function(c) { return '- ' + c.nome + ': *' + c.num + '*'; }).join('\n');
 		}
 
 		function textoEixosGrupo(grupo) {
 			return '*Eixos - ' + grupo.categoria + '*\n' +
-				grupo.eixos.map(function(e) { return e.nome + ': *' + e.num + '*'; }).join('\n');
+				grupo.eixos.map(function(e) { return '- ' + e.nome + ': *' + e.num + '*'; }).join('\n');
 		}
 
 		function textoEixosTodos(aba) {
@@ -241,10 +241,10 @@
 
 		function textoCamisetas(aba, expandido) {
 			var linhas = aba.camisetasArray.map(function(cm) {
-				var linha = 'Tamanho ' + cm.nome + ': *' + cm.num + '*';
+				var linha = '- Tamanho ' + cm.nome + ': *' + cm.num + '*';
 				if (expandido) {
 					linha += '\n' + cm.detalheCategoria.map(function(d) {
-						return '  ' + d.nome + ': ' + d.num + ' (' + d.aluno + ' aluno(a), ' + d.orientador + ' orientador(a))';
+						return '  - ' + d.nome + ': ' + d.num + ' (' + d.aluno + ' aluno(a), ' + d.orientador + ' orientador(a))';
 					}).join('\n');
 				}
 				return linha;
@@ -254,7 +254,7 @@
 
 		function textoEscolas(aba) {
 			return '*Escolas (' + aba.escolasArray.length + ') — ' + aba.nome + '*\n' +
-				aba.escolasArray.map(function(e) { return e.nome + ': *' + e.num + '*'; }).join('\n');
+				aba.escolasArray.map(function(e) { return '- ' + e.nome + ': *' + e.num + '*'; }).join('\n');
 		}
 
 		function textoCompleto(aba, expandido, semEscolas) {
