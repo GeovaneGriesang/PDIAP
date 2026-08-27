@@ -44,6 +44,15 @@
 		font-size: 34px;
 		color: #2e7d32;
 	}
+	.relatorios-kpi-aprovados h2 {
+		color: #3f51b5;
+	}
+	.relatorios-kpi-cancelados h2 {
+		color: #f44336;
+	}
+	.relatorios-kpi-pendentes h2 {
+		color: #fb8c00;
+	}
 	.relatorios-kpi p {
 		margin: 4px 0 0 0;
 		color: rgba(0,0,0,0.6);
@@ -198,7 +207,7 @@
 			<h2>{{abas[0].countTotal}}</h2>
 			<p>Projetos no total</p>
 		</div>
-		<div flex class="relatorios-kpi">
+		<div flex class="relatorios-kpi relatorios-kpi-aprovados">
 			<h2>{{relatorio.countAprovados}}</h2>
 			<p>Aprovados</p>
 		</div>
@@ -206,11 +215,11 @@
 			<h2>{{relatorio.countParticipaSim}}</h2>
 			<p>Confirmados</p>
 		</div>
-		<div flex class="relatorios-kpi">
+		<div flex class="relatorios-kpi relatorios-kpi-cancelados">
 			<h2>{{relatorio.countParticipaNao}}</h2>
 			<p>Cancelados</p>
 		</div>
-		<div flex class="relatorios-kpi">
+		<div flex class="relatorios-kpi relatorios-kpi-pendentes">
 			<h2>{{relatorio.countPendente}}</h2>
 			<p>Pendentes</p>
 		</div>
