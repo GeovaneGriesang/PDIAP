@@ -26,6 +26,16 @@
 		let anoPersistido = $rootScope.ano;
 		$rootScope.ano = anoPersistido || new Date().getFullYear();
 
+		// Mesmo esquema acima, pro critério e texto de busca: ficam em $rootScope pra
+		// sobreviver à troca de página entre "Selecionar aprovados", "Presença" e
+		// "Premiação". $scope.search aponta pro MESMO objeto de $rootScope.search (não
+		// uma cópia), então digitar no campo já escreve direto no valor persistido, sem
+		// precisar sincronizar os dois em toda tecla digitada.
+		$rootScope.query = $rootScope.query || 'nomeProjeto';
+		$rootScope.search = $rootScope.search || {};
+		$scope.query = $rootScope.query;
+		$scope.search = $rootScope.search;
+
 		let countTotal = 0;
 		$scope.hosp = [];
 		let carregarProjetos = function() {
@@ -345,13 +355,12 @@
 			$scope.ordenacao = campo;
 		}
 
-		$scope.query = 'nomeProjeto';
 		$scope.setBusca = function(campo) {
-			$scope.query = campo;
+			$scope.query = $rootScope.query = campo;
 			// Limpa o texto do critério anterior - senão ele fica "preso" no objeto search
 			// (o filtro genérico do Angular exige todas as chaves batendo ao mesmo tempo),
 			// escondendo resultados do novo critério até a pessoa apagar o texto na mão.
-			delete $scope.search;
+			$scope.search = $rootScope.search = {};
 		}
 
 		$timeout(function() {
