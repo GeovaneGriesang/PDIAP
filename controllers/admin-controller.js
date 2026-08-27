@@ -67,7 +67,7 @@ function _computaPrazo(prazo, fallbackAtivo) {
 // (routes/admin.js) — antes cada arquivo tinha sua própria cópia da mesma query.
 module.exports.getEdicaoAtual = (callback) => {
 	Admin.find({'username':'admin2'},
-		'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes text prazoProjetos prazoAvaliadores botoes destaques -_id',
+		'dias mes ano edicao cadastro_avaliadores cadastro_projetos saberes_docentes solicitacao_escola text prazoProjetos prazoAvaliadores botoes destaques -_id',
 		(err, docs) => {
 			if (err || !docs || !docs[0]) return callback(err, docs);
 			var raw = docs[0].toObject();

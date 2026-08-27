@@ -43,7 +43,8 @@
 							<li ng-if="edits[0].cadastro_projetos"><a href="/projetos/inscricao" target="_blank">Cadastrar projeto</a></li>
 							<li ng-if="edits[0].cadastro_avaliadores"><a href="/avaliadores/inscricao" target="_blank">Cadastrar avaliador</a></li>
 							<li ng-if="edits[0].saberes_docentes"><a href="/saberes-docentes/inscricao" target="_blank">Saberes Docentes</a></li>
-							<li ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes">
+							<li ng-if="edits[0].solicitacao_escola"><a href="/solicitar-escola" target="_blank">Cadastrar minha escola</a></li>
+							<li ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes && !edits[0].solicitacao_escola">
 								<a href="javascript:void(0);" style="font-style: italic; color: #999;">Nenhum botão disponível</a>
 							</li>
 						</ul>
@@ -90,6 +91,7 @@
 					<p data-ng-if="edits[0].textoAvaliadores" style="font-size:0.6em;margin:0.5em 0 0 0;">{{edits[0].textoAvaliadores}}</p>
 					<a href="/avaliadores/inscricao" class="button special" style="margin-top:0.5em" target="_blank" data-ng-if="edits[0].cadastro_avaliadores == true">Cadastrar avaliador</a>
 					<a href="/saberes-docentes/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].saberes_docentes == true">Saberes Docentes</a>
+					<a href="/solicitar-escola" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].solicitacao_escola == true">Cadastrar minha escola</a>
 					<a ng-href="{{btn.link}}" class="button special" style="margin-top:3em" target="_blank" data-ng-repeat="btn in edits[0].botoes">{{btn.texto}}</a>
 
 					<div class="infos" style="display: flex; margin-left: 80px; margin-top: 90px;">
@@ -273,7 +275,8 @@
 				<a class="link depth-1" data-ng-if="edits[0].cadastro_projetos" href="/projetos/inscricao" target="_blank"><span class="indent-1"></span>Cadastrar projeto</a>
 				<a class="link depth-1" data-ng-if="edits[0].cadastro_avaliadores" href="/avaliadores/inscricao" target="_blank"><span class="indent-1"></span>Cadastrar avaliador</a>
 				<a class="link depth-1" data-ng-if="edits[0].saberes_docentes" href="/saberes-docentes/inscricao" target="_blank"><span class="indent-1"></span>Saberes Docentes</a>
-				<a class="link depth-1" data-ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
+				<a class="link depth-1" data-ng-if="edits[0].solicitacao_escola" href="/solicitar-escola" target="_blank"><span class="indent-1"></span>Cadastrar minha escola</a>
+				<a class="link depth-1" data-ng-if="!edits[0].botoes.length && !edits[0].cadastro_projetos && !edits[0].cadastro_avaliadores && !edits[0].saberes_docentes && !edits[0].solicitacao_escola" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
 				<span class="link depth-0">Documentos</span>
 				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>

@@ -147,20 +147,30 @@
 				</div>
 				<div class="bloco-right" flex-xs="100" flex="75">
 					<div layout-gt-sm="row">
-						<md-autocomplete flex="100" md-no-cache="noCache" md-selected-item="selectedItem"
-							md-search-text="projeto.nomeEscola" md-items="item in escolas" md-item-text="item"
+						<md-autocomplete flex="100" md-no-cache="noCache" md-selected-item="escolaSelecionadaItem"
+							md-selected-item-change="escolaSelecionada(item)"
+							md-search-text="projeto.nomeEscola" md-search-text-change="escolaTextoAlterado()"
+							md-items="item in escolas" md-item-text="item.nome"
 							md-min-length="1" md-floating-label="Nome da instituição" md-input-name="nomeEscola"
 							data-ng-required="true">
 							<md-item-template>
-								<span md-highlight-text="projeto.nomeEscola" md-highlight-flags="^i">{{item}}</span>
+								<span md-highlight-text="projeto.nomeEscola" md-highlight-flags="^i">{{item.nome}}</span>
+								<span data-ng-if="item.cidade" style="color:rgba(0,0,0,0.5);font-size:12px;"> — {{item.cidade}}<span data-ng-if="item.estado">/{{item.estado}}</span></span>
 							</md-item-template>
 							<div class="md-errors-spacer">
 								<div data-ng-if="projetoForm.nomeEscola.$dirty">
 									<div class="message-error" data-ng-if="projetoForm.nomeEscola.$error.required">
 										Obrigatório.</div>
+									<div class="message-error" data-ng-if="projetoForm.nomeEscola.$error.escolaSelecionada">
+										Selecione uma escola da lista.</div>
 								</div>
 							</div>
 						</md-autocomplete>
+					</div>
+					<div layout-gt-sm="row" data-ng-if="projetoForm.nomeEscola.$error.escolaSelecionada && projeto.nomeEscola.length > 0" style="margin:-4px 0 12px 0;">
+						<md-button class="md-primary" ng-click="escolaNaoEncontrada(projeto.nomeEscola, $event)" style="text-transform:none;padding:0;min-height:0;">
+							Não encontrei minha escola na lista - solicitar cadastro
+						</md-button>
 					</div>
 					<div layout-gt-sm="row">
 						<md-input-container class="md-block" flex-gt-sm="20">

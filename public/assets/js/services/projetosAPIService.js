@@ -92,6 +92,28 @@
 			return $http(request);
 		};
 
+		// Escolas aprovadas (cadastro formal, ver models/escola-schema.js) - usada pra
+		// seleção no cadastro de projeto, no lugar do texto livre de antes.
+		let _getEscolas = function() {
+			const request = {
+				url: '/getEscolasInfo',
+				method: 'GET',
+			}
+			return $http(request);
+		};
+
+		// Solicita o cadastro de uma escola nova (não encontrada na lista) - cria como
+		// pendente; usada tanto inline no cadastro de projeto quanto pelo formulário
+		// público standalone (/solicitar-escola).
+		let _solicitarEscola = function(escola) {
+			const request = {
+				url: '/solicitarEscola',
+				method: 'POST',
+				data: escola
+			}
+			return $http(request);
+		};
+
 		let _getEscolasSaberes = function() {
 			const request = {
 				url: '/saberes-docentes/registro',
@@ -211,6 +233,8 @@
 			getCategorias: _getCategorias,
 			getEstados: _getEstados,
 			getUsersEscolas: _getUsersEscolas,
+			getEscolas: _getEscolas,
+			solicitarEscola: _solicitarEscola,
 			getEscolasSaberes: _getEscolasSaberes,
 			//Descomentar para salvar alterações dos projetos inscritos
 			putProjeto: _putProjeto,

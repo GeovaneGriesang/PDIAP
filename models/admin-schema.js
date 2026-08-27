@@ -54,6 +54,11 @@ const AdminSchema = new Schema({
 	cadastro_avaliadores: {
 		type: Boolean
 	},
+	// Liga/desliga o link "Cadastrar minha escola" na home publica (ver
+	// views/layout2.ejs) - mesmo padrao do saberes_docentes logo abaixo.
+	solicitacao_escola: {
+		type: Boolean
+	},
 	saberes_docentes: {
 		type: Boolean
 	},

@@ -363,26 +363,114 @@
 			console.log($scope.dynamicFields2.length);
 		};
 
+		// getUsersEscolas() só serve pra checagem de username duplicado aqui agora - a
+		// lista de escolas (pra seleção) vem da coleção Escola (getEscolas, abaixo).
 		projetosAPI.getUsersEscolas()
 		.success(function(data) {
 			angular.forEach(data, function (value) {
 				if (value.username !== undefined) {
 					$scope.usernames.push(value.username);
 				}
-				if (value.nomeEscola !== undefined) {
-					let escolaIdem = false;
-					for (var i in $scope.escolas) {
-						if (value.nomeEscola === $scope.escolas[i]) {
-							escolaIdem = true;
-							break;
-						}
-					}
-					if (escolaIdem === false) {
-						$scope.escolas.push(value.nomeEscola);
-					}
-				}
 			});
 		});
+
+		// Lista de escolas aprovadas, pra seleção no cadastro de projeto (antes era
+		// texto livre com sugestão - agora só dá pra escolher da lista, ver
+		// md-require-match em inscricao.html).
+		projetosAPI.getEscolas()
+		.success(function(data) {
+			$scope.escolas = data;
+		})
+		.error(function(status) {
+			console.log('Erro ao carregar escolas: '+status);
+		});
+
+		// Escola não encontrada na lista: abre um diálogo pedindo os mesmos dados do
+		// cadastro de projeto (nome/cep/cidade/estado) e envia como solicitação
+		// pendente. A inscrição do projeto segue normalmente usando essa escola
+		// pendente - não trava esperando o admin aprovar, só o texto que aparece pro
+		// selecionador muda de "digite" pra essa escola já vinculada.
+		$scope.escolaNaoEncontrada = function(nomeDigitado, ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog, projetosAPI) {
+					$scope.escola = { nome: nomeDigitado || '' };
+					$scope.listaEstados = [];
+					$scope.cidades = [];
+					$scope.selectCidades = function(cid) {
+						$scope.cidades = [];
+						angular.forEach($scope.listaEstados, function(value) {
+							if (cid === value.nome) {
+								angular.forEach(value.cidades, function(c) { $scope.cidades.push(c); });
+							}
+						});
+					};
+					projetosAPI.getEstados().success(function(data) {
+						$scope.listaEstados = data.estados;
+					});
+					$scope.confirmar = function() {
+						$mdDialog.hide($scope.escola);
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: '/views/details.solicitar-escola.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false
+			}).then(function(escolaSolicitada) {
+				escolaSolicitada.origem = 'inline_inscricao';
+				projetosAPI.solicitarEscola(escolaSolicitada)
+				.success(function(escolaCriada) {
+					$scope.escolas.push(escolaCriada);
+					$scope.projeto.nomeEscola = escolaCriada.nome;
+					preencherEnderecoDaEscola(escolaCriada);
+				})
+				.error(function(status) {
+					console.log('Erro ao solicitar escola: '+status);
+				});
+			}, function() {});
+		};
+
+		// Selecionou uma escola da lista (ou limpou a seleção, item undefined): guarda o
+		// _id (é o que vai pro backend) e aproveita pra pré-preencher estado/cidade -
+		// menos campo repetido pra digitar, já que a escola já tem esse dado salvo.
+		$scope.escolaSelecionada = function(item) {
+			$scope.projeto.escola = item ? item._id : undefined;
+			if (item) preencherEnderecoDaEscola(item);
+			atualizarValidadeEscola();
+		};
+
+		// md-autocomplete não trava a digitação em texto livre (ao contrário de um
+		// select) - então dá pra digitar algo, selecionar da lista, e depois continuar
+		// digitando e apagar a seleção sem querer. Essa validação customizada garante
+		// que só fica válido com um _id de escola de verdade vinculado (selecionada da
+		// lista ou solicitada como pendente), nunca só com texto livre.
+		function atualizarValidadeEscola() {
+			var valido = !$scope.projeto.nomeEscola || !!$scope.projeto.escola;
+			$scope.projetoForm.nomeEscola.$setValidity('escolaSelecionada', valido);
+		}
+
+		$scope.escolaTextoAlterado = function() {
+			if ($scope.projeto.escola) {
+				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto.escola; })[0];
+				if (!atual || atual.nome !== $scope.projeto.nomeEscola) {
+					$scope.projeto.escola = undefined;
+				}
+			}
+			atualizarValidadeEscola();
+		};
+
+		function preencherEnderecoDaEscola(escola) {
+			$scope.projeto.escola = escola._id;
+			if (escola.estado) {
+				$scope.projeto.estado = escola.estado;
+				$scope.selectCidades(escola.estado);
+			}
+			if (escola.cidade) $scope.projeto.cidade = escola.cidade;
+			if (escola.cep) $scope.projeto.cep = escola.cep;
+			atualizarValidadeEscola();
+		}
 
 		$scope.verificaUsername = function(username) {
 			let valido = true;

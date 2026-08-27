@@ -15,6 +15,7 @@ const express = require('express')
 , participanteSchema = require('../models/participante-schema')
 , eventoSchema = require('../models/evento-schema')
 , feiraSchema = require('../models/feira-schema')
+, escolaSchema = require('../models/escola-schema')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , Admin = require('../controllers/admin-controller')
@@ -871,6 +872,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       categoria: req.body.categoria,
       eixo: req.body.eixo,
       nomeEscola: req.body.nomeEscola,
+      escola: req.body.escola || undefined,
       cep: splita(req.body.cep),
       cidade: req.body.cidade,
       estado: req.body.estado,
@@ -1191,6 +1193,38 @@ router.get('/getFeirasInfo', function(req, res){
   });
 });
 
+// Escolas aprovadas (ver models/escola-schema.js) - lista usada pra seleção no cadastro
+// de projeto, no lugar do texto livre digitado antes. Só as aprovadas: uma pendente
+// não deveria aparecer pra outra pessoa selecionar antes do admin revisar.
+router.get('/getEscolasInfo', function(req, res){
+  escolaSchema.find({ status: 'aprovada' }, 'nome cidade estado', function(err, data){
+    if (err) { console.error(err); return; }
+    res.status(200).send(data);
+  });
+});
+
+// Solicitação de cadastro de escola nova - usada tanto inline no cadastro de projeto
+// (a pessoa não encontrou a escola dela na lista) quanto pelo formulário público
+// standalone (/solicitar-escola). Sempre cria como "pendente": a inscrição de projeto
+// que originou o pedido segue normalmente usando essa escola pendente, sem travar
+// esperando o admin aprovar.
+router.post('/solicitarEscola', function(req, res){
+  let novaEscola = new escolaSchema({
+    nome: req.body.nome,
+    cep: req.body.cep,
+    cidade: req.body.cidade,
+    estado: req.body.estado,
+    status: 'pendente',
+    origem: req.body.origem === 'formulario_publico' ? 'formulario_publico' : 'inline_inscricao',
+    solicitanteNome: req.body.solicitanteNome,
+    solicitanteEmail: req.body.solicitanteEmail
+  });
+  novaEscola.save(function(err, data){
+    if (err) { console.error('Erro ao solicitar escola', err); return res.status(500).send('Erro ao solicitar escola'); }
+    res.status(200).send(data);
+  });
+});
+
 router.get('/getDocumentosInfo', function(req, res){
   CadastroDocumentoSchema.find({'exibe': true}, function(err ,data){
     if (err) { console.error(err); return; }
@@ -1295,6 +1329,10 @@ router.get('/projetos/inscricao', function(req, res, next) {
 });
 
 router.get('/saberes-docentes/inscricao', function(req, res, next) {
+  res.render('layout.ejs');
+});
+
+router.get('/solicitar-escola', function(req, res, next) {
   res.render('layout.ejs');
 });
 
