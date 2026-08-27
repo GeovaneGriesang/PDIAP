@@ -141,6 +141,11 @@
           templateUrl: '/views/saberes.html',
           controller: 'saberesCtrl',
         })
+        .state('solicitar-escola', {
+          url: '/solicitar-escola',
+          templateUrl: '/views/solicitar-escola.html',
+          controller: 'solicitarEscolaCtrl',
+        })
         //descomentar para possibilitar a inscrição de avaliadores
         .state('avaliadores', {
           url: '/avaliadores/inscricao',

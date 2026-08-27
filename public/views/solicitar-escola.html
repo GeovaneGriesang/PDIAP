@@ -1,0 +1,88 @@
+<header>
+  <md-toolbar md-scroll-shrink style="background:rgba(26,151,30,0.75)!important;min-height:60px!important;height:60px;">
+    <div class="md-toolbar-tools toolbar-inscricao" flex>
+      <span flex="5"></span>
+      <a href="http://movaci.com.br" flex>
+        <img src="assets/images/logo3-b.png" width="120px"></img>
+      </a>
+      <span flex></span>
+      <span flex="5"></span>
+    </div>
+  </md-toolbar>
+</header>
+<section class="wrapper-registro" style="margin-top:-60px!important;" layout="column" layout-align="center center" data-ng-cloak>
+  <div layout="column" layout-align="center center" style="position:absolute;width:100%;height:150px;background:rgba(26,151,30,0.75);top:60px;z-index:2;">
+    <div layout="column" layout-align="center center" class="inscricao-header-content">
+      <h1>Solicitar cadastro de escola</h1>
+    </div>
+  </div>
+  <div class="inscricao-header"></div>
+  <div style="position:absolute;width:100%;height:20px;z-index:20;top:190px;">
+    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <polyline class="poly" points="100,100 0,100 100,0"/>
+    </svg>
+  </div>
+
+  <md-content flex layout="column" layout-align="center center" class="inscricao-content">
+    <div data-ng-if="!enviado" style="width:85%;max-width:600px;">
+      <p style="text-align:center;color:rgba(0,0,0,0.6);">Sua escola ainda não está na lista de seleção do cadastro de projetos? Solicite aqui - o admin revisa e aprova em seguida, e ela passa a aparecer pra todo mundo escolher.</p>
+      <form name="solicitarEscolaForm" novalidate style="width:100%;">
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>Nome da escola</label>
+          <input type="text" name="nome" data-ng-model="escola.nome" required/>
+          <div class="md-errors-spacer">
+            <div data-ng-if="solicitarEscolaForm.nome.$dirty">
+              <div class="message-error" data-ng-if="solicitarEscolaForm.nome.$error.required">Obrigatório.</div>
+            </div>
+          </div>
+        </md-input-container>
+        <div layout-gt-sm="row">
+          <md-input-container class="md-block" flex-gt-sm="30">
+            <label>Estado</label>
+            <md-select name="estado" data-ng-model="escola.estado" data-ng-change="selectCidades(escola.estado)" required>
+              <md-option data-ng-value="z.nome" data-ng-repeat="z in listaEstados">{{z.sigla}}</md-option>
+            </md-select>
+          </md-input-container>
+          <div flex="5" hide-xs hide-sm></div>
+          <md-input-container class="md-block" flex-gt-sm>
+            <label>Cidade</label>
+            <md-select name="cidade" data-ng-model="escola.cidade" required>
+              <md-option value="" disabled data-ng-if="escola.estado === undefined">Selecione um Estado</md-option>
+              <md-option data-ng-value="c" data-ng-repeat="c in cidades">{{c}}</md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+        <md-input-container class="md-block" flex-gt-xs>
+          <label>CEP</label>
+          <input type="text" name="cep" data-ng-model="escola.cep" minlength="10" maxlength="10" cep-mask />
+        </md-input-container>
+        <div layout-gt-sm="row">
+          <md-input-container class="md-block" flex-gt-sm>
+            <label>Seu nome (opcional)</label>
+            <input type="text" name="solicitanteNome" data-ng-model="escola.solicitanteNome" />
+          </md-input-container>
+          <div flex="5" hide-xs hide-sm></div>
+          <md-input-container class="md-block" flex-gt-sm>
+            <label>Seu e-mail (opcional)</label>
+            <input type="email" name="solicitanteEmail" data-ng-model="escola.solicitanteEmail" />
+          </md-input-container>
+        </div>
+        <div data-ng-if="erro" class="message-error" style="text-align:center;margin-bottom:16px;">Não foi possível enviar. Tente novamente.</div>
+        <div class="row finalizar" layout="row" layout-align="center center" style="margin:24px 0;">
+          <md-button type="button" class="md-raised md-primary green lighten-1" data-ng-disabled="!solicitarEscolaForm.$valid" data-ng-click="enviarSolicitacao(escola)">
+            <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon> Enviar solicitação
+          </md-button>
+        </div>
+      </form>
+    </div>
+    <div data-ng-if="enviado" style="width:85%;max-width:600px;text-align:center;padding:40px 0;">
+      <h3>Solicitação enviada!</h3>
+      <p style="color:rgba(0,0,0,0.6);">Assim que o admin aprovar, a escola "{{escola.nome}}" já aparece na lista de seleção do cadastro de projetos.</p>
+    </div>
+  </md-content>
+</section>
+<footer>
+  <div layout="row" layout-align="center center" style="height:50px;">
+    <span style="line-height:36px;font-size:14px;">&copy; MOVACI. Todos os direitos reservados.</span>
+  </div>
+</footer>

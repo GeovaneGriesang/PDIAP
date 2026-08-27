@@ -1,0 +1,42 @@
+<md-dialog aria-label="Solicitar cadastro de escola" class="details2 dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Solicitar cadastro de escola</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="cancel()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p style="color:rgba(0,0,0,0.6);font-size:13px;">Sua inscrição segue normalmente com essa escola - o admin revisa e aprova em seguida.</p>
+    <form name="solicitarEscolaForm" novalidate>
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>Nome da escola</label>
+        <input type="text" name="nome" data-ng-model="escola.nome" required/>
+      </md-input-container>
+      <div layout-gt-sm="row">
+        <md-input-container class="md-block" flex-gt-sm="20">
+          <label>Estado</label>
+          <md-select name="estado" data-ng-model="escola.estado" data-ng-change="selectCidades(escola.estado)">
+            <md-option data-ng-value="z.nome" data-ng-repeat="z in listaEstados">{{z.sigla}}</md-option>
+          </md-select>
+        </md-input-container>
+        <div flex="5" hide-xs hide-sm></div>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Cidade</label>
+          <md-select name="cidade" data-ng-model="escola.cidade">
+            <md-option value="" disabled data-ng-if="escola.estado === undefined">Selecione um Estado</md-option>
+            <md-option data-ng-value="c" data-ng-repeat="c in cidades">{{c}}</md-option>
+          </md-select>
+        </md-input-container>
+        <div flex="5" hide-xs hide-sm></div>
+        <md-input-container class="md-block" flex-gt-sm="20">
+          <label>CEP</label>
+          <input type="text" name="cep" data-ng-model="escola.cep" minlength="10" maxlength="10" cep-mask />
+        </md-input-container>
+      </div>
+      <div class="finalizar" layout="row" layout-align="center center" style="margin:24px 0;">
+        <md-button class="md-raised md-primary green lighten-1" aria-label="Solicitar cadastro" data-ng-disabled="!solicitarEscolaForm.$valid" data-ng-click="confirmar()">
+          <span style="vertical-align:middle;">Solicitar cadastro</span>
+        </md-button>
+      </div>
+    </form>
+  </div>
+</md-dialog>
