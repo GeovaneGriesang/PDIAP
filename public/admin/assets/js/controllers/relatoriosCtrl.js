@@ -77,17 +77,23 @@
 		// Chave pra reconhecer a MESMA pessoa repetida em mais de um projeto: usa o
 		// documento (limpo de pontuação) quando preenchido - é o dado mais confiável
 		// disponível. O campo não é obrigatório no cadastro, então sem documento cai pro
-		// nome normalizado (minúsculas, sem espaço nas pontas) - não é infalível (duas
-		// pessoas homônimas caem juntas), mas é a única informação que sobra nesse caso.
-		function chavePessoa(integrante) {
+		// nome normalizado (minúsculas, sem espaço nas pontas) + escola - exige as DUAS
+		// coisas baterem, não só o nome. Sem a escola, dois estudantes homônimos de
+		// escolas diferentes (comum com nomes populares) caíam juntos como se fossem a
+		// mesma pessoa "inscrita em vários projetos", quando na verdade eram pessoas
+		// diferentes - a escola em comum é um sinal bem mais forte de que é a mesma
+		// pessoa mesmo sem documento.
+		function chavePessoa(integrante, proj) {
 			var doc = (integrante.cpf || '').replace(/\D/g, '');
 			if (doc) return 'doc:' + doc;
 			var nome = (integrante.nome || '').trim().toLowerCase();
-			return nome ? 'nome:' + nome : null;
+			if (!nome) return null;
+			var escola = (proj.nomeEscola || '').trim().toLowerCase();
+			return 'nome:' + nome + '|escola:' + escola;
 		}
 
 		function registrarPessoa(mapa, integrante, proj) {
-			var chave = chavePessoa(integrante);
+			var chave = chavePessoa(integrante, proj);
 			if (!chave) return;
 			if (!mapa[chave]) {
 				mapa[chave] = { nome: integrante.nome || '(sem nome)', nomeEscola: proj.nomeEscola || '', projetos: [] };
@@ -444,7 +450,11 @@
 		$scope.copiarTudo = function(aba, expandido) {
 			copiarTexto(textoCompleto(aba, expandido, false));
 		};
-		$scope.copiarTudoSemEscolas = function(aba) {
+		// "Resumo executivo": a variante compacta do "copiar tudo" - fica de fora não só
+		// a tabela de escolas, mas também os quadros de pessoas (Estudantes/
+		// Orientadores(as), que podem ter centenas de nomes) e Localização, que nunca
+		// entraram em nenhuma variante de "copiar tudo" pelo mesmo motivo.
+		$scope.copiarResumoExecutivo = function(aba) {
 			copiarTexto(textoCompleto(aba, true, true));
 		};
 
