@@ -122,30 +122,97 @@
 			return $scope.loginHabilitado = true;
 		};
 
+		// Antes, essa checagem só olhava um subconjunto fixo de campos (dados gerais
+		// do projeto) e deixava passar mesmo com orientador(es)/aluno(s) inválidos ou
+		// em branco - a pessoa só descobria isso muito mais tarde, com o botão
+		// "Finalizar" desabilitado sem nenhuma pista do motivo (bem depois de já ter
+		// preenchido login e senha). Agora usa a validade do formulário inteiro
+		// (projetoForm.$valid), que já cobre exatamente os campos visíveis nesse
+		// momento da tela (a seção de login só entra no DOM depois de "Avançar", via
+		// ng-if, então nem participa da validação ainda).
 		$scope.canAdvanceToLogin = function() {
-			if (!$scope.cadastro_projetos) {
-				return false;
+			return !!$scope.cadastro_projetos && !!$scope.projetoForm && $scope.projetoForm.$valid;
+		};
+
+		// Rótulos amigáveis pra cada campo do formulário, usados na lista de
+		// pendências (ver listarPendencias). Campos "estáticos" ficam no mapa; campos
+		// dinâmicos de orientador/aluno (nomeOrientador2, emailAluno3 etc.) são
+		// reconhecidos por padrão de nome, então não precisam de uma entrada por
+		// índice.
+		var CAMPO_LABELS = {
+			nomeProjeto: 'Nome do projeto',
+			palavrasChaveTexto: 'Palavras-chave',
+			categoria: 'Categoria',
+			eixo: 'Eixo temático',
+			nomeEscola: 'Nome da instituição',
+			estado: 'Estado',
+			cidade: 'Cidade',
+			cep: 'CEP',
+			hospedagemVerify: 'Se algum integrante precisa de hospedagem (Sim/Não)',
+			hospedagem: 'Quais integrantes precisam de hospedagem',
+			email: 'E-mail principal do login',
+			username: 'Nome de usuário do login',
+			password: 'Senha',
+			password2: 'Confirmação de senha'
+		};
+
+		var CAMPO_DINAMICO_LABELS = { nome: 'nome completo', email: 'e-mail', cpf: 'documento de identificação', telefone: 'telefone', tamCamiseta: 'tamanho da camiseta' };
+
+		function labelDoCampo(nome) {
+			if (CAMPO_LABELS[nome]) return CAMPO_LABELS[nome];
+			var m = nome.match(/^(nome|email|cpf|telefone|tamCamiseta)(Orientador|Aluno)(\d+)$/);
+			if (m) {
+				var papel = m[2] === 'Orientador' ? 'Orientador(a)' : 'Aluno(a)';
+				return 'O ' + CAMPO_DINAMICO_LABELS[m[1]] + ' do(a) ' + papel + ' ' + m[3];
 			}
-			if (!$scope.palavrasChave || $scope.palavrasChave.length === 0) {
-				return false;
+			return nome;
+		}
+
+		var MOTIVO_ERRO = {
+			required: 'não foi preenchido(a)',
+			pattern: 'está com formato inválido',
+			minlength: 'está muito curto(a)',
+			duplicado: 'já está sendo utilizado por outro projeto',
+			documento: 'não é um documento válido',
+			passwordVerify: 'não confere com a senha digitada'
+		};
+
+		// Varre o $error do form (validador -> lista de controles) e monta uma frase
+		// por campo com problema, sem repetir o mesmo campo mais de uma vez mesmo que
+		// ele tenha mais de um erro simultâneo.
+		function listarPendencias($error) {
+			var vistos = {};
+			var lista = [];
+			angular.forEach($error, function(controles, tipoErro) {
+				angular.forEach(controles, function(ctrl) {
+					var nome = ctrl.$name;
+					if (!nome || vistos[nome]) return;
+					vistos[nome] = true;
+					lista.push(labelDoCampo(nome) + ' ' + (MOTIVO_ERRO[tipoErro] || 'está inválido') + '.');
+				});
+			});
+			return lista;
+		}
+
+		// Lista do que falta pra liberar "Avançar" - nesse momento o form só contém
+		// (no DOM) os campos da seção de dados do projeto, então já é exatamente o
+		// conjunto certo.
+		$scope.pendenciasAvancar = function() {
+			if (!$scope.projetoForm) return [];
+			return listarPendencias($scope.projetoForm.$error);
+		};
+
+		// Lista do que falta pra liberar "Finalizar" - depois de "Avançar" a seção de
+		// login entra no DOM e passa a fazer parte do mesmo form, então a mesma
+		// varredura já cobre tudo. O aceite do regulamento é conferido à parte porque
+		// não é um controle nomeado do form (checkbox sem "name").
+		$scope.pendenciasFinalizar = function() {
+			if (!$scope.projetoForm) return [];
+			var lista = listarPendencias($scope.projetoForm.$error);
+			if (!$scope.aceitaRegulamento) {
+				lista.push('Você precisa aceitar os termos do regulamento da feira.');
 			}
-			if (!$scope.projeto) {
-				return false;
-			}
-			var requiredFields = ['nomeProjeto', 'categoria', 'eixo', 'nomeEscola', 'estado', 'cidade', 'cep'];
-			for (var i = 0; i < requiredFields.length; i++) {
-				var field = requiredFields[i];
-				if (!$scope.projeto[field]) {
-					return false;
-				}
-			}
-			if (!$scope.hospedagemVerify) {
-				return false;
-			}
-			if ($scope.hospedagemVerify === 'Sim' && (!$scope.projeto.hospedagem || $scope.projeto.hospedagem.length === 0)) {
-				return false;
-			}
-			return true;
+			return lista;
 		};
 
 		$scope.keys = [$mdConstant.KEY_CODE.ENTER, $mdConstant.KEY_CODE.COMMA];
