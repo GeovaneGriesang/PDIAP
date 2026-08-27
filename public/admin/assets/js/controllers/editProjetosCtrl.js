@@ -350,6 +350,25 @@
 			};
 		};
 
+		// Resumo somente-leitura do projeto (mesmo diálogo usado em Presença/Aprovados) -
+		// pra consultar categoria, integrantes, camisetas e hospedagem sem precisar abrir
+		// o formulário de edição inteiro (ver preencherCampos, bem mais pesado).
+		$scope.verResumo = function(proj, ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog) {
+					$scope.details = proj;
+					$scope.mostrarPresenca = false;
+					$scope.hide = function() { $mdDialog.hide(); };
+					$scope.cancel = function() { $mdDialog.cancel(); };
+				},
+				templateUrl: 'admin/views/details.presenca_projetos.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false,
+				fullscreen: true
+			});
+		};
+
 		$scope.preencherCampos = function(data) {
 			resetForm();
 			$scope.projeto = data;

@@ -620,7 +620,12 @@
       </div>
     </div>
     <div flex="15" style="display:flex;align-self:center;justify-content:center;">
-  	  <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover projeto" ng-click="removeProjeto($event,proj._id,proj.nomeProjeto)">
+      <md-button class="md-icon-button" aria-label="Ver detalhes do projeto"
+        ng-click="verResumo(proj,$event);$event.stopPropagation()">
+        <md-tooltip md-direction="top">Ver detalhes</md-tooltip>
+        <md-icon md-svg-src="eye" style="color:rgba(0,0,0,0.54);width:22px;height:22px;"></md-icon>
+      </md-button>
+  	  <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover projeto" ng-click="removeProjeto($event,proj._id,proj.nomeProjeto);$event.stopPropagation()">
           	  <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
         	  <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Remover</span>
  	  </md-button>
