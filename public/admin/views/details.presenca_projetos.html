@@ -5,11 +5,44 @@
     <md-icon md-svg-src="close" data-ng-click="hide()" class="btn-close" style="cursor:pointer;"></md-icon>
   </div>
   <div style="padding:1em 2em;overflow:auto!important;">
-    <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <div layout="row" layout-align="start center" style="flex-wrap:wrap;">
+      <p style="margin-right:16px;"><b>Nome:</b> {{details.nomeProjeto}}</p>
+      <div layout="row" layout-align="center center" class="md-whiteframe-1dp"
+        data-ng-class="{grey: details.aprovado !== true, green1: details.aprovado === true && details.participa === true, red: details.aprovado === true && details.participa === false}"
+        style="padding:3px 12px;border-radius:4px;font-size:11px;color:#f5f5f5;">
+        <span style="font-weight:500;">
+          <span data-ng-if="details.aprovado !== true">Aguardando aprovação</span>
+          <span data-ng-if="details.aprovado === true && details.participa === true">Confirmado!</span>
+          <span data-ng-if="details.aprovado === true && details.participa === false">Cancelado</span>
+          <span data-ng-if="details.aprovado === true && details.participa === undefined">Aprovado - aguardando confirmação</span>
+        </span>
+      </div>
+    </div>
+    <p><b>Categoria:</b> {{details.categoria}} <span data-ng-if="details.eixo">— {{details.eixo}}</span></p>
+    <p><b>Escola:</b> {{details.nomeEscola}}
+      <span data-ng-if="details.cidade || details.estado">({{details.cidade}}<span data-ng-if="details.cidade && details.estado">/</span>{{details.estado}})</span>
+    </p>
+    <p data-ng-if="details.palavraChave"><b>Palavras-chave:</b> {{details.palavraChave}}</p>
+
     <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+      <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Integrantes</span>
+    </h3>
+    <div style="background:#e0e0e0;padding:16px;">
+      <div data-ng-repeat="integ in details.integrantes" style="padding:6px 0;border-bottom:1px solid #cfcfcf;">
+        <b>{{integ.nome}}</b> ({{integ.tipo}}) <span data-ng-if="integ.tamCamiseta">— camiseta {{integ.tamCamiseta}}</span><br>
+        <span style="font-size:12px;color:rgba(0,0,0,0.6);">
+          {{integ.email}}
+          <span data-ng-if="integ.telefone"> · {{integ.telefone}}</span>
+          <span data-ng-if="integ.cpf"> · {{integ.cpf}}</span>
+        </span>
+      </div>
+    </div>
+    <p data-ng-if="details.hospedagem" style="margin-top:16px;"><b>Precisam de hospedagem:</b> {{details.hospedagem}}</p>
+
+    <h3 data-ng-if="mostrarPresenca" style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
       <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Presença</span>
     </h3>
-    <div layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
+    <div data-ng-if="mostrarPresenca" layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
       <form name="presencaProjetosForm" novalidate>
         <md-checkbox aria-label="Check" data-ng-repeat="integ in details.integrantes" data-ng-model="presenca[$index]" data-ng-init="presenca[$index] = integ.presenca" data-ng-click="contador1(presenca[$index],integ._id)" style="display:flex;margin-right:0;">{{integ.nome}} ({{integ.tipo}})</md-checkbox>
         <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">

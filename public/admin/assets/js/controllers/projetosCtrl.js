@@ -51,8 +51,12 @@
 							numInscricao: value.numInscricao,
 							nomeProjeto: value.nomeProjeto,
 							nomeEscola: value.nomeEscola,
+							cidade: value.cidade,
+							estado: value.estado,
 							categoria: value.categoria,
 							eixo: value.eixo,
+							palavraChave: value.palavraChave,
+							hospedagem: value.hospedagem,
 							orientadores: orientadores,
 							alunos: alunos,
 							aprovado: value.aprovado,
@@ -130,10 +134,14 @@
 			carregarProjetos();
 		}
 
-		$scope.visualizarDetalhes = function(projeto,ev) {
+		// mostrarPresenca controla se a seção de marcar presença aparece no diálogo -
+		// faz sentido na tela de Presença (padrão, true), mas não faz sentido em
+		// Aprovados/Premiação, que rodam antes do dia do evento (ver aprovados.html).
+		$scope.visualizarDetalhes = function(projeto,ev,mostrarPresenca) {
 			$mdDialog.show({
 				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, $timeout, adminAPI) {
 					$scope.details = projeto;
+					$scope.mostrarPresenca = mostrarPresenca !== false;
 					$scope.idIntegrantesPresentes = [];
 					$scope.idIntegrantesAusentes = [];
 					// let carregaIds = function() {
