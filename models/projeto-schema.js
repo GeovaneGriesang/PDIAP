@@ -41,7 +41,11 @@ const ProjetoSchema = new Schema({
 	eixo: {type: String},
 	hospedagem: {type: String},
 
+	// nomeEscola continua sendo gravado (cópia denormalizada) mesmo depois do cadastro
+	// formal de escolas - dezenas de telas/relatórios/testes já leem esse campo direto;
+	// toda gravação de "escola" deve manter os dois em sincronia.
 	nomeEscola: {type: String},
+	escola: {type: Schema.Types.ObjectId, ref: 'Escola'},
 	cep: {type: String},
 	cidade: {type: String},
 	estado: {type: String},
