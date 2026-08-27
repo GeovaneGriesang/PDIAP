@@ -32,6 +32,8 @@
 
 		var CATEGORIAS = ['Fundamental I (1º ao 5º anos)', 'Fundamental II (6º ao 9º anos)', 'Ensino Médio, Técnico e Superior'];
 
+		var NACIONALIDADE_LABELS = { brasileiro: 'Brasil', paraguaio: 'Paraguai', uruguaio: 'Uruguai', venezuelano: 'Venezuela' };
+
 		// Contador de camiseta por tamanho: além do total, guarda o cruzamento com
 		// categoria E tipo (aluno/orientador) ao mesmo tempo pro detalhamento da tela -
 		// não basta saber "quantas são de Fundamental I" e "quantas são de aluno(a)"
@@ -54,7 +56,12 @@
 				camisetas: { P: novoContadorCamiseta(), M: novoContadorCamiseta(), G: novoContadorCamiseta() },
 				escolas: {},
 				escolasArray: [],
-				eixos: EIXOS.map(function(e) { return { nome: e.nome, categoria: e.categoria, num: 0 }; })
+				eixos: EIXOS.map(function(e) { return { nome: e.nome, categoria: e.categoria, num: 0 }; }),
+				alunos: {},
+				orientadores: {},
+				cidades: {},
+				estados: {},
+				nacionalidades: {}
 			};
 		}
 
@@ -65,6 +72,37 @@
 		function contarHospedagem(hospedagem) {
 			if (!hospedagem) return 0;
 			return hospedagem.split(',').filter(function(s) { return s.trim() !== ''; }).length;
+		}
+
+		// Chave pra reconhecer a MESMA pessoa repetida em mais de um projeto: usa o
+		// documento (limpo de pontuação) quando preenchido - é o dado mais confiável
+		// disponível. O campo não é obrigatório no cadastro, então sem documento cai pro
+		// nome normalizado (minúsculas, sem espaço nas pontas) - não é infalível (duas
+		// pessoas homônimas caem juntas), mas é a única informação que sobra nesse caso.
+		function chavePessoa(integrante) {
+			var doc = (integrante.cpf || '').replace(/\D/g, '');
+			if (doc) return 'doc:' + doc;
+			var nome = (integrante.nome || '').trim().toLowerCase();
+			return nome ? 'nome:' + nome : null;
+		}
+
+		function registrarPessoa(mapa, integrante, proj) {
+			var chave = chavePessoa(integrante);
+			if (!chave) return;
+			if (!mapa[chave]) {
+				mapa[chave] = { nome: integrante.nome || '(sem nome)', nomeEscola: proj.nomeEscola || '', projetos: [] };
+			}
+			mapa[chave].projetos.push({ numInscricao: proj.numInscricao, nomeProjeto: proj.nomeProjeto, nomeEscola: proj.nomeEscola });
+		}
+
+		// Soma aluno/orientador numa entrada de mapa genérica (cidades, estados,
+		// nacionalidades), criando a entrada com os campos de "base" na primeira vez.
+		function contarPorTipo(mapa, chave, base, tipo) {
+			if (!mapa[chave]) {
+				mapa[chave] = angular.extend({ aluno: 0, orientador: 0 }, base);
+			}
+			if (tipo === 'Aluno') mapa[chave].aluno++;
+			else if (tipo === 'Orientador') mapa[chave].orientador++;
 		}
 
 		function acumular(agregado, proj) {
@@ -78,18 +116,32 @@
 			var chaveEscola = proj.nomeEscola || '(sem escola informada)';
 			agregado.escolas[chaveEscola] = (agregado.escolas[chaveEscola] || 0) + 1;
 
+			var cidade = proj.cidade || '(sem cidade)';
+			var estado = proj.estado || '(sem estado)';
+
 			angular.forEach(proj.integrantes, function(integrante) {
 				var c = agregado.camisetas[integrante.tamCamiseta];
-				if (!c) return;
-				c.total++;
-				if (integrante.tipo === 'Aluno') c.aluno++;
-				else if (integrante.tipo === 'Orientador') c.orientador++;
-				if (proj.categoria && c.porCategoria.hasOwnProperty(proj.categoria)) {
-					var pc = c.porCategoria[proj.categoria];
-					pc.total++;
-					if (integrante.tipo === 'Aluno') pc.aluno++;
-					else if (integrante.tipo === 'Orientador') pc.orientador++;
+				if (c) {
+					c.total++;
+					if (integrante.tipo === 'Aluno') c.aluno++;
+					else if (integrante.tipo === 'Orientador') c.orientador++;
+					if (proj.categoria && c.porCategoria.hasOwnProperty(proj.categoria)) {
+						var pc = c.porCategoria[proj.categoria];
+						pc.total++;
+						if (integrante.tipo === 'Aluno') pc.aluno++;
+						else if (integrante.tipo === 'Orientador') pc.orientador++;
+					}
 				}
+
+				if (integrante.tipo === 'Aluno') {
+					registrarPessoa(agregado.alunos, integrante, proj);
+				} else if (integrante.tipo === 'Orientador') {
+					registrarPessoa(agregado.orientadores, integrante, proj);
+				}
+
+				contarPorTipo(agregado.cidades, cidade + '|' + estado, { cidade: cidade, estado: estado }, integrante.tipo);
+				contarPorTipo(agregado.estados, estado, { estado: estado }, integrante.tipo);
+				contarPorTipo(agregado.nacionalidades, integrante.nacionalidade || '(não informada)', { nacionalidade: integrante.nacionalidade || '(não informada)' }, integrante.tipo);
 			});
 
 			angular.forEach(agregado.eixos, function(e) {
@@ -101,6 +153,28 @@
 			return Object.keys(escolasObj).map(function(nome) {
 				return { nome: nome, num: escolasObj[nome] };
 			}).sort(function(a, b) { return b.num - a.num; });
+		}
+
+		// Lista de pessoas (alunos/orientadores) únicas, ordenada por nome - cada uma já
+		// com o total de projetos que participa e o array completo deles (a view só
+		// precisa mostrar esse array quando numProjetos > 1).
+		function pessoasParaArray(mapa) {
+			return Object.keys(mapa).map(function(chave) {
+				var p = mapa[chave];
+				p.numProjetos = p.projetos.length;
+				p.expandido = false;
+				return p;
+			}).sort(function(a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+		}
+
+		// Cidades/estados/nacionalidades - ordenados por total (aluno+orientador) igual
+		// já é feito com escolas.
+		function localizacaoParaArray(mapa) {
+			return Object.keys(mapa).map(function(chave) {
+				var item = mapa[chave];
+				item.total = item.aluno + item.orientador;
+				return item;
+			}).sort(function(a, b) { return b.total - a.total; });
 		}
 
 		// Ordena por quantidade (maior primeiro) e anota cada item com o maior valor do
@@ -149,6 +223,16 @@
 			});
 			agregado.eixosPorCategoria = Object.keys(porCategoria).map(function(categoria) {
 				return { categoria: categoria, eixos: ordenarComMax(porCategoria[categoria]) };
+			});
+
+			agregado.alunosArray = pessoasParaArray(agregado.alunos);
+			agregado.orientadoresArray = pessoasParaArray(agregado.orientadores);
+
+			agregado.cidadesArray = localizacaoParaArray(agregado.cidades);
+			agregado.estadosArray = localizacaoParaArray(agregado.estados);
+			agregado.nacionalidadesArray = localizacaoParaArray(agregado.nacionalidades).map(function(item) {
+				item.nome = NACIONALIDADE_LABELS[item.nacionalidade] || item.nacionalidade;
+				return item;
 			});
 		}
 
@@ -257,6 +341,35 @@
 				aba.escolasArray.map(function(e) { return '- ' + e.nome + ': *' + e.num + '*'; }).join('\n');
 		}
 
+		function textoPessoas(tipo, aba) {
+			var lista = tipo === 'Aluno' ? aba.alunosArray : aba.orientadoresArray;
+			var titulo = tipo === 'Aluno' ? 'Estudantes' : 'Orientadores(as)';
+			var linhas = lista.map(function(p) {
+				var linha = '- ' + p.nome + (p.nomeEscola ? ' (' + p.nomeEscola + ')' : '');
+				if (p.numProjetos > 1) {
+					linha += ' — ' + p.numProjetos + ' projetos:\n' + p.projetos.map(function(proj) {
+						return '   - Nº ' + proj.numInscricao + ': ' + proj.nomeProjeto;
+					}).join('\n');
+				}
+				return linha;
+			});
+			return '*' + titulo + ' (' + lista.length + ') — ' + aba.nome + '*\n' + linhas.join('\n');
+		}
+
+		function textoLocalizacao(aba) {
+			var partes = [];
+			partes.push('*Por cidade — ' + aba.nome + '*\n' + aba.cidadesArray.map(function(c) {
+				return '- ' + c.cidade + '/' + c.estado + ': ' + c.aluno + ' aluno(a), ' + c.orientador + ' orientador(a) (*' + c.total + '*)';
+			}).join('\n'));
+			partes.push('*Por estado — ' + aba.nome + '*\n' + aba.estadosArray.map(function(e) {
+				return '- ' + e.estado + ': ' + e.aluno + ' aluno(a), ' + e.orientador + ' orientador(a) (*' + e.total + '*)';
+			}).join('\n'));
+			partes.push('*Por país — ' + aba.nome + '*\n' + aba.nacionalidadesArray.map(function(n) {
+				return '- ' + n.nome + ': ' + n.aluno + ' aluno(a), ' + n.orientador + ' orientador(a) (*' + n.total + '*)';
+			}).join('\n'));
+			return partes.join('\n\n');
+		}
+
 		function textoCompleto(aba, expandido, semEscolas) {
 			var partes = [cabecalho(aba), textoResumo(), textoTotalHospedagem(aba), textoCategorias(aba), textoEixosTodos(aba), textoCamisetas(aba, expandido)];
 			if (!semEscolas) {
@@ -318,6 +431,15 @@
 		};
 		$scope.copiarEscolas = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoEscolas(aba));
+		};
+		$scope.copiarAlunos = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoPessoas('Aluno', aba));
+		};
+		$scope.copiarOrientadores = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoPessoas('Orientador', aba));
+		};
+		$scope.copiarLocalizacao = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoLocalizacao(aba));
 		};
 		$scope.copiarTudo = function(aba, expandido) {
 			copiarTexto(textoCompleto(aba, expandido, false));

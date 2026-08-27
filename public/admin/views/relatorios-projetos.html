@@ -99,11 +99,11 @@
 		margin-right: 4px;
 		color: #25D366;
 	}
-	.relatorios-tabela-escolas {
+	.relatorios-tabela {
 		width: 100%;
 		border-collapse: collapse;
 	}
-	.relatorios-tabela-escolas th {
+	.relatorios-tabela th {
 		text-align: left;
 		color: rgba(0,0,0,0.5);
 		font-weight: normal;
@@ -112,11 +112,11 @@
 		border-bottom: 1px solid #ddd;
 		padding: 6px 8px;
 	}
-	.relatorios-tabela-escolas td {
+	.relatorios-tabela td {
 		padding: 6px 8px;
 		border-bottom: 1px solid #f0f0f0;
 	}
-	.relatorios-tabela-escolas td.num {
+	.relatorios-tabela td.num {
 		text-align: right;
 		font-weight: bold;
 		font-variant-numeric: tabular-nums;
@@ -142,6 +142,27 @@
 		color: rgba(0,0,0,0.45);
 		margin-right: 4px;
 	}
+	.relatorios-linha-clicavel {
+		cursor: pointer;
+	}
+	.relatorios-detalhe-pessoa {
+		background: rgba(46,125,50,0.04);
+	}
+	.relatorios-detalhe-pessoa td {
+		font-size: 13px;
+		color: rgba(0,0,0,0.65);
+		padding: 8px 8px 8px 20px !important;
+	}
+	.relatorios-subtitulo {
+		margin: 18px 0 8px 0;
+		color: rgba(0,0,0,0.55);
+		font-size: 13px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+	.relatorios-subtitulo:first-child {
+		margin-top: 0;
+	}
 
 	@media print {
 		.home-sidenav, .toolbar-admin, md-tabs-wrapper {
@@ -151,11 +172,12 @@
 		.relatorios-imprimir-btn { display: none !important; }
 		.relatorios-btn-copiar, .relatorios-btn-whatsapp { display: none !important; }
 		.relatorios-secao { box-shadow: none; border: 1px solid #ccc; }
-		/* O detalhamento de camisetas é sempre útil no papel - ninguém clica numa
-		   folha impressa, então sai sempre expandido lá, independente do que estava
-		   aberto/fechado na tela. */
+		/* O detalhamento de camisetas/pessoas é sempre útil no papel - ninguém clica
+		   numa folha impressa, então sai sempre expandido lá, independente do que
+		   estava aberto/fechado na tela. */
 		.relatorios-seta { display: none !important; }
 		.relatorios-detalhe-camiseta.ng-hide { display: block !important; }
+		.relatorios-detalhe-pessoa.ng-hide { display: table-row !important; }
 	}
 </style>
 
@@ -334,7 +356,7 @@
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
 					</h3>
-					<table class="relatorios-tabela-escolas">
+					<table class="relatorios-tabela">
 						<thead>
 							<tr><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
 						</thead>
@@ -342,6 +364,121 @@
 							<tr data-ng-repeat="esc in aba.escolasArray">
 								<td>{{esc.nome}}</td>
 								<td class="num">{{esc.num}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
+						<span>Estudantes ({{aba.alunosArray.length}})</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarAlunos(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
+					<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:-6px 0 12px 0;">Cada estudante aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
+					<table class="relatorios-tabela">
+						<thead>
+							<tr><th>Nome</th><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat-start="p in aba.alunosArray" data-ng-class="{'relatorios-linha-clicavel': p.numProjetos > 1}" data-ng-click="p.numProjetos > 1 && (p.expandido = !p.expandido)">
+								<td>{{p.nome}}</td>
+								<td>{{p.nomeEscola}}</td>
+								<td class="num">
+									{{p.numProjetos}}
+									<md-icon data-ng-if="p.numProjetos > 1" class="relatorios-seta" md-svg-src="{{p.expandido ? 'minus' : 'plus'}}" style="width:16px;height:16px;vertical-align:middle;"></md-icon>
+								</td>
+							</tr>
+							<tr data-ng-repeat-end class="relatorios-detalhe-pessoa" data-ng-show="p.expandido">
+								<td colspan="3">
+									<div data-ng-repeat="proj in p.projetos">Nº {{proj.numInscricao}} — {{proj.nomeProjeto}} ({{proj.nomeEscola}})</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
+						<span>Orientadores(as) ({{aba.orientadoresArray.length}})</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarOrientadores(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
+					<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:-6px 0 12px 0;">Cada orientador(a) aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
+					<table class="relatorios-tabela">
+						<thead>
+							<tr><th>Nome</th><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat-start="p in aba.orientadoresArray" data-ng-class="{'relatorios-linha-clicavel': p.numProjetos > 1}" data-ng-click="p.numProjetos > 1 && (p.expandido = !p.expandido)">
+								<td>{{p.nome}}</td>
+								<td>{{p.nomeEscola}}</td>
+								<td class="num">
+									{{p.numProjetos}}
+									<md-icon data-ng-if="p.numProjetos > 1" class="relatorios-seta" md-svg-src="{{p.expandido ? 'minus' : 'plus'}}" style="width:16px;height:16px;vertical-align:middle;"></md-icon>
+								</td>
+							</tr>
+							<tr data-ng-repeat-end class="relatorios-detalhe-pessoa" data-ng-show="p.expandido">
+								<td colspan="3">
+									<div data-ng-repeat="proj in p.projetos">Nº {{proj.numInscricao}} — {{proj.nomeProjeto}} ({{proj.nomeEscola}})</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
+						<span>Localização (cidade, estado e país)</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarLocalizacao(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
+					<h4 class="relatorios-subtitulo">Por cidade</h4>
+					<table class="relatorios-tabela">
+						<thead>
+							<tr><th>Cidade</th><th>Estado</th><th style="text-align:right;">Aluno(a)s</th><th style="text-align:right;">Orientador(a)s</th><th style="text-align:right;">Total</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="c in aba.cidadesArray">
+								<td>{{c.cidade}}</td>
+								<td>{{c.estado}}</td>
+								<td class="num">{{c.aluno}}</td>
+								<td class="num">{{c.orientador}}</td>
+								<td class="num">{{c.total}}</td>
+							</tr>
+						</tbody>
+					</table>
+					<h4 class="relatorios-subtitulo">Por estado</h4>
+					<table class="relatorios-tabela">
+						<thead>
+							<tr><th>Estado</th><th style="text-align:right;">Aluno(a)s</th><th style="text-align:right;">Orientador(a)s</th><th style="text-align:right;">Total</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="e in aba.estadosArray">
+								<td>{{e.estado}}</td>
+								<td class="num">{{e.aluno}}</td>
+								<td class="num">{{e.orientador}}</td>
+								<td class="num">{{e.total}}</td>
+							</tr>
+						</tbody>
+					</table>
+					<h4 class="relatorios-subtitulo">Por país</h4>
+					<table class="relatorios-tabela">
+						<thead>
+							<tr><th>País</th><th style="text-align:right;">Aluno(a)s</th><th style="text-align:right;">Orientador(a)s</th><th style="text-align:right;">Total</th></tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="n in aba.nacionalidadesArray">
+								<td>{{n.nome}}</td>
+								<td class="num">{{n.aluno}}</td>
+								<td class="num">{{n.orientador}}</td>
+								<td class="num">{{n.total}}</td>
 							</tr>
 						</tbody>
 					</table>
