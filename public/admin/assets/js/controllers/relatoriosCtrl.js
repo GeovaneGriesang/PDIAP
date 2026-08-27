@@ -33,10 +33,13 @@
 		var CATEGORIAS = ['Fundamental I (1º ao 5º anos)', 'Fundamental II (6º ao 9º anos)', 'Ensino Médio, Técnico e Superior'];
 
 		// Contador de camiseta por tamanho: além do total, guarda o cruzamento com
-		// categoria e com tipo (aluno/orientador) pro detalhamento da tela.
+		// categoria E tipo (aluno/orientador) ao mesmo tempo pro detalhamento da tela -
+		// não basta saber "quantas são de Fundamental I" e "quantas são de aluno(a)"
+		// separadamente, precisa dar pra responder "quantas são de Fundamental I E de
+		// aluno(a)" junto.
 		function novoContadorCamiseta() {
 			var porCategoria = {};
-			CATEGORIAS.forEach(function(c) { porCategoria[c] = 0; });
+			CATEGORIAS.forEach(function(c) { porCategoria[c] = { total: 0, aluno: 0, orientador: 0 }; });
 			return { total: 0, porCategoria: porCategoria, aluno: 0, orientador: 0 };
 		}
 
@@ -79,11 +82,14 @@
 				var c = agregado.camisetas[integrante.tamCamiseta];
 				if (!c) return;
 				c.total++;
-				if (proj.categoria && c.porCategoria.hasOwnProperty(proj.categoria)) {
-					c.porCategoria[proj.categoria]++;
-				}
 				if (integrante.tipo === 'Aluno') c.aluno++;
 				else if (integrante.tipo === 'Orientador') c.orientador++;
+				if (proj.categoria && c.porCategoria.hasOwnProperty(proj.categoria)) {
+					var pc = c.porCategoria[proj.categoria];
+					pc.total++;
+					if (integrante.tipo === 'Aluno') pc.aluno++;
+					else if (integrante.tipo === 'Orientador') pc.orientador++;
+				}
 			});
 
 			angular.forEach(agregado.eixos, function(e) {
@@ -126,7 +132,10 @@
 				return {
 					nome: tam,
 					num: c.total,
-					detalheCategoria: CATEGORIAS.map(function(cat) { return { nome: cat, num: c.porCategoria[cat] }; }),
+					detalheCategoria: CATEGORIAS.map(function(cat) {
+						var pc = c.porCategoria[cat];
+						return { nome: cat, num: pc.total, aluno: pc.aluno, orientador: pc.orientador };
+					}),
 					aluno: c.aluno,
 					orientador: c.orientador,
 					expandido: false

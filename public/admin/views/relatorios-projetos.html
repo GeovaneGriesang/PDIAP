@@ -239,7 +239,7 @@
 						<div class="relatorios-detalhe-camiseta" data-ng-show="cm.expandido">
 							<div class="relatorios-detalhe-grupo">
 								<span class="relatorios-detalhe-titulo">Por categoria:</span>
-								<span data-ng-repeat="d in cm.detalheCategoria">{{d.nome}} <b>{{d.num}}</b>{{$last ? '' : ' · '}}</span>
+								<span data-ng-repeat="d in cm.detalheCategoria">{{d.nome}} <b>{{d.num}}</b> ({{d.aluno}} aluno(a) · {{d.orientador}} orientador(a)){{$last ? '' : ' · '}}</span>
 							</div>
 							<div class="relatorios-detalhe-grupo">
 								<span class="relatorios-detalhe-titulo">Por tipo:</span>
