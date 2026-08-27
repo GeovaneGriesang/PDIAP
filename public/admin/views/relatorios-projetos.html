@@ -91,17 +91,12 @@
 		cursor: pointer;
 	}
 	.relatorios-seta {
-		flex: 0 0 16px;
-		text-align: center;
-		color: rgba(0,0,0,0.4);
-		font-size: 12px;
-		transition: transform 0.15s ease;
-	}
-	.relatorios-seta-aberta {
-		transform: rotate(180deg);
+		flex: 0 0 20px;
+		margin-right: 4px;
+		color: rgba(0,0,0,0.45);
 	}
 	.relatorios-detalhe-camiseta {
-		margin: -4px 0 14px 272px;
+		margin: -4px 0 14px 296px;
 		font-size: 13px;
 		color: rgba(0,0,0,0.65);
 	}
@@ -229,12 +224,12 @@
 					<h3>Camisetas</h3>
 					<div data-ng-repeat="cm in aba.camisetasArray">
 						<div class="relatorios-barra-linha relatorios-barra-clicavel" data-ng-click="cm.expandido = !cm.expandido">
+							<md-icon class="relatorios-seta" md-svg-src="{{cm.expandido ? 'minus' : 'plus'}}" style="width:20px;height:20px;"></md-icon>
 							<span class="relatorios-barra-label">Tamanho {{cm.nome}}</span>
 							<div class="relatorios-barra-trilha">
 								<div class="relatorios-barra-fill" style="width: {{ (cm.num / cm.max) * 100 }}%"></div>
 							</div>
 							<span class="relatorios-barra-valor">{{cm.num}}</span>
-							<span class="relatorios-seta" data-ng-class="{'relatorios-seta-aberta': cm.expandido}">▾</span>
 						</div>
 						<div class="relatorios-detalhe-camiseta" data-ng-show="cm.expandido">
 							<div class="relatorios-detalhe-grupo">
