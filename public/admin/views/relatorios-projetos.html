@@ -63,6 +63,32 @@
 		font-size: 16px;
 		border-bottom: 1px solid #eee;
 		padding-bottom: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.relatorios-btn-copiar {
+		width: 28px;
+		height: 28px;
+		min-height: 28px;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+	.relatorios-btn-copiar md-icon {
+		width: 16px;
+		height: 16px;
+		color: rgba(0,0,0,0.4);
+	}
+	.relatorios-btn-whatsapp {
+		text-transform: none;
+		margin: 0 !important;
+	}
+	.relatorios-btn-whatsapp md-icon {
+		width: 18px;
+		height: 18px;
+		vertical-align: middle;
+		margin-right: 4px;
+		color: #25D366;
 	}
 	.relatorios-tabela-escolas {
 		width: 100%;
@@ -114,6 +140,7 @@
 		}
 		md-tab-item[aria-selected="false"] { display: none !important; }
 		.relatorios-imprimir-btn { display: none !important; }
+		.relatorios-btn-copiar, .relatorios-btn-whatsapp { display: none !important; }
 		.relatorios-secao { box-shadow: none; border: 1px solid #ccc; }
 		/* O detalhamento de camisetas é sempre útil no papel - ninguém clica numa
 		   folha impressa, então sai sempre expandido lá, independente do que estava
@@ -159,6 +186,13 @@
     <md-content style="padding:24px;background:#fdfdfd;">
 
 	<!-- Resumo geral - sempre visivel, independente da aba selecionada -->
+	<div layout="row" layout-align="space-between center" style="margin-bottom:8px;">
+		<h3 style="margin:0;color:#225024;font-size:16px;">Resumo geral</h3>
+		<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarResumo()">
+			<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+			<md-icon md-svg-src="content-copy"></md-icon>
+		</md-button>
+	</div>
 	<div layout="row" layout-wrap style="margin-bottom:24px;gap:16px;">
 		<div flex class="relatorios-kpi">
 			<h2>{{abas[0].countTotal}}</h2>
@@ -186,8 +220,29 @@
 		<md-tab ng-repeat="aba in abas" label="{{aba.nome}}">
 			<div style="padding:20px 0;">
 
+				<div layout="row" layout-wrap style="gap:10px;margin-bottom:20px;">
+					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, true)">
+						<md-icon md-svg-src="whatsapp"></md-icon>
+						Copiar tudo (detalhado)
+					</md-button>
+					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, false)">
+						<md-icon md-svg-src="whatsapp"></md-icon>
+						Copiar tudo (resumido)
+					</md-button>
+					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudoSemEscolas(aba)">
+						<md-icon md-svg-src="whatsapp"></md-icon>
+						Copiar tudo, sem escolas
+					</md-button>
+				</div>
+
 				<div class="relatorios-secao">
-					<h3>Total e hospedagem</h3>
+					<h3>
+						<span>Total e hospedagem</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarTotalHospedagem(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
 					<div class="relatorios-barra-linha">
 						<span class="relatorios-barra-label">Total de projetos</span>
 						<span class="relatorios-barra-valor">{{aba.countTotal}}</span>
@@ -199,7 +254,13 @@
 				</div>
 
 				<div class="relatorios-secao">
-					<h3>Por categoria</h3>
+					<h3>
+						<span>Por categoria</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarCategorias(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="c in aba.categoriasArray">
 						<span class="relatorios-barra-label">{{c.nome}}</span>
 						<div class="relatorios-barra-trilha">
@@ -210,7 +271,13 @@
 				</div>
 
 				<div class="relatorios-secao" data-ng-repeat="grupo in aba.eixosPorCategoria">
-					<h3>Eixos - {{grupo.categoria}}</h3>
+					<h3>
+						<span>Eixos - {{grupo.categoria}}</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarEixosGrupo(aba, grupo)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="e in grupo.eixos">
 						<span class="relatorios-barra-label">{{e.nome}}</span>
 						<div class="relatorios-barra-trilha">
@@ -221,7 +288,13 @@
 				</div>
 
 				<div class="relatorios-secao">
-					<h3>Camisetas</h3>
+					<h3>
+						<span>Camisetas</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarCamisetas(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
 					<div data-ng-repeat="cm in aba.camisetasArray">
 						<div class="relatorios-barra-linha relatorios-barra-clicavel" data-ng-click="cm.expandido = !cm.expandido">
 							<md-icon class="relatorios-seta" md-svg-src="{{cm.expandido ? 'minus' : 'plus'}}" style="width:20px;height:20px;"></md-icon>
@@ -245,7 +318,13 @@
 				</div>
 
 				<div class="relatorios-secao">
-					<h3>Escolas ({{aba.escolasArray.length}})</h3>
+					<h3>
+						<span>Escolas ({{aba.escolasArray.length}})</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarEscolas(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+					</h3>
 					<table class="relatorios-tabela-escolas">
 						<thead>
 							<tr><th>Escola</th><th style="text-align:right;">Projetos</th></tr>

@@ -10,7 +10,7 @@
 	// novos do zero, sem esse tipo de reatribuição escondida.
 	angular
 	.module('PDIAPa')
-	.controller('relatoriosCtrl', function($scope, $rootScope, adminAPI) {
+	.controller('relatoriosCtrl', function($scope, $rootScope, $mdToast, adminAPI) {
 
 		var EIXOS = [
 			{nome:"Ciências da Natureza e suas tecnologias", categoria: "Fundamental I (1º ao 5º anos)"},
@@ -200,6 +200,130 @@
 
 		$scope.imprimir = function() {
 			window.print();
+		};
+
+		// Copiar pra WhatsApp: monta texto usando a formatação própria do WhatsApp
+		// (*negrito*, não HTML - colar texto rico não funciona lá) e joga na área de
+		// transferência. Cada função monta só o texto do seu "quadro"; copiarTexto()
+		// cuida só de copiar e avisar.
+		function cabecalho(aba) {
+			return '*MOVACI ' + $rootScope.ano + ' — ' + aba.nome + '*';
+		}
+
+		function textoResumo() {
+			return '*Resumo geral*\n' +
+				'Projetos no total: *' + $scope.abas[0].countTotal + '*\n' +
+				'Aprovados: *' + $scope.relatorio.countAprovados + '*\n' +
+				'Confirmados: *' + $scope.relatorio.countParticipaSim + '*\n' +
+				'Cancelados: *' + $scope.relatorio.countParticipaNao + '*\n' +
+				'Pendentes: *' + $scope.relatorio.countPendente + '*';
+		}
+
+		function textoTotalHospedagem(aba) {
+			return '*Total e hospedagem — ' + aba.nome + '*\n' +
+				'Total de projetos: *' + aba.countTotal + '*\n' +
+				'Pessoas com hospedagem solicitada: *' + aba.countHospedagem + '*';
+		}
+
+		function textoCategorias(aba) {
+			return '*Por categoria — ' + aba.nome + '*\n' +
+				aba.categoriasArray.map(function(c) { return c.nome + ': *' + c.num + '*'; }).join('\n');
+		}
+
+		function textoEixosGrupo(grupo) {
+			return '*Eixos - ' + grupo.categoria + '*\n' +
+				grupo.eixos.map(function(e) { return e.nome + ': *' + e.num + '*'; }).join('\n');
+		}
+
+		function textoEixosTodos(aba) {
+			return aba.eixosPorCategoria.map(textoEixosGrupo).join('\n\n');
+		}
+
+		function textoCamisetas(aba, expandido) {
+			var linhas = aba.camisetasArray.map(function(cm) {
+				var linha = 'Tamanho ' + cm.nome + ': *' + cm.num + '*';
+				if (expandido) {
+					linha += '\n' + cm.detalheCategoria.map(function(d) {
+						return '  ' + d.nome + ': ' + d.num + ' (' + d.aluno + ' aluno(a), ' + d.orientador + ' orientador(a))';
+					}).join('\n');
+				}
+				return linha;
+			});
+			return '*Camisetas — ' + aba.nome + '*\n' + linhas.join('\n');
+		}
+
+		function textoEscolas(aba) {
+			return '*Escolas (' + aba.escolasArray.length + ') — ' + aba.nome + '*\n' +
+				aba.escolasArray.map(function(e) { return e.nome + ': *' + e.num + '*'; }).join('\n');
+		}
+
+		function textoCompleto(aba, expandido, semEscolas) {
+			var partes = [cabecalho(aba), textoResumo(), textoTotalHospedagem(aba), textoCategorias(aba), textoEixosTodos(aba), textoCamisetas(aba, expandido)];
+			if (!semEscolas) {
+				partes.push(textoEscolas(aba));
+			}
+			return partes.join('\n\n');
+		}
+
+		function toast(mensagem) {
+			$mdToast.show($mdToast.simple().textContent(mensagem).position('top right').hideDelay(2500));
+		}
+
+		// document.execCommand('copy') é descontinuado, mas fica como reserva pra
+		// navegador/contexto onde navigator.clipboard não está disponível (ex: sem
+		// HTTPS) - sem isso, "copiar" simplesmente falha calado nesses casos.
+		function copiarComFallback(texto) {
+			var textarea = document.createElement('textarea');
+			textarea.value = texto;
+			textarea.style.position = 'fixed';
+			textarea.style.opacity = '0';
+			document.body.appendChild(textarea);
+			textarea.focus();
+			textarea.select();
+			try {
+				document.execCommand('copy');
+				toast('Copiado! Cole no WhatsApp.');
+			} catch (e) {
+				toast('Não foi possível copiar.');
+			}
+			document.body.removeChild(textarea);
+		}
+
+		function copiarTexto(texto) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(texto).then(function() {
+					toast('Copiado! Cole no WhatsApp.');
+				}).catch(function() {
+					copiarComFallback(texto);
+				});
+			} else {
+				copiarComFallback(texto);
+			}
+		}
+
+		$scope.copiarResumo = function() {
+			copiarTexto(textoResumo());
+		};
+		$scope.copiarTotalHospedagem = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoTotalHospedagem(aba));
+		};
+		$scope.copiarCategorias = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoCategorias(aba));
+		};
+		$scope.copiarEixosGrupo = function(aba, grupo) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoEixosGrupo(grupo));
+		};
+		$scope.copiarCamisetas = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoCamisetas(aba, true));
+		};
+		$scope.copiarEscolas = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoEscolas(aba));
+		};
+		$scope.copiarTudo = function(aba, expandido) {
+			copiarTexto(textoCompleto(aba, expandido, false));
+		};
+		$scope.copiarTudoSemEscolas = function(aba) {
+			copiarTexto(textoCompleto(aba, true, true));
 		};
 
 		$scope.carregarRelatorios();
