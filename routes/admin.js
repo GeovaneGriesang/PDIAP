@@ -14,6 +14,7 @@ const express = require('express')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
 , feiraSchema = require('../models/feira-schema')
+, escolaSchema = require('../models/escola-schema')
 , participanteSchema = require('../models/participante-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
@@ -180,6 +181,103 @@ router.put('/removeFeira', miPermiso("3"), (req, res) => {
     res.send('success');
   } catch (error){
     console.log('findOne error--> ${error}');
+  }
+});
+
+// Cadastro formal de escolas (ver models/escola-schema.js) - substitui o texto livre
+// que cada projeto digitava em nomeEscola. Criada pelo admin já sai "aprovada"; criada
+// via solicitação pública (ver routes/index.js#solicitarEscola) sai "pendente" até o
+// admin revisar/corrigir e aprovar.
+router.post('/criarEscola', miPermiso("3"), (req, res) => {
+  try {
+    let newEscola = new escolaSchema({
+      nome: req.body.nome,
+      cep: req.body.cep,
+      cidade: req.body.cidade,
+      estado: req.body.estado,
+      status: 'aprovada',
+      origem: 'admin',
+      aprovadaEm: new Date(),
+      aprovadaPor: req.user.username
+    });
+    newEscola.save((err, data) => {
+      if (err) { console.error('Erro ao criar escola', err); return res.status(500).send('Erro ao criar escola'); }
+      res.send(data);
+    });
+  } catch (error){
+    console.log('criarEscola error--> ${error}');
+  }
+});
+
+router.get('/mostraEscolas', miPermiso("3","2"), (req, res) => {
+  try {
+    escolaSchema.find((err, usr) => {
+      if (err) { console.error('Erro ao mostrar escolas', err); return; }
+      res.send(usr);
+    });
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
+});
+
+// Aprova uma escola pendente - permite corrigir nome/cep/cidade/estado no mesmo passo
+// (a pessoa que solicitou pode ter digitado algo com erro/variação).
+router.put('/aprovarEscola', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    escolaSchema.findByIdAndUpdate(id, {
+      nome: req.body.nome,
+      cep: req.body.cep,
+      cidade: req.body.cidade,
+      estado: req.body.estado,
+      status: 'aprovada',
+      aprovadaEm: new Date(),
+      aprovadaPor: req.user.username
+    }, { new: true }, (err, data) => {
+      if (err) { console.error('Erro ao aprovar escola', err); return res.status(500).send('Erro ao aprovar escola'); }
+      res.send(data);
+    });
+  } catch (error){
+    console.log('aprovarEscola error--> ${error}');
+  }
+});
+
+router.put('/editarEscola', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    escolaSchema.findByIdAndUpdate(id, {
+      nome: req.body.nome,
+      cep: req.body.cep,
+      cidade: req.body.cidade,
+      estado: req.body.estado
+    }, { new: true }, (err, data) => {
+      if (err) { console.error('Erro ao editar escola', err); return res.status(500).send('Erro ao editar escola'); }
+      res.send(data);
+    });
+  } catch (error){
+    console.log('editarEscola error--> ${error}');
+  }
+});
+
+// Recusa remover uma escola que ainda tem projeto vinculado - diferente de removeFeira,
+// aqui a integridade importa mais: um projeto sem escola visível quebraria os
+// relatórios/listas que dependem desse vínculo.
+router.put('/removeEscola', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    projetoSchema.count({ escola: id }, (err, count) => {
+      if (err) { console.error('Erro ao checar projetos da escola', err); return res.status(500).send('Erro ao checar projetos da escola'); }
+      if (count > 0) return res.status(409).send('Existem ' + count + ' projeto(s) vinculado(s) a essa escola - não é possível remover.');
+      escolaSchema.remove({"_id": id}, (err) => {
+        if (err) { console.error('Erro ao remover escola', err); return; }
+        res.send('success');
+      });
+    });
+  } catch (error){
+    console.log('removeEscola error--> ${error}');
   }
 });
 

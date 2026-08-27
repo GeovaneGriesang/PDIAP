@@ -100,6 +100,11 @@
 			templateUrl: 'admin/views/cadastro-documento.html',
 			controller: 'documentoCtrl'
 		})
+		.state('master.cadastro-escolas', {
+			url: "/cadastro-escolas",
+			templateUrl: 'admin/views/cadastro-escolas.html',
+			controller: 'escolasCtrl'
+		})
 		.state('master.cadastro-participantes', {
 			url: "/cadastro-participantes",
 			templateUrl: 'admin/views/cadastro-participantes.html',

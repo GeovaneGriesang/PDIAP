@@ -249,6 +249,50 @@
 			return $http(request);
 		};
 
+		let _postEscola = function(escola) {
+			const request = {
+				url: '/admin/criarEscola',
+				method: 'POST',
+				data: escola
+			}
+			return $http(request);
+		};
+
+		let _getEscolas = function() {
+			const request = {
+				url: '/admin/mostraEscolas',
+				method: 'GET'
+			}
+			return $http(request);
+		};
+
+		let _aprovarEscola = function(escola) {
+			const request = {
+				url: '/admin/aprovarEscola',
+				method: 'PUT',
+				data: escola
+			}
+			return $http(request);
+		};
+
+		let _editarEscola = function(escola) {
+			const request = {
+				url: '/admin/editarEscola',
+				method: 'PUT',
+				data: escola
+			}
+			return $http(request);
+		};
+
+		let _removeEscola = function(id) {
+			const request = {
+				url: '/admin/removeEscola',
+				method: 'PUT',
+				data: { id: id }
+			}
+			return $http(request);
+		};
+
 		let _getAvaliadores = function() {
 			const request = {
 				url: '/admin/mostraAvaliadores',
@@ -485,6 +529,11 @@
 			postFeira: _postFeira,
 			getFeiras: _getFeiras,
 			removeFeira: _removeFeira,
+			postEscola: _postEscola,
+			getEscolas: _getEscolas,
+			aprovarEscola: _aprovarEscola,
+			editarEscola: _editarEscola,
+			removeEscola: _removeEscola,
 			getAvaliadores: _getAvaliadores,
 			putRemoveEvento: _putRemoveEvento,
 			postParticipante: _postParticipante,
