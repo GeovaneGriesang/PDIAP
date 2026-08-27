@@ -75,14 +75,17 @@
 					<img src="alpha/images/logo3.png" alt="Logo MOVACI" style="margin-top: 20px;">
 					<p style="color:#000000!important; font-weight:bold;" ng-bind ="edits[0].edicao + ' Mostra Venâncio-airense '"></p>
 					<p style="color:#000000!important; font-weight:bold;"> de Cultura e Inovação</p>
-			        <h4 id="prorrog" ng-bind-html="edits[0].text"></h4>
-					<ul class="destaques-home" data-ng-if="edits[0].destaques.length > 0" style="list-style:none;padding:0;margin:10px 0;">
-						<li data-ng-repeat="d in edits[0].destaques" style="font-weight:bold;color:#225024;">{{d.texto}}</li>
+			        <!-- Texto exibido após o encerramento (prazoProjetos.textoEncerrado, calculado em
+			             admin-controller.js#_computaPrazo) tem prioridade sobre o "Texto" genérico da
+			             tela inicial quando configurado - evita mostrar as duas mensagens repetindo a
+			             mesma informação ("Inscrições encerradas") ao mesmo tempo. -->
+			        <h4 id="prorrog" ng-bind-html="edits[0].textoProjetos || edits[0].text"></h4>
+					<ul class="destaques-home" data-ng-if="edits[0].destaques.length > 0" style="list-style:none;padding:0;margin:10px 0;text-align:left;">
+						<li data-ng-repeat="d in edits[0].destaques" style="font-weight:bold;color:#225024;padding-left:0;">{{d.texto}}</li>
 					</ul>
 
 				</div>
 				<div class="baixo">
-					<p data-ng-if="edits[0].textoProjetos" style="font-size:0.6em;margin:0.5em 0 0 0;">{{edits[0].textoProjetos}}</p>
 					<a href="/projetos/inscricao" class="button special" style="margin-top:0.5em;margin-right:0.5" target="_blank" data-ng-if="edits[0].cadastro_projetos == true">Cadastrar projeto</a>
 					<p data-ng-if="edits[0].textoAvaliadores" style="font-size:0.6em;margin:0.5em 0 0 0;">{{edits[0].textoAvaliadores}}</p>
 					<a href="/avaliadores/inscricao" class="button special" style="margin-top:0.5em" target="_blank" data-ng-if="edits[0].cadastro_avaliadores == true">Cadastrar avaliador</a>
