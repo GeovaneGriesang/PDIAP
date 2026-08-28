@@ -86,7 +86,7 @@
             <md-button no-ink class="md-raised md-primary green darken-1 md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;color:#fff;" aria-label="Aprovar escola" ng-click="aprovarEscola($event,esc)">
               <span style="vertical-align:middle;font-size:13px;">Aprovar</span>
             </md-button>
-            <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover escola" ng-click="removerEscola($event,esc._id,esc.nome)">
+            <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Rejeitar escola" ng-click="rejeitarEscola($event,esc)">
               <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Rejeitar</span>
             </md-button>
           </div>
@@ -109,7 +109,10 @@
             <h3>{{::esc.nome}}</h3>
             <p>{{::esc.cidade}}<span data-ng-if="esc.cidade && esc.estado">/</span>{{::esc.estado}}</p>
           </div>
-          <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+          <div flex="30" style="display:flex;align-self:center;justify-content:flex-end;gap:8px;">
+            <md-button no-ink class="md-raised md-primary green darken-1 md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;color:#fff;" aria-label="Editar escola" ng-click="editarEscolaAprovada($event,esc)">
+              <span style="vertical-align:middle;font-size:13px;">Editar</span>
+            </md-button>
             <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover escola" ng-click="removerEscola($event,esc._id,esc.nome)">
               <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
               <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Apagar</span>

@@ -1,0 +1,21 @@
+<md-dialog aria-label="Rejeitar solicitação de escola" class="details2 dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#c62828;padding:0 2em;color:#fff;">
+    <p style="align-self:center;">Rejeitar solicitação — {{escola.nome}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="cancel()" class="btn-close" style="cursor:pointer;color:#fff;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p style="color:rgba(0,0,0,0.6);font-size:13px;">O motivo é obrigatório e vai no e-mail avisando quem solicitou (quando tiver e-mail). Ex: "Indeferido, pois escola já está cadastrada como IFSul - Câmpus Venâncio Aires".</p>
+    <form name="rejeitarEscolaForm" novalidate>
+      <md-input-container class="md-block" flex-gt-xs>
+        <label>Motivo</label>
+        <textarea name="motivo" data-ng-model="motivo" rows="3" required></textarea>
+      </md-input-container>
+      <div class="finalizar" layout="row" layout-align="center center" style="margin:24px 0;">
+        <md-button class="md-raised red md-whiteframe-1dp" style="color:#fff;" aria-label="Confirmar rejeição" data-ng-disabled="!rejeitarEscolaForm.$valid" data-ng-click="confirmar()">
+          <span style="vertical-align:middle;">Confirmar rejeição</span>
+        </md-button>
+      </div>
+    </form>
+  </div>
+</md-dialog>

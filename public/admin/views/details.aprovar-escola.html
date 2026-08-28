@@ -1,11 +1,11 @@
-<md-dialog aria-label="Aprovar escola" class="details2 dialog-avaliacao">
+<md-dialog aria-label="{{modoAprovar ? 'Aprovar escola' : 'Editar escola'}}" class="details2 dialog-avaliacao">
   <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
-    <p style="align-self:center;">Aprovar escola</p>
+    <p style="align-self:center;">{{modoAprovar ? 'Aprovar escola' : 'Editar escola'}}</p>
     <span flex></span>
     <md-icon md-svg-src="close" data-ng-click="cancel()" class="btn-close" style="cursor:pointer;"></md-icon>
   </div>
   <div style="padding:1em 2em;overflow:auto!important;">
-    <p style="color:rgba(0,0,0,0.6);font-size:13px;">Confira e corrija os dados antes de aprovar - quem solicitou pode ter digitado algo com variação/erro.</p>
+    <p style="color:rgba(0,0,0,0.6);font-size:13px;" data-ng-if="modoAprovar">Confira e corrija os dados antes de aprovar - quem solicitou pode ter digitado algo com variação/erro.</p>
     <form name="aprovarEscolaForm" novalidate>
       <md-input-container class="md-block" flex-gt-xs>
         <label>Nome da escola</label>
@@ -32,8 +32,8 @@
         </md-input-container>
       </div>
       <div class="finalizar" layout="row" layout-align="center center" style="margin:24px 0;">
-        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Confirmar aprovação" data-ng-disabled="!aprovarEscolaForm.$valid" data-ng-click="confirmar()">
-          <span style="vertical-align:middle;">Confirmar aprovação</span>
+        <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="{{modoAprovar ? 'Confirmar aprovação' : 'Salvar alterações'}}" data-ng-disabled="!aprovarEscolaForm.$valid" data-ng-click="confirmar()">
+          <span style="vertical-align:middle;">{{modoAprovar ? 'Confirmar aprovação' : 'Salvar alterações'}}</span>
         </md-button>
       </div>
     </form>

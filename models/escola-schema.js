@@ -17,14 +17,18 @@ const EscolaSchema = new Schema({
 	cep: {type: String},
 	cidade: {type: String},
 	estado: {type: String},
-	status: {type: String, enum: ['aprovada', 'pendente'], default: 'pendente'},
+	status: {type: String, enum: ['aprovada', 'pendente', 'rejeitada'], default: 'pendente'},
 	origem: {type: String, enum: ['admin', 'inline_inscricao', 'formulario_publico', 'migracao'], required: true},
 	solicitanteNome: {type: String},
 	solicitanteEmail: {type: String},
 	projetoOrigem: {type: Schema.Types.ObjectId, ref: 'Projeto'},
 	createdAt: {type: Date, default: Date.now},
 	aprovadaEm: {type: Date},
-	aprovadaPor: {type: String}
+	aprovadaPor: {type: String},
+	// Preenchido ao aprovar (opcional) ou rejeitar (obrigatório) uma solicitação -
+	// ex: "Indeferido, pois escola já está cadastrada como IFSul - Câmpus Venâncio
+	// Aires". Vai no e-mail avisando quem solicitou.
+	motivoDecisao: {type: String}
 }, { collection: 'escolas' });
 
 const Escola = module.exports = mongoose.model('Escola', EscolaSchema);

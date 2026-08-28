@@ -220,6 +220,30 @@ router.get('/mostraEscolas', miPermiso("3","2"), (req, res) => {
   }
 });
 
+// Avisa por e-mail quem solicitou o cadastro de uma escola se a solicitação foi
+// aprovada ou recusada - falha de envio não derruba a aprovação/recusa em si (o
+// dado já foi salvo), só fica registrada no log.
+function avisarDecisaoEscola(escola, aprovada) {
+  if (!escola.solicitanteEmail) return;
+  var transport = nodemailer.createTransport({
+    host: 'smtp.gmail.com', port: 587,
+    auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+  });
+  var assunto = aprovada ? 'MOVACI - cadastro de escola aprovado' : 'MOVACI - cadastro de escola não aprovado';
+  var corpo = '<p>Olá' + (escola.solicitanteNome ? ', ' + escola.solicitanteNome : '') + '!</p>' +
+    '<p>Sua solicitação de cadastro da escola <b>' + escola.nome + '</b> foi <b>' + (aprovada ? 'aprovada' : 'recusada') + '</b>.</p>' +
+    (escola.motivoDecisao ? '<p>' + escola.motivoDecisao + '</p>' : '') +
+    (aprovada ? '<p>Ela já aparece na lista de seleção do cadastro de projetos.</p>' : '');
+  transport.sendMail({
+    from: 'MOVACI <va-movaci@ifsul.edu.br>',
+    to: escola.solicitanteEmail,
+    subject: assunto,
+    html: corpo
+  }, function(err) {
+    if (err) console.error('Erro ao enviar e-mail de decisão de escola para ' + escola.solicitanteEmail, err);
+  });
+}
+
 // Aprova uma escola pendente - permite corrigir nome/cep/cidade/estado no mesmo passo
 // (a pessoa que solicitou pode ter digitado algo com erro/variação).
 router.put('/aprovarEscola', miPermiso("3"), (req, res) => {
@@ -232,14 +256,39 @@ router.put('/aprovarEscola', miPermiso("3"), (req, res) => {
       cidade: req.body.cidade,
       estado: req.body.estado,
       status: 'aprovada',
+      motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
     }, { new: true }, (err, data) => {
       if (err) { console.error('Erro ao aprovar escola', err); return res.status(500).send('Erro ao aprovar escola'); }
+      avisarDecisaoEscola(data, true);
       res.send(data);
     });
   } catch (error){
     console.log('aprovarEscola error--> ${error}');
+  }
+});
+
+// Rejeita uma escola pendente - diferente de removeEscola (que só se aplica a uma
+// escola JÁ aprovada e sem projeto vinculado), aqui é uma decisão sobre a
+// solicitação em si, com motivo obrigatório (vai no e-mail de aviso).
+router.put('/rejeitarEscola', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (!req.body.motivo || !req.body.motivo.trim()) return res.status(400).send('Motivo é obrigatório');
+    escolaSchema.findByIdAndUpdate(id, {
+      status: 'rejeitada',
+      motivoDecisao: req.body.motivo,
+      aprovadaEm: new Date(),
+      aprovadaPor: req.user.username
+    }, { new: true }, (err, data) => {
+      if (err) { console.error('Erro ao rejeitar escola', err); return res.status(500).send('Erro ao rejeitar escola'); }
+      avisarDecisaoEscola(data, false);
+      res.send(data);
+    });
+  } catch (error){
+    console.log('rejeitarEscola error--> ${error}');
   }
 });
 
@@ -268,9 +317,14 @@ router.put('/removeEscola', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    projetoSchema.count({ escola: id }, (err, count) => {
+    projetoSchema.find({ escola: id }, 'numInscricao nomeProjeto', (err, projetos) => {
       if (err) { console.error('Erro ao checar projetos da escola', err); return res.status(500).send('Erro ao checar projetos da escola'); }
-      if (count > 0) return res.status(409).send('Existem ' + count + ' projeto(s) vinculado(s) a essa escola - não é possível remover.');
+      if (projetos.length > 0) {
+        const LIMITE_LISTADOS = 10;
+        let nomes = projetos.slice(0, LIMITE_LISTADOS).map((p) => 'Nº ' + p.numInscricao + ' — ' + p.nomeProjeto).join('; ');
+        if (projetos.length > LIMITE_LISTADOS) nomes += '; e mais ' + (projetos.length - LIMITE_LISTADOS) + '.';
+        return res.status(409).send('Existem ' + projetos.length + ' projeto(s) vinculado(s) a essa escola - não é possível remover. ' + nomes);
+      }
       escolaSchema.remove({"_id": id}, (err) => {
         if (err) { console.error('Erro ao remover escola', err); return; }
         res.send('success');
@@ -656,12 +710,13 @@ router.post('/edit', miPermiso("3"), (req, res) => {
       edicao: req.body[0].edicao,
       text: req.body[0].text,
       saberes_docentes: req.body[0].saberes_docentes,
+      solicitacao_escola: req.body[0].solicitacao_escola,
       prazoProjetos: req.body[0].prazoProjetos,
       prazoAvaliadores: req.body[0].prazoAvaliadores,
       botoes: req.body[0].botoes,
       destaques: req.body[0].destaques
     };
-    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}], (err, usr) =>{
+    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'solicitacao_escola':obj.solicitacao_escola,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}], (err, usr) =>{
       if (err) { console.error('Erro ao editar', err); return; }
       else {
         res.send('success');	
