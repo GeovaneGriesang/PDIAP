@@ -120,6 +120,23 @@ function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
+// Só o projeto da edição atual pode ser autoeditado (projeto em si ou seus
+// integrantes) - checagem por ANO DO PROJETO (createdAt) contra o "ano" da edição
+// atual configurado em Editar > Tela inicial, não pelo ano civil (pode não bater com
+// o ano da edição em andamento). Usado por /update e /upgreice.
+function bloqueadoPorEdicaoAnterior(projetoId, callback) {
+  if (!idValido(projetoId)) return callback(null, true);
+  ProjetoSchema.findById(projetoId, 'createdAt', (err, projeto) => {
+    if (err) return callback(err);
+    if (!projeto) return callback(null, true);
+    adminSchema.findOne({ username: 'admin2' }, 'ano', (err, admin) => {
+      if (err) return callback(err);
+      let anoProjeto = new Date(projeto.createdAt).getFullYear();
+      callback(null, !!(admin && admin.ano && anoProjeto !== admin.ano));
+    });
+  });
+}
+
 router.all('/*', ensureAuthenticated, miPermiso("1"));
 
 router.get('/loggedin', ensureAuthenticated, (req, res, next) => {
@@ -249,16 +266,24 @@ router.get('/update', (req, res) => {
   res.send('Página de update');
 });
 
+// Os campos "editáveis" ligados em Editar > Campos editáveis (routes/admin.js
+// /setOpcoes) valem só enquanto o projeto é da edição corrente - de um ano pra outro
+// os dados viram histórico e não devem mudar mais (ver bloqueadoPorEdicaoAnterior).
 router.put('/update', (req, res) => {
-  if (req.body.cep !== undefined){
-    req.body.cep = splita(req.body.cep);
-  }
-  let newProject = filtrarCamposEditaveis(req.body);
-  console.log(newProject);
+  bloqueadoPorEdicaoAnterior(req.user.id, (err, bloqueado) => {
+    if (err) { console.error(err); return res.status(500).send('Erro ao checar edição atual'); }
+    if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
 
-  ProjetoSchema.update({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
-    if (err) { console.error(err); return; }
-    res.status(200).json(docs);
+    if (req.body.cep !== undefined){
+      req.body.cep = splita(req.body.cep);
+    }
+    let newProject = filtrarCamposEditaveis(req.body);
+    console.log(newProject);
+
+    ProjetoSchema.update({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
+      if (err) { console.error(err); return; }
+      res.status(200).json(docs);
+    });
   });
 });
 
@@ -267,6 +292,14 @@ router.put('/upgreice', (req, res) => {
   let myArray = req.body
   ,   id = req.user.id;
   console.log("TESTE:"+JSON.stringify(myArray));
+
+  bloqueadoPorEdicaoAnterior(id, (err, bloqueado) => {
+    if (err) { console.error(err); return res.status(500).send('Erro ao checar edição atual'); }
+    if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
+    prosseguirUpgreice();
+  });
+
+  function prosseguirUpgreice() {
 
   for (let j = 0; j < myArray.length; j++) {
     let v = myArray[j];
@@ -327,6 +360,7 @@ router.put('/upgreice', (req, res) => {
   }
   });
   res.redirect('/home/update');
+  }
 });
 
 
