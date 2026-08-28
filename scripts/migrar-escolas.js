@@ -122,7 +122,11 @@ async function migrar() {
 			});
 		}
 
-		if (/^ifsul|^ifrs/i.test(canonico) && cidade) {
+		// Só campus de verdade entram como alvo de resolução por cidade - grupos tipo
+		// "IFSUL – Projeto Partiu IF" (programa, não campus físico) começam com
+		// "IFSUL" mas não têm "câmpus/campus" no nome, e não deveriam roubar
+		// projetos genéricos que na verdade são de um câmpus normal na mesma cidade.
+		if (/^(ifsul|ifrs)\b.*\b(c[aâ]mpus)\b/i.test(canonico) && cidade) {
 			cidadeCampusPorNome.set(normalizar(cidade), canonico);
 		}
 
