@@ -183,6 +183,67 @@
 			}).sort(function(a, b) { return b.total - a.total; });
 		}
 
+		// Paleta categórica (ordem fixa, não gerada) - até 6 fatias de verdade; a partir
+		// da 7ª cidade tudo vira "Outras" num cinza neutro (nunca uma 7ª cor gerada -
+		// gráfico de pizza com muitas fatias fica ilegível e as cores próximas se
+		// confundem, então uma tabela cobre o resto: a tabela "Por cidade" já mostra
+		// todo mundo, a pizza é só um resumo visual das principais).
+		var CORES_PIZZA = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300'];
+		var COR_OUTRAS = '#c3c2b7';
+		var PIZZA_MAX_FATIAS = CORES_PIZZA.length;
+
+		// Converte um ângulo (graus, 0 = topo, sentido horário) num ponto na
+		// circunferência de raio R centrada em (cx,cy) - usado pra montar o "d" de cada
+		// fatia do SVG.
+		function pontoNoCirculo(anguloGraus, cx, cy, raio) {
+			var rad = (anguloGraus - 90) * Math.PI / 180;
+			return { x: cx + raio * Math.cos(rad), y: cy + raio * Math.sin(rad) };
+		}
+
+		function arcoSvg(anguloInicial, anguloFinal, cx, cy, raio) {
+			// Fatia única (100%) não fecha com um só comando "A" - desenha em duas
+			// metades de 180° pra formar o círculo completo.
+			if (anguloFinal - anguloInicial >= 359.99) {
+				var topo = pontoNoCirculo(0, cx, cy, raio);
+				var baixo = pontoNoCirculo(180, cx, cy, raio);
+				return 'M ' + topo.x + ',' + topo.y +
+					' A ' + raio + ',' + raio + ' 0 1 1 ' + baixo.x + ',' + baixo.y +
+					' A ' + raio + ',' + raio + ' 0 1 1 ' + topo.x + ',' + topo.y + ' Z';
+			}
+			var p1 = pontoNoCirculo(anguloInicial, cx, cy, raio);
+			var p2 = pontoNoCirculo(anguloFinal, cx, cy, raio);
+			var arcoGrande = (anguloFinal - anguloInicial) > 180 ? 1 : 0;
+			return 'M ' + cx + ',' + cy + ' L ' + p1.x + ',' + p1.y +
+				' A ' + raio + ',' + raio + ' 0 ' + arcoGrande + ' 1 ' + p2.x + ',' + p2.y + ' Z';
+		}
+
+		// Monta as fatias (path SVG já pronto, cor, % ) a partir do array de cidades já
+		// ordenado por total - top N cidades + "Outras" agrupando o resto.
+		function construirPizzaCidades(cidadesArray) {
+			var principais = cidadesArray.slice(0, PIZZA_MAX_FATIAS);
+			var resto = cidadesArray.slice(PIZZA_MAX_FATIAS);
+			var totalResto = resto.reduce(function(soma, c) { return soma + c.total; }, 0);
+
+			var fatias = principais.map(function(c, i) {
+				return { nome: c.cidade, valor: c.total, cor: CORES_PIZZA[i] };
+			});
+			if (totalResto > 0) {
+				fatias.push({ nome: 'Outras (' + resto.length + ' cidades)', valor: totalResto, cor: COR_OUTRAS });
+			}
+
+			var totalGeral = fatias.reduce(function(soma, f) { return soma + f.valor; }, 0);
+			var anguloAcumulado = 0;
+			fatias.forEach(function(f) {
+				var fracao = totalGeral > 0 ? f.valor / totalGeral : 0;
+				var anguloFinal = anguloAcumulado + fracao * 360;
+				f.percentual = Math.round(fracao * 1000) / 10;
+				f.pathD = arcoSvg(anguloAcumulado, anguloFinal, 100, 100, 90);
+				anguloAcumulado = anguloFinal;
+			});
+
+			return { fatias: fatias, total: totalGeral };
+		}
+
 		// Ordena por quantidade (maior primeiro) e anota cada item com o maior valor do
 		// grupo - a view só precisa fazer item.num/item.max pra desenhar a barra, sem
 		// calcular nada.
@@ -235,11 +296,19 @@
 			agregado.orientadoresArray = pessoasParaArray(agregado.orientadores);
 
 			agregado.cidadesArray = localizacaoParaArray(agregado.cidades);
+			agregado.pizzaCidades = construirPizzaCidades(agregado.cidadesArray);
 			agregado.estadosArray = localizacaoParaArray(agregado.estados);
 			agregado.nacionalidadesArray = localizacaoParaArray(agregado.nacionalidades).map(function(item) {
 				item.nome = NACIONALIDADE_LABELS[item.nacionalidade] || item.nacionalidade;
 				return item;
 			});
+
+			// Quadros grandes (podem ter centenas de linhas) começam fechados - só o
+			// título e o total ficam visíveis até a pessoa clicar pra abrir, mesmo
+			// padrão +/- já usado em Camisetas.
+			agregado.alunosExpandido = false;
+			agregado.orientadoresExpandido = false;
+			agregado.localizacaoExpandido = false;
 		}
 
 		$scope.year = CadastraAno();
