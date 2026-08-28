@@ -266,11 +266,14 @@
 			return $http(request);
 		};
 
+		// O virtual "id" do Mongoose nem sempre vem no JSON (depende de config/versão) -
+		// "_id" é o único campo garantido, então é ele que vai como "id" pro backend
+		// (que espera req.body.id).
 		let _aprovarEscola = function(escola) {
 			const request = {
 				url: '/admin/aprovarEscola',
 				method: 'PUT',
-				data: escola
+				data: angular.extend({}, escola, { id: escola.id || escola._id })
 			}
 			return $http(request);
 		};
@@ -279,7 +282,7 @@
 			const request = {
 				url: '/admin/editarEscola',
 				method: 'PUT',
-				data: escola
+				data: angular.extend({}, escola, { id: escola.id || escola._id })
 			}
 			return $http(request);
 		};
