@@ -35,7 +35,7 @@
 			})
 			.error(function(status){
 				console.log('update error: '+status);
-				$scope.toast('Falha na alteração','failed-toast');
+				$scope.toast(status || 'Falha na alteração','failed-toast');
 			});
 		};
 
