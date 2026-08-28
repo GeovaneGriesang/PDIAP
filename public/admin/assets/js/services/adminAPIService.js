@@ -293,6 +293,15 @@
 			return $http(request);
 		};
 
+		let _rejeitarEscola = function(id, motivo) {
+			const request = {
+				url: '/admin/rejeitarEscola',
+				method: 'PUT',
+				data: { id: id, motivo: motivo }
+			}
+			return $http(request);
+		};
+
 		let _getAvaliadores = function() {
 			const request = {
 				url: '/admin/mostraAvaliadores',
@@ -534,6 +543,7 @@
 			aprovarEscola: _aprovarEscola,
 			editarEscola: _editarEscola,
 			removeEscola: _removeEscola,
+			rejeitarEscola: _rejeitarEscola,
 			getAvaliadores: _getAvaliadores,
 			putRemoveEvento: _putRemoveEvento,
 			postParticipante: _postParticipante,

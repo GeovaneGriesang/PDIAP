@@ -12,6 +12,23 @@
         <input type="text" name="nome" data-ng-model="escola.nome" required/>
       </md-input-container>
       <div layout-gt-sm="row">
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Seu nome</label>
+          <input type="text" name="solicitanteNome" data-ng-model="escola.solicitanteNome" required/>
+        </md-input-container>
+        <div flex="5" hide-xs hide-sm></div>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Seu e-mail</label>
+          <input type="email" name="solicitanteEmail" data-ng-model="escola.solicitanteEmail" required/>
+          <div class="md-errors-spacer">
+            <div data-ng-if="solicitarEscolaForm.solicitanteEmail.$dirty">
+              <div class="message-error" data-ng-if="solicitarEscolaForm.solicitanteEmail.$error.required">Obrigatório - é como avisamos se a escola foi aprovada.</div>
+              <div class="message-error" data-ng-if="solicitarEscolaForm.solicitanteEmail.$error.email">E-mail inválido.</div>
+            </div>
+          </div>
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row">
         <md-input-container class="md-block" flex-gt-sm="20">
           <label>Estado</label>
           <md-select name="estado" data-ng-model="escola.estado" data-ng-change="selectCidades(escola.estado)">

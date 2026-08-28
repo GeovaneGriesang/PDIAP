@@ -64,13 +64,14 @@
 			});
 		};
 
-		// Aprovar uma escola pendente: abre um diálogo com nome/cep/cidade/estado
-		// pré-preenchidos, mas editáveis - quem solicitou pode ter digitado algo com
-		// variação/erro, então dá pra corrigir no mesmo passo em que aprova.
-		$scope.aprovarEscola = function(ev, escolaOriginal) {
+		// Diálogo compartilhado por "aprovar" (escola pendente) e "editar" (escola já
+		// aprovada) - mesmos campos (nome/cep/cidade/estado), só muda o texto/botão e
+		// qual API é chamada ao confirmar.
+		function abrirDialogEscola(ev, escolaOriginal, modo) {
 			$mdDialog.show({
 				controller: function dialogController($scope, $mdDialog) {
 					$scope.escola = angular.copy(escolaOriginal);
+					$scope.modoAprovar = modo === 'aprovar';
 					$scope.listaEstados = [];
 					$scope.cidades = [];
 					$scope.selectCidades = function(cid) {
@@ -97,13 +98,59 @@
 				targetEvent: ev,
 				clickOutsideToClose: false
 			}).then(function(escolaEditada) {
-				adminAPI.aprovarEscola(escolaEditada)
+				var chamada = modo === 'aprovar' ? adminAPI.aprovarEscola(escolaEditada) : adminAPI.editarEscola(escolaEditada);
+				chamada
 				.success(function() {
-					$scope.toast('Escola aprovada!','success-toast');
+					$scope.toast(modo === 'aprovar' ? 'Escola aprovada!' : 'Escola atualizada!', 'success-toast');
 					$scope.mostraEscolas();
 				})
 				.error(function(status) {
 					$scope.toast('Falha.','failed-toast');
+					console.log('Erro: '+status);
+				});
+			}, function() {});
+		}
+
+		// Aprovar uma escola pendente: abre um diálogo com nome/cep/cidade/estado
+		// pré-preenchidos, mas editáveis - quem solicitou pode ter digitado algo com
+		// variação/erro, então dá pra corrigir no mesmo passo em que aprova.
+		$scope.aprovarEscola = function(ev, escolaOriginal) {
+			abrirDialogEscola(ev, escolaOriginal, 'aprovar');
+		};
+
+		// Editar uma escola já aprovada (corrigir nome/cidade/estado/cep depois do
+		// fato, sem precisar apagar e recadastrar).
+		$scope.editarEscolaAprovada = function(ev, escolaOriginal) {
+			abrirDialogEscola(ev, escolaOriginal, 'editar');
+		};
+
+		// Rejeitar uma solicitação pendente: exige motivo (obrigatório) e avisa quem
+		// solicitou por e-mail, se informado - diferente de removerEscola, que só se
+		// aplica a uma escola já aprovada.
+		$scope.rejeitarEscola = function(ev, escolaOriginal) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog) {
+					$scope.escola = escolaOriginal;
+					$scope.motivo = '';
+					$scope.confirmar = function() {
+						$mdDialog.hide($scope.motivo);
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: 'admin/views/details.rejeitar-escola.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false
+			}).then(function(motivo) {
+				adminAPI.rejeitarEscola(escolaOriginal._id, motivo)
+				.success(function() {
+					$scope.toast('Solicitação rejeitada.','success-toast');
+					$scope.mostraEscolas();
+				})
+				.error(function(status) {
+					$scope.toast(status || 'Falha.','failed-toast');
 					console.log('Erro: '+status);
 				});
 			}, function() {});
