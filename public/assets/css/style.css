@@ -15,9 +15,13 @@ body {
   min-width: 315px !important;
 }
 
+/* Antes usava #eee (quase branco) - some em cima de qualquer campo claro
+   (a maioria dos campos do site), ficando impossível ver o que foi
+   selecionado. Azul saturado + texto branco garante contraste em qualquer
+   fundo, inclusive nas caixas vermelhas do login. */
 ::selection {
-  background: #eee;
-  color: #000;
+  background: #1565c0;
+  color: #fff;
 }
 
 ::-webkit-scrollbar-track {
@@ -1449,6 +1453,16 @@ md-dialog-content,
   /* mais espaço interno */
 
   box-sizing: border-box !important;
+}
+
+/* O "color: white" acima não bastava: ".login-content md-input-container
+   .md-input" (regra mais antiga, mesma especificidade) tem 2 seletores de
+   classe contra 1 aqui e vinha antes no arquivo, então perdia o empate -
+   texto do login saía verde-escuro (#1b5e20) em cima do fundo vermelho,
+   quase ilegível. Repetindo a mesma especificidade só que depois no arquivo
+   (".md-input" em vez de "input") resolve o empate a favor do branco. */
+.login-box md-input-container .md-input {
+  color: #fff !important;
 }
 
 /* centraliza */

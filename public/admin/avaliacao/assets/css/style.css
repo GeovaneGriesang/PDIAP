@@ -8,9 +8,11 @@
 body {
   min-width: 315px !important;
 }
+/* Antes usava #eee (quase branco) - some em cima de qualquer campo claro,
+   ficando impossível ver o que foi selecionado. */
 ::selection {
-  background: #eee;
-  color: #000;
+  background: #1565c0;
+  color: #fff;
 }
 ::-webkit-scrollbar-track {
   background-color: #F4F4F4;
