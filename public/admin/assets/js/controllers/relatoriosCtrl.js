@@ -388,16 +388,8 @@
 			window.print();
 		};
 
-		// Não dá pra saber de antemão se quem rola a página é o md-content
-		// (comportamento normal do layout admin) ou a janela (alguma tela/estado
-		// específico) - zera os dois, o que não se aplica só não faz nada.
-		$scope.voltarAoTopo = function() {
-			var mdContent = document.querySelector('md-content');
-			if (mdContent) mdContent.scrollTop = 0;
-			window.scrollTo(0, 0);
-			document.documentElement.scrollTop = 0;
-			document.body.scrollTop = 0;
-		};
+		// $scope.voltarAoTopo vem do adminCtrl (escopo pai) - mesmo botão fixo em
+		// todas as telas do admin, não só aqui.
 
 		// Copiar pra WhatsApp: monta texto usando a formatação própria do WhatsApp
 		// (*negrito*, não HTML - colar texto rico não funciona lá) e joga na área de
