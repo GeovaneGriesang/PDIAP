@@ -155,10 +155,24 @@
 			});
 		}
 
+		// Desempate por nome quando a quantidade é igual - sem isso a ordem de
+		// empate ficava arbitrária (ordem de inserção no objeto), mudando toda
+		// hora sem motivo entre recarregamentos.
+		function porQuantidadeDepoisNome(campoNum, campoNome) {
+			return function(a, b) {
+				if (b[campoNum] !== a[campoNum]) return b[campoNum] - a[campoNum];
+				return (a[campoNome] || '').localeCompare(b[campoNome] || '', 'pt-BR');
+			};
+		}
+
+		function somarCampo(lista, campo) {
+			return lista.reduce(function(soma, item) { return soma + (item[campo] || 0); }, 0);
+		}
+
 		function escolasParaArray(escolasObj) {
 			return Object.keys(escolasObj).map(function(nome) {
 				return { nome: nome, num: escolasObj[nome] };
-			}).sort(function(a, b) { return b.num - a.num; });
+			}).sort(porQuantidadeDepoisNome('num', 'nome'));
 		}
 
 		// Lista de pessoas (alunos/orientadores) únicas, ordenada por nome - cada uma já
@@ -180,7 +194,12 @@
 				var item = mapa[chave];
 				item.total = item.aluno + item.orientador;
 				return item;
-			}).sort(function(a, b) { return b.total - a.total; });
+			}).sort(function(a, b) {
+				if (b.total !== a.total) return b.total - a.total;
+				var nomeA = a.cidade || a.estado || a.nacionalidade || '';
+				var nomeB = b.cidade || b.estado || b.nacionalidade || '';
+				return nomeA.localeCompare(nomeB, 'pt-BR');
+			});
 		}
 
 		// Paleta categórica (ordem fixa, não gerada) - até 6 fatias de verdade; a partir
@@ -248,7 +267,7 @@
 		// grupo - a view só precisa fazer item.num/item.max pra desenhar a barra, sem
 		// calcular nada.
 		function ordenarComMax(lista) {
-			var ordenada = lista.slice().sort(function(a, b) { return b.num - a.num; });
+			var ordenada = lista.slice().sort(porQuantidadeDepoisNome('num', 'nome'));
 			var max = ordenada.length ? ordenada[0].num : 0;
 			ordenada.forEach(function(item) { item.max = max || 1; });
 			return ordenada;
@@ -258,12 +277,14 @@
 		// categoria, e camisetas - cada uma já ordenada e com o "max" do grupo anotado.
 		function finalizarAgregacao(agregado) {
 			agregado.escolasArray = escolasParaArray(agregado.escolas);
+			agregado.escolasTotal = somarCampo(agregado.escolasArray, 'num');
 
 			agregado.categoriasArray = ordenarComMax([
 				{ nome: 'Fundamental I (1º ao 5º anos)', num: agregado.countFundamentalI },
 				{ nome: 'Fundamental II (6º ao 9º anos)', num: agregado.countFundamentalII },
 				{ nome: 'Ensino Médio, Técnico e Superior', num: agregado.countEnsinoMedio }
 			]);
+			agregado.categoriasTotal = somarCampo(agregado.categoriasArray, 'num');
 
 			// Detalhamento por categoria fica em ordem fixa (não por quantidade) - é um
 			// relatório pra reler várias vezes, não um ranking; categoria pulando de
@@ -282,6 +303,7 @@
 					expandido: false
 				};
 			}));
+			agregado.camisetasTotal = somarCampo(agregado.camisetasArray, 'num');
 
 			var porCategoria = {};
 			agregado.eixos.forEach(function(e) {
@@ -289,7 +311,8 @@
 				porCategoria[e.categoria].push({ nome: e.nome, num: e.num });
 			});
 			agregado.eixosPorCategoria = Object.keys(porCategoria).map(function(categoria) {
-				return { categoria: categoria, eixos: ordenarComMax(porCategoria[categoria]) };
+				var eixos = ordenarComMax(porCategoria[categoria]);
+				return { categoria: categoria, eixos: eixos, total: somarCampo(eixos, 'num') };
 			});
 
 			agregado.alunosArray = pessoasParaArray(agregado.alunos);
@@ -302,10 +325,14 @@
 				item.nome = NACIONALIDADE_LABELS[item.nacionalidade] || item.nacionalidade;
 				return item;
 			});
+			agregado.cidadesTotal = { aluno: somarCampo(agregado.cidadesArray, 'aluno'), orientador: somarCampo(agregado.cidadesArray, 'orientador'), total: somarCampo(agregado.cidadesArray, 'total') };
+			agregado.estadosTotal = { aluno: somarCampo(agregado.estadosArray, 'aluno'), orientador: somarCampo(agregado.estadosArray, 'orientador'), total: somarCampo(agregado.estadosArray, 'total') };
+			agregado.nacionalidadesTotal = { aluno: somarCampo(agregado.nacionalidadesArray, 'aluno'), orientador: somarCampo(agregado.nacionalidadesArray, 'orientador'), total: somarCampo(agregado.nacionalidadesArray, 'total') };
 
 			// Quadros grandes (podem ter centenas de linhas) começam fechados - só o
 			// título e o total ficam visíveis até a pessoa clicar pra abrir, mesmo
 			// padrão +/- já usado em Camisetas.
+			agregado.escolasExpandido = false;
 			agregado.alunosExpandido = false;
 			agregado.orientadoresExpandido = false;
 			agregado.localizacaoExpandido = false;
@@ -359,6 +386,17 @@
 
 		$scope.imprimir = function() {
 			window.print();
+		};
+
+		// Não dá pra saber de antemão se quem rola a página é o md-content
+		// (comportamento normal do layout admin) ou a janela (alguma tela/estado
+		// específico) - zera os dois, o que não se aplica só não faz nada.
+		$scope.voltarAoTopo = function() {
+			var mdContent = document.querySelector('md-content');
+			if (mdContent) mdContent.scrollTop = 0;
+			window.scrollTo(0, 0);
+			document.documentElement.scrollTop = 0;
+			document.body.scrollTop = 0;
 		};
 
 		// Copiar pra WhatsApp: monta texto usando a formatação própria do WhatsApp
