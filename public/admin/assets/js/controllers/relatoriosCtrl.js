@@ -96,7 +96,10 @@
 			var chave = chavePessoa(integrante, proj);
 			if (!chave) return;
 			if (!mapa[chave]) {
-				mapa[chave] = { nome: integrante.nome || '(sem nome)', nomeEscola: proj.nomeEscola || '', projetos: [] };
+				// categoria vem do primeiro projeto em que a pessoa aparece - na prática
+				// é sempre a mesma (ninguém tem projeto de Fundamental E de Médio ao
+				// mesmo tempo), então não precisa reconciliar entre projetos.
+				mapa[chave] = { nome: integrante.nome || '(sem nome)', nomeEscola: proj.nomeEscola || '', categoria: proj.categoria || '', projetos: [] };
 			}
 			mapa[chave].projetos.push({ numInscricao: proj.numInscricao, nomeProjeto: proj.nomeProjeto, nomeEscola: proj.nomeEscola });
 		}
@@ -167,6 +170,22 @@
 
 		function somarCampo(lista, campo) {
 			return lista.reduce(function(soma, item) { return soma + (item[campo] || 0); }, 0);
+		}
+
+		// Estudantes por categoria (Fundamental I, Fundamental II, Ensino Médio/Técnico/
+		// Superior) - mesma ordem fixa de CATEGORIAS usada em "Por categoria", cada
+		// grupo já ordenado por nome (é uma lista pra procurar gente, não um ranking).
+		function alunosPorCategoria(alunosArray) {
+			var porCategoria = {};
+			CATEGORIAS.forEach(function(cat) { porCategoria[cat] = []; });
+			alunosArray.forEach(function(aluno) {
+				if (porCategoria[aluno.categoria]) porCategoria[aluno.categoria].push(aluno);
+				else (porCategoria['(sem categoria)'] = porCategoria['(sem categoria)'] || []).push(aluno);
+			});
+			var ordem = CATEGORIAS.concat(porCategoria['(sem categoria)'] ? ['(sem categoria)'] : []);
+			return ordem.map(function(cat) {
+				return { categoria: cat, alunos: porCategoria[cat], total: porCategoria[cat].length };
+			});
 		}
 
 		function escolasParaArray(escolasObj) {
@@ -316,6 +335,7 @@
 			});
 
 			agregado.alunosArray = pessoasParaArray(agregado.alunos);
+			agregado.alunosPorCategoria = alunosPorCategoria(agregado.alunosArray);
 			agregado.orientadoresArray = pessoasParaArray(agregado.orientadores);
 
 			agregado.cidadesArray = localizacaoParaArray(agregado.cidades);
@@ -458,7 +478,11 @@
 				}
 				return linha;
 			});
-			return '*' + titulo + ' (' + lista.length + ') — ' + aba.nome + '*\n' + linhas.join('\n');
+			var cabecalhoCategoria = '';
+			if (tipo === 'Aluno') {
+				cabecalhoCategoria = aba.alunosPorCategoria.map(function(g) { return '- ' + g.categoria + ': *' + g.total + '*'; }).join('\n') + '\n\n';
+			}
+			return '*' + titulo + ' (' + lista.length + ') — ' + aba.nome + '*\n' + cabecalhoCategoria + linhas.join('\n');
 		}
 
 		function textoLocalizacao(aba) {

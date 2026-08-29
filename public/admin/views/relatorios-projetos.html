@@ -459,27 +459,30 @@
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.alunosExpandido">
-						<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:0 0 12px 0;">Cada estudante aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
-						<table class="relatorios-tabela">
-							<thead>
-								<tr><th>Nome</th><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
-							</thead>
-							<tbody>
-								<tr data-ng-repeat-start="p in aba.alunosArray" data-ng-class="{'relatorios-linha-clicavel': p.numProjetos > 1}" data-ng-click="p.numProjetos > 1 && (p.expandido = !p.expandido)">
-									<td>{{p.nome}}</td>
-									<td>{{p.nomeEscola}}</td>
-									<td class="num">
-										{{p.numProjetos}}
-										<md-icon data-ng-if="p.numProjetos > 1" class="relatorios-seta" md-svg-src="{{p.expandido ? 'minus' : 'plus'}}" style="width:16px;height:16px;vertical-align:middle;"></md-icon>
-									</td>
-								</tr>
-								<tr data-ng-repeat-end class="relatorios-detalhe-pessoa" data-ng-show="p.expandido">
-									<td colspan="3">
-										<div data-ng-repeat="proj in p.projetos">Nº {{proj.numInscricao}} — {{proj.nomeProjeto}} ({{proj.nomeEscola}})</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+						<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:0 0 12px 0;">Separado por nível de ensino (categoria do projeto). Cada estudante aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
+						<div data-ng-repeat="g in aba.alunosPorCategoria">
+							<h4 class="relatorios-subtitulo">{{g.categoria}} ({{g.total}})</h4>
+							<table class="relatorios-tabela" data-ng-if="g.total">
+								<thead>
+									<tr><th>Nome</th><th>Escola</th><th style="text-align:right;">Projetos</th></tr>
+								</thead>
+								<tbody>
+									<tr data-ng-repeat-start="p in g.alunos" data-ng-class="{'relatorios-linha-clicavel': p.numProjetos > 1}" data-ng-click="p.numProjetos > 1 && (p.expandido = !p.expandido)">
+										<td>{{p.nome}}</td>
+										<td>{{p.nomeEscola}}</td>
+										<td class="num">
+											{{p.numProjetos}}
+											<md-icon data-ng-if="p.numProjetos > 1" class="relatorios-seta" md-svg-src="{{p.expandido ? 'minus' : 'plus'}}" style="width:16px;height:16px;vertical-align:middle;"></md-icon>
+										</td>
+									</tr>
+									<tr data-ng-repeat-end class="relatorios-detalhe-pessoa" data-ng-show="p.expandido">
+										<td colspan="3">
+											<div data-ng-repeat="proj in p.projetos">Nº {{proj.numInscricao}} — {{proj.nomeProjeto}} ({{proj.nomeEscola}})</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
 
