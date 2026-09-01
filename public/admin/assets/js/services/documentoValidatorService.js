@@ -54,12 +54,22 @@
 		{ min: 10, max: 11 }  // venezuelano
 	];
 
-	function validarTelefone(telefone) {
+	// Tolera um DDI "55" colado antes do DDD (comum ao copiar de um contato/WhatsApp) -
+	// ver utils/documentoValidator.js (servidor) pra mais detalhes.
+	function normalizarTelefone(telefone) {
 		var digits = apenasDigitos(telefone);
+		if (digits.length > 11 && digits.indexOf('55') === 0) {
+			digits = digits.substring(2);
+		}
+		return digits;
+	}
+
+	function validarTelefone(telefone) {
+		var digits = normalizarTelefone(telefone);
 		var valido = FAIXAS_TELEFONE.some(function (faixa) {
 			return digits.length >= faixa.min && digits.length <= faixa.max;
 		});
-		return valido ? { valido: true } : { valido: false, mensagem: 'Telefone inválido.' };
+		return valido ? { valido: true, normalizado: digits } : { valido: false, mensagem: 'Telefone inválido.' };
 	}
 
 	angular
@@ -70,7 +80,8 @@
 			validarCedulaUruguaia: function (documento) { return validarCedulaUruguaia(apenasDigitos(documento)); },
 			validarDocumentoGenerico: function (documento) { return validarDocumentoGenerico(apenasDigitos(documento)); },
 			validarDocumento: validarDocumento,
-			validarTelefone: validarTelefone
+			validarTelefone: validarTelefone,
+			normalizarTelefone: normalizarTelefone
 		};
 	});
 
