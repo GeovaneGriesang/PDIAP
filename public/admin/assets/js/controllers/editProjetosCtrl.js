@@ -210,44 +210,14 @@
 		});
 		
 
-		$scope.update = function(projeto) {
-			if (projeto.nomeProjeto !== undefined) {
-				projeto.palavraChave = $scope.palavraChave;
-			}
-			adminAPI.putProjeto(projeto)
-			.success(function(projeto){
-				$scope.alterado = true;
-				$scope.toast('Alteração realizada com sucesso!','success-toast');
-			})
-			.error(function(status){
-				console.log('update error: '+status);
-				$scope.toast('Falha na alteração','failed-toast');
-			});
-		};
-
-		$scope.limpaHospedagem = function() {
-			$scope.projeto5.hospedagem = [];
-		}
-
-		let updateIntegrante = function(pacote) {
-			adminAPI.putIntegrante(pacote)
-			.success(function(data, status){
-				console.log(status);
-				$scope.alterado = true;
-				$scope.toast('Alteração realizada com sucesso!','success-toast');
-			})
-			.error(function(status){
-				console.log('update error: '+status);
-				$scope.toast('Falha na alteração','failed-toast');
-			});
-		};
-
-		$scope.orientadoresUpdate = [];
-		$scope.updateOrientadores = function() {
-			$scope.orientadoresUpdate = [];
+		// Monta o pacote de orientadores/alunos (mesmos campos de sempre) sem disparar
+		// nenhuma requisição - usado só por salvarProjetoCompleto, que junta tudo numa
+		// única chamada a /admin/upgreiceEditProjeto.
+		function montarPacoteOrientadores() {
+			var lista = [];
 			for (var i = 1; i <= $scope.dynamicFields11.length; i++) {
 				if (i == 1) {
-					var pacote = ({
+					lista.push({
 						tipo: 'Orientador',
 						nome: $scope.projeto3.nomeOrientador1,
 						email: $scope.projeto3.emailOrientador1,
@@ -256,12 +226,11 @@
 						telefone: $scope.projeto3.telefoneOrientador1,
 						tamCamiseta: $scope.projeto3.tamCamisetaOrientador1,
 						_id: $scope.projeto3.idOrientador1,
-						ID: $scope.projeto1._id
+						ID: $scope.projeto._id
 					});
-					$scope.orientadoresUpdate.push(pacote);
 				}
 				if (i == 2) {
-					var pacote = ({
+					lista.push({
 						tipo: 'Orientador',
 						nome: $scope.projeto3.nomeOrientador2,
 						email: $scope.projeto3.emailOrientador2,
@@ -270,20 +239,18 @@
 						telefone: $scope.projeto3.telefoneOrientador2,
 						tamCamiseta: $scope.projeto3.tamCamisetaOrientador2,
 						_id: $scope.projeto3.idOrientador2,
-						ID: $scope.projeto1._id
+						ID: $scope.projeto._id
 					});
-					$scope.orientadoresUpdate.push(pacote);
 				}
 			}
-			updateIntegrante($scope.orientadoresUpdate);
-		};
+			return lista;
+		}
 
-		$scope.alunosUpdate = [];
-		$scope.updateAlunos = function() {
-			$scope.alunosUpdate = [];
+		function montarPacoteAlunos() {
+			var lista = [];
 			for (var i = 1; i <= $scope.dynamicFields22.length; i++) {
 				if (i == 1) {
-					var pacote = ({
+					lista.push({
 						tipo: 'Aluno',
 						nome: $scope.projeto4.nomeAluno1,
 						email: $scope.projeto4.emailAluno1,
@@ -292,12 +259,11 @@
 						telefone: $scope.projeto4.telefoneAluno1,
 						tamCamiseta: $scope.projeto4.tamCamisetaAluno1,
 						_id: $scope.projeto4.idAluno1,
-						ID: $scope.projeto1._id
+						ID: $scope.projeto._id
 					});
-					$scope.alunosUpdate.push(pacote);
 				}
 				if (i == 2) {
-					var pacote = ({
+					lista.push({
 						tipo: 'Aluno',
 						nome: $scope.projeto4.nomeAluno2,
 						email: $scope.projeto4.emailAluno2,
@@ -306,12 +272,11 @@
 						telefone: $scope.projeto4.telefoneAluno2,
 						tamCamiseta: $scope.projeto4.tamCamisetaAluno2,
 						_id: $scope.projeto4.idAluno2,
-						ID: $scope.projeto1._id
+						ID: $scope.projeto._id
 					});
-					$scope.alunosUpdate.push(pacote);
 				}
 				if (i == 3) {
-					var pacote = ({
+					lista.push({
 						tipo: 'Aluno',
 						nome: $scope.projeto4.nomeAluno3,
 						email: $scope.projeto4.emailAluno3,
@@ -320,47 +285,69 @@
 						telefone: $scope.projeto4.telefoneAluno3,
 						tamCamiseta: $scope.projeto4.tamCamisetaAluno3,
 						_id: $scope.projeto4.idAluno3,
-						ID: $scope.projeto1._id
+						ID: $scope.projeto._id
 					});
-					$scope.alunosUpdate.push(pacote);
 				}
 			}
+			return lista;
+		}
 
-			for (var i = 0; i < $scope.projeto5.hospedagem.length; i++) {
-				let idem = false;
-				angular.forEach($scope.alunosUpdate, function (value, key){
-					if ($scope.projeto5.hospedagem[i] === value.nome) {
-						idem = true;
-					}
-				});
-				if (idem === false) {
-					$scope.projeto5.hospedagem.splice(i, 1);
-				}
-			}
+		$scope.limpaHospedagem = function() {
+			$scope.projeto5.hospedagem = [];
+		}
 
-			let hosp = ({
-				hospedagem: $scope.projeto5.hospedagem
+		// Um botão só, salva tudo de uma vez (era um "Salvar" por aba, cada um gravando
+		// só o pedaço daquela aba - achado confuso, e o de "Conta Usuário" dependia de
+		// _id vindos de objetos separados por aba, frágil o bastante pra falhar sozinho).
+		// $scope.projeto._id (setado uma única vez em preencherCampos, antes de qualquer
+		// outra coisa) é a ÚNICA fonte de verdade pro ID do projeto sendo editado - nunca
+		// os _id individuais de projeto1/projeto1_2/projeto2/projeto5.
+		$scope.salvarProjetoCompleto = function() {
+			// Mesmo filtro de "aluno removido não pode continuar na hospedagem" que já
+			// existia em updateAlunos - só que agora contra a lista de alunos atual.
+			var alunosAtuais = montarPacoteAlunos();
+			$scope.projeto5.hospedagem = ($scope.projeto5.hospedagem || []).filter(function(nome) {
+				return alunosAtuais.some(function(a) { return a.nome === nome; });
 			});
-			adminAPI.putProjeto(hosp)
-			.success(function(data){
-			})
-			.error(function(status){
+
+			var payload = angular.extend(
+				{ _id: $scope.projeto._id },
+				$scope.projeto1,
+				$scope.projeto1_2,
+				$scope.projeto2,
+				$scope.projeto5
+			);
+			if (payload.nomeProjeto !== undefined) payload.palavraChave = $scope.palavraChave;
+
+			var integrantes = montarPacoteOrientadores().concat(alunosAtuais);
+
+			var pendentes = 2, falhou = false;
+			function finalizar() {
+				pendentes--;
+				if (pendentes > 0) return;
+				$scope.alterado = true;
+				if (falhou) {
+					$scope.toast('Falha ao salvar - confira os dados e tente de novo.', 'failed-toast');
+				} else {
+					$scope.toast('Alteração realizada com sucesso!', 'success-toast');
+				}
+			}
+
+			adminAPI.putProjeto(payload)
+			.success(function() { finalizar(); })
+			.error(function(status) {
 				console.log('update error: '+status);
-				$scope.toast('Falha na alteração','failed-toast');
+				falhou = true;
+				finalizar();
 			});
 
-			updateIntegrante($scope.alunosUpdate);
-
-			let showAlert = function(ev) {
-				$mdDialog.show(
-					$mdDialog.alert()
-					.parent(angular.element(document.querySelector('#popupContainer3')))
-					.clickOutsideToClose(false)
-					.textContent('O(s) aluno(s) alterado(s) foram removidos da lista de hospedagem. Por favor, atualize-a.')
-					.ok('OK')
-					.targetEvent(ev)
-				);
-			};
+			adminAPI.putIntegrante(integrantes)
+			.success(function() { finalizar(); })
+			.error(function(status) {
+				console.log('update integrantes error: '+status);
+				falhou = true;
+				finalizar();
+			});
 		};
 
 		// Resumo somente-leitura do projeto (mesmo diálogo usado em Presença/Aprovados) -
@@ -590,7 +577,7 @@
 					$mdDialog.show(confirm).then(function() {
 						let id = ({
 							integrantes_id: $scope.projeto3[idIntegrante],
-							ID: $scope.projeto1._id
+							ID: $scope.projeto._id
 						});
 						adminAPI.removeIntegrante(id)
 						.success(function(data) {
@@ -637,8 +624,7 @@
 					$mdDialog.show(confirm).then(function() {
 						let id = ({
 							integrantes_id: $scope.projeto4[idIntegrante],
-							ID: $scope.projeto1._id
-							
+							ID: $scope.projeto._id
 						});
 						adminAPI.removeIntegrante(id)
 						.success(function(data) {

@@ -59,7 +59,7 @@
               <md-option value="1" data-ng-focus="ordenarPor('numInscricao')">Nº de Inscrição</md-option>
               <md-option value="2" data-ng-focus="ordenarPor('nomeProjeto')">Nome do projeto</md-option>
               <md-option value="3" data-ng-focus="ordenarPor('nomeEscola')">Escola</md-option>
-              <md-option value="4" data-ng-focus="ordenarPor(['categoria','eixo'])" data-ng-selected="true">Categoria/eixo</md-option>              
+              <md-option value="4" data-ng-focus="ordenarPor(['categoria','eixo'])" data-ng-selected="true">Categoria/eixo</md-option>
             </md-optgroup>
           </md-select>
         </div>
@@ -75,8 +75,8 @@
         </div>
 
         <span flex></span>
-      </div>     
-    </md-toolbar>      
+      </div>
+    </md-toolbar>
 
     </md-toolbar>
 
@@ -86,11 +86,12 @@
           <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Atualizar</span>
         </h3>
             <div data-ng-cloak data-ng-controller="registroCtrl" style="width:100%">
+    <form name="projetoFormGeral" novalidate>
     <md-tabs md-stretch-tabs="always" md-dynamic-height md-border-bottom class="update-inputs">
       <md-tab label="Projeto">
         <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
           <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-            <form name="projetoForm1" novalidate style="width:100%;padding:8px;">
+            <ng-form name="projetoForm1" style="width:100%;padding:8px;">
               <div layout="row">
                 <div class="bloco-right" flex>
                   <md-input-container class="md-block" data-ng-init="editing1=false" flex-gt-sm>
@@ -144,13 +145,13 @@
                     </md-optgroup>
                     <md-option value="" disabled data-ng-if="projeto1.categoria === undefined">Selecione uma Categoria</md-option>
                   </md-select>
-                  <div class="md-errors-spacer"></div>                 
+                  <div class="md-errors-spacer"></div>
             </md-input-container>
             <div flex layout="column" layout-align="center center" hide-xs>
               <md-button md-no-ink data-ng-href="/categorias-eixos" target="_blank" class="saiba-mais">Saiba mais</md-button>
             </div>
-          </div>            
-                    
+          </div>
+
           <div layout="row" style="margin-bottom:35px;margin-top:25px;">
               <span style="margin-right:30px;color:#616161;">Marcar Participação:</span>
               <md-radio-group data-ng-model="projeto1.participa" layout="row" required>
@@ -159,8 +160,8 @@
               </md-radio-group>
               <div class="md-errors-spacer"></div>
           </div>
-                    
-                    
+
+
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
               <label>Resumo do Projeto</label>
@@ -176,63 +177,15 @@
           </div>
         </div>
       </div>
-      <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-        <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm1.$valid || palavraChave.length === 0" data-ng-click="update(projeto1)">
-          <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
-          Salvar
-        </md-button>
-      </div>
-    </form>
+    </ng-form>
   </md-content>
 </md-content>
 </md-tab>
-    
-<md-tab label="Conta Usuário">
-        <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
-          <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-            <form name="projetoForm1_2" novalidate style="width:100%;padding:8px;">
-                <div layout="row">
-					<div class="bloco-right" flex-xs="100" flex="75">
-						<md-input-container class="md-block" flex-gt-sm>
-							<label>E-mail principal</label>
-							<md-select name="email" data-ng-model="projeto1_2.email" required>
-								<md-option ng-value="email" data-ng-repeat="email in EMAILS" data-ng-if="EMAILS.length > 0">{{email}}</md-option>
-								<md-option value="" disabled data-ng-if="EMAILS.length == 0">Nenhum email inserido</md-option>
-							</md-select>
-							<div class="md-errors-spacer">
-								<div data-ng-if="projetoForm1_2.email.$touched">
-									<div class="message-error" data-ng-if="projetoForm1_2.email.$error.required">Obrigatório.</div>
-								</div>
-							</div>
-						</md-input-container>
-						<md-input-container class="md-block" flex-gt-sm>
-							<label>Nome do usuário</label>
-							<!--<input type="text" name="username" data-ng-model="projeto1_2.username" data-ng-change="verificaUsername(projeto1_2.username)" required/>-->
-                            <input type="text" name="username" data-ng-model="projeto1_2.username" required/>
-							<div class="md-errors-spacer">
-								<div data-ng-if="projetoForm1_2.username.$dirty">
-									<div class="message-error" data-ng-if="projetoForm1_2.username.$error.required">Obrigatório.</div>
-								</div>
-								<div class="message-error" data-ng-if="projetoForm1_2.username.$error.duplicado">Username já está sendo utilizado.</div>
-							</div>
-						</md-input-container>
-					</div>
-				</div>
-                <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-                    <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm1_2.$valid" data-ng-click="update(projeto1_2)">
-                        <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
-                        Salvar
-                    </md-button>
-                </div>                
-            </form>
-          </md-content>
-        </md-content>
-</md-tab>
-        
+
 <md-tab label="Instituição">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-      <form name="projetoForm2" novalidate style="width:100%;padding:8px;">
+      <ng-form name="projetoForm2" style="width:100%;padding:8px;">
         <div layout="row">
           <div class="bloco-right" flex>
             <div layout-gt-sm="row" data-ng-init="editing5=false">
@@ -299,20 +252,14 @@
   </div>
 </div>
 </div>
-<div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-  <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm2.$valid" data-ng-click="update(projeto2)">
-    <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
-    Salvar
-  </md-button>
-</div>
-</form>
+</ng-form>
 </md-content>
 </md-content>
 </md-tab>
 <md-tab label="Orientador(es)">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-      <form name="projetoForm3" novalidate style="width:100%;padding:8px;">
+      <ng-form name="projetoForm3" style="width:100%;padding:8px;">
         <div layout="row">
           <div class="bloco-right" flex>
             <div ng-repeat="item1 in dynamicFields11" ng-form="projetoForm3">
@@ -403,20 +350,14 @@
         </div>
       </div>
     </div>
-    <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-      <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm3.$valid" data-ng-click="updateOrientadores()">
-        <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon>
-        Salvar
-      </md-button>
-    </div>
-  </form>
+  </ng-form>
 </md-content>
 </md-content>
 </md-tab>
 <md-tab label="Aluno(s)">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-      <form name="projetoForm4" novalidate style="width:85%;padding:8px;">
+      <ng-form name="projetoForm4" style="width:85%;padding:8px;">
         <div layout="row">
           <div class="bloco-right" flex>
             <div ng-repeat="item2 in dynamicFields22" ng-form="projetoForm4">
@@ -495,7 +436,7 @@
                     <md-option value="M">M - Média</md-option>
                     <md-option value="G">G - Grande</md-option>
                   </md-select>
-                  <div class="md-errors-spacer"></div>                 
+                  <div class="md-errors-spacer"></div>
             </md-input-container>
           </div>
         </div>
@@ -507,20 +448,14 @@
         </div>
       </div>
     </div>
-    <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-      <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm4.$valid" data-ng-click="updateAlunos()">
-        <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)'}"></md-icon>
-        Salvar
-      </md-button>
-    </div>
-  </form>
+  </ng-form>
 </md-content>
 </md-content>
 </md-tab>
 <md-tab label="Hospedagem" data-ng-click="carregaIntegrantes(projeto)">
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
-      <form name="projetoForm5" novalidate style="width:85%;padding:8px;">
+      <ng-form name="projetoForm5" style="width:85%;padding:8px;">
         <div layout="row">
           <div class="bloco-right" flex>
             <div layout="row" style="margin-bottom:35px;margin-top:25px;">
@@ -547,17 +482,54 @@
           </md-input-container>
         </div>
       </div>
-      <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
-        <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoForm5.$valid" data-ng-click="update(projeto5)">
-          <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
-          Salvar
-        </md-button>
-      </div>
-    </form>
+    </ng-form>
   </md-content>
 </md-content>
 </md-tab>
+<md-tab label="Conta Usuário">
+        <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
+          <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
+            <ng-form name="projetoForm1_2" style="width:100%;padding:8px;">
+                <div layout="row">
+					<div class="bloco-right" flex-xs="100" flex="75">
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>E-mail principal</label>
+							<md-select name="email" data-ng-model="projeto1_2.email" required>
+								<md-option ng-value="email" data-ng-repeat="email in EMAILS" data-ng-if="EMAILS.length > 0">{{email}}</md-option>
+								<md-option value="" disabled data-ng-if="EMAILS.length == 0">Nenhum email inserido</md-option>
+							</md-select>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm1_2.email.$touched">
+									<div class="message-error" data-ng-if="projetoForm1_2.email.$error.required">Obrigatório.</div>
+								</div>
+							</div>
+						</md-input-container>
+						<md-input-container class="md-block" flex-gt-sm>
+							<label>Nome do usuário</label>
+							<!--<input type="text" name="username" data-ng-model="projeto1_2.username" data-ng-change="verificaUsername(projeto1_2.username)" required/>-->
+                            <input type="text" name="username" data-ng-model="projeto1_2.username" required/>
+							<div class="md-errors-spacer">
+								<div data-ng-if="projetoForm1_2.username.$dirty">
+									<div class="message-error" data-ng-if="projetoForm1_2.username.$error.required">Obrigatório.</div>
+								</div>
+								<div class="message-error" data-ng-if="projetoForm1_2.username.$error.duplicado">Username já está sendo utilizado.</div>
+							</div>
+						</md-input-container>
+					</div>
+				</div>
+            </ng-form>
+          </md-content>
+        </md-content>
+</md-tab>
 </md-tabs>
+
+<div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
+  <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoFormGeral.$valid || palavraChave.length === 0" data-ng-click="salvarProjetoCompleto()">
+    <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
+    Salvar
+  </md-button>
+</div>
+</form>
 <!--</md-content>-->
 
 </div>
