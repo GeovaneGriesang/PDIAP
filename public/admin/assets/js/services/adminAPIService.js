@@ -266,6 +266,18 @@
 			return $http(request);
 		};
 
+		// Rota pública (mesma usada na inscrição) - reaproveitada aqui pra quando o
+		// admin, editando um projeto, precisa solicitar o cadastro de uma escola que
+		// ainda não está na lista (ver registroCtrl.js do admin, aba Instituição).
+		let _solicitarEscola = function(escola) {
+			const request = {
+				url: '/solicitarEscola',
+				method: 'POST',
+				data: escola
+			}
+			return $http(request);
+		};
+
 		// O virtual "id" do Mongoose nem sempre vem no JSON (depende de config/versão) -
 		// "_id" é o único campo garantido, então é ele que vai como "id" pro backend
 		// (que espera req.body.id).
@@ -543,6 +555,7 @@
 			removeFeira: _removeFeira,
 			postEscola: _postEscola,
 			getEscolas: _getEscolas,
+			solicitarEscola: _solicitarEscola,
 			aprovarEscola: _aprovarEscola,
 			editarEscola: _editarEscola,
 			removeEscola: _removeEscola,

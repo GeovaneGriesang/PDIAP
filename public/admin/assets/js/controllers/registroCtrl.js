@@ -13,6 +13,92 @@
 		$scope.usernames = [];
 		$scope.escolas = [];
 
+		// Lista de escolas pra seleção na aba Instituição de editar-projetos.html -
+		// mostraEscolas traz qualquer status (é a rota usada pela tela de gestão de
+		// escolas), então filtra só as aprovadas aqui, mesmo critério da rota pública
+		// getEscolasInfo usada na inscrição.
+		adminAPI.getEscolas()
+		.success(function(data) {
+			$scope.escolas = (data || []).filter(function(e) { return e.status === 'aprovada'; });
+		})
+		.error(function(status) {
+			console.log('Erro ao carregar escolas: '+status);
+		});
+
+		function preencherEnderecoDaEscolaInstituicao(escola) {
+			$scope.projeto2.escola = escola._id;
+			if (escola.estado) {
+				$scope.projeto2.estado = escola.estado;
+				$rootScope.selectCidades(escola.estado);
+			}
+			if (escola.cidade) $scope.projeto2.cidade = escola.cidade;
+			if (escola.cep) $scope.projeto2.cep = escola.cep;
+		}
+
+		function atualizarValidadeEscolaInstituicao() {
+			var valido = !$scope.projeto2.nomeEscola || !!$scope.projeto2.escola;
+			$scope.projetoForm2.nomeEscola.$setValidity('escolaSelecionada', valido);
+		}
+
+		$scope.escolaSelecionadaInstituicao = function(item) {
+			$scope.projeto2.escola = item ? item._id : undefined;
+			if (item) preencherEnderecoDaEscolaInstituicao(item);
+			atualizarValidadeEscolaInstituicao();
+		};
+
+		$scope.escolaTextoAlteradoInstituicao = function() {
+			if ($scope.projeto2.escola) {
+				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto2.escola; })[0];
+				if (!atual || atual.nome !== $scope.projeto2.nomeEscola) {
+					$scope.projeto2.escola = undefined;
+				}
+			}
+			atualizarValidadeEscolaInstituicao();
+		};
+
+		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog) {
+					$scope.escola = { nome: nomeDigitado || '' };
+					$scope.listaEstados = [];
+					$scope.cidades = [];
+					$scope.selectCidades = function(cid) {
+						$scope.cidades = [];
+						angular.forEach($scope.listaEstados, function(value) {
+							if (cid === value.nome) {
+								angular.forEach(value.cidades, function(c) { $scope.cidades.push(c); });
+							}
+						});
+					};
+					adminAPI.getEstados().success(function(data) {
+						$scope.listaEstados = data.estados;
+					});
+					$scope.confirmar = function() {
+						$mdDialog.hide($scope.escola);
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: '/views/details.solicitar-escola.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false
+			}).then(function(escolaSolicitada) {
+				escolaSolicitada.origem = 'inline_inscricao';
+				adminAPI.solicitarEscola(escolaSolicitada)
+				.success(function(escolaCriada) {
+					$scope.escolas.push(escolaCriada);
+					$scope.projeto2.nomeEscola = escolaCriada.nome;
+					preencherEnderecoDaEscolaInstituicao(escolaCriada);
+					atualizarValidadeEscolaInstituicao();
+				})
+				.error(function(status) {
+					console.log('Erro ao solicitar escola: '+status);
+				});
+			}, function() {});
+		};
+
 		$scope.registrarProjeto = function(projeto) {
 			projeto.palavraChave = $scope.palavrasChave;
 			adminAPI.saveProjeto(projeto)
