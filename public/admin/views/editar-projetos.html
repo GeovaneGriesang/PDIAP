@@ -495,8 +495,8 @@
 						<md-input-container class="md-block" flex-gt-sm>
 							<label>E-mail principal</label>
 							<md-select name="email" data-ng-model="projeto1_2.email" required>
-								<md-option ng-value="email" data-ng-repeat="email in EMAILS" data-ng-if="EMAILS.length > 0">{{email}}</md-option>
-								<md-option value="" disabled data-ng-if="EMAILS.length == 0">Nenhum email inserido</md-option>
+								<md-option ng-value="email" data-ng-repeat="email in EMAILS">{{email}}</md-option>
+								<md-option value="" disabled data-ng-if="!EMAILS || !EMAILS.length">Nenhum email inserido</md-option>
 							</md-select>
 							<div class="md-errors-spacer">
 								<div data-ng-if="projetoForm1_2.email.$touched">

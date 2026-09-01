@@ -13,6 +13,7 @@
 		$scope.orientadores = [];
 		$scope.alunos = [];
 		$scope.emails1 = [];
+		$scope.EMAILS = [];
 		$scope.palavraChave = [];
 		$scope.palavraChaveTexto = '';
 
@@ -144,9 +145,10 @@
 				$scope.projeto1_2._id = projeto._id;
 				$scope.EMAILS = [];
 				angular.forEach(projeto.integrantes, function (value, key) {
-					var Email = value.email;
-					$scope.EMAILS.push(Email);	
-				});		
+					if (value.email && $scope.EMAILS.indexOf(value.email) === -1) {
+						$scope.EMAILS.push(value.email);
+					}
+				});
 
 				if (projeto.palavraChave === undefined) {
 					$scope.palavraChave = [];

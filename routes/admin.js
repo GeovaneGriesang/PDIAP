@@ -217,7 +217,7 @@ router.post('/criarEscola', miPermiso("3"), (req, res) => {
 
 router.get('/mostraEscolas', miPermiso("3","2"), (req, res) => {
   try {
-    escolaSchema.find((err, usr) => {
+    escolaSchema.find().sort({ nome: 1 }).exec((err, usr) => {
       if (err) { console.error('Erro ao mostrar escolas', err); return; }
       res.send(usr);
     });
