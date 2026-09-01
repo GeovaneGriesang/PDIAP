@@ -156,6 +156,7 @@
 				$scope.palavraChaveTexto = $scope.palavraChave.join(', ');
 
 				$scope.projeto2.nomeEscola = projeto.nomeEscola;
+				$scope.projeto2.escola = projeto.escola;
 				$scope.projeto2.estado = projeto.estado;
 				$scope.projeto2.cidade = projeto.cidade;
 				$scope.projeto2.cep = projeto.cep;
