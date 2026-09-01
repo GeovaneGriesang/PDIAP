@@ -319,6 +319,15 @@
 			{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1', nacionalidade:'nacionalidadeAluno1'}
 		];
 
+		// Nacionalidade vem pré-marcada como brasileiro(a) - é a esmagadora maioria
+		// dos casos, e quem não for só troca o select. $scope.projeto não existe até
+		// alguém digitar algo (esta tela não tem um controller pai que já crie o
+		// objeto, ao contrário do dashboard do projeto), então precisa criar aqui pra
+		// esse valor inicial aparecer pré-selecionado.
+		$scope.projeto = $scope.projeto || {};
+		$scope.projeto.nacionalidadeOrientador1 = 'brasileiro';
+		$scope.projeto.nacionalidadeAluno1 = 'brasileiro';
+
 		$scope.btnAdd1 = true;
 		$scope.btnAdd2 = true;
 		$scope.count1 = 1;
@@ -329,6 +338,7 @@
 			$scope.dynamicFields1.push(
 				{nome:'nomeOrientador'+$scope.count1, email:'emailOrientador'+$scope.count1, cpf:'cpfOrientador'+$scope.count1, telefone:'telefoneOrientador'+$scope.count1, camiseta:'tamCamisetaOrientador'+$scope.count1, nacionalidade:'nacionalidadeOrientador'+$scope.count1}
 			);
+			$scope.projeto['nacionalidadeOrientador'+$scope.count1] = 'brasileiro';
 			if ($scope.count1 === 2) {
 				$scope.btnAdd1 = false;
 			}
@@ -338,6 +348,7 @@
 			$scope.dynamicFields2.push(
 				{nome:'nomeAluno'+$scope.count2, email:'emailAluno'+$scope.count2, cpf:'cpfAluno'+$scope.count2, telefone:'telefoneAluno'+$scope.count2, camiseta:'tamCamisetaAluno'+$scope.count2, nacionalidade:'nacionalidadeAluno'+$scope.count2}
 			);
+			$scope.projeto['nacionalidadeAluno'+$scope.count2] = 'brasileiro';
 			if ($scope.count2 === 3) {
 				$scope.btnAdd2 = false;
 			}
@@ -634,6 +645,7 @@
 			$scope.dynamicFields2 = [
 				{nome:'nomeAluno1', email:'emailAluno1', cpf:'cpfAluno1', telefone:'telefoneAluno1', camiseta:'tamCamisetaAluno1', nacionalidade:'nacionalidadeAluno1'}
 			];
+			$scope.projeto = { nacionalidadeOrientador1: 'brasileiro', nacionalidadeAluno1: 'brasileiro' };
 			$scope.palavrasChave = [];
 			$scope.palavrasChaveTexto = '';
 			$scope.eixos = [];
