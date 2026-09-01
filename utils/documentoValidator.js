@@ -63,12 +63,25 @@ var FAIXAS_TELEFONE = [
 	{ min: 10, max: 11 }  // venezuelano
 ];
 
-function validarTelefone(telefone) {
+// Quem copia o número de um contato/WhatsApp às vezes cola com o DDI (55) junto -
+// o campo não pede DDI, só DDD, e isso só aparecia como erro confuso ("Telefone
+// inválido.") bem no fim do formulário, sem dizer qual campo. Tolera o DDI: com
+// DDI, um brasileiro fica com 12-13 dígitos (55 + DDD + número); tira o "55" antes
+// de validar E de gravar, pra não salvar um telefone com DDI sobrando.
+function normalizarTelefone(telefone) {
 	var digits = apenasDigitos(telefone);
+	if (digits.length > 11 && digits.indexOf('55') === 0) {
+		digits = digits.substring(2);
+	}
+	return digits;
+}
+
+function validarTelefone(telefone) {
+	var digits = normalizarTelefone(telefone);
 	var valido = FAIXAS_TELEFONE.some(function (faixa) {
 		return digits.length >= faixa.min && digits.length <= faixa.max;
 	});
-	return valido ? { valido: true } : { valido: false, mensagem: 'Telefone inválido.' };
+	return valido ? { valido: true, normalizado: digits } : { valido: false, mensagem: 'Telefone inválido.' };
 }
 
 module.exports = {
@@ -76,5 +89,6 @@ module.exports = {
 	validarCedulaUruguaia: function (documento) { return validarCedulaUruguaia(apenasDigitos(documento)); },
 	validarDocumentoGenerico: function (documento) { return validarDocumentoGenerico(apenasDigitos(documento)); },
 	validarDocumento: validarDocumento,
-	validarTelefone: validarTelefone
+	validarTelefone: validarTelefone,
+	normalizarTelefone: normalizarTelefone
 };

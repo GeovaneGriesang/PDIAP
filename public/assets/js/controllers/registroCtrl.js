@@ -100,10 +100,15 @@
 			.error(function(status) {
 				$scope.registro = false;
 				console.log(status);
+				// "status" aqui é o corpo da resposta (peculiaridade do .error() do
+				// AngularJS) - quando o servidor manda um motivo específico (ex:
+				// "Telefone inválido."), mostra ele; só cai no texto genérico se vier
+				// vazio ou for o "error" cru sem detalhe nenhum.
+				var motivo = (status && status !== 'error') ? status : null;
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
-					.textContent('A inscrição não foi realizada. Tente novamente ou então, entre em contato conosco.')
+					.textContent(motivo ? ('Não foi possível concluir: ' + motivo + ' Corrija e tente novamente.') : 'A inscrição não foi realizada. Tente novamente ou então, entre em contato conosco.')
 					.ariaLabel('A inscrição não foi realizada.')
 					.targetEvent(ev)
 					.theme('error')

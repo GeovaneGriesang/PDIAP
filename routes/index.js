@@ -823,7 +823,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       email: req.body.emailOrientador1,
       nacionalidade: req.body.nacionalidadeOrientador1,
       cpf: splita(req.body.cpfOrientador1),
-      telefone: splita(req.body.telefoneOrientador1),
+      telefone: documentoValidator.normalizarTelefone(req.body.telefoneOrientador1),
       tamCamiseta: req.body.tamCamisetaOrientador1
     });
 
@@ -833,7 +833,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       email: req.body.emailOrientador2,
       nacionalidade: req.body.nacionalidadeOrientador2,
       cpf: splita(req.body.cpfOrientador2),
-      telefone: splita(req.body.telefoneOrientador2),
+      telefone: documentoValidator.normalizarTelefone(req.body.telefoneOrientador2),
       tamCamiseta: req.body.tamCamisetaOrientador2
     });
 
@@ -843,7 +843,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       email: req.body.emailAluno1,
       nacionalidade: req.body.nacionalidadeAluno1,
       cpf: splita(req.body.cpfAluno1),
-      telefone: splita(req.body.telefoneAluno1),
+      telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno1),
       tamCamiseta: req.body.tamCamisetaAluno1
     });
 
@@ -853,7 +853,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       email: req.body.emailAluno2,
       nacionalidade: req.body.nacionalidadeAluno2,
       cpf: splita(req.body.cpfAluno2),
-      telefone: splita(req.body.telefoneAluno2),
+      telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno2),
       tamCamiseta: req.body.tamCamisetaAluno2
     });
 
@@ -863,7 +863,7 @@ router.post('/registro', testaUsername2, (req, res) => {
       email: req.body.emailAluno3,
       nacionalidade: req.body.nacionalidadeAluno3,
       cpf: splita(req.body.cpfAluno3),
-      telefone: splita(req.body.telefoneAluno3),
+      telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno3),
       tamCamiseta: req.body.tamCamisetaAluno3
     });
 
