@@ -1197,7 +1197,7 @@ router.get('/getFeirasInfo', function(req, res){
 // de projeto, no lugar do texto livre digitado antes. Só as aprovadas: uma pendente
 // não deveria aparecer pra outra pessoa selecionar antes do admin revisar.
 router.get('/getEscolasInfo', function(req, res){
-  escolaSchema.find({ status: 'aprovada' }, 'nome cidade estado').sort({ nome: 1 }).exec(function(err, data){
+  escolaSchema.find({ status: 'aprovada' }, 'nome cidade estado cep').sort({ nome: 1 }).exec(function(err, data){
     if (err) { console.error(err); return; }
     res.status(200).send(data);
   });

@@ -3,10 +3,16 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('adminCtrl', function($scope, $rootScope, $timeout, $mdToast, $mdSidenav) {
+	.controller('adminCtrl', function($scope, $rootScope, $timeout, $window, $mdToast, $mdSidenav) {
 
 		$scope.toggleSidenav = function(menu) {
 			$mdSidenav(menu).toggle();
+		};
+
+		// Inscrição pública (/projetos/inscricao) é outro app Angular (módulo PDIAP,
+		// não PDIAPa) - não dá pra navegar com ui-sref, é uma nova aba de verdade.
+		$scope.abrirInsercaoProjeto = function() {
+			$window.open('/projetos/inscricao', '_blank');
 		};
 
 		$scope.toast = function(message,tema) {
