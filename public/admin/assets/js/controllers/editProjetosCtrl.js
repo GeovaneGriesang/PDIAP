@@ -521,14 +521,23 @@
 		$scope.count11 = 0;
 		$scope.count22 = 0;
 
+		// Usada tanto pra recarregar um orientador/aluno JÁ EXISTENTE (preencherCampos
+		// já setou a nacionalidade real antes de chamar isso) quanto pra adicionar uma
+		// linha NOVA em branco - só entra o padrão brasileiro(a) se ainda não tiver
+		// valor nenhum, senão sobrescreveria a nacionalidade de quem já tá cadastrado.
 		let addOrientadorUpdate = function() {
 			$scope.count11++;
+			$scope.projeto3 = $scope.projeto3 || {};
+			var campoNacionalidade = 'nacionalidadeOrientador'+$scope.count11;
 			$scope.dynamicFields11.push(
 				{id:'idOrientador'+$scope.count11, nome:'nomeOrientador'+$scope.count11,
 				email:'emailOrientador'+$scope.count11, cpf:'cpfOrientador'+$scope.count11,
 				telefone:'telefoneOrientador'+$scope.count11, camiseta:'tamCamisetaOrientador'+$scope.count11,
-				nacionalidade:'nacionalidadeOrientador'+$scope.count11}
+				nacionalidade:campoNacionalidade}
 			);
+			if (!$scope.projeto3[campoNacionalidade]) {
+				$scope.projeto3[campoNacionalidade] = 'brasileiro';
+			}
 			if ($scope.count11 === 2) {
 				$scope.btnAdd11 = false;
 			}
@@ -537,12 +546,17 @@
 
 		let addAlunoUpdate = function() {
 			$scope.count22++;
+			$scope.projeto4 = $scope.projeto4 || {};
+			var campoNacionalidade = 'nacionalidadeAluno'+$scope.count22;
 			$scope.dynamicFields22.push(
 				{id:'idAluno'+$scope.count22, nome:'nomeAluno'+$scope.count22,
 				email:'emailAluno'+$scope.count22, cpf:'cpfAluno'+$scope.count22,
 				telefone:'telefoneAluno'+$scope.count22, camiseta:'tamCamisetaAluno'+$scope.count22,
-				nacionalidade:'nacionalidadeAluno'+$scope.count22}
+				nacionalidade:campoNacionalidade}
 			);
+			if (!$scope.projeto4[campoNacionalidade]) {
+				$scope.projeto4[campoNacionalidade] = 'brasileiro';
+			}
 			if ($scope.count22 === 3) {
 				$scope.btnAdd22 = false;
 			}
