@@ -128,7 +128,7 @@
               md-selected-item-change="escolaSelecionadaInstituicao(item)"
               md-search-text="projeto2.nomeEscola"
               md-search-text-change="escolaTextoAlteradoInstituicao()"
-              md-items="item in escolas"
+              md-items="item in escolas | filter:{nome: projeto2.nomeEscola}"
               md-item-text="item.nome"
               md-min-length="1"
               md-floating-label="Nome da instituição"
