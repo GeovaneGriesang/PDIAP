@@ -150,7 +150,7 @@
 						<md-autocomplete flex="100" md-no-cache="noCache" md-selected-item="escolaSelecionadaItem"
 							md-selected-item-change="escolaSelecionada(item)"
 							md-search-text="projeto.nomeEscola" md-search-text-change="escolaTextoAlterado()"
-							md-items="item in escolas" md-item-text="item.nome"
+							md-items="item in escolas | filter:{nome: projeto.nomeEscola}" md-item-text="item.nome"
 							md-min-length="1" md-floating-label="Nome da instituição" md-input-name="nomeEscola"
 							data-ng-required="true">
 							<md-item-template>
