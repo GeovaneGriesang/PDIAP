@@ -105,8 +105,9 @@ function splita(arg){
 
 // Campos que o próprio projeto pode alterar via PUT /update (ver formulário em public/views/update.html).
 // Qualquer outro campo do body (ex: permissao, password, aprovado, premiacao, token) é ignorado
-// para impedir que o usuário se autopromova ou altere dados fora do seu controle.
-const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem'];
+// para impedir que o usuário se autopromova ou altere dados fora do seu controle. escola/nomeEscola
+// aqui é só o vínculo com a coleção Escola (seleção da lista) - não dá pra virar outros campos.
+const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem', 'escola', 'nomeEscola'];
 
 function filtrarCamposEditaveis(body) {
   let filtrado = {};

@@ -54,7 +54,13 @@ function splita(arg){
 // Campos que o admin pode alterar de um projeto via PUT /update (ver public/admin/views/editar-projetos.html).
 // Qualquer outro campo do body (ex: permissao, password, token) é ignorado; aprovação/premiação
 // já têm rotas próprias (upgreice, setPremiadoProjetos) com a lógica correta.
-const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem'];
+// username/email ficavam de fora (copiado de routes/projetos.js, que por segurança não
+// deixa o próprio projeto trocar essas duas) - mas a aba "Conta Usuário" desta tela manda
+// justamente username/email, então sem elas aqui a gravação nunca fazia nada (newProject
+// saía vazio, só updatedAt mudava, sem erro nenhum pro admin perceber). escola é o vínculo
+// com a coleção Escola (ver models/escola-schema.js) - sem ele, selecionar uma escola na
+// aba Instituição nunca persistia, só o nomeEscola de texto livre.
+const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem', 'username', 'email', 'escola', 'nomeEscola'];
 
 function filtrarCamposEditaveis(body) {
   let filtrado = {};

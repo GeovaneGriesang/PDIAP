@@ -424,7 +424,8 @@
 				.success(function(escolaCriada) {
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto.nomeEscola = escolaCriada.nome;
-					preencherEnderecoDaEscola(escolaCriada);
+					preencherEnderecoDaEscola($scope.projeto, escolaCriada);
+					atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
 				})
 				.error(function(status) {
 					console.log('Erro ao solicitar escola: '+status);
@@ -435,21 +436,36 @@
 		// Selecionou uma escola da lista (ou limpou a seleção, item undefined): guarda o
 		// _id (é o que vai pro backend) e aproveita pra pré-preencher estado/cidade -
 		// menos campo repetido pra digitar, já que a escola já tem esse dado salvo.
-		$scope.escolaSelecionada = function(item) {
-			$scope.projeto.escola = item ? item._id : undefined;
-			if (item) preencherEnderecoDaEscola(item);
-			atualizarValidadeEscola();
-		};
+		//
+		// Genérico (alvo/formulario como parâmetro) porque essa mesma seleção de escola
+		// vale tanto pra inscrição nova (projeto/projetoForm, inscricao.html) quanto pra
+		// edição (projeto2/projetoForm2, update.html e editar-projetos.html do admin) -
+		// os wrappers *Instituicao abaixo fixam o alvo certo pra cada caso.
+		function preencherEnderecoDaEscola(alvo, escola) {
+			alvo.escola = escola._id;
+			if (escola.estado) {
+				alvo.estado = escola.estado;
+				$scope.selectCidades(escola.estado);
+			}
+			if (escola.cidade) alvo.cidade = escola.cidade;
+			if (escola.cep) alvo.cep = escola.cep;
+		}
 
 		// md-autocomplete não trava a digitação em texto livre (ao contrário de um
 		// select) - então dá pra digitar algo, selecionar da lista, e depois continuar
 		// digitando e apagar a seleção sem querer. Essa validação customizada garante
 		// que só fica válido com um _id de escola de verdade vinculado (selecionada da
 		// lista ou solicitada como pendente), nunca só com texto livre.
-		function atualizarValidadeEscola() {
-			var valido = !$scope.projeto.nomeEscola || !!$scope.projeto.escola;
-			$scope.projetoForm.nomeEscola.$setValidity('escolaSelecionada', valido);
+		function atualizarValidadeEscola(alvo, formulario) {
+			var valido = !alvo.nomeEscola || !!alvo.escola;
+			formulario.nomeEscola.$setValidity('escolaSelecionada', valido);
 		}
+
+		$scope.escolaSelecionada = function(item) {
+			$scope.projeto.escola = item ? item._id : undefined;
+			if (item) preencherEnderecoDaEscola($scope.projeto, item);
+			atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
+		};
 
 		$scope.escolaTextoAlterado = function() {
 			if ($scope.projeto.escola) {
@@ -458,19 +474,70 @@
 					$scope.projeto.escola = undefined;
 				}
 			}
-			atualizarValidadeEscola();
+			atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
 		};
 
-		function preencherEnderecoDaEscola(escola) {
-			$scope.projeto.escola = escola._id;
-			if (escola.estado) {
-				$scope.projeto.estado = escola.estado;
-				$scope.selectCidades(escola.estado);
+		// Mesma coisa, pra edição de um projeto já existente (aba "Instituição" de
+		// update.html e de editar-projetos.html no admin) - usa projeto2/projetoForm2
+		// em vez de projeto/projetoForm.
+		$scope.escolaSelecionadaInstituicao = function(item) {
+			$scope.projeto2.escola = item ? item._id : undefined;
+			if (item) preencherEnderecoDaEscola($scope.projeto2, item);
+			atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+		};
+
+		$scope.escolaTextoAlteradoInstituicao = function() {
+			if ($scope.projeto2.escola) {
+				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto2.escola; })[0];
+				if (!atual || atual.nome !== $scope.projeto2.nomeEscola) {
+					$scope.projeto2.escola = undefined;
+				}
 			}
-			if (escola.cidade) $scope.projeto.cidade = escola.cidade;
-			if (escola.cep) $scope.projeto.cep = escola.cep;
-			atualizarValidadeEscola();
-		}
+			atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+		};
+
+		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog, projetosAPI) {
+					$scope.escola = { nome: nomeDigitado || '' };
+					$scope.listaEstados = [];
+					$scope.cidades = [];
+					$scope.selectCidades = function(cid) {
+						$scope.cidades = [];
+						angular.forEach($scope.listaEstados, function(value) {
+							if (cid === value.nome) {
+								angular.forEach(value.cidades, function(c) { $scope.cidades.push(c); });
+							}
+						});
+					};
+					projetosAPI.getEstados().success(function(data) {
+						$scope.listaEstados = data.estados;
+					});
+					$scope.confirmar = function() {
+						$mdDialog.hide($scope.escola);
+					};
+					$scope.cancel = function() {
+						$mdDialog.cancel();
+					};
+				},
+				templateUrl: '/views/details.solicitar-escola.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false
+			}).then(function(escolaSolicitada) {
+				escolaSolicitada.origem = 'inline_inscricao';
+				projetosAPI.solicitarEscola(escolaSolicitada)
+				.success(function(escolaCriada) {
+					$scope.escolas.push(escolaCriada);
+					$scope.projeto2.nomeEscola = escolaCriada.nome;
+					preencherEnderecoDaEscola($scope.projeto2, escolaCriada);
+					atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+				})
+				.error(function(status) {
+					console.log('Erro ao solicitar escola: '+status);
+				});
+			}, function() {});
+		};
 
 		$scope.verificaUsername = function(username) {
 			let valido = true;
