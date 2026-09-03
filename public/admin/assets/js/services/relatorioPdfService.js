@@ -130,40 +130,66 @@
 			});
 		}
 
-		// Atalho pro caso mais comum: um título + uma tabela só (a maioria das seções
-		// de relatório é exatamente isso). `colunas` é [{texto, largura}], `linhas` é
-		// array de arrays já na ordem das colunas.
-		function tabela(opcoes) {
-			var corpo = [opcoes.colunas.map(function(c) {
+		// Nó de tabela do pdfMake a partir de {colunas, linhas} - usado tanto por
+		// tabela() (uma seção) quanto por tabelas() (várias seções num PDF só).
+		function noTabela(colunas, linhas) {
+			var corpo = [colunas.map(function(c) {
 				return { text: c.texto, style: 'tableHeader' };
 			})];
 			// Cada célula vira string explicitamente - o pdfMake só reconhece célula
 			// crua (fora de {text:...}) quando é string; um número puro (ex: contagem
 			// de projetos) não é convertido e sai em branco na tabela, mesmo com o
 			// resto da linha aparecendo normal.
-			opcoes.linhas.forEach(function(linha) {
+			linhas.forEach(function(linha) {
 				corpo.push(linha.map(function(celula) {
 					return celula === null || celula === undefined ? '' : String(celula);
 				}));
 			});
+			return {
+				table: {
+					headerRows: 1,
+					widths: colunas.map(function(c) { return c.largura || '*'; }),
+					body: corpo
+				},
+				layout: 'lightHorizontalLines'
+			};
+		}
 
+		var ESTILOS_TABELA = { tableHeader: { bold: true, fontSize: 9, fillColor: '#eeeeee' } };
+
+		// Atalho pro caso mais comum: um título + uma tabela só (a maioria das seções
+		// de relatório é exatamente isso). `colunas` é [{texto, largura}], `linhas` é
+		// array de arrays já na ordem das colunas.
+		function tabela(opcoes) {
 			return gerar({
 				titulo: opcoes.titulo,
 				subtitulo: opcoes.subtitulo,
 				orientacao: opcoes.orientacao,
 				arquivo: opcoes.arquivo,
-				conteudo: [{
-					table: {
-						headerRows: 1,
-						widths: opcoes.colunas.map(function(c) { return c.largura || '*'; }),
-						body: corpo
-					},
-					layout: 'lightHorizontalLines'
-				}],
-				estilos: { tableHeader: { bold: true, fontSize: 9, fillColor: '#eeeeee' } }
+				conteudo: [noTabela(opcoes.colunas, opcoes.linhas)],
+				estilos: ESTILOS_TABELA
 			});
 		}
 
-		return { gerar: gerar, tabela: tabela };
+		// Várias seções num PDF só (usado pelo "Copiar tudo"/"Resumo executivo", que
+		// combinam seções normalmente exportadas em separado). `opcoes.secoes` é
+		// [{titulo, colunas, linhas}] - cada uma vira um subtítulo + tabela, na ordem.
+		function tabelas(opcoes) {
+			var conteudo = [];
+			opcoes.secoes.forEach(function(sec, i) {
+				conteudo.push({ text: sec.titulo, style: 'secaoTitulo', margin: [0, i === 0 ? 0 : 18, 0, 6] });
+				conteudo.push(noTabela(sec.colunas, sec.linhas));
+			});
+			return gerar({
+				titulo: opcoes.titulo,
+				subtitulo: opcoes.subtitulo,
+				orientacao: opcoes.orientacao,
+				arquivo: opcoes.arquivo,
+				conteudo: conteudo,
+				estilos: angular.extend({ secaoTitulo: { bold: true, fontSize: 12, color: '#225024' } }, ESTILOS_TABELA)
+			});
+		}
+
+		return { gerar: gerar, tabela: tabela, tabelas: tabelas };
 	});
 })();
