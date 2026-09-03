@@ -153,6 +153,44 @@
 			return listasSituacao().some(function(lista) { return lista.length > 0; });
 		};
 
+		// Situação do projeto: as mesmas três cores em todas as telas (verde = anais,
+		// laranja = somente apresentação, vermelho = não aprovado) - ver style.css.
+		let chaveSituacao = function(proj) {
+			if (proj.aprovado !== true) return 'nao';
+			return proj.tipoAprovacao === 'apresentacao' ? 'apresentacao' : 'anais';
+		};
+		$scope.classeSituacao = function(proj) {
+			return 'situacao-' + chaveSituacao(proj);
+		};
+		$scope.classeSelectSituacao = function(proj) {
+			return 'select-situacao-' + (proj.situacaoSelecionada || chaveSituacao(proj));
+		};
+		$scope.rotuloCurtoSituacao = function(proj) {
+			if (proj.aprovado !== true) return proj.aprovado === false ? 'Não aprovado' : 'Não avaliado';
+			return proj.tipoAprovacao === 'apresentacao' ? 'Apresentação' : 'Anais';
+		};
+		// Frases oficiais da lista de trabalhos aprovados, pro tooltip.
+		$scope.rotuloSituacaoCompleto = function(proj) {
+			if (proj.aprovado !== true) return proj.aprovado === false ? 'Não aprovado' : 'Ainda não avaliado';
+			return proj.tipoAprovacao === 'apresentacao'
+				? 'Aprovado somente para apresentação no evento'
+				: 'Aprovado para apresentação e publicação nos anais';
+		};
+
+		// Filtro do cabeçalho por situação. 'aprovados' engloba os dois tipos; 'nao'
+		// pega tanto o reprovado quanto o que ainda não foi avaliado.
+		// Objeto (e não string solta) de propósito: com ng-model num primitivo, o
+		// md-select escreve numa cópia no escopo filho e o filtro aqui continuaria lendo
+		// o valor antigo - o filtro simplesmente não surtia efeito.
+		$scope.filtroSit = { situacao: 'todos' };
+		$scope.filtroPorSituacao = function(proj) {
+			var filtro = $scope.filtroSit.situacao;
+			if (!filtro || filtro === 'todos') return true;
+			if (filtro === 'aprovados') return proj.aprovado === true;
+			if (filtro === 'nao') return proj.aprovado !== true;
+			return proj.aprovado === true && chaveSituacao(proj) === filtro;
+		};
+
 		$rootScope.recarregar = function(){
 			$rootScope.projetos = [];
 			$scope.searchProject = "";

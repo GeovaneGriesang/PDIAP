@@ -515,6 +515,32 @@ md-dialog .md-dialog-content-body p {
 .grey {
   background: #757575;
 }
+/* Situação de aprovação do projeto (ver models/projeto-schema.js#tipoAprovacao).
+   Mesmas três cores em toda parte: verde = apresentação e anais, laranja = somente
+   apresentação, vermelho = não aprovado. */
+.situacao-anais {
+  background: #4caf50 !important;
+  color: #fdfdfd !important;
+}
+.situacao-apresentacao {
+  background: #ef6c00 !important;
+  color: #fdfdfd !important;
+}
+.situacao-nao {
+  background: #f44336 !important;
+  color: #fdfdfd !important;
+}
+/* Versão em texto (usada no seletor da tela de aprovados, onde pintar o fundo
+   atrapalharia a leitura do campo). */
+.texto-situacao-anais, .select-situacao-anais .md-select-value {
+  color: #2e7d32 !important;
+}
+.texto-situacao-apresentacao, .select-situacao-apresentacao .md-select-value {
+  color: #ef6c00 !important;
+}
+.texto-situacao-nao, .select-situacao-nao .md-select-value {
+  color: #c62828 !important;
+}
 .btn-options {
   background: #eee !important;
   color: #424242 !important;

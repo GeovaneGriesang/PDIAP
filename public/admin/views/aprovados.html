@@ -82,6 +82,17 @@
 
 	<span flex></span>
 
+        <div style="width:210px;">
+          <md-select data-ng-model="filtroSit.situacao" placeholder="Situação" aria-label="Filtrar por situação" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Situação:">
+              <md-option value="todos">Todas as situações</md-option>
+              <md-option value="aprovados">Aprovados (os dois tipos)</md-option>
+              <md-option value="anais">Aprovado - apresentação e anais</md-option>
+              <md-option value="apresentacao">Aprovado - somente apresentação</md-option>
+              <md-option value="nao">Não aprovados</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
 	<div style="width:85px;">
           <md-select data-ng-model="$root.ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
@@ -112,7 +123,7 @@
           <md-divider></md-divider>
         </md-list-item>
         <md-divider></md-divider>
-        <md-list-item class="md-3-line" data-ng-class="{selecionado:proj.situacaoSelecionada !== 'nao'}" data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj.numInscricao">
+        <md-list-item class="md-3-line" data-ng-class="{selecionado:proj.situacaoSelecionada !== 'nao'}" data-ng-repeat="proj in projetos | filter:search | filter:filtroPorSituacao | orderBy:ordenacao track by proj.numInscricao">
           <div layout flex="5" layout-align="center center" style="align-self:center;">
             <div style="width:15px;height:15px;border-radius:50%;"
             data-ng-class="{azul:proj.categoria == 'Fundamental I (1º ao 5º anos)',
@@ -131,10 +142,10 @@
         <div layout="row" flex="25" layout-align="center center" style="align-self:center;">
           <md-input-container class="md-block" style="margin:0;width:100%;">
             <md-select aria-label="Situação do projeto" data-ng-model="proj.situacaoSelecionada" data-ng-change="marcarSituacao(proj)"
-              data-ng-click="$event.stopPropagation()" style="font-size:13px;">
-              <md-option value="nao">Não aprovado</md-option>
-              <md-option value="anais">Aprovado - apresentação e anais</md-option>
-              <md-option value="apresentacao">Aprovado - somente apresentação</md-option>
+              data-ng-click="$event.stopPropagation()" data-ng-class="classeSelectSituacao(proj)" style="font-size:13px;">
+              <md-option value="nao" class="texto-situacao-nao">Não aprovado</md-option>
+              <md-option value="anais" class="texto-situacao-anais">Aprovado - apresentação e anais</md-option>
+              <md-option value="apresentacao" class="texto-situacao-apresentacao">Aprovado - somente apresentação</md-option>
             </md-select>
           </md-input-container>
         </div>
