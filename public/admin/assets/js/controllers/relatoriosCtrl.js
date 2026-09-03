@@ -57,6 +57,7 @@
 				escolas: {},
 				escolasArray: [],
 				eixos: EIXOS.map(function(e) { return { nome: e.nome, categoria: e.categoria, num: 0 }; }),
+				projetos: [],
 				alunos: {},
 				orientadores: {},
 				cidades: {},
@@ -156,6 +157,14 @@
 			angular.forEach(agregado.eixos, function(e) {
 				if (proj.eixo === e.nome && proj.categoria === e.categoria) e.num++;
 			});
+
+			agregado.projetos.push({
+				nomeProjeto: proj.nomeProjeto,
+				numInscricao: proj.numInscricao,
+				nomeEscola: proj.nomeEscola,
+				categoria: proj.categoria,
+				eixo: proj.eixo
+			});
 		}
 
 		// Desempate por nome quando a quantidade é igual - sem isso a ordem de
@@ -185,6 +194,31 @@
 			var ordem = CATEGORIAS.concat(porCategoria['(sem categoria)'] ? ['(sem categoria)'] : []);
 			return ordem.map(function(cat) {
 				return { categoria: cat, alunos: porCategoria[cat], total: porCategoria[cat].length };
+			});
+		}
+
+		// Projetos agrupados por categoria -> eixo (mesma ordem fixa de CATEGORIAS/EIXOS
+		// usada em "Por categoria"/"Por eixo temático" já existentes) - usado na aba
+		// Aprovados pra listar quais projetos exatamente compõem cada barra de
+		// eixosPorCategoria, não só a contagem.
+		function projetosPorCategoriaEixo(projetosArray) {
+			var porCategoria = {};
+			CATEGORIAS.forEach(function(cat) { porCategoria[cat] = {}; });
+			projetosArray.forEach(function(proj) {
+				var cat = porCategoria[proj.categoria] ? proj.categoria : '(sem categoria)';
+				if (!porCategoria[cat]) porCategoria[cat] = {};
+				var eixo = proj.eixo || '(sem eixo)';
+				if (!porCategoria[cat][eixo]) porCategoria[cat][eixo] = [];
+				porCategoria[cat][eixo].push(proj);
+			});
+			var ordem = CATEGORIAS.concat(porCategoria['(sem categoria)'] ? ['(sem categoria)'] : []);
+			return ordem.filter(function(cat) { return porCategoria[cat]; }).map(function(cat) {
+				var eixosDaCategoria = EIXOS.filter(function(e) { return e.categoria === cat; }).map(function(e) { return e.nome; });
+				var eixosExtras = Object.keys(porCategoria[cat]).filter(function(nome) { return eixosDaCategoria.indexOf(nome) === -1; });
+				var eixos = eixosDaCategoria.concat(eixosExtras).filter(function(nome) { return porCategoria[cat][nome]; }).map(function(nome) {
+					return { eixo: nome, projetos: porCategoria[cat][nome], total: porCategoria[cat][nome].length };
+				});
+				return { categoria: cat, eixos: eixos, total: somarCampo(eixos, 'total') };
 			});
 		}
 
@@ -337,6 +371,8 @@
 			agregado.alunosArray = pessoasParaArray(agregado.alunos);
 			agregado.alunosPorCategoria = alunosPorCategoria(agregado.alunosArray);
 			agregado.orientadoresArray = pessoasParaArray(agregado.orientadores);
+
+			agregado.projetosPorCategoriaEixo = projetosPorCategoriaEixo(agregado.projetos);
 
 			agregado.cidadesArray = localizacaoParaArray(agregado.cidades);
 			agregado.pizzaCidades = construirPizzaCidades(agregado.cidadesArray);
