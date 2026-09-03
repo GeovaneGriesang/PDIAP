@@ -32,7 +32,15 @@ const AvaliadorSchema = new Schema({
 	tempoAtuacao: { type: String },
 	telefone: { type: String },
 	curriculo: { type: String },
+	// Legado: array solto sem estrutura, alimentado por um bloco de UI hardcoded que
+	// ficou comentado desde 22/07/2023 (nunca chegou a ser usado de verdade). Substituído
+	// por 'disponibilidade' abaixo, que referencia os dias/turnos cadastrados pelo admin
+	// pra cada edição (ver models/feira-schema.js, tipo:'edicao') - mantido só pra não
+	// descartar dado de registros antigos que porventura o tenham.
 	turnos: { type: Array },
+	// Dias/turnos em que o avaliador está disponível pra avaliar, escolhidos entre os
+	// cadastrados pelo admin pra edição corrente (diaTurnoPicker).
+	disponibilidade: [{ data: String, turno: String, _id: false }],
 	avaliacao: { type: Boolean },
 	token: { type: String }, // Adicionado
 	createdAt:{ type: Date },

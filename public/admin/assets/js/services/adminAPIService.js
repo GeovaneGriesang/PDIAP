@@ -466,6 +466,20 @@
 			return comSuccessError(deferred.promise);
 		};
 
+		// Dias/turnos em que a edição corrente aceita avaliação (ver models/feira-schema.js,
+		// tipo:'edicao', diasAvaliacao) - mesma lógica de
+		// public/assets/js/services/projetosAPIService.js#getDiasAvaliacao.
+		let _getDiasAvaliacao = function(ano) {
+			var deferred = $q.defer();
+			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {
+				var edicao = (response.data || []).filter(function(f) {
+					return f.tipo === 'edicao' && f.ano == ano;
+				})[0];
+				deferred.resolve({ data: { dias: (edicao && edicao.diasAvaliacao) || [] }, status: response.status });
+			}, deferred.reject);
+			return comSuccessError(deferred.promise);
+		};
+
 		let _getEstados = function() {
 			const request = {
 				url: 'assets/js/estados-cidades.json',
@@ -619,6 +633,7 @@
 			getCPFsaberes: _getCPFsaberes,
 			getCategorias: _getCategorias,
 			getCategoriasEixos: _getCategoriasEixos,
+			getDiasAvaliacao: _getDiasAvaliacao,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,

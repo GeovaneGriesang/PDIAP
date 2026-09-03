@@ -152,6 +152,11 @@
           <p style="text-align:left;">Categoria(s) e eixo(s) que vai avaliar:</p>
           <div data-categoria-eixo-picker="avaliador.categoriasEixos" data-lista-categorias="listaCategorias"></div>
 
+          <div data-ng-if="listaDias.length > 0">
+            <p style="text-align:left;">Dia(s) e turno(s) disponível(is) para avaliar:</p>
+            <div data-dia-turno-picker="avaliador.disponibilidade" data-lista-dias="listaDias"></div>
+          </div>
+
 	  <md-checkbox aria-label="Check" name="avaliacao" data-ng-model="avaliador.avaliacao">Presença</md-checkbox>
           <p style="text-align:left;font-size:13px;">* Obrigatório</p>
 

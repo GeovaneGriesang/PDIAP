@@ -83,6 +83,7 @@ router.post('/registro', (req, res) => {
 		telefone: splita(req.body.telefone),
 		curriculo: req.body.curriculo,
 		turnos: req.body.turnos,
+		disponibilidade: Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : [],
 		avaliacao: req.body.avaliacao,
 		createdAt: createdAt
 	});

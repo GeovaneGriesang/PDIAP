@@ -11,6 +11,6 @@
       <b>Tempo de atuação:</b> {{details.tempoAtuacao}} anos</p>
       <p><b>Currículo:</b> {{details.curriculo}}</p>
       <p><b>Telefone:</b> {{details.telefone}}</p>
-      <p><b>Disponibilidade:</b> {{details.turnos}}</p>
+      <p><b>Disponibilidade:</b> <span data-ng-repeat="dt in details.disponibilidade">{{dt.data}} - {{dt.turno}}{{$last ? '' : ', '}}</span><span data-ng-if="!details.disponibilidade.length">Não informada</span></p>
     </div>
   </md-dialog>

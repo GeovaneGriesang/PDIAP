@@ -7,7 +7,7 @@
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
-		$scope.avaliador = { categoriasEixos: [] };
+		$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 
 		$scope.year = CadastraAno();
 
@@ -15,6 +15,15 @@
 		adminAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
+		})
+		.error(function(status) {
+			console.log(status);
+		});
+
+		$scope.listaDias = [];
+		adminAPI.getDiasAvaliacao(new Date().getFullYear())
+		.success(function(data) {
+			$scope.listaDias = data.dias;
 		})
 		.error(function(status) {
 			console.log(status);
@@ -135,6 +144,7 @@
 								tempoAtuacao: value.tempoAtuacao,
 								telefone: value.telefone,
 								curriculo: value.curriculo,
+								disponibilidade: value.disponibilidade || [],
 								avaliacao: value.avaliacao,
 								ano: ano
 							});
@@ -246,6 +256,7 @@
 
 		$scope.editarAvaliador = function(ev, avaliador) {
 			var listaCategorias = $scope.listaCategorias;
+			var listaDias = $scope.listaDias;
 			var recarregar = $scope.recarregar;
 			$mdDialog.show({
 				controller: function dialogAvaliadorController($scope, $mdDialog, $mdToast, adminAPI, documentoValidatorService) {
@@ -257,7 +268,9 @@
 					$scope.avaliador.cpf = avaliador.cpfCru;
 					$scope.avaliador.categoriasEixos = $scope.avaliador.categoriasEixos || [];
 					$scope.avaliador.categoriasEixosAvaliados = $scope.avaliador.categoriasEixosAvaliados || [];
+					$scope.avaliador.disponibilidade = $scope.avaliador.disponibilidade || [];
 					$scope.listaCategorias = listaCategorias;
+					$scope.listaDias = listaDias;
 
 					// Marcação de quais combinações registradas ele avaliou de fato - separado
 					// da presença em massa (checkbox da lista), pra não atrapalhar aquele fluxo.
@@ -301,7 +314,8 @@
 							atuacaoProfissional: avaliador.atuacaoProfissional,
 							tempoAtuacao: avaliador.tempoAtuacao,
 							telefone: avaliador.telefone,
-							curriculo: avaliador.curriculo
+							curriculo: avaliador.curriculo,
+							disponibilidade: avaliador.disponibilidade
 						});
 						adminAPI.putAtualizaAvaliador(pacote)
 						.success(function(data) {
@@ -335,7 +349,7 @@
 
 		let resetForm = function() {
 			delete $scope.avaliador;
-			$scope.avaliador = { categoriasEixos: [] };
+			$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 			$scope.avaliadoresForm.$setPristine();
 			$scope.avaliadoresForm.$setUntouched();
 		};
