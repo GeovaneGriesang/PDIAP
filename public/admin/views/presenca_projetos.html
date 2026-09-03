@@ -150,17 +150,17 @@
     <p data-ng-if="ordenacao != 'nomeEscola'">{{::proj.eixo}}</p>
   </div>
   <div flex="15" layout="row" layout-align="end center">
-    <!-- Bolinha de participação: mantém o que a cor do antigo selo "Aprovado" dizia
-         (cinza = ainda não confirmou, verde = confirmou, vermelho = cancelou), já que
-         o selo agora carrega o TIPO de aprovação. -->
-    <div data-ng-if="proj.aprovado === true" style="width:10px;height:10px;border-radius:50%;margin-right:6px;flex:none;"
-      data-ng-class="{grey:proj.participa === undefined, green1:proj.participa === true, red:proj.participa === false}">
-      <md-tooltip md-direction="left">{{proj.participa === true ? 'Participação confirmada' : (proj.participa === false ? 'Participação cancelada' : 'Ainda não confirmou participação')}}</md-tooltip>
-    </div>
     <div data-ng-if="proj.aprovado !== undefined" layout="row" layout-align="center center" class="md-whiteframe-1dp"
       data-ng-class="classeSituacao(proj)" style="min-width:58px;padding:2px 6px;min-height:20px;border-radius:4px;font-size:10px;text-align:center;">
       <md-tooltip md-direction="left">{{rotuloSituacaoCompleto(proj)}}</md-tooltip>
       <span style="font-weight:500;">{{rotuloCurtoSituacao(proj)}}</span>
+    </div>
+    <!-- Bolinha de participação, à direita do selo de situação (cinza = ainda não
+         confirmou, verde = confirmou, vermelho = cancelou) - mantém o que a cor do
+         antigo selo "Aprovado" dizia, já que o selo agora carrega o TIPO de aprovação. -->
+    <div data-ng-if="proj.aprovado === true" style="width:10px;height:10px;border-radius:50%;margin-left:6px;flex:none;"
+      data-ng-class="{grey:proj.participa === undefined, green1:proj.participa === true, red:proj.participa === false}">
+      <md-tooltip md-direction="left">{{proj.participa === true ? 'Participação confirmada' : (proj.participa === false ? 'Participação cancelada' : 'Ainda não confirmou participação')}}</md-tooltip>
     </div>
     <!-- <md-button aria-label="Imprimir" class="md-secondary btn-plus btn-imprimir" data-ng-if="proj.participa === true || (proj.aprovado === true && proj.participa === undefined)" data-ng-click="abrir(proj.numInscricao)" style="border-radius:50%;">
       <md-icon md-svg-src="cloud-print"></md-icon>
