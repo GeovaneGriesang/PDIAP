@@ -341,6 +341,37 @@
 
 				<div class="relatorios-secao">
 					<h3>
+						<span>Totais por nível de ensino</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarTotaisPorNivel(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvTotaisPorNivel(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTotaisPorNivel(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
+					</h3>
+					<div layout="row" layout-wrap style="gap:16px;">
+						<div data-ng-repeat="g in aba.totaisPorNivel" style="flex:1 1 220px;min-width:220px;background:rgba(46,125,50,0.05);border-radius:6px;padding:14px 18px;">
+							<div style="font-weight:600;color:#225024;font-size:13px;margin-bottom:10px;">{{g.categoria}}</div>
+							<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;"><span>Projetos</span><b>{{g.projetos}}</b></div>
+							<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;"><span>Estudantes</span><b>{{g.estudantes}}</b></div>
+							<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;"><span>Orientadores(as)</span><b>{{g.orientadores}}</b></div>
+						</div>
+					</div>
+					<div style="margin-top:16px;padding-top:12px;border-top:2px solid #ddd;">
+						<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;font-weight:bold;color:#225024;"><span>Total Geral — Projetos</span><span>{{aba.categoriasTotal}}</span></div>
+						<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;font-weight:bold;color:#225024;"><span>Total Geral — Estudantes</span><span>{{aba.alunosArray.length}}</span></div>
+						<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;font-weight:bold;color:#225024;"><span>Total Geral — Orientadores(as)</span><span>{{aba.orientadoresArray.length}}</span></div>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
 						<span>Total e hospedagem</span>
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarTotalHospedagem(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
