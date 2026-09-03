@@ -121,7 +121,8 @@
 				subtitulo: d.linhas.length + ' avaliador(es)',
 				orientacao: 'landscape',
 				colunas: d.colunas,
-				linhas: d.linhas
+				linhas: d.linhas,
+				arquivo: $rootScope.ano + '_Avaliadores'
 			});
 		};
 	});

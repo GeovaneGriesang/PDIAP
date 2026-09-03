@@ -192,7 +192,8 @@
 						(ava.disponibilidade || []).map(function(dt) { return dt.data + ' - ' + dt.turno; }).join('\n'),
 						ava.avaliacao ? 'Sim' : 'Não'
 					];
-				})
+				}),
+				arquivo: $scope.ano + '_Avaliadores'
 			});
 		};
 

@@ -48,7 +48,10 @@
 		// Monta e abre o PDF. `opcoes`:
 		//   titulo (obrigatório), subtitulo, orientacao ('portrait'|'landscape', default
 		//   'portrait'), conteudo (array de nós pdfMake - o corpo do relatório em si,
-		//   normalmente um título+tabela por seção, já formatado por quem chama).
+		//   normalmente um título+tabela por seção, já formatado por quem chama),
+		//   arquivo (nome sugerido pro Salvar como, sem ".pdf" - some no metadado
+		//   "Title" do PDF, que é o que o visualizador do Chrome usa como nome de
+		//   arquivo padrão; sem isso o "Salvar como" cai num UUID da blob: URL).
 		function gerar(opcoes) {
 			// A aba precisa abrir NESTE exato instante, ainda síncrono com o clique que
 			// chamou essa função - é o motivo do comentário no próprio código-fonte do
@@ -107,7 +110,8 @@
 					},
 					content: opcoes.conteudo,
 					styles: opcoes.estilos,
-					defaultStyle: opcoes.estiloPadrao || { fontSize: 9 }
+					defaultStyle: opcoes.estiloPadrao || { fontSize: 9 },
+					info: opcoes.arquivo ? { title: opcoes.arquivo } : undefined
 				};
 				try {
 					// getBuffer + Blob (não getDataUrl): Chrome bloqueia silenciosamente a
@@ -133,12 +137,21 @@
 			var corpo = [opcoes.colunas.map(function(c) {
 				return { text: c.texto, style: 'tableHeader' };
 			})];
-			opcoes.linhas.forEach(function(linha) { corpo.push(linha); });
+			// Cada célula vira string explicitamente - o pdfMake só reconhece célula
+			// crua (fora de {text:...}) quando é string; um número puro (ex: contagem
+			// de projetos) não é convertido e sai em branco na tabela, mesmo com o
+			// resto da linha aparecendo normal.
+			opcoes.linhas.forEach(function(linha) {
+				corpo.push(linha.map(function(celula) {
+					return celula === null || celula === undefined ? '' : String(celula);
+				}));
+			});
 
 			return gerar({
 				titulo: opcoes.titulo,
 				subtitulo: opcoes.subtitulo,
 				orientacao: opcoes.orientacao,
+				arquivo: opcoes.arquivo,
 				conteudo: [{
 					table: {
 						headerRows: 1,

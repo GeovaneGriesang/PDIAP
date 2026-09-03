@@ -536,6 +536,18 @@
 			return nome + ' - ' + aba.nome + ' - ' + $rootScope.ano;
 		}
 
+		// Nome sugerido pro "Salvar como" do PDF - ano primeiro, sem acento/espaço,
+		// pra ordenar bem numa pasta de downloads (ex: 2026_Totais_Categoria_Aprovados).
+		function slug(texto) {
+			return texto.normalize('NFD').replace(/[̀-ͯ]/g, '')
+				.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+		}
+		function nomeArquivoPdf(base, aba) {
+			var partes = [$rootScope.ano, base];
+			if (aba && aba.nome) partes.push(slug(aba.nome));
+			return partes.join('_');
+		}
+
 		// Uma função "dados" por seção, compartilhada entre CSV e PDF - assim as duas
 		// exportações nunca correm o risco de mostrar números diferentes uma da outra.
 		// Cada uma devolve {colunas: [{texto, largura}], linhas: [[...]]}, formato que
@@ -670,45 +682,45 @@
 		function csvDe(nomeArquivo, dados) {
 			baixarCsv(nomeArquivo, dados.colunas.map(function(c) { return c.texto; }), dados.linhas);
 		}
-		function pdfDe(titulo, subtitulo, dados, orientacao) {
-			relatorioPdfService.tabela({ titulo: titulo, subtitulo: subtitulo, colunas: dados.colunas, linhas: dados.linhas, orientacao: orientacao });
+		function pdfDe(titulo, subtitulo, dados, orientacao, arquivo) {
+			relatorioPdfService.tabela({ titulo: titulo, subtitulo: subtitulo, colunas: dados.colunas, linhas: dados.linhas, orientacao: orientacao, arquivo: arquivo });
 		}
 
 		$scope.exportarPlanilhaProjetos = function(aba) { csvDe('projetos' + sufixo(aba), dadosProjetos(aba)); };
-		$scope.pdfProjetos = function(aba) { var d = dadosProjetos(aba); pdfDe(tituloAba('Projetos', aba), d.linhas.length + ' projeto(s)', d, 'landscape'); };
+		$scope.pdfProjetos = function(aba) { var d = dadosProjetos(aba); pdfDe(tituloAba('Projetos', aba), d.linhas.length + ' projeto(s)', d, 'landscape', nomeArquivoPdf('Projetos', aba)); };
 
 		$scope.csvResumo = function(aba) { csvDe('resumo-geral-' + $rootScope.ano, dadosResumo()); };
-		$scope.pdfResumo = function(aba) { pdfDe('Resumo geral - ' + $rootScope.ano, null, dadosResumo()); };
+		$scope.pdfResumo = function(aba) { pdfDe('Resumo geral - ' + $rootScope.ano, null, dadosResumo(), null, nomeArquivoPdf('Resumo_Geral')); };
 
 		$scope.csvTotalHospedagem = function(aba) { csvDe('hospedagem' + sufixo(aba), dadosHospedagem(aba)); };
-		$scope.pdfTotalHospedagem = function(aba) { pdfDe(tituloAba('Hospedagem', aba), null, dadosHospedagem(aba)); };
+		$scope.pdfTotalHospedagem = function(aba) { pdfDe(tituloAba('Hospedagem', aba), null, dadosHospedagem(aba), null, nomeArquivoPdf('Hospedagem', aba)); };
 
 		$scope.csvCategorias = function(aba) { csvDe('por-categoria' + sufixo(aba), dadosCategorias(aba)); };
-		$scope.pdfCategorias = function(aba) { pdfDe(tituloAba('Por categoria', aba), null, dadosCategorias(aba)); };
+		$scope.pdfCategorias = function(aba) { pdfDe(tituloAba('Por categoria', aba), null, dadosCategorias(aba), null, nomeArquivoPdf('Por_Categoria', aba)); };
 
 		$scope.csvEixosGrupo = function(aba, grupo) { csvDe('eixos-' + grupo.categoria + sufixo(aba), dadosEixosGrupo(grupo)); };
-		$scope.pdfEixosGrupo = function(aba, grupo) { pdfDe('Eixos - ' + grupo.categoria, aba.nome + ' - ' + $rootScope.ano, dadosEixosGrupo(grupo)); };
+		$scope.pdfEixosGrupo = function(aba, grupo) { pdfDe('Eixos - ' + grupo.categoria, aba.nome + ' - ' + $rootScope.ano, dadosEixosGrupo(grupo), null, nomeArquivoPdf('Eixos_' + slug(grupo.categoria), aba)); };
 
 		$scope.csvCamisetas = function(aba) { csvDe('camisetas' + sufixo(aba), dadosCamisetas(aba)); };
-		$scope.pdfCamisetas = function(aba) { pdfDe(tituloAba('Camisetas', aba), null, dadosCamisetas(aba)); };
+		$scope.pdfCamisetas = function(aba) { pdfDe(tituloAba('Camisetas', aba), null, dadosCamisetas(aba), null, nomeArquivoPdf('Camisetas', aba)); };
 
 		$scope.csvEscolas = function(aba) { csvDe('escolas' + sufixo(aba), dadosEscolas(aba)); };
-		$scope.pdfEscolas = function(aba) { pdfDe(tituloAba('Escolas', aba), aba.escolasArray.length + ' escola(s)', dadosEscolas(aba)); };
+		$scope.pdfEscolas = function(aba) { pdfDe(tituloAba('Escolas', aba), aba.escolasArray.length + ' escola(s)', dadosEscolas(aba), null, nomeArquivoPdf('Escolas', aba)); };
 
 		$scope.csvAlunos = function(aba) { csvDe('estudantes' + sufixo(aba), dadosPessoas(aba.alunosArray)); };
-		$scope.pdfAlunos = function(aba) { pdfDe(tituloAba('Estudantes', aba), aba.alunosArray.length + ' estudante(s)', dadosPessoas(aba.alunosArray), 'landscape'); };
+		$scope.pdfAlunos = function(aba) { pdfDe(tituloAba('Estudantes', aba), aba.alunosArray.length + ' estudante(s)', dadosPessoas(aba.alunosArray), 'landscape', nomeArquivoPdf('Estudantes', aba)); };
 
 		$scope.csvOrientadores = function(aba) { csvDe('orientadores' + sufixo(aba), dadosPessoas(aba.orientadoresArray)); };
-		$scope.pdfOrientadores = function(aba) { pdfDe(tituloAba('Orientadores(as)', aba), aba.orientadoresArray.length + ' orientador(a/es)', dadosPessoas(aba.orientadoresArray), 'landscape'); };
+		$scope.pdfOrientadores = function(aba) { pdfDe(tituloAba('Orientadores(as)', aba), aba.orientadoresArray.length + ' orientador(a/es)', dadosPessoas(aba.orientadoresArray), 'landscape', nomeArquivoPdf('Orientadores', aba)); };
 
 		$scope.csvProjetosPorCategoriaEixo = function(aba) { csvDe('projetos-por-categoria-eixo' + sufixo(aba), dadosProjetosPorCategoriaEixo(aba)); };
-		$scope.pdfProjetosPorCategoriaEixo = function(aba) { pdfDe(tituloAba('Projetos por categoria/eixo', aba), null, dadosProjetosPorCategoriaEixo(aba), 'landscape'); };
+		$scope.pdfProjetosPorCategoriaEixo = function(aba) { pdfDe(tituloAba('Projetos por categoria/eixo', aba), null, dadosProjetosPorCategoriaEixo(aba), 'landscape', nomeArquivoPdf('Projetos_Categoria_Eixo', aba)); };
 
 		$scope.csvLocalizacao = function(aba) { csvDe('localizacao' + sufixo(aba), dadosLocalizacao(aba)); };
-		$scope.pdfLocalizacao = function(aba) { pdfDe(tituloAba('Localização', aba), null, dadosLocalizacao(aba)); };
+		$scope.pdfLocalizacao = function(aba) { pdfDe(tituloAba('Localização', aba), null, dadosLocalizacao(aba), null, nomeArquivoPdf('Localizacao', aba)); };
 
 		$scope.csvTotaisPorNivel = function(aba) { csvDe('totais-por-nivel' + sufixo(aba), dadosTotaisPorNivel(aba)); };
-		$scope.pdfTotaisPorNivel = function(aba) { pdfDe(tituloAba('Totais por nível de ensino', aba), null, dadosTotaisPorNivel(aba)); };
+		$scope.pdfTotaisPorNivel = function(aba) { pdfDe(tituloAba('Totais por nível de ensino', aba), null, dadosTotaisPorNivel(aba), null, nomeArquivoPdf('Totais_Categoria', aba)); };
 
 		$scope.imprimir = function() {
 			window.print();
