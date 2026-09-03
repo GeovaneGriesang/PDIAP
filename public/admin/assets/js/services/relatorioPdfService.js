@@ -37,7 +37,10 @@
 				}
 			};
 			img.onerror = function() { deferred.resolve(null); };
-			img.src = '/assets/images/logo.png';
+			// logo.png é a versão de 2016 (o ano vem desenhado dentro da própria imagem);
+			// logo3.png é só a marca "MOVACI", sem ano - a mesma já usada no cabeçalho do
+			// site público (views/layout2.ejs).
+			img.src = '/assets/images/logo3.png';
 			logoDataUri = deferred.promise;
 			return logoDataUri;
 		}
