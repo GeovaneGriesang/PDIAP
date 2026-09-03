@@ -26,7 +26,9 @@
 							estado: value.estado,
 							cidade: value.cidade,
 							email: value.email,
-							integrantes: value.integrantes
+							integrantes: value.integrantes,
+							aprovado: value.aprovado,
+							tipoAprovacao: value.tipoAprovacao
 						});
 					}
 				});
@@ -50,6 +52,37 @@
 		$scope.ordenacao = ['categoria', 'eixo'];
 		$scope.ordenarPor = function(campo) {
 			$scope.ordenacao = campo;
+		};
+
+		// Situação/filtro por situação e contagem do subcabeçalho - mesma lógica de
+		// public/admin/assets/js/controllers/projetosCtrl.js (Selecionar Aprovados/
+		// Presença/Premiação); $rootScope.filtroSit é o MESMO objeto usado lá, pra manter
+		// a escolha ao navegar entre essas telas.
+		let chaveSituacao = function(proj) {
+			if (proj.aprovado !== true) return 'nao';
+			return proj.tipoAprovacao === 'apresentacao' ? 'apresentacao' : 'anais';
+		};
+		$rootScope.filtroSit = $rootScope.filtroSit || { situacao: 'todos' };
+		$scope.filtroSit = $rootScope.filtroSit;
+		$scope.filtroPorSituacao = function(proj) {
+			var filtro = $rootScope.filtroSit.situacao;
+			if (!filtro || filtro === 'todos') return true;
+			if (filtro === 'aprovados') return proj.aprovado === true;
+			if (filtro === 'nao') return proj.aprovado !== true;
+			return proj.aprovado === true && chaveSituacao(proj) === filtro;
+		};
+		$scope.contagemSituacao = function() {
+			var c = { aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
+			angular.forEach($scope.projetos, function(p) {
+				if (p.aprovado === true) {
+					c.aprovados++;
+					if (p.tipoAprovacao === 'apresentacao') c.apresentacao++;
+					else c.anais++;
+				} else {
+					c.naoAprovados++;
+				}
+			});
+			return c;
 		};
 
 		// Seleção de projetos (mesmo espírito de $scope.contador em projetosCtrl.js/aprovados.html,

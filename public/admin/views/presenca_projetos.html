@@ -117,8 +117,12 @@
     <div layout style="align-items:center;"><div class="red" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Cancelado</div>
     <div layout style="align-items:center;"><div class="grey" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Pendente</div>
   </div>
-  <div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
-    TOTAL: {{projetos.length}}
+  <div layout="row" style="justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 28px;padding-bottom:30px;background:rgba(128,128,128,0.07);font-size:14px;">
+    <span><b>Total:</b> {{projetos.length}}</span>
+    <span style="color:#2e7d32;"><b>Aprovados:</b> {{contagemSituacao().aprovados}}</span>
+    <span style="color:#2e7d32;">↳ Anais e apresentação: {{contagemSituacao().anais}}</span>
+    <span style="color:#c4650a;">↳ Apenas apresentação: {{contagemSituacao().apresentacao}}</span>
+    <span style="color:#c62828;"><b>Não aprovados:</b> {{contagemSituacao().naoAprovados}}</span>
   </div>
   <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = ['aprovado','eixo']">
     <md-list-item class="list-header">

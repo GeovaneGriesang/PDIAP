@@ -182,13 +182,38 @@
 		// Objeto (e não string solta) de propósito: com ng-model num primitivo, o
 		// md-select escreve numa cópia no escopo filho e o filtro aqui continuaria lendo
 		// o valor antigo - o filtro simplesmente não surtia efeito.
-		$scope.filtroSit = { situacao: 'todos' };
+		//
+		// Em $rootScope (não $scope) - igual a $rootScope.ano/$rootScope.search logo
+		// abaixo - pra manter a escolha ao navegar entre Selecionar aprovados, Presença,
+		// Premiação e Enviar e-mail: o ui-router recria a instância do controller a cada
+		// troca de tela, um $scope.filtroSit se perderia a cada navegação. O "||" evita
+		// resetar quem já veio de outra dessas telas na mesma sessão.
+		$rootScope.filtroSit = $rootScope.filtroSit || { situacao: 'todos' };
+		$scope.filtroSit = $rootScope.filtroSit;
 		$scope.filtroPorSituacao = function(proj) {
-			var filtro = $scope.filtroSit.situacao;
+			var filtro = $rootScope.filtroSit.situacao;
 			if (!filtro || filtro === 'todos') return true;
 			if (filtro === 'aprovados') return proj.aprovado === true;
 			if (filtro === 'nao') return proj.aprovado !== true;
 			return proj.aprovado === true && chaveSituacao(proj) === filtro;
+		};
+
+		// Contagem pro subcabeçalho (Total / Aprovados / Anais e apresentação / Apenas
+		// apresentação / Não aprovados) - sempre sobre TODOS os projetos do ano, igual ao
+		// "TOTAL" já existente, sem levar em conta a busca por texto nem o filtro de
+		// situação (senão o próprio filtro mudaria os números que ele mostra).
+		$scope.contagemSituacao = function() {
+			var c = { aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
+			angular.forEach($rootScope.projetos, function(p) {
+				if (p.aprovado === true) {
+					c.aprovados++;
+					if (p.tipoAprovacao === 'apresentacao') c.apresentacao++;
+					else c.anais++;
+				} else {
+					c.naoAprovados++;
+				}
+			});
+			return c;
 		};
 
 		$rootScope.recarregar = function(){

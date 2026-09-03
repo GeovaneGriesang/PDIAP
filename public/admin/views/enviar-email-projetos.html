@@ -45,6 +45,17 @@
           </md-menu>
         </div>
         <span flex="5"></span>
+        <div style="width:210px;">
+          <md-select data-ng-model="filtroSit.situacao" placeholder="Situação" aria-label="Filtrar por situação" disableOptionCentering style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Situação:">
+              <md-option value="todos">Todas as situações</md-option>
+              <md-option value="aprovados">Aprovados (os dois tipos)</md-option>
+              <md-option value="anais">Aprovado - apresentação e anais</md-option>
+              <md-option value="apresentacao">Aprovado - somente apresentação</md-option>
+              <md-option value="nao">Não aprovados</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
         <div style="width:85px;">
           <md-select data-ng-model="$root.ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
@@ -57,9 +68,15 @@
     </md-toolbar>
 
     <md-content>
-      <div layout="row" layout-align="center center" style="justify-content:center;padding:20px 0;background:rgba(128,128,128,0.07);gap:16px;">
-        <span>TOTAL: {{projetos.length}}</span>
-        <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(projetos | filter:search)">Selecionar todos os filtrados</md-button>
+      <div layout="row" layout-align="center center" style="justify-content:center;flex-wrap:wrap;padding:20px 0;background:rgba(128,128,128,0.07);gap:8px 24px;font-size:14px;">
+        <span><b>Total:</b> {{projetos.length}}</span>
+        <span style="color:#2e7d32;"><b>Aprovados:</b> {{contagemSituacao().aprovados}}</span>
+        <span style="color:#2e7d32;">↳ Anais e apresentação: {{contagemSituacao().anais}}</span>
+        <span style="color:#c4650a;">↳ Apenas apresentação: {{contagemSituacao().apresentacao}}</span>
+        <span style="color:#c62828;"><b>Não aprovados:</b> {{contagemSituacao().naoAprovados}}</span>
+      </div>
+      <div layout="row" layout-align="center center" style="justify-content:center;padding:0 0 20px 0;background:rgba(128,128,128,0.07);gap:16px;">
+        <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(projetos | filter:search | filter:filtroPorSituacao)">Selecionar todos os filtrados</md-button>
         <md-button class="md-raised" data-ng-click="limparSelecao()">Limpar seleção</md-button>
       </div>
       <md-list flex data-ng-init="ordenacao = ['categoria','eixo']">
@@ -73,7 +90,7 @@
           <md-divider></md-divider>
         </md-list-item>
         <md-divider></md-divider>
-        <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj._id">
+        <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | filter:filtroPorSituacao | orderBy:ordenacao track by proj._id">
           <div class="md-list-item-text" layout="column">
             <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
             <p>{{::proj.categoria}} / {{::proj.eixo}}</p>
