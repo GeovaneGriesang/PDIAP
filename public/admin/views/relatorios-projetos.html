@@ -488,6 +488,35 @@
 
 				<div class="relatorios-secao">
 					<h3>
+						<span class="relatorios-titulo-clicavel" data-ng-click="aba.projetosExpandido = !aba.projetosExpandido">
+							<md-icon class="relatorios-seta" md-svg-src="{{aba.projetosExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
+							Projetos por categoria/eixo ({{aba.projetos.length}})
+						</span>
+					</h3>
+					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosExpandido">
+						<div data-ng-repeat="grupo in aba.projetosPorCategoriaEixo">
+							<h4 class="relatorios-subtitulo">{{grupo.categoria}} ({{grupo.total}})</h4>
+							<div data-ng-repeat="ge in grupo.eixos" style="margin-bottom:14px;">
+								<p style="font-weight:600;font-size:13px;margin:8px 0 4px 0;">{{ge.eixo}} ({{ge.total}})</p>
+								<table class="relatorios-tabela">
+									<thead>
+										<tr><th>Projeto</th><th>Escola</th><th style="text-align:right;">Nº inscrição</th></tr>
+									</thead>
+									<tbody>
+										<tr data-ng-repeat="p in ge.projetos">
+											<td>{{p.nomeProjeto}}</td>
+											<td>{{p.nomeEscola}}</td>
+											<td class="num">{{p.numInscricao}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
 						<span class="relatorios-titulo-clicavel" data-ng-click="aba.orientadoresExpandido = !aba.orientadoresExpandido">
 							<md-icon class="relatorios-seta" md-svg-src="{{aba.orientadoresExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
 							Orientadores(as) ({{aba.orientadoresArray.length}})

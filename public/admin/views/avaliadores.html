@@ -202,7 +202,7 @@
             </h3>
             <p>CPF: {{::ava.cpf}}</p>
             <p data-ng-if="ava.categoriasEixos.length" style="font-size:12px;color:rgba(0,0,0,0.5);">
-              {{ava.categoriasEixos.length}} categoria(s)/eixo(s)
+              <span data-ng-repeat="ce in ava.categoriasEixos">{{ce.categoria}} - {{ce.eixo}}{{$last ? '' : ' · '}}</span>
             </p>
           </div>
           <div class="md-list-item-text" flex="15">
