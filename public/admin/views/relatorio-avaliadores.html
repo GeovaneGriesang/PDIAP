@@ -1,0 +1,126 @@
+<style>
+	.relatorios-secao {
+		background: #fff;
+		border-radius: 6px;
+		padding: 20px 24px;
+		margin: 20px;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+	}
+	.relatorios-secao h3 {
+		margin: 0 0 12px 0;
+		color: #225024;
+		font-size: 16px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+	}
+	.relatorios-secao h3 > :first-child {
+		flex: 1;
+		min-width: 0;
+	}
+	.relatorios-btn-copiar {
+		width: 28px;
+		height: 28px;
+		min-height: 28px;
+		margin: 0 0 0 4px !important;
+		padding: 0 !important;
+	}
+	.relatorios-btn-copiar md-icon {
+		width: 16px;
+		height: 16px;
+		color: rgba(0,0,0,0.4);
+	}
+	.relatorios-tabela {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.relatorios-tabela th {
+		text-align: left;
+		color: rgba(0,0,0,0.5);
+		font-weight: normal;
+		font-size: 12px;
+		text-transform: uppercase;
+		border-bottom: 1px solid #ddd;
+		padding: 6px 8px;
+	}
+	.relatorios-tabela td {
+		padding: 6px 8px;
+		border-bottom: 1px solid #f0f0f0;
+		white-space: pre-line;
+	}
+</style>
+
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Relatório de Avaliadores</h4>
+      </div>
+    </md-toolbar>
+    <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+        <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
+          <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
+        </div>
+        <div class="search-field" flex="30">
+          <input placeholder="Buscar por nome ou documento" style="width:100%!important;" ng-model="busca" ng-model-options="{ debounce: 400 }"/>
+        </div>
+        <span flex></span>
+        <div style="width:85px;">
+          <md-select data-ng-model="$root.ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year track by years" data-ng-click="recarregar()">{{years}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <div class="relatorios-secao">
+        <h3>
+          <span>Avaliadores - {{$root.ano}} ({{(avaliadores | filter:filtroAvaliador).length}})</span>
+          <md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarRelatorio()">
+            <md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+            <md-icon md-svg-src="content-copy"></md-icon>
+          </md-button>
+          <md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="baixarCsv()">
+            <md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+            <md-icon md-svg-src="file-delimited"></md-icon>
+          </md-button>
+          <md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="gerarPDF()">
+            <md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+            <md-icon md-svg-src="file-pdf-box"></md-icon>
+          </md-button>
+        </h3>
+        <p style="font-size:12px;color:rgba(0,0,0,0.45);margin:0 0 12px 0;" data-ng-if="!avaliadores.length">
+          Nenhum avaliador cadastrado em {{$root.ano}}.
+        </p>
+        <table class="relatorios-tabela" data-ng-if="avaliadores.length">
+          <thead>
+            <tr><th>Nome</th><th>CPF</th><th>Categoria(s)/Eixo(s)</th><th>Disponibilidade (dia/turno)</th><th style="text-align:right;">Presença</th></tr>
+          </thead>
+          <tbody>
+            <tr data-ng-repeat="ava in avaliadores | filter:filtroAvaliador | orderBy:ordenacao">
+              <td>{{ava.nome}}</td>
+              <td>{{ava.cpf}}</td>
+              <td><span data-ng-if="!ava.categoriasEixos.length">-</span><span data-ng-repeat="ce in ava.categoriasEixos">{{ce.categoria}} - {{ce.eixo}}{{$last ? '' : '\n'}}</span></td>
+              <td><span data-ng-if="!ava.disponibilidade.length">Ainda não configurada</span><span data-ng-repeat="dt in ava.disponibilidade">{{dt.data}} - {{dt.turno}}{{$last ? '' : '\n'}}</span></td>
+              <td style="text-align:right;">{{ava.avaliacao ? 'Sim' : 'Não'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </md-content>
+  </section>
+</div>

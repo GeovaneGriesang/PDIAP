@@ -292,6 +292,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfResumo(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 	</div>
 	<div layout="row" layout-wrap style="margin-bottom:24px;gap:16px;">
 		<div flex class="relatorios-kpi">
@@ -346,6 +350,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTotalHospedagem(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha">
 						<span class="relatorios-barra-label">Total de projetos</span>
@@ -367,6 +375,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvCategorias(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfCategorias(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="c in aba.categoriasArray">
@@ -393,6 +405,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfEixosGrupo(aba, grupo)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="e in grupo.eixos">
 						<span class="relatorios-barra-label">{{e.nome}}</span>
@@ -417,6 +433,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvCamisetas(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfCamisetas(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
 					<div data-ng-repeat="cm in aba.camisetasArray">
@@ -459,6 +479,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfEscolas(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.escolasExpandido">
 						<table class="relatorios-tabela">
@@ -491,6 +515,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvAlunos(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfAlunos(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.alunosExpandido">
@@ -535,6 +563,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfProjetosPorCategoriaEixo(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosExpandido">
 						<div data-ng-repeat="grupo in aba.projetosPorCategoriaEixo">
@@ -571,6 +603,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="exportarPlanilhaProjetos(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfProjetos(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosPessoasExpandido">
@@ -623,6 +659,10 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfOrientadores(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.orientadoresExpandido">
 						<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:0 0 12px 0;">Cada orientador(a) aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
@@ -662,6 +702,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvLocalizacao(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfLocalizacao(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.localizacaoExpandido">
