@@ -484,6 +484,19 @@
 			return aba.eixosPorCategoria.map(textoEixosGrupo).join('\n\n');
 		}
 
+		function textoProjetosPorCategoriaEixo(aba) {
+			return '*Projetos por categoria/eixo (' + aba.projetos.length + ') — ' + aba.nome + '*\n\n' +
+				aba.projetosPorCategoriaEixo.map(function(grupo) {
+					return '*' + grupo.categoria + ' (' + grupo.total + ')*\n' +
+						grupo.eixos.map(function(ge) {
+							return '- ' + ge.eixo + ': *' + ge.total + '*\n' +
+								ge.projetos.map(function(p) {
+									return '   - Nº ' + p.numInscricao + ': ' + p.nomeProjeto + (p.nomeEscola ? ' (' + p.nomeEscola + ')' : '');
+								}).join('\n');
+						}).join('\n');
+				}).join('\n\n');
+		}
+
 		function textoCamisetas(aba, expandido) {
 			var linhas = aba.camisetasArray.map(function(cm) {
 				var linha = '- Tamanho ' + cm.nome + ': *' + cm.num + '*';
@@ -599,6 +612,9 @@
 		};
 		$scope.copiarAlunos = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoPessoas('Aluno', aba));
+		};
+		$scope.copiarProjetosPorCategoriaEixo = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoProjetosPorCategoriaEixo(aba));
 		};
 		$scope.copiarOrientadores = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoPessoas('Orientador', aba));
