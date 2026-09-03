@@ -1,0 +1,18 @@
+<md-dialog aria-label="Copiar de edição anterior" class="details2 dialog-avaliacao">
+  <div style="display:flex;height:64px;width:calc(100% - 4em);background:#2e7d32;padding:0 2em;color:#153917;">
+    <p style="align-self:center;">Copiar categorias/eixos de edição anterior</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="cancel()" class="btn-close" style="cursor:pointer;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;">
+    <p style="color:rgba(0,0,0,0.6);font-size:13px;">Escolha de qual edição copiar as categorias e eixos. Só as categorias/eixos serão copiados - dias/turnos de avaliação continuam em branco.</p>
+    <md-list>
+      <md-list-item class="md-2-line" data-ng-repeat="ed in edicoes" data-ng-click="escolher(ed)" style="cursor:pointer;">
+        <div class="md-list-item-text">
+          <h3>{{ed.nome || ('Edição ' + ed.ano)}} ({{ed.ano}})</h3>
+          <p>{{ed.categoriasEixos.length}} categoria(s)</p>
+        </div>
+      </md-list-item>
+    </md-list>
+  </div>
+</md-dialog>
