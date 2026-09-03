@@ -74,13 +74,20 @@
 		padding-bottom: 8px;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-start;
+	}
+	/* O título ocupa o espaço livre, então os botões de ação (copiar/planilha) ficam
+	   sempre juntos e encostados à direita - com space-between eles se separavam um do
+	   outro quando a seção passou a ter mais de um botão. */
+	.relatorios-secao h3 > :first-child {
+		flex: 1;
+		min-width: 0;
 	}
 	.relatorios-btn-copiar {
 		width: 28px;
 		height: 28px;
 		min-height: 28px;
-		margin: 0 !important;
+		margin: 0 0 0 4px !important;
 		padding: 0 !important;
 	}
 	.relatorios-btn-copiar md-icon {
