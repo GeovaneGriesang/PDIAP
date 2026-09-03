@@ -32,6 +32,7 @@ const Projeto = require('../models/projeto-schema');
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const lista = require('./aprovacoes-2026.json');
+const autoresPorNumero = require('./aprovacoes-2026-autores.json').autoresPorNumero;
 const ANO = 2026;
 
 // Construído a partir de string escapada de propósito: os caracteres combinantes
@@ -74,6 +75,32 @@ function candidatosParecidos(tituloNormalizado, projetosDoAno, quantos) {
 		.slice(0, quantos);
 }
 
+// Casamento por AUTORES: o título costuma ser reescrito entre o sistema de submissão
+// dos textos e a inscrição no MOVACI, mas os integrantes são os mesmos. Só vale quando
+// UM único projeto do ano tem sobreposição forte de autores - se dois projetos empatam,
+// devolve null e o caso vai pra revisão manual em vez de arriscar o trabalho errado.
+function casarPorAutores(autores, projetosDoAno) {
+	if (!autores || !autores.length) return null;
+
+	const alvo = autores.map(normalizar).filter(Boolean);
+	const pontuados = projetosDoAno.map(function(p) {
+		const integrantes = (p.integrantes || []).map(function(i) { return normalizar(i.nome); }).filter(Boolean);
+		const encontrados = alvo.filter(function(a) {
+			return integrantes.some(function(i) { return i === a || i.indexOf(a) !== -1 || a.indexOf(i) !== -1; });
+		}).length;
+		return { projeto: p, encontrados: encontrados, proporcao: encontrados / alvo.length };
+	}).filter(function(x) { return x.encontrados >= 2 || (alvo.length === 1 && x.encontrados === 1); });
+
+	if (!pontuados.length) return null;
+	pontuados.sort(function(a, b) { return b.proporcao - a.proporcao || b.encontrados - a.encontrados; });
+
+	// Empate no topo = ambíguo, não casa.
+	if (pontuados.length > 1 && pontuados[1].proporcao === pontuados[0].proporcao && pontuados[1].encontrados === pontuados[0].encontrados) return null;
+	// Metade dos autores tem que bater, senão é coincidência de orientador em comum.
+	if (pontuados[0].proporcao < 0.5) return null;
+	return pontuados[0].projeto;
+}
+
 function contarPor(itens, campo) {
 	const contagem = {};
 	itens.forEach(function(i) { contagem[i[campo]] = (contagem[i[campo]] || 0) + 1; });
@@ -81,53 +108,103 @@ function contarPor(itens, campo) {
 }
 
 async function importar() {
-	const todos = await Projeto.find({}, 'nomeProjeto numInscricao createdAt aprovado tipoAprovacao modalidade');
+	const todos = await Projeto.find({}, 'nomeProjeto numInscricao createdAt aprovado tipoAprovacao modalidade integrantes');
 	const doAno = todos.filter(function(p) { return new Date(p.createdAt).getFullYear() === ANO; });
 
-	// Índice por título normalizado. Título repetido no mesmo ano é registrado como
-	// ambíguo e tratado como "não casou" - não dá pra saber qual dos dois é.
+	// Índice por título normalizado. Título repetido no mesmo ano (o grupo se inscreveu
+	// duas vezes) fica registrado como ambíguo e é resolvido mais abaixo por autores ou,
+	// em último caso, pela inscrição mais recente.
 	const porTitulo = new Map();
-	const titulosAmbiguos = new Set();
 	doAno.forEach(function(p) {
 		const chave = normalizar(p.nomeProjeto);
-		if (porTitulo.has(chave)) titulosAmbiguos.add(chave);
-		else porTitulo.set(chave, p);
+		if (!porTitulo.has(chave)) porTitulo.set(chave, []);
+		porTitulo.get(chave).push(p);
 	});
+
+	const maisRecente = function(projetos) {
+		return projetos.slice().sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); })[0];
+	};
 
 	const casados = [];
 	const naoCasaram = [];
 	const idsCasados = new Set();
 
-	for (const trabalho of lista.trabalhos) {
-		const chave = normalizar(trabalho.titulo);
-		const projeto = titulosAmbiguos.has(chave) ? null : porTitulo.get(chave);
-
-		if (!projeto) {
-			naoCasaram.push({
-				numero: trabalho.numero,
-				titulo: trabalho.titulo,
-				modalidade: trabalho.modalidade,
-				situacao: trabalho.situacao,
-				motivo: titulosAmbiguos.has(chave) ? 'mais de um projeto com esse mesmo título no ano' : 'nenhum projeto com esse título',
-				candidatos: candidatosParecidos(chave, doAno, 3)
-			});
-			continue;
-		}
-
+	// O casamento é feito em passadas, da evidência mais forte pra mais fraca. Isso
+	// importa porque um grupo pode ter submetido DOIS trabalhos (ex: o mesmo tema como
+	// resumo expandido e como artigo): os autores são idênticos nos dois, então casar
+	// por autor antes de esgotar os títulos faria um trabalho "roubar" o projeto do
+	// outro.
+	const registrar = function(trabalho, projeto, comoCasou) {
 		idsCasados.add(projeto._id.toString());
 		casados.push({
 			numero: trabalho.numero,
-			titulo: projeto.nomeProjeto,
+			tituloPdf: trabalho.titulo,
+			tituloBanco: projeto.nomeProjeto,
 			numInscricao: projeto.numInscricao,
 			modalidade: trabalho.modalidade,
-			situacao: trabalho.situacao
+			situacao: trabalho.situacao,
+			comoCasou: comoCasou
 		});
+		return { _id: projeto._id, trabalho: trabalho };
+	};
 
-		if (!DRY_RUN) {
-			await Projeto.updateOne({ _id: projeto._id }, { $set: {
+	const pendentes = lista.trabalhos.slice();
+	const aGravar = [];
+
+	// Passada 1 - título único no ano.
+	for (let i = pendentes.length - 1; i >= 0; i--) {
+		const trabalho = pendentes[i];
+		const mesmoTitulo = (porTitulo.get(normalizar(trabalho.titulo)) || []).filter(function(p) { return !idsCasados.has(p._id.toString()); });
+		if (mesmoTitulo.length === 1) {
+			aGravar.push(registrar(trabalho, mesmoTitulo[0], 'titulo'));
+			pendentes.splice(i, 1);
+		}
+	}
+
+	// Passada 2 - mesmo título em mais de um projeto (grupo se inscreveu duas vezes):
+	// desempata por autores; se não der, fica a inscrição mais recente (decisão do
+	// usuário - a segunda costuma ser a correção da primeira).
+	for (let i = pendentes.length - 1; i >= 0; i--) {
+		const trabalho = pendentes[i];
+		const mesmoTitulo = (porTitulo.get(normalizar(trabalho.titulo)) || []).filter(function(p) { return !idsCasados.has(p._id.toString()); });
+		if (mesmoTitulo.length > 1) {
+			const porAutor = casarPorAutores(autoresPorNumero[trabalho.numero], mesmoTitulo);
+			aGravar.push(registrar(trabalho, porAutor || maisRecente(mesmoTitulo), porAutor ? 'titulo duplicado, resolvido por autores' : 'titulo duplicado, resolvido pela inscrição mais recente'));
+			pendentes.splice(i, 1);
+		}
+	}
+
+	// Passada 3 - título reescrito entre os dois sistemas: casa pelos autores, só entre
+	// os projetos que sobraram.
+	for (let i = pendentes.length - 1; i >= 0; i--) {
+		const trabalho = pendentes[i];
+		const disponiveis = doAno.filter(function(p) { return !idsCasados.has(p._id.toString()); });
+		const porAutor = casarPorAutores(autoresPorNumero[trabalho.numero], disponiveis);
+		if (porAutor) {
+			aGravar.push(registrar(trabalho, porAutor, 'autores'));
+			pendentes.splice(i, 1);
+		}
+	}
+
+	pendentes.forEach(function(trabalho) {
+		const autores = autoresPorNumero[trabalho.numero];
+		naoCasaram.push({
+			numero: trabalho.numero,
+			titulo: trabalho.titulo,
+			modalidade: trabalho.modalidade,
+			situacao: trabalho.situacao,
+			autores: autores || null,
+			motivo: autores ? 'nem o título nem os autores casaram' : 'nenhum projeto com esse título (autores não transcritos)',
+			candidatos: candidatosParecidos(normalizar(trabalho.titulo), doAno, 3)
+		});
+	});
+
+	if (!DRY_RUN) {
+		for (const item of aGravar) {
+			await Projeto.updateOne({ _id: item._id }, { $set: {
 				aprovado: true,
-				tipoAprovacao: trabalho.situacao,
-				modalidade: trabalho.modalidade
+				tipoAprovacao: item.trabalho.situacao,
+				modalidade: item.trabalho.modalidade
 			}});
 		}
 	}
@@ -157,7 +234,7 @@ async function importar() {
 	console.log('\n--- Importação da lista oficial' + (DRY_RUN ? ' (dry-run, nada foi gravado)' : '') + ' ---');
 	console.log('Trabalhos na lista oficial:', lista.trabalhos.length, '(esperado:', esperado.total + ')');
 	console.log('Projetos inscritos em ' + ANO + ':', doAno.length);
-	console.log('Casaram pelo título:', casados.length);
+	console.log('Casaram:', casados.length, JSON.stringify(contarPor(casados, 'comoCasou')));
 	console.log('NÃO casaram (precisam de revisão manual):', naoCasaram.length);
 	console.log('Inscritos fora da lista -> não aprovados:', foraDaLista.length);
 	console.log('Edições anteriores normalizadas para "anais":', anterioresPendentes.length);

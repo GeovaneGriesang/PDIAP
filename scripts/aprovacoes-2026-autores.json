@@ -1,0 +1,41 @@
+{
+  "_comentario": "Autores (coluna 'Autores' do PDF oficial) dos trabalhos cujo TÍTULO não casou sozinho com o banco, ou cujo título aparece em mais de um projeto do ano. Usado por scripts/importar-aprovacoes.js como segundo critério de casamento: o título pode ter sido reescrito entre o sistema de submissão dos textos e a inscrição no MOVACI, mas os integrantes são os mesmos. Chave = 'numero' do PDF.",
+  "autoresPorNumero": {
+    "1687708": ["Debora Ines Vogt", "Djulifer Gass Ortiz", "Klara Regina Vogt Kuntz", "Lívia Mahl Konzen"],
+    "1735640": ["Nathália Santos Braga"],
+    "1736817": ["Marlon Mendes Minussi", "Ana Clara Kunz Kaercher", "Flora Lavínia Pereira"],
+    "1738115": ["Henrique Gabriel de Bittencourt", "Ana Luisa Pereira"],
+    "1750639": ["Mariana Damaceno Martins", "Tarciana Angelica Lopes Damato"],
+    "1754141": ["Maria Valentina Santos Mahle", "João Pedro Cougo", "Pablo Gabriel Kern", "Carlos Alberto Escouto"],
+    "1760814": ["Nahomi Alessandra Salas Rodriguez", "Jean Marcos da Silva", "Josiane Paula da Luz"],
+
+    "1715244": ["Lucas Santos Tassinari", "Matheus Espíndola Bernardes Gonçalves D'Almeida", "Murilo Duarte Gâmba", "Josué Michels"],
+    "1725450": ["Camilly Luiza de Oliveira da Silva", "Júlia Ferreira do Amaral"],
+    "1738006": ["Janete Magalhães Rodrigues", "Juliana Aparecida Gobbi"],
+    "1744450": ["Guilherme Mateus Nicolay", "Arthur Lacerda Mosmann", "Pietro Rafael Lemes"],
+    "1744796": ["Fabiola Griesang", "LUCAS RAFAEL FOCKING", "MONIQUE FERREIRA", "MILLENA BEATRIZ RODRIGUES"],
+    "1744952": ["Rosana Dullius Schaefer", "Lara Rieger", "Lucas Chassavoimaister Thomaz da Silva"],
+    "1745329": ["Maria Susana de Carvalho", "Mônica Cristina Müller", "VITORIA EMANUELE MACHRY", "MARIA EDUARDA DUTRA BOURSCHEIT"],
+    "1749369": ["Manuella Generoso Rodrigues", "Tarciana Angelica Lopes Damato"],
+    "1753898": ["CÁSSIA ROBERTA DA SILVA"],
+    "1754535": ["Alexia Nicéia Silva Perrone"],
+    "1754598": ["Nicole kohls", "Amanda Weber Tora", "joana franck"],
+
+    "1722111": ["Janete Magalhães Rodrigues", "Juliana Aparecida Gobbi"],
+    "1728453": ["Veridiane Silveira"],
+    "1731894": ["Ana Maria Roballo Aranda"],
+    "1737867": ["Helena Hausmann", "Marta Elis Bergmann Kurtz"],
+    "1744474": ["Luciana Rodrigues Nogueira", "Marta Tessmann"],
+    "1746719": ["Bruno Roque Eloy"],
+    "1749403": ["Marcia Melchior", "Ana Luiza Pauli Schneider", "Anthony Kunzler Duarte de Oliveira", "Letícia Heinen Freitas Beck", "Gislaine Dos Reis"],
+    "1753444": ["Emilly Gonçalves Amaral", "Manuela Dias Pires", "Thais Prisco da Silva", "Charles Sidarta Machado Domingos"],
+    "1754114": ["João Gabriel Schwendler Kappaun", "Josemar de Oliveira Quevedo", "Marcelo de Barros"],
+    "1754379": ["Évelyn Thauany Nascimento Hermes", "José Carlos Delo da Silveira", "Leandro Bueno"],
+    "1754382": ["Louise Schirmann Pereira", "Jean Marcos da Silva"],
+    "1754610": ["ANa Caroline Albaneze", "Josiane Paula da Luz", "Jean Marcos da Silva", "IGOR EMMEL STEIN", "Marlon Mendes Minussi"],
+    "1754800": ["Marjorie Ocaña De Oliveira", "Demetrius Ricco Avila"],
+    "1754891": ["Sarai Valentina Vallenilla Veloz", "Maria Eduarda Santos Carloto"],
+    "1754902": ["Ryan Montiel dos Santos", "Luiza Seibert Kuhn"],
+    "1754938": ["Cintia Aislin Ferreira", "Fernanda Emanuelli Schmidt", "Lyan Terhorst dos Santos", "Wemerson de Castro Oliveira"]
+  }
+}
