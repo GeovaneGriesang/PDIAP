@@ -12,7 +12,7 @@
 		$scope.year = CadastraAno();
 
 		$scope.listaCategorias = [];
-		adminAPI.getCategorias()
+		adminAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
 		})

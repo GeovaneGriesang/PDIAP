@@ -3,8 +3,24 @@
 
 	angular
 	.module('PDIAP')
-	.factory("projetosAPI", function($http) {
-		 
+	.factory("projetosAPI", function($http, $q) {
+
+		// Repõe .success()/.error() (removidos do Angular >=1.6, mas esse app é 1.5 e usa
+		// esse padrão em toda parte) numa promise construída manualmente com $q, pra quem
+		// já chama assim não precisar mudar - mesmo shim que o próprio Angular usava
+		// internamente antes de remover o recurso.
+		function comSuccessError(promise) {
+			promise.success = function(fn) {
+				promise.then(function(response) { fn(response.data, response.status, response.headers, response.config); });
+				return promise;
+			};
+			promise.error = function(fn) {
+				promise.then(null, function(response) { fn(response.data, response.status, response.headers, response.config); });
+				return promise;
+			};
+			return promise;
+		}
+
 		let _getEdits = function(){
 			const request = {
 				url:'/edit',
@@ -74,6 +90,26 @@
 				method: 'GET',
 			}
 			return $http(request);
+		};
+
+		// Categorias/eixos da edição corrente do MOVACI/PDIAP (ver models/feira-schema.js,
+		// tipo:'edicao') em vez do JSON estático fixo. Se nenhuma edição própria estiver
+		// cadastrada pro ano informado (feira ainda não criada), cai pro JSON estático como
+		// fallback - garante que inscrição/avaliadores continuam funcionando sem quebrar
+		// enquanto o admin não configurar a primeira edição em Cadastrar Feiras.
+		let _getCategoriasEixos = function(ano) {
+			var deferred = $q.defer();
+			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {
+				var edicao = (response.data || []).filter(function(f) {
+					return f.tipo === 'edicao' && f.ano == ano && f.categoriasEixos && f.categoriasEixos.length;
+				})[0];
+				if (edicao) {
+					deferred.resolve({ data: { categorias: edicao.categoriasEixos }, status: response.status });
+				} else {
+					_getCategorias().then(deferred.resolve, deferred.reject);
+				}
+			}, deferred.reject);
+			return comSuccessError(deferred.promise);
 		};
 
 		let _getEstados = function() {
@@ -231,6 +267,7 @@
 			postLogin: _postLogin,
 			getProjeto: _getProjeto,
 			getCategorias: _getCategorias,
+			getCategoriasEixos: _getCategoriasEixos,
 			getEstados: _getEstados,
 			getUsersEscolas: _getUsersEscolas,
 			getEscolas: _getEscolas,

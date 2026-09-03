@@ -46,7 +46,7 @@
 		$scope.avaliadores = $scope.avaliadores || {};
 		$scope.avaliadores.categoriasEixos = [];
 
-		projetosAPI.getCategorias()
+		projetosAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
 		})

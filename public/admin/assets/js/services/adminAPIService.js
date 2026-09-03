@@ -3,7 +3,24 @@
 
 	angular
 	.module('PDIAPa')
-	.factory("adminAPI", function($http) {
+	.factory("adminAPI", function($http, $q) {
+
+		// Repõe .success()/.error() (removidos do Angular >=1.6, mas esse app é 1.5 e usa
+		// esse padrão em toda parte) numa promise construída manualmente com $q, pra quem
+		// já chama assim não precisar mudar - mesmo shim que o próprio Angular usava
+		// internamente antes de remover o recurso.
+		function comSuccessError(promise) {
+			promise.success = function(fn) {
+				promise.then(function(response) { fn(response.data, response.status, response.headers, response.config); });
+				return promise;
+			};
+			promise.error = function(fn) {
+				promise.then(null, function(response) { fn(response.data, response.status, response.headers, response.config); });
+				return promise;
+			};
+			return promise;
+		}
+
 		/*let _postLoginAdmin = function(username,password) {
 		 	const request = {
 		 		url: '/login',
@@ -430,6 +447,25 @@
 			return $http(request);
 		};
 
+		// Categorias/eixos da edição corrente do MOVACI/PDIAP (ver models/feira-schema.js,
+		// tipo:'edicao') em vez do JSON estático fixo. Se nenhuma edição própria estiver
+		// cadastrada pro ano informado, cai pro JSON estático como fallback - mesma lógica
+		// de public/assets/js/services/projetosAPIService.js#getCategoriasEixos.
+		let _getCategoriasEixos = function(ano) {
+			var deferred = $q.defer();
+			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {
+				var edicao = (response.data || []).filter(function(f) {
+					return f.tipo === 'edicao' && f.ano == ano && f.categoriasEixos && f.categoriasEixos.length;
+				})[0];
+				if (edicao) {
+					deferred.resolve({ data: { categorias: edicao.categoriasEixos }, status: response.status });
+				} else {
+					_getCategorias().then(deferred.resolve, deferred.reject);
+				}
+			}, deferred.reject);
+			return comSuccessError(deferred.promise);
+		};
+
 		let _getEstados = function() {
 			const request = {
 				url: 'assets/js/estados-cidades.json',
@@ -582,6 +618,7 @@
 			getCPFparticipantes: _getCPFparticipantes,
 			getCPFsaberes: _getCPFsaberes,
 			getCategorias: _getCategorias,
+			getCategoriasEixos: _getCategoriasEixos,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,

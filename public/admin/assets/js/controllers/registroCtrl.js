@@ -184,7 +184,7 @@
 			}, 650);
 		};
 
-		adminAPI.getCategorias()
+		adminAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
 		})
