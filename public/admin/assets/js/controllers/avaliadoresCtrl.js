@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, adminAPI, documentoValidatorService) {
+	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, $filter, adminAPI, documentoValidatorService) {
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
@@ -167,6 +167,53 @@
 			$scope.idAvaliadoresNMarcados = [];
 			mostraAvaliadores();
 		}
+
+		// PDF da lista de avaliadores (mesma lib pdfMake já usada pros certificados, ver
+		// homeCtrl.js#emitirCertificado1) - exporta exatamente o que está filtrado/ordenado
+		// na tela (busca + ordenação), não a lista inteira sem filtro.
+		$scope.imprimirPDF = function() {
+			var lista = $filter('orderBy')($filter('filter')($scope.avaliadores, $scope.filtroAvaliador), $scope.ordenacao);
+			var corpo = [[
+				{ text: 'Nome', style: 'tableHeader' },
+				{ text: 'CPF', style: 'tableHeader' },
+				{ text: 'Categoria(s)/Eixo(s)', style: 'tableHeader' },
+				{ text: 'Disponibilidade', style: 'tableHeader' },
+				{ text: 'Presença', style: 'tableHeader' }
+			]];
+			angular.forEach(lista, function(ava) {
+				corpo.push([
+					ava.nome || '',
+					ava.cpf || '',
+					(ava.categoriasEixos || []).map(function(ce) { return ce.categoria + ' - ' + ce.eixo; }).join('\n'),
+					(ava.disponibilidade || []).map(function(dt) { return dt.data + ' - ' + dt.turno; }).join('\n'),
+					ava.avaliacao ? 'Sim' : 'Não'
+				]);
+			});
+			var docDefinition = {
+				pageSize: 'A4',
+				pageOrientation: 'landscape',
+				content: [
+					{ text: 'Avaliadores - ' + $scope.ano, style: 'header' },
+					{ text: lista.length + ' avaliador(es)', style: 'subheader' },
+					{
+						table: {
+							headerRows: 1,
+							widths: ['20%', '12%', '30%', '23%', '10%'],
+							body: corpo
+						},
+						layout: 'lightHorizontalLines',
+						fontSize: 9
+					}
+				],
+				styles: {
+					header: { fontSize: 16, bold: true, margin: [0, 0, 0, 4] },
+					subheader: { fontSize: 10, color: '#666666', margin: [0, 0, 0, 10] },
+					tableHeader: { bold: true, fontSize: 9, fillColor: '#eeeeee' }
+				},
+				defaultStyle: { fontSize: 9 }
+			};
+			pdfMake.createPdf(docDefinition).open();
+		};
 
 		let formatCPF = function(cpf) {
 			if (cpf !== undefined) {
