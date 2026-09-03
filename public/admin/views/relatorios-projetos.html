@@ -521,6 +521,53 @@
 
 				<div class="relatorios-secao">
 					<h3>
+						<span class="relatorios-titulo-clicavel" data-ng-click="aba.projetosPessoasExpandido = !aba.projetosPessoasExpandido">
+							<md-icon class="relatorios-seta" md-svg-src="{{aba.projetosPessoasExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
+							Projetos - Alunos e Orientadores ({{(aba.projetos | filter:filtroProjeto).length}})
+						</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="exportarPlanilhaProjetos(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+					</h3>
+					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosPessoasExpandido">
+						<div style="margin-bottom:12px;">
+							<md-checkbox aria-label="Filtrar por categoria/eixo" data-ng-model="filtrarPorCategoriaEixo" style="margin-bottom:4px;">Filtrar por categoria/eixo</md-checkbox>
+							<div layout-gt-sm="row" data-ng-if="filtrarPorCategoriaEixo">
+								<md-input-container class="md-block" flex-gt-sm="45" style="margin:0;">
+									<label>Categoria</label>
+									<md-select data-ng-model="filtroCategoria" data-ng-change="selectEixosFiltro(filtroCategoria)">
+										<md-option data-ng-value="c" data-ng-repeat="c in CATEGORIAS">{{c}}</md-option>
+									</md-select>
+								</md-input-container>
+								<div flex="5" hide-xs></div>
+								<md-input-container class="md-block" flex-gt-sm="45" style="margin:0;">
+									<label>Eixo</label>
+									<md-select data-ng-model="filtroEixo" data-ng-disabled="!filtroCategoria">
+										<md-option data-ng-value="e" data-ng-repeat="e in eixosDoFiltro">{{e}}</md-option>
+									</md-select>
+								</md-input-container>
+							</div>
+						</div>
+						<table class="relatorios-tabela">
+							<thead>
+								<tr><th>Nº</th><th>Projeto</th><th>Categoria/Eixo</th><th>Aluno(s)</th><th>Orientador(es)</th></tr>
+							</thead>
+							<tbody>
+								<tr data-ng-repeat="p in aba.projetos | filter:filtroProjeto">
+									<td class="num">{{p.numInscricao}}</td>
+									<td>{{p.nomeProjeto}}</td>
+									<td>{{p.categoria}}<br>{{p.eixo}}</td>
+									<td>{{p.alunos.join(', ')}}</td>
+									<td>{{p.orientadores.join(', ')}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
 						<span class="relatorios-titulo-clicavel" data-ng-click="aba.orientadoresExpandido = !aba.orientadoresExpandido">
 							<md-icon class="relatorios-seta" md-svg-src="{{aba.orientadoresExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
 							Orientadores(as) ({{aba.orientadoresArray.length}})
