@@ -47,6 +47,17 @@
 		//   'portrait'), conteudo (array de nós pdfMake - o corpo do relatório em si,
 		//   normalmente um título+tabela por seção, já formatado por quem chama).
 		function gerar(opcoes) {
+			// A aba precisa abrir NESTE exato instante, ainda síncrono com o clique que
+			// chamou essa função - é o motivo do comentário no próprio código-fonte do
+			// pdfMake ("we have to open the window immediately... otherwise popup
+			// blockers will stop us"). Carregar a logo é assíncrono (busca a imagem,
+			// converte num <canvas>); esperar isso terminar pra só DEPOIS chamar
+			// pdfMake...open() - como este código fazia antes - abre a aba tarde demais:
+			// o navegador não reconhece mais como resposta direta ao clique e ou bloqueia
+			// a aba, ou ela abre em branco e nunca é preenchida ("about:blank"). Abrindo
+			// aqui e preenchendo o location.href só depois que o PDF fica pronto (mesma
+			// técnica que o pdfMake usa internamente, só que na hora certa) resolve.
+			var janela = window.open('', '_blank');
 			return $q.when(carregarLogo()).then(function(logo) {
 				// "fit" (não "width" sozinho): o arquivo original tem uma faixa de espaço
 				// vazio em volta do texto, então escalar só pela LARGURA mantendo a
@@ -95,7 +106,20 @@
 					styles: opcoes.estilos,
 					defaultStyle: opcoes.estiloPadrao || { fontSize: 9 }
 				};
-				pdfMake.createPdf(docDefinition).open();
+				try {
+					// getBuffer + Blob (não getDataUrl): Chrome bloqueia silenciosamente a
+					// navegação de uma aba pra uma URL "data:" (restrição de segurança contra
+					// phishing) - "janela.location.href = dataUrl" não dava erro nenhum, só
+					// deixava a aba em about:blank pra sempre. "blob:" não tem essa restrição.
+					pdfMake.createPdf(docDefinition).getBuffer(function(buffer) {
+						if (!janela) return;
+						var blob = new Blob([buffer], { type: 'application/pdf' });
+						janela.location.href = URL.createObjectURL(blob);
+					});
+				} catch (e) {
+					if (janela) janela.close();
+					throw e;
+				}
 			});
 		}
 
