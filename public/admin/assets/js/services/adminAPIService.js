@@ -124,12 +124,15 @@
 			return $http(request);
 		};
 
-		let _putSetAprovados = function(arrayProjetosAprovados,arrayProjetosReprovados) {
+		// Três situações de aprovação (anais / só apresentação / não aprovado) - ver
+		// models/projeto-schema.js#tipoAprovacao.
+		let _putSetAprovados = function(arrayAnais,arrayApresentacao,arrayProjetosReprovados) {
 			const request = {
 				url: '/admin/upgreice',
 				method: 'PUT',
 				data: {
-					projetosAprovados: arrayProjetosAprovados,
+					projetosAnais: arrayAnais,
+					projetosApresentacao: arrayApresentacao,
 					projetosReprovados: arrayProjetosReprovados
 				}
 			}

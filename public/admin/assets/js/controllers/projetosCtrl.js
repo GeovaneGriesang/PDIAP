@@ -70,6 +70,8 @@
 							orientadores: orientadores,
 							alunos: alunos,
 							aprovado: value.aprovado,
+							tipoAprovacao: value.tipoAprovacao,
+							modalidade: value.modalidade,
 							participa: value.participa,
 							integrantes: value.integrantes,
 							createdAt: ano,
@@ -78,6 +80,12 @@
 							feirasClassificadas: value.feirasClassificadas,
 							colocacao: value.colocacao
 						});
+						// Valor do seletor de situação da tela de aprovados (3 estados).
+						// Aprovado antigo, sem tipo gravado, aparece como "anais" - é a regra
+						// combinada pras edições anteriores (ver scripts/importar-aprovacoes.js).
+						obj.situacaoSelecionada = obj.aprovado === true
+							? (obj.tipoAprovacao === 'apresentacao' ? 'apresentacao' : 'anais')
+							: 'nao';
 						$rootScope.projetos.push(obj);
 						if (obj.aprovado === true) {
 							$scope.count++;
@@ -110,35 +118,48 @@
 		// 	}
 		// }
 
-		$scope.idProjetosAprovados = [];
+		// Três situações possíveis por projeto (ver models/projeto-schema.js): aprovado
+		// pros anais, aprovado só pra apresentação, ou não aprovado. Cada uma tem sua
+		// lista de ids pendentes de gravação.
+		$scope.idProjetosAnais = [];
+		$scope.idProjetosApresentacao = [];
 		$scope.idProjetosReprovados = [];
-		$scope.contador = function(check,idProj) {
-			if (check) {
-				$scope.count--;
-				let index = $scope.idProjetosAprovados.indexOf(idProj);
-				if (index !== -1) {
-					$scope.idProjetosAprovados.splice(index, 1);
-				}
-				$scope.idProjetosReprovados.push(idProj);
-			}
-			else {
-				$scope.count++;
-				let index = $scope.idProjetosReprovados.indexOf(idProj);
-				if (index !== -1) {
-					$scope.idProjetosReprovados.splice(index, 1);
-				}
-				$scope.idProjetosAprovados.push(idProj);
-			}
-			// console.log("Aprovados: "+$scope.idProjetosAprovados);
-			// console.log("Reprovados: "+$scope.idProjetosReprovados);
-		}
+
+		let listasSituacao = function() {
+			return [$scope.idProjetosAnais, $scope.idProjetosApresentacao, $scope.idProjetosReprovados];
+		};
+
+		$scope.marcarSituacao = function(proj) {
+			// Tira das três listas antes de recolocar: o admin pode trocar de ideia
+			// várias vezes no mesmo projeto antes de salvar, e só a última escolha vale.
+			listasSituacao().forEach(function(lista) {
+				let index = lista.indexOf(proj._id);
+				if (index !== -1) lista.splice(index, 1);
+			});
+
+			if (proj.situacaoSelecionada === 'anais') $scope.idProjetosAnais.push(proj._id);
+			else if (proj.situacaoSelecionada === 'apresentacao') $scope.idProjetosApresentacao.push(proj._id);
+			else $scope.idProjetosReprovados.push(proj._id);
+
+			$scope.count = 0;
+			angular.forEach($rootScope.projetos, function(p) {
+				if (p.situacaoSelecionada === 'anais' || p.situacaoSelecionada === 'apresentacao') $scope.count++;
+			});
+		};
+
+		// Habilita o botão Salvar. Antes era "count == 0", o que travava o salvamento
+		// quando o admin só REPROVAVA projetos (nenhum aprovado selecionado).
+		$scope.temAlteracoes = function() {
+			return listasSituacao().some(function(lista) { return lista.length > 0; });
+		};
 
 		$rootScope.recarregar = function(){
 			$rootScope.projetos = [];
 			$scope.searchProject = "";
 			$scope.idAprovados = [];
 			$scope.count = 0;
-			$scope.idProjetosAprovados = [];
+			$scope.idProjetosAnais = [];
+			$scope.idProjetosApresentacao = [];
 			$scope.idProjetosReprovados = [];
 			$scope.year = CadastraAno();
 			carregarProjetos();
@@ -298,43 +319,30 @@
 		};
 
 		$scope.update = function() {
-			console.log("salvando aprovados: " + $scope.idProjetosAprovados + " " + $scope.idProjetosReprovados);
-			adminAPI.putSetAprovados($scope.idProjetosAprovados,$scope.idProjetosReprovados)
+			adminAPI.putSetAprovados($scope.idProjetosAnais, $scope.idProjetosApresentacao, $scope.idProjetosReprovados)
 			.success(function(data, status) {
 				$scope.toast('Projeto(s) atualizado(s) com sucesso!','success-toast');
-				// $scope.selectedo = false;
-				var count = 0;
-				if ($scope.idProjetosAprovados.length !== 0) {
-					// for (var i = 0; i < $rootScope.projetos.length; i++) {
-						// if ($rootScope.projetos[i]._id === $scope.details._id) {
-							angular.forEach($rootScope.projetos, function (value, key) {
-								for (var x = 0; x < $scope.idProjetosAprovados.length; x++) {
-									if (value._id === $scope.idProjetosAprovados[x]) {
-										$rootScope.projetos[count].aprovado = true;
-									}
-								}
-								count++;
-							});
-						// }
-					// }
-					count = 0;
-				}
-				if ($scope.idProjetosReprovados.length !== 0) {
-					// for (var i = 0; i < $rootScope.projetos.length; i++) {
-						// if ($rootScope.projetos[i]._id === $scope.details._id) {
-							angular.forEach($rootScope.projetos, function (value, key) {
-								for (var x = 0; x < $scope.idProjetosReprovados.length; x++) {
-									if (value._id === $scope.idProjetosReprovados[x]) {
-										$rootScope.projetos[count].aprovado = false;
-									}
-								}
-								count++;
-							});
-						// }
-					// }
-				}
+
+				// Reflete na lista em memória o que acabou de ser gravado, sem recarregar
+				// tudo do servidor.
+				let aplicar = function(ids, aprovado, tipoAprovacao) {
+					angular.forEach($rootScope.projetos, function(proj) {
+						if (ids.indexOf(proj._id) !== -1) {
+							proj.aprovado = aprovado;
+							proj.tipoAprovacao = tipoAprovacao;
+						}
+					});
+				};
+				aplicar($scope.idProjetosAnais, true, 'anais');
+				aplicar($scope.idProjetosApresentacao, true, 'apresentacao');
+				aplicar($scope.idProjetosReprovados, false, undefined);
+
+				$scope.idProjetosAnais = [];
+				$scope.idProjetosApresentacao = [];
+				$scope.idProjetosReprovados = [];
 			})
 			.error(function(status) {
+				$scope.toast('Falha ao salvar.','failed-toast');
 				console.log('Error: '+status);
 			});
 		}

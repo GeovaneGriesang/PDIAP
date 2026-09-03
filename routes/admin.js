@@ -1044,34 +1044,35 @@ router.post('/saberes', miPermiso("2","3"), (req, res) => {
   }
 });
 
+// Três situações possíveis: aprovado pros anais, aprovado só pra apresentação, ou não
+// aprovado. "aprovado" continua booleano (true pros dois tipos de aprovação) e
+// "tipoAprovacao" diz qual dos dois - ver models/projeto-schema.js.
+// projetosAprovados (lista antiga, sem tipo) ainda é aceita por compatibilidade.
 router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
   try {
-  let myArray0 = req.body.projetosAprovados;
-  let myArray1 = req.body.projetosReprovados;
-  
-  for (var i = 0; i < myArray0.length; i++) {
-    let id_doc = myArray0[i];
+  let aprovadosSemTipo = req.body.projetosAprovados || [];
+  let anais = req.body.projetosAnais || [];
+  let apresentacao = req.body.projetosApresentacao || [];
+  let reprovados = req.body.projetosReprovados || [];
 
-    projetoSchema.findOneAndUpdate({"_id": id_doc},
-    {"$set": {"aprovado": true}}, {new:true},
-    (err, doc) => {
-      if (err) { console.error('Erro', err); return; }
+  let marcar = (ids, update) => {
+    for (var i = 0; i < ids.length; i++) {
+      projetoSchema.findOneAndUpdate({"_id": ids[i]}, update, {new:true}, (err, doc) => {
+        if (err) { console.error('Erro', err); return; }
+      });
     }
-  );
-  }
+  };
 
-  for (var i = 0; i < myArray1.length; i++) {
-    let id_doc = myArray1[i];
-    // "$set: aprovado:false" (não "$unset") - com unset, reprovado ficava
-    // indistinguível de "ainda não avaliado" (ambos undefined): o aviso de reprovação
-    // pro participante (adminCtrl.js, projeto.aprovado === false) nunca disparava, e
-    // não tinha como filtrar reprovados nos relatórios.
-    projetoSchema.findOneAndUpdate({"_id": id_doc},
-    {"$set": {"aprovado": false}}, {new:true},
-    (err, doc) => {
-      if (err) { console.error('Erro', err); return; }
-    });
-  }
+  marcar(aprovadosSemTipo, {"$set": {"aprovado": true}});
+  marcar(anais, {"$set": {"aprovado": true, "tipoAprovacao": "anais"}});
+  marcar(apresentacao, {"$set": {"aprovado": true, "tipoAprovacao": "apresentacao"}});
+  // "$set: aprovado:false" (não "$unset") - com unset, reprovado ficava
+  // indistinguível de "ainda não avaliado" (ambos undefined): o aviso de reprovação
+  // pro participante (adminCtrl.js, projeto.aprovado === false) nunca disparava, e
+  // não tinha como filtrar reprovados nos relatórios. tipoAprovacao sai junto, senão
+  // sobraria um tipo de aprovação num projeto não aprovado.
+  marcar(reprovados, {"$set": {"aprovado": false}, "$unset": {"tipoAprovacao": true}});
+
 res.send('success');
   } catch (error) {
     console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira

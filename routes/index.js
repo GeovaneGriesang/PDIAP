@@ -115,7 +115,10 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoAluno(cpf) {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado':{$exists: true}},
+        // 'aprovado': true (não "$exists") - desde que reprovar passou a gravar
+        // aprovado:false em vez de apagar o campo, "$exists" também casava projeto
+        // REPROVADO, liberando certificado pra quem não foi selecionado.
+        {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado': true},
         'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})
@@ -127,7 +130,7 @@ router.post('/emitirCertificado', (req, res) => {
   function pesquisaProjetoOrientador(cpf) {
     return new Promise(function (fulfill, reject) {
       ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado':{$exists: true}},
+        {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado': true},
         'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
         if (err) return reject(err)
         if (usr == 0) return reject({err})

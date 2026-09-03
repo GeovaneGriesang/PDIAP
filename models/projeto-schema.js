@@ -56,6 +56,16 @@ const ProjetoSchema = new Schema({
 	password: {type: String, required: true},
 	permissao: {type: String},
 	aprovado: {type: Boolean},
+	// Qual dos dois tipos de aprovação o projeto recebeu. Só faz sentido quando
+	// aprovado === true; 'anais' = "Aprovado para apresentação e publicação nos anais",
+	// 'apresentacao' = "Aprovado somente para apresentação no evento". Fica ao LADO de
+	// 'aprovado' (que continua true pros dois tipos) de propósito: os ~16 lugares que já
+	// leem aprovado === true continuam valendo sem precisar de mudança.
+	tipoAprovacao: {type: String, enum: ['anais', 'apresentacao']},
+	// "Resumo Simples" | "Resumo Expandido" | "Artigo" - importado da lista oficial de
+	// trabalhos aprovados (vem do sistema de submissão dos textos, não é perguntado na
+	// inscrição).
+	modalidade: {type: String},
 	participa: {type: Boolean},
 	participa_updated: {type: Boolean},
 
