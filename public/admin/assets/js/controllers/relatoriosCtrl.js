@@ -511,13 +511,8 @@
 			return texto;
 		}
 
-		// Planilha (CSV com ";" - Excel em pt-BR só separa coluna certo assim, já que ","
-		// é separador decimal; o BOM na frente faz o Excel reconhecer o UTF-8 e não
-		// estropiar os acentos). Toda seção do relatório baixa a sua por aqui.
-		function baixarCsv(nomeBase, cabecalhos, linhas) {
-			var csv = [cabecalhos.map(csvEscape).join(';')];
-			linhas.forEach(function(linha) { csv.push(linha.map(csvEscape).join(';')); });
-			var blob = new Blob(['﻿' + csv.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+		function baixarBlobCsv(nomeBase, linhasCsv) {
+			var blob = new Blob(['﻿' + linhasCsv.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
 			var url = URL.createObjectURL(blob);
 			var a = document.createElement('a');
 			a.href = url;
@@ -526,6 +521,30 @@
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
+		}
+
+		// Planilha (CSV com ";" - Excel em pt-BR só separa coluna certo assim, já que ","
+		// é separador decimal; o BOM na frente faz o Excel reconhecer o UTF-8 e não
+		// estropiar os acentos). Toda seção do relatório baixa a sua por aqui.
+		function baixarCsv(nomeBase, cabecalhos, linhas) {
+			var csv = [cabecalhos.map(csvEscape).join(';')];
+			linhas.forEach(function(linha) { csv.push(linha.map(csvEscape).join(';')); });
+			baixarBlobCsv(nomeBase, csv);
+		}
+
+		// Várias seções (cada uma com seu próprio cabeçalho de tabela) num CSV só, uma
+		// embaixo da outra com uma linha de título e uma em branco separando - usado
+		// pelo "Copiar tudo"/"Resumo executivo" em planilha, que combinam seções que
+		// normalmente são baixadas em separado.
+		function baixarCsvMultiplo(nomeBase, secoes) {
+			var csv = [];
+			secoes.forEach(function(sec, i) {
+				if (i > 0) csv.push('');
+				csv.push(csvEscape(sec.titulo));
+				csv.push(sec.colunas.map(function(c) { return csvEscape(c.texto); }).join(';'));
+				sec.linhas.forEach(function(linha) { csv.push(linha.map(csvEscape).join(';')); });
+			});
+			baixarBlobCsv(nomeBase, csv);
 		}
 
 		// Sufixo comum dos nomes de arquivo: identifica a aba (Geral/Aprovados/...) e o ano.
@@ -604,13 +623,34 @@
 			};
 		}
 
-		function dadosCamisetas(aba) {
+		// Todos os grupos de eixo juntos numa tabela só (usado pelo "Copiar tudo" em
+		// CSV/PDF, que combina seções que normalmente são exportadas em separado por
+		// categoria) - por isso entra uma coluna "Categoria" a mais que dadosEixosGrupo.
+		function dadosEixosTodos(aba) {
+			var linhas = [];
+			aba.eixosPorCategoria.forEach(function(grupo) {
+				grupo.eixos.forEach(function(e) { linhas.push([grupo.categoria, e.nome, e.num]); });
+			});
+			return {
+				colunas: [{ texto: 'Categoria', largura: 150 }, { texto: 'Eixo', largura: '*' }, { texto: 'Projetos', largura: 70 }],
+				linhas: linhas
+			};
+		}
+
+		// `expandido` (default true) controla se entra uma linha por categoria dentro
+		// de cada tamanho, além da linha "(todas)" - mesma distinção que
+		// textoCamisetas() já fazia só no texto do WhatsApp, agora disponível também
+		// pro CSV/PDF do "Copiar tudo (resumido)".
+		function dadosCamisetas(aba, expandido) {
+			expandido = expandido !== false;
 			var linhas = [];
 			aba.camisetasArray.forEach(function(cm) {
 				linhas.push(['Tamanho ' + cm.nome, '(todas)', cm.num, cm.aluno, cm.orientador]);
-				cm.detalheCategoria.forEach(function(d) {
-					linhas.push(['Tamanho ' + cm.nome, d.nome, d.num, d.aluno, d.orientador]);
-				});
+				if (expandido) {
+					cm.detalheCategoria.forEach(function(d) {
+						linhas.push(['Tamanho ' + cm.nome, d.nome, d.num, d.aluno, d.orientador]);
+					});
+				}
 			});
 			return {
 				colunas: [{ texto: 'Tamanho', largura: 80 }, { texto: 'Categoria', largura: '*' }, { texto: 'Total', largura: 50 }, { texto: 'Aluno(a)', largura: 50 }, { texto: 'Orientador(a)', largura: 70 }],
@@ -838,6 +878,23 @@
 			return partes.join('\n\n');
 		}
 
+		// Equivalente de textoCompleto() em forma de tabelas, pra CSV/PDF do "Copiar
+		// tudo"/"Resumo executivo" - mesmas seções e mesmo critério de expandido/
+		// semEscolas, só que cada uma vira {titulo, colunas, linhas} em vez de texto.
+		function secoesCompletas(aba, expandido, semEscolas) {
+			var secoes = [
+				{ titulo: 'Resumo geral', colunas: dadosResumo().colunas, linhas: dadosResumo().linhas },
+				{ titulo: 'Total e hospedagem — ' + aba.nome, colunas: dadosHospedagem(aba).colunas, linhas: dadosHospedagem(aba).linhas },
+				{ titulo: 'Por categoria — ' + aba.nome, colunas: dadosCategorias(aba).colunas, linhas: dadosCategorias(aba).linhas },
+				{ titulo: 'Eixos — ' + aba.nome, colunas: dadosEixosTodos(aba).colunas, linhas: dadosEixosTodos(aba).linhas },
+				{ titulo: 'Camisetas — ' + aba.nome, colunas: dadosCamisetas(aba, expandido).colunas, linhas: dadosCamisetas(aba, expandido).linhas }
+			];
+			if (!semEscolas) {
+				secoes.push({ titulo: 'Escolas (' + aba.escolasArray.length + ') — ' + aba.nome, colunas: dadosEscolas(aba).colunas, linhas: dadosEscolas(aba).linhas });
+			}
+			return secoes;
+		}
+
 		function toast(mensagem) {
 			$mdToast.show($mdToast.simple().textContent(mensagem).position('top right').hideDelay(2500));
 		}
@@ -928,6 +985,29 @@
 		// entraram em nenhuma variante de "copiar tudo" pelo mesmo motivo.
 		$scope.copiarResumoExecutivo = function(aba) {
 			copiarTexto(textoCompleto(aba, true, true));
+		};
+
+		$scope.csvTudo = function(aba, expandido) {
+			baixarCsvMultiplo('copiar-tudo-' + (expandido ? 'detalhado' : 'resumido') + sufixo(aba), secoesCompletas(aba, expandido, false));
+		};
+		$scope.pdfTudo = function(aba, expandido) {
+			relatorioPdfService.tabelas({
+				titulo: 'Relatório completo (' + (expandido ? 'detalhado' : 'resumido') + ') - ' + aba.nome + ' - ' + $rootScope.ano,
+				orientacao: 'landscape',
+				secoes: secoesCompletas(aba, expandido, false),
+				arquivo: nomeArquivoPdf(expandido ? 'Completo_Detalhado' : 'Completo_Resumido', aba)
+			});
+		};
+		$scope.csvResumoExecutivo = function(aba) {
+			baixarCsvMultiplo('resumo-executivo' + sufixo(aba), secoesCompletas(aba, true, true));
+		};
+		$scope.pdfResumoExecutivo = function(aba) {
+			relatorioPdfService.tabelas({
+				titulo: 'Resumo executivo - ' + aba.nome + ' - ' + $rootScope.ano,
+				orientacao: 'landscape',
+				secoes: secoesCompletas(aba, true, true),
+				arquivo: nomeArquivoPdf('Resumo_Executivo', aba)
+			});
 		};
 
 		$scope.carregarRelatorios();

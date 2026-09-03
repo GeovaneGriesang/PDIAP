@@ -324,19 +324,49 @@
 		<md-tab ng-repeat="aba in abas" label="{{aba.nome}}">
 			<div style="padding:20px 0;">
 
-				<div layout="row" layout-wrap style="gap:10px;margin-bottom:20px;">
-					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, true)">
-						<md-icon md-svg-src="whatsapp"></md-icon>
-						Copiar tudo (detalhado)
-					</md-button>
-					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, false)">
-						<md-icon md-svg-src="whatsapp"></md-icon>
-						Copiar tudo (resumido)
-					</md-button>
-					<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarResumoExecutivo(aba)">
-						<md-icon md-svg-src="whatsapp"></md-icon>
-						Copiar resumo executivo
-					</md-button>
+				<div layout="row" layout-wrap style="gap:24px;margin-bottom:20px;">
+					<div layout="row" layout-align="start center">
+						<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, true)">
+							<md-icon md-svg-src="whatsapp"></md-icon>
+							Copiar tudo (detalhado)
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvTudo(aba, true)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTudo(aba, true)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
+					</div>
+					<div layout="row" layout-align="start center">
+						<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarTudo(aba, false)">
+							<md-icon md-svg-src="whatsapp"></md-icon>
+							Copiar tudo (resumido)
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvTudo(aba, false)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTudo(aba, false)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
+					</div>
+					<div layout="row" layout-align="start center">
+						<md-button class="md-raised relatorios-btn-whatsapp" data-ng-click="copiarResumoExecutivo(aba)">
+							<md-icon md-svg-src="whatsapp"></md-icon>
+							Copiar resumo executivo
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvResumoExecutivo(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfResumoExecutivo(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
+					</div>
 				</div>
 
 				<div class="relatorios-secao">
