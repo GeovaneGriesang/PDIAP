@@ -1062,8 +1062,12 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
   for (var i = 0; i < myArray1.length; i++) {
     let id_doc = myArray1[i];
+    // "$set: aprovado:false" (não "$unset") - com unset, reprovado ficava
+    // indistinguível de "ainda não avaliado" (ambos undefined): o aviso de reprovação
+    // pro participante (adminCtrl.js, projeto.aprovado === false) nunca disparava, e
+    // não tinha como filtrar reprovados nos relatórios.
     projetoSchema.findOneAndUpdate({"_id": id_doc},
-    {"$unset": {"aprovado": true}}, {new:true},
+    {"$set": {"aprovado": false}}, {new:true},
     (err, doc) => {
       if (err) { console.error('Erro', err); return; }
     });

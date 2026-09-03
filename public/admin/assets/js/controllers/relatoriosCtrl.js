@@ -163,7 +163,9 @@
 				numInscricao: proj.numInscricao,
 				nomeEscola: proj.nomeEscola,
 				categoria: proj.categoria,
-				eixo: proj.eixo
+				eixo: proj.eixo,
+				alunos: (proj.integrantes || []).filter(function(i) { return i.tipo === 'Aluno'; }).map(function(i) { return i.nome; }),
+				orientadores: (proj.integrantes || []).filter(function(i) { return i.tipo === 'Orientador'; }).map(function(i) { return i.nome; })
 			});
 		}
 
@@ -401,6 +403,10 @@
 			var relatorio = { countAprovados: 0, countParticipaSim: 0, countParticipaNao: 0, countPendente: 0 };
 			var qtdGeral = novaAgregacao('Geral');
 			var qtdAprovados = novaAgregacao('Aprovados');
+			// "Reprovado" só é distinguível de "ainda não avaliado" pra reprovações feitas
+			// depois do fix em routes/admin.js#PUT /upgreice (antes gravava $unset, igual a
+			// nunca avaliado - reprovações antigas continuam indistinguíveis de pendentes).
+			var qtdNaoReprovados = novaAgregacao('Não reprovados');
 			var qtdCancelados = novaAgregacao('Cancelados e Pendentes');
 
 			adminAPI.getTodosProjetos($rootScope.ano)
@@ -410,6 +416,7 @@
 					if (ano !== $rootScope.ano) return;
 
 					var aprovado = proj.aprovado === true;
+					var naoReprovado = proj.aprovado !== false;
 					var cancelado = aprovado && proj.participa !== true;
 
 					if (aprovado) {
@@ -421,15 +428,17 @@
 
 					acumular(qtdGeral, proj);
 					if (aprovado) acumular(qtdAprovados, proj);
+					if (naoReprovado) acumular(qtdNaoReprovados, proj);
 					if (cancelado) acumular(qtdCancelados, proj);
 				});
 
 				finalizarAgregacao(qtdGeral);
 				finalizarAgregacao(qtdAprovados);
+				finalizarAgregacao(qtdNaoReprovados);
 				finalizarAgregacao(qtdCancelados);
 
 				$scope.relatorio = relatorio;
-				$scope.abas = [qtdGeral, qtdAprovados, qtdCancelados];
+				$scope.abas = [qtdGeral, qtdAprovados, qtdNaoReprovados, qtdCancelados];
 			})
 			.error(function(status) {
 				console.log('Erro ao carregar relatórios: ' + status);
@@ -438,6 +447,54 @@
 
 		$scope.recarregar = function() {
 			$scope.carregarRelatorios();
+		};
+
+		// Filtro de categoria/eixo pra "Projetos - Alunos e Orientadores" - opcional
+		// (checkbox), não afeta as outras seções do relatório. Usa as mesmas
+		// CATEGORIAS/EIXOS fixas já usadas no resto do arquivo, não uma lista por edição -
+		// esse relatório olha anos passados também, onde só essa lista fixa fez sentido.
+		$scope.CATEGORIAS = CATEGORIAS;
+		$scope.filtrarPorCategoriaEixo = false;
+		$scope.filtroCategoria = null;
+		$scope.filtroEixo = null;
+		$scope.eixosDoFiltro = [];
+		$scope.selectEixosFiltro = function(categoria) {
+			$scope.filtroEixo = null;
+			$scope.eixosDoFiltro = EIXOS.filter(function(e) { return e.categoria === categoria; }).map(function(e) { return e.nome; });
+		};
+		$scope.filtroProjeto = function(p) {
+			if (!$scope.filtrarPorCategoriaEixo) return true;
+			if ($scope.filtroCategoria && p.categoria !== $scope.filtroCategoria) return false;
+			if ($scope.filtroEixo && p.eixo !== $scope.filtroEixo) return false;
+			return true;
+		};
+
+		function csvEscape(valor) {
+			var texto = (valor === undefined || valor === null) ? '' : String(valor);
+			if (/["\n;]/.test(texto)) {
+				texto = '"' + texto.replace(/"/g, '""') + '"';
+			}
+			return texto;
+		}
+
+		// Planilha (CSV com ";" - Excel em pt-BR só separa coluna certo assim, já que ","
+		// é separador decimal) com os mesmos projetos filtrados visíveis na tabela.
+		$scope.exportarPlanilhaProjetos = function(aba) {
+			var linhas = aba.projetos.filter($scope.filtroProjeto);
+			var cabecalhoCsv = ['Nº Inscrição', 'Projeto', 'Categoria', 'Eixo', 'Escola', 'Aluno(s)', 'Orientador(es)'];
+			var csv = [cabecalhoCsv.map(csvEscape).join(';')];
+			linhas.forEach(function(p) {
+				csv.push([p.numInscricao, p.nomeProjeto, p.categoria, p.eixo, p.nomeEscola, p.alunos.join(', '), p.orientadores.join(', ')].map(csvEscape).join(';'));
+			});
+			var blob = new Blob(['﻿' + csv.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement('a');
+			a.href = url;
+			a.download = 'projetos-' + aba.nome.toLowerCase().replace(/\s+/g, '-') + '-' + $rootScope.ano + '.csv';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
 		};
 
 		$scope.imprimir = function() {
