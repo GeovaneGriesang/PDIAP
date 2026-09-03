@@ -388,6 +388,25 @@
 			agregado.alunosArray = pessoasParaArray(agregado.alunos);
 			agregado.alunosPorCategoria = alunosPorCategoria(agregado.alunosArray);
 			agregado.orientadoresArray = pessoasParaArray(agregado.orientadores);
+			// alunosPorCategoria() é genérica (só agrupa pelo campo .categoria de quem
+			// vier na lista) - serve igual pra orientadores, sem precisar duplicar.
+			agregado.orientadoresPorCategoria = alunosPorCategoria(agregado.orientadoresArray);
+
+			// Totais por nível de ensino (Projetos/Estudantes/Orientadores lado a lado por
+			// categoria, + total geral de cada um) - visão compacta pra imprimir/repassar,
+			// junta números que já existem em outras seções (categoriasArray,
+			// alunosPorCategoria, orientadoresPorCategoria) num quadro só.
+			agregado.totaisPorNivel = CATEGORIAS.map(function(cat) {
+				var projetos = agregado.categoriasArray.filter(function(c) { return c.nome === cat; })[0];
+				var estudantes = agregado.alunosPorCategoria.filter(function(g) { return g.categoria === cat; })[0];
+				var orientadores = agregado.orientadoresPorCategoria.filter(function(g) { return g.categoria === cat; })[0];
+				return {
+					categoria: cat,
+					projetos: projetos ? projetos.num : 0,
+					estudantes: estudantes ? estudantes.total : 0,
+					orientadores: orientadores ? orientadores.total : 0
+				};
+			});
 
 			agregado.projetosPorCategoriaEixo = projetosPorCategoriaEixo(agregado.projetos);
 
@@ -621,6 +640,22 @@
 			};
 		}
 
+		function dadosTotaisPorNivel(aba) {
+			var linhas = aba.totaisPorNivel.map(function(g) {
+				return [g.categoria, g.projetos, g.estudantes, g.orientadores];
+			});
+			linhas.push(['Total Geral', aba.categoriasTotal, aba.alunosArray.length, aba.orientadoresArray.length]);
+			return {
+				colunas: [
+					{ texto: 'Categoria', largura: '*' },
+					{ texto: 'Projetos', largura: 65 },
+					{ texto: 'Estudantes', largura: 70 },
+					{ texto: 'Orientadores(as)', largura: 100 }
+				],
+				linhas: linhas
+			};
+		}
+
 		function dadosLocalizacao(aba) {
 			var linhas = [];
 			aba.cidadesArray.forEach(function(c) { linhas.push(['Cidade', c.cidade + '/' + c.estado, c.aluno, c.orientador, c.total]); });
@@ -671,6 +706,9 @@
 
 		$scope.csvLocalizacao = function(aba) { csvDe('localizacao' + sufixo(aba), dadosLocalizacao(aba)); };
 		$scope.pdfLocalizacao = function(aba) { pdfDe(tituloAba('Localização', aba), null, dadosLocalizacao(aba)); };
+
+		$scope.csvTotaisPorNivel = function(aba) { csvDe('totais-por-nivel' + sufixo(aba), dadosTotaisPorNivel(aba)); };
+		$scope.pdfTotaisPorNivel = function(aba) { pdfDe(tituloAba('Totais por nível de ensino', aba), null, dadosTotaisPorNivel(aba)); };
 
 		$scope.imprimir = function() {
 			window.print();
@@ -861,6 +899,13 @@
 		};
 		$scope.copiarLocalizacao = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoLocalizacao(aba));
+		};
+		$scope.copiarTotaisPorNivel = function(aba) {
+			var linhas = aba.totaisPorNivel.map(function(g) {
+				return '*' + g.categoria + '*\nProjetos: *' + g.projetos + '*\nEstudantes: *' + g.estudantes + '*\nOrientadores(as): *' + g.orientadores + '*';
+			});
+			var total = 'Total Geral\nProjetos: *' + aba.categoriasTotal + '*\nEstudantes: *' + aba.alunosArray.length + '*\nOrientadores(as): *' + aba.orientadoresArray.length + '*';
+			copiarTexto(cabecalho(aba) + '\n\n*Totais por nível de ensino*\n\n' + linhas.join('\n\n') + '\n\n' + total);
 		};
 		$scope.copiarTudo = function(aba, expandido) {
 			copiarTexto(textoCompleto(aba, expandido, false));
