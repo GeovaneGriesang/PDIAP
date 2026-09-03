@@ -10,7 +10,7 @@
 	// novos do zero, sem esse tipo de reatribuição escondida.
 	angular
 	.module('PDIAPa')
-	.controller('relatoriosCtrl', function($scope, $rootScope, $mdToast, adminAPI) {
+	.controller('relatoriosCtrl', function($scope, $rootScope, $mdToast, adminAPI, relatorioPdfService) {
 
 		var EIXOS = [
 			{nome:"Ciências da Natureza e suas tecnologias", categoria: "Fundamental I (1º ao 5º anos)"},
@@ -513,43 +513,67 @@
 		function sufixo(aba) {
 			return '-' + aba.nome + '-' + $rootScope.ano;
 		}
+		function tituloAba(nome, aba) {
+			return nome + ' - ' + aba.nome + ' - ' + $rootScope.ano;
+		}
 
-		$scope.exportarPlanilhaProjetos = function(aba) {
-			baixarCsv('projetos' + sufixo(aba),
-				['Nº Inscrição', 'Projeto', 'Categoria', 'Eixo', 'Situação', 'Modalidade', 'Escola', 'Aluno(s)', 'Orientador(es)'],
-				aba.projetos.filter($scope.filtroProjeto).map(function(p) {
+		// Uma função "dados" por seção, compartilhada entre CSV e PDF - assim as duas
+		// exportações nunca correm o risco de mostrar números diferentes uma da outra.
+		// Cada uma devolve {colunas: [{texto, largura}], linhas: [[...]]}, formato que
+		// tanto baixarCsv() (só usa colunas[].texto) quanto relatorioPdfService.tabela()
+		// (usa colunas inteiras, com largura) já esperam.
+
+		function dadosProjetos(aba) {
+			return {
+				colunas: [
+					{ texto: 'Nº Inscrição', largura: 50 }, { texto: 'Projeto', largura: '*' }, { texto: 'Categoria', largura: 90 },
+					{ texto: 'Eixo', largura: 90 }, { texto: 'Situação', largura: 90 }, { texto: 'Modalidade', largura: 70 },
+					{ texto: 'Escola', largura: 100 }, { texto: 'Aluno(s)', largura: 120 }, { texto: 'Orientador(es)', largura: 120 }
+				],
+				linhas: aba.projetos.filter($scope.filtroProjeto).map(function(p) {
 					return [p.numInscricao, p.nomeProjeto, p.categoria, p.eixo, rotuloSituacao(p), p.modalidade, p.nomeEscola, p.alunos.join(', '), p.orientadores.join(', ')];
-				}));
-		};
+				})
+			};
+		}
 
-		$scope.csvResumo = function(aba) {
-			baixarCsv('resumo-geral-' + $rootScope.ano, ['Indicador', 'Quantidade'], [
-				['Projetos no total', $scope.abas[0].countTotal],
-				['Aprovados', $scope.relatorio.countAprovados],
-				['Confirmados', $scope.relatorio.countParticipaSim],
-				['Cancelados', $scope.relatorio.countParticipaNao],
-				['Aprovados sem confirmar', $scope.relatorio.countPendente]
-			]);
-		};
+		function dadosResumo() {
+			return {
+				colunas: [{ texto: 'Indicador', largura: '*' }, { texto: 'Quantidade', largura: 80 }],
+				linhas: [
+					['Projetos no total', $scope.abas[0].countTotal],
+					['Aprovados', $scope.relatorio.countAprovados],
+					['Confirmados', $scope.relatorio.countParticipaSim],
+					['Cancelados', $scope.relatorio.countParticipaNao],
+					['Aprovados sem confirmar', $scope.relatorio.countPendente]
+				]
+			};
+		}
 
-		$scope.csvTotalHospedagem = function(aba) {
-			baixarCsv('hospedagem' + sufixo(aba), ['Indicador', 'Quantidade'], [
-				['Projetos', aba.countTotal],
-				['Pessoas com hospedagem solicitada', aba.countHospedagem]
-			]);
-		};
+		function dadosHospedagem(aba) {
+			return {
+				colunas: [{ texto: 'Indicador', largura: '*' }, { texto: 'Quantidade', largura: 80 }],
+				linhas: [
+					['Projetos', aba.countTotal],
+					['Pessoas com hospedagem solicitada', aba.countHospedagem]
+				]
+			};
+		}
 
-		$scope.csvCategorias = function(aba) {
-			baixarCsv('por-categoria' + sufixo(aba), ['Categoria', 'Projetos'],
-				aba.categoriasArray.map(function(c) { return [c.nome, c.num]; }));
-		};
+		function dadosCategorias(aba) {
+			return {
+				colunas: [{ texto: 'Categoria', largura: '*' }, { texto: 'Projetos', largura: 80 }],
+				linhas: aba.categoriasArray.map(function(c) { return [c.nome, c.num]; })
+			};
+		}
 
-		$scope.csvEixosGrupo = function(aba, grupo) {
-			baixarCsv('eixos-' + grupo.categoria + sufixo(aba), ['Eixo', 'Projetos'],
-				grupo.eixos.map(function(e) { return [e.nome, e.num]; }));
-		};
+		function dadosEixosGrupo(grupo) {
+			return {
+				colunas: [{ texto: 'Eixo', largura: '*' }, { texto: 'Projetos', largura: 80 }],
+				linhas: grupo.eixos.map(function(e) { return [e.nome, e.num]; })
+			};
+		}
 
-		$scope.csvCamisetas = function(aba) {
+		function dadosCamisetas(aba) {
 			var linhas = [];
 			aba.camisetasArray.forEach(function(cm) {
 				linhas.push(['Tamanho ' + cm.nome, '(todas)', cm.num, cm.aluno, cm.orientador]);
@@ -557,32 +581,32 @@
 					linhas.push(['Tamanho ' + cm.nome, d.nome, d.num, d.aluno, d.orientador]);
 				});
 			});
-			baixarCsv('camisetas' + sufixo(aba), ['Tamanho', 'Categoria', 'Total', 'Aluno(a)', 'Orientador(a)'], linhas);
-		};
+			return {
+				colunas: [{ texto: 'Tamanho', largura: 80 }, { texto: 'Categoria', largura: '*' }, { texto: 'Total', largura: 50 }, { texto: 'Aluno(a)', largura: 50 }, { texto: 'Orientador(a)', largura: 70 }],
+				linhas: linhas
+			};
+		}
 
-		$scope.csvEscolas = function(aba) {
-			baixarCsv('escolas' + sufixo(aba), ['Escola', 'Projetos'],
-				aba.escolasArray.map(function(e) { return [e.nome, e.num]; }));
-		};
+		function dadosEscolas(aba) {
+			return {
+				colunas: [{ texto: 'Escola', largura: '*' }, { texto: 'Projetos', largura: 80 }],
+				linhas: aba.escolasArray.map(function(e) { return [e.nome, e.num]; })
+			};
+		}
 
 		// Uma linha por pessoa; quem está em mais de um projeto vem com todos listados
 		// numa coluna só, pra não repetir a pessoa em várias linhas.
-		function linhasPessoas(lista) {
-			return lista.map(function(p) {
-				return [p.nome, p.nomeEscola, p.categoria, p.numProjetos,
-					(p.projetos || []).map(function(proj) { return 'Nº ' + proj.numInscricao + ' ' + proj.nomeProjeto; }).join(' | ')];
-			});
+		function dadosPessoas(lista) {
+			return {
+				colunas: [{ texto: 'Nome', largura: 120 }, { texto: 'Escola', largura: 120 }, { texto: 'Categoria', largura: 100 }, { texto: 'Nº de projetos', largura: 60 }, { texto: 'Projetos', largura: '*' }],
+				linhas: lista.map(function(p) {
+					return [p.nome, p.nomeEscola, p.categoria, p.numProjetos,
+						(p.projetos || []).map(function(proj) { return 'Nº ' + proj.numInscricao + ' ' + proj.nomeProjeto; }).join(' | ')];
+				})
+			};
 		}
 
-		$scope.csvAlunos = function(aba) {
-			baixarCsv('estudantes' + sufixo(aba), ['Nome', 'Escola', 'Categoria', 'Nº de projetos', 'Projetos'], linhasPessoas(aba.alunosArray));
-		};
-
-		$scope.csvOrientadores = function(aba) {
-			baixarCsv('orientadores' + sufixo(aba), ['Nome', 'Escola', 'Categoria', 'Nº de projetos', 'Projetos'], linhasPessoas(aba.orientadoresArray));
-		};
-
-		$scope.csvProjetosPorCategoriaEixo = function(aba) {
+		function dadosProjetosPorCategoriaEixo(aba) {
 			var linhas = [];
 			aba.projetosPorCategoriaEixo.forEach(function(grupo) {
 				grupo.eixos.forEach(function(ge) {
@@ -591,16 +615,62 @@
 					});
 				});
 			});
-			baixarCsv('projetos-por-categoria-eixo' + sufixo(aba), ['Categoria', 'Eixo', 'Nº Inscrição', 'Projeto', 'Escola'], linhas);
-		};
+			return {
+				colunas: [{ texto: 'Categoria', largura: 110 }, { texto: 'Eixo', largura: 110 }, { texto: 'Nº Inscrição', largura: 60 }, { texto: 'Projeto', largura: '*' }, { texto: 'Escola', largura: 110 }],
+				linhas: linhas
+			};
+		}
 
-		$scope.csvLocalizacao = function(aba) {
+		function dadosLocalizacao(aba) {
 			var linhas = [];
 			aba.cidadesArray.forEach(function(c) { linhas.push(['Cidade', c.cidade + '/' + c.estado, c.aluno, c.orientador, c.total]); });
 			aba.estadosArray.forEach(function(e) { linhas.push(['Estado', e.estado, e.aluno, e.orientador, e.total]); });
 			aba.nacionalidadesArray.forEach(function(n) { linhas.push(['País', n.nome, n.aluno, n.orientador, n.total]); });
-			baixarCsv('localizacao' + sufixo(aba), ['Tipo', 'Local', 'Aluno(a)', 'Orientador(a)', 'Total'], linhas);
-		};
+			return {
+				colunas: [{ texto: 'Tipo', largura: 60 }, { texto: 'Local', largura: '*' }, { texto: 'Aluno(a)', largura: 60 }, { texto: 'Orientador(a)', largura: 80 }, { texto: 'Total', largura: 50 }],
+				linhas: linhas
+			};
+		}
+
+		function csvDe(nomeArquivo, dados) {
+			baixarCsv(nomeArquivo, dados.colunas.map(function(c) { return c.texto; }), dados.linhas);
+		}
+		function pdfDe(titulo, subtitulo, dados, orientacao) {
+			relatorioPdfService.tabela({ titulo: titulo, subtitulo: subtitulo, colunas: dados.colunas, linhas: dados.linhas, orientacao: orientacao });
+		}
+
+		$scope.exportarPlanilhaProjetos = function(aba) { csvDe('projetos' + sufixo(aba), dadosProjetos(aba)); };
+		$scope.pdfProjetos = function(aba) { var d = dadosProjetos(aba); pdfDe(tituloAba('Projetos', aba), d.linhas.length + ' projeto(s)', d, 'landscape'); };
+
+		$scope.csvResumo = function(aba) { csvDe('resumo-geral-' + $rootScope.ano, dadosResumo()); };
+		$scope.pdfResumo = function(aba) { pdfDe('Resumo geral - ' + $rootScope.ano, null, dadosResumo()); };
+
+		$scope.csvTotalHospedagem = function(aba) { csvDe('hospedagem' + sufixo(aba), dadosHospedagem(aba)); };
+		$scope.pdfTotalHospedagem = function(aba) { pdfDe(tituloAba('Hospedagem', aba), null, dadosHospedagem(aba)); };
+
+		$scope.csvCategorias = function(aba) { csvDe('por-categoria' + sufixo(aba), dadosCategorias(aba)); };
+		$scope.pdfCategorias = function(aba) { pdfDe(tituloAba('Por categoria', aba), null, dadosCategorias(aba)); };
+
+		$scope.csvEixosGrupo = function(aba, grupo) { csvDe('eixos-' + grupo.categoria + sufixo(aba), dadosEixosGrupo(grupo)); };
+		$scope.pdfEixosGrupo = function(aba, grupo) { pdfDe('Eixos - ' + grupo.categoria, aba.nome + ' - ' + $rootScope.ano, dadosEixosGrupo(grupo)); };
+
+		$scope.csvCamisetas = function(aba) { csvDe('camisetas' + sufixo(aba), dadosCamisetas(aba)); };
+		$scope.pdfCamisetas = function(aba) { pdfDe(tituloAba('Camisetas', aba), null, dadosCamisetas(aba)); };
+
+		$scope.csvEscolas = function(aba) { csvDe('escolas' + sufixo(aba), dadosEscolas(aba)); };
+		$scope.pdfEscolas = function(aba) { pdfDe(tituloAba('Escolas', aba), aba.escolasArray.length + ' escola(s)', dadosEscolas(aba)); };
+
+		$scope.csvAlunos = function(aba) { csvDe('estudantes' + sufixo(aba), dadosPessoas(aba.alunosArray)); };
+		$scope.pdfAlunos = function(aba) { pdfDe(tituloAba('Estudantes', aba), aba.alunosArray.length + ' estudante(s)', dadosPessoas(aba.alunosArray), 'landscape'); };
+
+		$scope.csvOrientadores = function(aba) { csvDe('orientadores' + sufixo(aba), dadosPessoas(aba.orientadoresArray)); };
+		$scope.pdfOrientadores = function(aba) { pdfDe(tituloAba('Orientadores(as)', aba), aba.orientadoresArray.length + ' orientador(a/es)', dadosPessoas(aba.orientadoresArray), 'landscape'); };
+
+		$scope.csvProjetosPorCategoriaEixo = function(aba) { csvDe('projetos-por-categoria-eixo' + sufixo(aba), dadosProjetosPorCategoriaEixo(aba)); };
+		$scope.pdfProjetosPorCategoriaEixo = function(aba) { pdfDe(tituloAba('Projetos por categoria/eixo', aba), null, dadosProjetosPorCategoriaEixo(aba), 'landscape'); };
+
+		$scope.csvLocalizacao = function(aba) { csvDe('localizacao' + sufixo(aba), dadosLocalizacao(aba)); };
+		$scope.pdfLocalizacao = function(aba) { pdfDe(tituloAba('Localização', aba), null, dadosLocalizacao(aba)); };
 
 		$scope.imprimir = function() {
 			window.print();
