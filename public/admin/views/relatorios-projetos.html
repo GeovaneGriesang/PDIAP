@@ -492,6 +492,10 @@
 							<md-icon class="relatorios-seta" md-svg-src="{{aba.projetosExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
 							Projetos por categoria/eixo ({{aba.projetos.length}})
 						</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarProjetosPorCategoriaEixo(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosExpandido">
 						<div data-ng-repeat="grupo in aba.projetosPorCategoriaEixo">
