@@ -45,21 +45,26 @@ module.exports.getProjectByUsername = (username, callback) => {
 module.exports.getLoginProjeto = (username, ano_atual, user) => {
 	try {
 		let query = {username: username};
-		Projeto.find(query, function(err, document){
-			if (err) { console.error('Erro ao realizar login', err); return; }
-			if(document != ''){
-				document.forEach(function(value){
-					var data = new Date(value.createdAt);
-					if(ano_atual == data.getFullYear()){				
-						Projeto.findOne({_id:value._id}, user);
-					}				 			
-				});
+		Projeto.find(query, function(err, documentos){
+			if (err) { console.error('Erro ao realizar login', err); return user(err); }
+
+			// A mesma conta pode ter projeto de edições anteriores - só vale o do ano.
+			let doAnoAtual = (documentos || []).filter(function(value){
+				return ano_atual == new Date(value.createdAt).getFullYear();
+			});
+
+			if (doAnoAtual.length) {
+				// Um callback só. O código antigo chamava dentro de um forEach, então
+				// com dois projetos do mesmo ano o passport era chamado duas vezes.
+				Projeto.findOne({_id: doAnoAtual[0]._id}, user);
 			} else {
+				// Inclui o caso "tem projeto, mas de outro ano": antes o forEach não
+				// chamava o callback nenhuma vez e o POST /login ficava pendurado, sem
+				// resposta e sem erro, até o timeout do navegador.
 				console.log("PROJETO_CONTROLLER -> Usuário desconhecido");
-				Projeto.findOne({username:''}, user);				
-			}		
-				
-		});	
+				Projeto.findOne({username:''}, user);
+			}
+		});
 	} catch (error) {
 		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
 	}

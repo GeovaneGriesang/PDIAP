@@ -281,6 +281,10 @@
 			<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 			<md-icon md-svg-src="content-copy"></md-icon>
 		</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvResumo(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 	</div>
 	<div layout="row" layout-wrap style="margin-bottom:24px;gap:16px;">
 		<div flex class="relatorios-kpi">
@@ -331,6 +335,10 @@
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvTotalHospedagem(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha">
 						<span class="relatorios-barra-label">Total de projetos</span>
@@ -348,6 +356,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarCategorias(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvCategorias(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="c in aba.categoriasArray">
@@ -370,6 +382,10 @@
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvEixosGrupo(aba, grupo)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-barra-linha" data-ng-repeat="e in grupo.eixos">
 						<span class="relatorios-barra-label">{{e.nome}}</span>
@@ -390,6 +406,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarCamisetas(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvCamisetas(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
 					</h3>
 					<div data-ng-repeat="cm in aba.camisetasArray">
@@ -428,6 +448,10 @@
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvEscolas(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.escolasExpandido">
 						<table class="relatorios-tabela">
@@ -456,6 +480,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarAlunos(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvAlunos(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.alunosExpandido">
@@ -496,6 +524,10 @@
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvProjetosPorCategoriaEixo(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.projetosExpandido">
 						<div data-ng-repeat="grupo in aba.projetosPorCategoriaEixo">
@@ -525,6 +557,10 @@
 							<md-icon class="relatorios-seta" md-svg-src="{{aba.projetosPessoasExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
 							Projetos - Alunos e Orientadores ({{(aba.projetos | filter:filtroProjeto).length}})
 						</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarProjetosPessoas(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="exportarPlanilhaProjetos(aba)">
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
@@ -576,6 +612,10 @@
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
 						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvOrientadores(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.orientadoresExpandido">
 						<p style="font-size:12px;color:rgba(0,0,0,0.45);margin:0 0 12px 0;">Cada orientador(a) aparece uma vez só; clique num que tenha mais de 1 projeto pra ver quais são.</p>
@@ -611,6 +651,10 @@
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarLocalizacao(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
 							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvLocalizacao(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
 					</h3>
 					<div class="relatorios-conteudo-retratil" data-ng-show="aba.localizacaoExpandido">

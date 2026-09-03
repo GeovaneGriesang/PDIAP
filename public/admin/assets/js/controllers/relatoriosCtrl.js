@@ -34,6 +34,18 @@
 
 		var NACIONALIDADE_LABELS = { brasileiro: 'Brasil', paraguaio: 'Paraguai', uruguaio: 'Uruguai', venezuelano: 'Venezuela' };
 
+		// Frases oficiais da lista de trabalhos aprovados (ver models/projeto-schema.js,
+		// campo tipoAprovacao).
+		var SITUACAO_LABELS = {
+			anais: 'Aprovado para apresentação e publicação nos anais',
+			apresentacao: 'Aprovado somente para apresentação no evento'
+		};
+		function rotuloSituacao(proj) {
+			if (proj.aprovado !== true) return proj.aprovado === false ? 'Não aprovado' : 'Não avaliado';
+			return SITUACAO_LABELS[proj.tipoAprovacao] || 'Aprovado';
+		}
+		$scope.rotuloSituacao = rotuloSituacao;
+
 		// Contador de camiseta por tamanho: além do total, guarda o cruzamento com
 		// categoria E tipo (aluno/orientador) ao mesmo tempo pro detalhamento da tela -
 		// não basta saber "quantas são de Fundamental I" e "quantas são de aluno(a)"
@@ -164,6 +176,9 @@
 				nomeEscola: proj.nomeEscola,
 				categoria: proj.categoria,
 				eixo: proj.eixo,
+				aprovado: proj.aprovado,
+				tipoAprovacao: proj.tipoAprovacao,
+				modalidade: proj.modalidade,
 				alunos: (proj.integrantes || []).filter(function(i) { return i.tipo === 'Aluno'; }).map(function(i) { return i.nome; }),
 				orientadores: (proj.integrantes || []).filter(function(i) { return i.tipo === 'Orientador'; }).map(function(i) { return i.nome; })
 			});
@@ -478,23 +493,113 @@
 		}
 
 		// Planilha (CSV com ";" - Excel em pt-BR só separa coluna certo assim, já que ","
-		// é separador decimal) com os mesmos projetos filtrados visíveis na tabela.
-		$scope.exportarPlanilhaProjetos = function(aba) {
-			var linhas = aba.projetos.filter($scope.filtroProjeto);
-			var cabecalhoCsv = ['Nº Inscrição', 'Projeto', 'Categoria', 'Eixo', 'Escola', 'Aluno(s)', 'Orientador(es)'];
-			var csv = [cabecalhoCsv.map(csvEscape).join(';')];
-			linhas.forEach(function(p) {
-				csv.push([p.numInscricao, p.nomeProjeto, p.categoria, p.eixo, p.nomeEscola, p.alunos.join(', '), p.orientadores.join(', ')].map(csvEscape).join(';'));
-			});
+		// é separador decimal; o BOM na frente faz o Excel reconhecer o UTF-8 e não
+		// estropiar os acentos). Toda seção do relatório baixa a sua por aqui.
+		function baixarCsv(nomeBase, cabecalhos, linhas) {
+			var csv = [cabecalhos.map(csvEscape).join(';')];
+			linhas.forEach(function(linha) { csv.push(linha.map(csvEscape).join(';')); });
 			var blob = new Blob(['﻿' + csv.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
 			var url = URL.createObjectURL(blob);
 			var a = document.createElement('a');
 			a.href = url;
-			a.download = 'projetos-' + aba.nome.toLowerCase().replace(/\s+/g, '-') + '-' + $rootScope.ano + '.csv';
+			a.download = nomeBase.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.csv';
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
+		}
+
+		// Sufixo comum dos nomes de arquivo: identifica a aba (Geral/Aprovados/...) e o ano.
+		function sufixo(aba) {
+			return '-' + aba.nome + '-' + $rootScope.ano;
+		}
+
+		$scope.exportarPlanilhaProjetos = function(aba) {
+			baixarCsv('projetos' + sufixo(aba),
+				['Nº Inscrição', 'Projeto', 'Categoria', 'Eixo', 'Situação', 'Modalidade', 'Escola', 'Aluno(s)', 'Orientador(es)'],
+				aba.projetos.filter($scope.filtroProjeto).map(function(p) {
+					return [p.numInscricao, p.nomeProjeto, p.categoria, p.eixo, rotuloSituacao(p), p.modalidade, p.nomeEscola, p.alunos.join(', '), p.orientadores.join(', ')];
+				}));
+		};
+
+		$scope.csvResumo = function(aba) {
+			baixarCsv('resumo-geral-' + $rootScope.ano, ['Indicador', 'Quantidade'], [
+				['Projetos no total', $scope.abas[0].countTotal],
+				['Aprovados', $scope.relatorio.countAprovados],
+				['Confirmados', $scope.relatorio.countParticipaSim],
+				['Cancelados', $scope.relatorio.countParticipaNao],
+				['Aprovados sem confirmar', $scope.relatorio.countPendente]
+			]);
+		};
+
+		$scope.csvTotalHospedagem = function(aba) {
+			baixarCsv('hospedagem' + sufixo(aba), ['Indicador', 'Quantidade'], [
+				['Projetos', aba.countTotal],
+				['Pessoas com hospedagem solicitada', aba.countHospedagem]
+			]);
+		};
+
+		$scope.csvCategorias = function(aba) {
+			baixarCsv('por-categoria' + sufixo(aba), ['Categoria', 'Projetos'],
+				aba.categoriasArray.map(function(c) { return [c.nome, c.num]; }));
+		};
+
+		$scope.csvEixosGrupo = function(aba, grupo) {
+			baixarCsv('eixos-' + grupo.categoria + sufixo(aba), ['Eixo', 'Projetos'],
+				grupo.eixos.map(function(e) { return [e.nome, e.num]; }));
+		};
+
+		$scope.csvCamisetas = function(aba) {
+			var linhas = [];
+			aba.camisetasArray.forEach(function(cm) {
+				linhas.push(['Tamanho ' + cm.nome, '(todas)', cm.num, cm.aluno, cm.orientador]);
+				cm.detalheCategoria.forEach(function(d) {
+					linhas.push(['Tamanho ' + cm.nome, d.nome, d.num, d.aluno, d.orientador]);
+				});
+			});
+			baixarCsv('camisetas' + sufixo(aba), ['Tamanho', 'Categoria', 'Total', 'Aluno(a)', 'Orientador(a)'], linhas);
+		};
+
+		$scope.csvEscolas = function(aba) {
+			baixarCsv('escolas' + sufixo(aba), ['Escola', 'Projetos'],
+				aba.escolasArray.map(function(e) { return [e.nome, e.num]; }));
+		};
+
+		// Uma linha por pessoa; quem está em mais de um projeto vem com todos listados
+		// numa coluna só, pra não repetir a pessoa em várias linhas.
+		function linhasPessoas(lista) {
+			return lista.map(function(p) {
+				return [p.nome, p.nomeEscola, p.categoria, p.numProjetos,
+					(p.projetos || []).map(function(proj) { return 'Nº ' + proj.numInscricao + ' ' + proj.nomeProjeto; }).join(' | ')];
+			});
+		}
+
+		$scope.csvAlunos = function(aba) {
+			baixarCsv('estudantes' + sufixo(aba), ['Nome', 'Escola', 'Categoria', 'Nº de projetos', 'Projetos'], linhasPessoas(aba.alunosArray));
+		};
+
+		$scope.csvOrientadores = function(aba) {
+			baixarCsv('orientadores' + sufixo(aba), ['Nome', 'Escola', 'Categoria', 'Nº de projetos', 'Projetos'], linhasPessoas(aba.orientadoresArray));
+		};
+
+		$scope.csvProjetosPorCategoriaEixo = function(aba) {
+			var linhas = [];
+			aba.projetosPorCategoriaEixo.forEach(function(grupo) {
+				grupo.eixos.forEach(function(ge) {
+					ge.projetos.forEach(function(p) {
+						linhas.push([grupo.categoria, ge.eixo, p.numInscricao, p.nomeProjeto, p.nomeEscola]);
+					});
+				});
+			});
+			baixarCsv('projetos-por-categoria-eixo' + sufixo(aba), ['Categoria', 'Eixo', 'Nº Inscrição', 'Projeto', 'Escola'], linhas);
+		};
+
+		$scope.csvLocalizacao = function(aba) {
+			var linhas = [];
+			aba.cidadesArray.forEach(function(c) { linhas.push(['Cidade', c.cidade + '/' + c.estado, c.aluno, c.orientador, c.total]); });
+			aba.estadosArray.forEach(function(e) { linhas.push(['Estado', e.estado, e.aluno, e.orientador, e.total]); });
+			aba.nacionalidadesArray.forEach(function(n) { linhas.push(['País', n.nome, n.aluno, n.orientador, n.total]); });
+			baixarCsv('localizacao' + sufixo(aba), ['Tipo', 'Local', 'Aluno(a)', 'Orientador(a)', 'Total'], linhas);
 		};
 
 		$scope.imprimir = function() {
@@ -672,6 +777,14 @@
 		};
 		$scope.copiarProjetosPorCategoriaEixo = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoProjetosPorCategoriaEixo(aba));
+		};
+		$scope.copiarProjetosPessoas = function(aba) {
+			var linhas = aba.projetos.filter($scope.filtroProjeto).map(function(p) {
+				return '- Nº ' + p.numInscricao + ': ' + p.nomeProjeto +
+					'\n   Aluno(s): ' + (p.alunos.join(', ') || '-') +
+					'\n   Orientador(es): ' + (p.orientadores.join(', ') || '-');
+			});
+			copiarTexto(cabecalho(aba) + '\n\n*Projetos - Alunos e Orientadores (' + linhas.length + ')*\n' + linhas.join('\n'));
 		};
 		$scope.copiarOrientadores = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoPessoas('Orientador', aba));
