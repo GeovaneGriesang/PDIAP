@@ -412,7 +412,8 @@ router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
       "atuacaoProfissional": req.body.atuacaoProfissional,
       "tempoAtuacao": req.body.tempoAtuacao,
       "telefone": splita(req.body.telefone),
-      "curriculo": req.body.curriculo
+      "curriculo": req.body.curriculo,
+      "disponibilidade": Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : []
     }}, {new:true}, (err, doc) => {
       if (err) { console.error('Erro ao atualizar avaliador', err); return; }
     });

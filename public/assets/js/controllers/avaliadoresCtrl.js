@@ -45,10 +45,20 @@
 
 		$scope.avaliadores = $scope.avaliadores || {};
 		$scope.avaliadores.categoriasEixos = [];
+		$scope.avaliadores.disponibilidade = [];
 
 		projetosAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
+		})
+		.error(function(status) {
+			console.log(status);
+		});
+
+		$scope.listaDias = [];
+		projetosAPI.getDiasAvaliacao(new Date().getFullYear())
+		.success(function(data) {
+			$scope.listaDias = data.dias;
 		})
 		.error(function(status) {
 			console.log(status);
@@ -74,7 +84,7 @@
 				tempoAtuacao: avaliador.tempoAtuacao,
 				categoriasEixos: avaliador.categoriasEixos,
 				curriculo: curriculo1,
-				turnos: avaliador.turnos,
+				disponibilidade: avaliador.disponibilidade,
 				createdAt: Date.now()
 			});
 			projetosAPI.saveAvaliador(pacote)
@@ -134,10 +144,9 @@
 
 		let resetForm = function() {
 			delete $scope.avaliadores;
-			$scope.avaliadores = { categoriasEixos: [] };
+			$scope.avaliadores = { categoriasEixos: [], disponibilidade: [] };
 			$scope.avaliadoresForm.$setPristine();
 			$scope.avaliadoresForm.$setUntouched();
-			$scope.avaliadoresForm.turnos.$setUntouched();
 			$scope.lattesVerify = '';
 		};
 	});

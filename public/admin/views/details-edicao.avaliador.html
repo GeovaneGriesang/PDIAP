@@ -103,6 +103,11 @@
         </md-checkbox>
       </div>
 
+      <div data-ng-if="listaDias.length > 0">
+        <p style="text-align:left;">Dia(s) e turno(s) disponível(is) para avaliar:</p>
+        <div data-dia-turno-picker="avaliador.disponibilidade" data-lista-dias="listaDias"></div>
+      </div>
+
       <md-input-container class="md-block" flex="100">
         <label>Atuação profissional</label>
         <textarea name="atuacaoProfissional" data-ng-model="avaliador.atuacaoProfissional" rows="1" md-select-on-focus></textarea>
