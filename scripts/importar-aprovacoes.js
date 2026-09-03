@@ -186,6 +186,33 @@ async function importar() {
 		}
 	}
 
+	// Passada 4 - título quase idêntico E pelo menos um autor em comum. Sozinha, cada
+	// evidência é fraca demais (título 0.9 pode ser outro trabalho do mesmo tema; um
+	// orientador em comum aparece em vários projetos); juntas, identificam com segurança
+	// os casos de erro de digitação num dos dois sistemas.
+	for (let i = pendentes.length - 1; i >= 0; i--) {
+		const trabalho = pendentes[i];
+		const autores = (autoresPorNumero[trabalho.numero] || []).map(normalizar).filter(Boolean);
+		if (!autores.length) continue;
+		const chave = normalizar(trabalho.titulo);
+
+		const compativeis = doAno.filter(function(p) { return !idsCasados.has(p._id.toString()); }).filter(function(p) {
+			const tituloBanco = normalizar(p.nomeProjeto);
+			const maior = Math.max(chave.length, tituloBanco.length) || 1;
+			const semelhanca = 1 - distancia(chave, tituloBanco) / maior;
+			if (semelhanca < 0.85) return false;
+			const integrantes = (p.integrantes || []).map(function(x) { return normalizar(x.nome); }).filter(Boolean);
+			return autores.some(function(a) {
+				return integrantes.some(function(x) { return x === a || x.indexOf(a) !== -1 || a.indexOf(x) !== -1; });
+			});
+		});
+
+		if (compativeis.length === 1) {
+			aGravar.push(registrar(trabalho, compativeis[0], 'titulo quase idêntico + autor em comum'));
+			pendentes.splice(i, 1);
+		}
+	}
+
 	pendentes.forEach(function(trabalho) {
 		const autores = autoresPorNumero[trabalho.numero];
 		naoCasaram.push({
@@ -210,8 +237,19 @@ async function importar() {
 	}
 
 	// Inscritos do ano que não estão na lista oficial viram não aprovados.
+	//
+	// Trava de segurança: enquanto houver trabalho da lista sem casar, o projeto dele
+	// ainda está no meio desses "fora da lista" - reprovar agora marcaria como recusado
+	// justamente quem foi aprovado. Por isso a reprovação em massa só roda com
+	// --reprovar-fora-da-lista, depois que as pendências forem resolvidas.
+	const REPROVAR = process.argv.includes('--reprovar-fora-da-lista');
 	const foraDaLista = doAno.filter(function(p) { return !idsCasados.has(p._id.toString()); });
-	if (!DRY_RUN) {
+	const vaiReprovar = REPROVAR && naoCasaram.length === 0;
+	if (REPROVAR && naoCasaram.length > 0) {
+		console.log('\nAVISO: --reprovar-fora-da-lista ignorado - ainda há ' + naoCasaram.length +
+			' trabalho(s) da lista sem casar, e o projeto deles está entre os "fora da lista".');
+	}
+	if (!DRY_RUN && vaiReprovar) {
 		for (const p of foraDaLista) {
 			await Projeto.updateOne({ _id: p._id }, { $set: { aprovado: false }, $unset: { tipoAprovacao: true } });
 		}
@@ -236,7 +274,7 @@ async function importar() {
 	console.log('Projetos inscritos em ' + ANO + ':', doAno.length);
 	console.log('Casaram:', casados.length, JSON.stringify(contarPor(casados, 'comoCasou')));
 	console.log('NÃO casaram (precisam de revisão manual):', naoCasaram.length);
-	console.log('Inscritos fora da lista -> não aprovados:', foraDaLista.length);
+	console.log('Inscritos fora da lista:', foraDaLista.length, vaiReprovar ? '-> marcados como não aprovados' : '(NÃO reprovados nesta execução)');
 	console.log('Edições anteriores normalizadas para "anais":', anterioresPendentes.length);
 	console.log('\nPor modalidade (casados):', JSON.stringify(porModalidade));
 	console.log('Esperado pelo PDF:        ', JSON.stringify({
