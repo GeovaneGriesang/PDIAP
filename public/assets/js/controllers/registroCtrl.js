@@ -269,7 +269,7 @@
 			}, 650);
 		};
 
-		projetosAPI.getCategorias()
+		projetosAPI.getCategoriasEixos(new Date().getFullYear())
 		.success(function(data) {
 			$scope.listaCategorias = data.categorias;
 		})
