@@ -167,7 +167,7 @@
 		};
 		$scope.rotuloCurtoSituacao = function(proj) {
 			if (proj.aprovado !== true) return proj.aprovado === false ? 'Não aprovado' : 'Não avaliado';
-			return proj.tipoAprovacao === 'apresentacao' ? 'Apresentação' : 'Anais';
+			return proj.tipoAprovacao === 'apresentacao' ? 'Apresentação' : 'Anais e apresentação';
 		};
 		// Frases oficiais da lista de trabalhos aprovados, pro tooltip.
 		$scope.rotuloSituacaoCompleto = function(proj) {

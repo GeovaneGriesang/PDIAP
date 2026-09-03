@@ -158,7 +158,7 @@
       <md-tooltip md-direction="left">{{proj.participa === true ? 'Participação confirmada' : (proj.participa === false ? 'Participação cancelada' : 'Ainda não confirmou participação')}}</md-tooltip>
     </div>
     <div data-ng-if="proj.aprovado !== undefined" layout="row" layout-align="center center" class="md-whiteframe-1dp"
-      data-ng-class="classeSituacao(proj)" style="min-width:58px;padding:0 6px;height:20px;border-radius:4px;font-size:10px;">
+      data-ng-class="classeSituacao(proj)" style="min-width:58px;padding:2px 6px;min-height:20px;border-radius:4px;font-size:10px;text-align:center;">
       <md-tooltip md-direction="left">{{rotuloSituacaoCompleto(proj)}}</md-tooltip>
       <span style="font-weight:500;">{{rotuloCurtoSituacao(proj)}}</span>
     </div>
