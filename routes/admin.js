@@ -155,10 +155,33 @@ router.post('/criarFeira', miPermiso("3"), (req, res) => {
       categorias: req.body.categorias,
       textoCertificado: req.body.textoCertificado,
       ano: req.body.ano,
-      createdAt: req.body.createdAt
+      createdAt: req.body.createdAt,
+      tipo: req.body.tipo,
+      categoriasEixos: req.body.categoriasEixos,
+      diasAvaliacao: req.body.diasAvaliacao
     });
     newFeira.save((err, data) => {
       if (err) { console.error('Erro ao criar feira', err); return; }
+    });
+    res.send('success');
+  } catch (error){
+    console.log('findOne error--> ${error}');
+  }
+});
+
+router.put('/editarFeira', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    feiraSchema.findOneAndUpdate({'_id': id}, {
+      nome: req.body.nome,
+      categorias: req.body.categorias,
+      textoCertificado: req.body.textoCertificado,
+      tipo: req.body.tipo,
+      categoriasEixos: req.body.categoriasEixos,
+      diasAvaliacao: req.body.diasAvaliacao
+    }, (err) => {
+      if (err) { console.error('Erro ao editar feira', err); return; }
     });
     res.send('success');
   } catch (error){

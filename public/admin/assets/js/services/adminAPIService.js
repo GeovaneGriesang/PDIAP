@@ -249,6 +249,15 @@
 			return $http(request);
 		};
 
+		let _putEditarFeira = function(feira) {
+			const request = {
+				url: '/admin/editarFeira',
+				method: 'PUT',
+				data: feira
+			}
+			return $http(request);
+		};
+
 		let _postEscola = function(escola) {
 			const request = {
 				url: '/admin/criarEscola',
@@ -553,6 +562,7 @@
 			postFeira: _postFeira,
 			getFeiras: _getFeiras,
 			removeFeira: _removeFeira,
+			editarFeira: _putEditarFeira,
 			postEscola: _postEscola,
 			getEscolas: _getEscolas,
 			solicitarEscola: _solicitarEscola,
