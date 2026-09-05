@@ -17,6 +17,21 @@
 		$scope.palavraChave = [];
 		$scope.palavraChaveTexto = '';
 
+		// Mesmas opções configuráveis por edição usadas em update.html/updateCtrl.js
+		// (Projetos > Editar opções) - campos como "resumo" podem estar desligados na
+		// edição atual, e aqui (diferente de update.html, que só desabilita) o campo
+		// nem aparece: não faz sentido cobrar/mostrar um campo que a edição não usa.
+		$scope.opcoes = {};
+		$scope.carregarOpcoes = function() {
+			adminAPI.getOpcoes().success(function(op) {
+				$scope.opcoes = op;
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		};
+		$scope.carregarOpcoes();
+
 		// Antes exigia apertar Enter/vírgula depois de CADA palavra-chave pra "confirmar"
 		// (mesmo problema já resolvido em registroCtrl.js pra inscrição de projeto novo) -
 		// agora só digita separado por vírgula ou ponto e vírgula, reconhecido em tempo real.
@@ -121,6 +136,37 @@
 			// escondendo resultados do novo critério até a pessoa apagar o texto na mão.
 			$scope.search = $rootScope.search = {};
 		}
+
+		// Mesmo filtro/contagem por situação (Aprovados/Não aprovados/anais/apresentação)
+		// do cabeçalho padrão de Projetos (ver projetosCtrl.js) - em $rootScope pra manter
+		// a escolha ao navegar entre Selecionar aprovados/Presença/Premiação/Editar, e pra
+		// já filtrar a lista assim que a tela abre (sem precisar mexer no select de novo).
+		let chaveSituacao = function(proj) {
+			if (proj.aprovado !== true) return 'nao';
+			return proj.tipoAprovacao === 'apresentacao' ? 'apresentacao' : 'anais';
+		};
+		$rootScope.filtroSit = $rootScope.filtroSit || { situacao: 'todos' };
+		$scope.filtroSit = $rootScope.filtroSit;
+		$scope.filtroPorSituacao = function(proj) {
+			var filtro = $rootScope.filtroSit.situacao;
+			if (!filtro || filtro === 'todos') return true;
+			if (filtro === 'aprovados') return proj.aprovado === true;
+			if (filtro === 'nao') return proj.aprovado !== true;
+			return proj.aprovado === true && chaveSituacao(proj) === filtro;
+		};
+		$scope.contagemSituacao = function() {
+			var c = { aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
+			angular.forEach($rootScope.projetos, function(p) {
+				if (p.aprovado === true) {
+					c.aprovados++;
+					if (p.tipoAprovacao === 'apresentacao') c.apresentacao++;
+					else c.anais++;
+				} else {
+					c.naoAprovados++;
+				}
+			});
+			return c;
+		};
 
 		let maskCEP = function() {
 			$scope.projeto2.cep = $scope.projeto2.cep.substring(0,2) + "." + $scope.projeto2.cep.substring(2);
@@ -297,6 +343,92 @@
 		$scope.limpaHospedagem = function() {
 			$scope.projeto5.hospedagem = [];
 		}
+
+		// Rótulos amigáveis e varredura de $error pra montar o quadro amarelo de
+		// pendências antes do botão Salvar - mesmo padrão já usado na Inscrição de
+		// projetos (ver CAMPO_LABELS/listarPendencias em registroCtrl.js, módulo
+		// PDIAP). Não dá pra reusar aquelas funções direto (módulo Angular diferente,
+		// PDIAPa aqui), então ficam duplicadas e adaptadas aos campos desta tela.
+		var CAMPO_LABELS_EDICAO = {
+			nomeProjeto: 'Nome do projeto',
+			palavraChaveTexto: 'Palavras-chave',
+			categoria: 'Categoria',
+			eixo: 'Eixo temático',
+			participa: 'Marcar Participação (presença no evento)',
+			resumo: 'Resumo do projeto',
+			nomeEscola: 'Nome da instituição',
+			estado: 'Estado',
+			cidade: 'Cidade',
+			cep: 'CEP',
+			hospedagemVerify: 'Se algum integrante precisa de hospedagem (Sim/Não)',
+			hospedagem: 'Quais integrantes precisam de hospedagem',
+			email: 'E-mail principal da conta de usuário',
+			username: 'Nome de usuário da conta'
+		};
+
+		var CAMPO_DINAMICO_LABELS_EDICAO = {
+			nome: 'nome completo', email: 'e-mail', nacionalidade: 'nacionalidade',
+			cpf: 'documento de identificação', telefone: 'telefone', tamCamiseta: 'tamanho da camiseta'
+		};
+
+		function labelDoCampoEdicao(nome) {
+			if (CAMPO_LABELS_EDICAO[nome]) return CAMPO_LABELS_EDICAO[nome];
+			var m = nome.match(/^(nome|email|nacionalidade|cpf|telefone|tamCamiseta)(Orientador|Aluno)(\d+)$/);
+			if (m) {
+				var papel = m[2] === 'Orientador' ? 'Orientador(a)' : 'Aluno(a)';
+				return 'O ' + CAMPO_DINAMICO_LABELS_EDICAO[m[1]] + ' do(a) ' + papel + ' ' + m[3];
+			}
+			return nome;
+		}
+
+		var MOTIVO_ERRO_EDICAO = {
+			required: 'não foi preenchido(a)',
+			pattern: 'está com formato inválido',
+			minlength: 'está muito curto(a)',
+			documento: 'não é um documento válido'
+		};
+
+		// Cada aba desta tela é um <ng-form> aninhado dentro de projetoFormGeral (e
+		// Orientador(es)/Aluno(s) têm mais um nível ainda, um ng-form por linha do
+		// ng-repeat) - então o $error de cima não lista os campos de verdade, lista os
+		// SUB-FORMS inválidos (ex: "projetoForm3"). Desce recursivamente até achar
+		// controles de campo de verdade. $addControl só existe em FormController
+		// (um NgModelController de campo não tem esse método) - é o jeito confiável de
+		// diferenciar um sub-form de um campo real (FormController não expõe $$controls).
+		function listarPendenciasEdicao($error, vistos) {
+			vistos = vistos || {};
+			var lista = [];
+			angular.forEach($error, function(controles, tipoErro) {
+				angular.forEach(controles, function(ctrl) {
+					if (typeof ctrl.$addControl === 'function') {
+						lista = lista.concat(listarPendenciasEdicao(ctrl.$error, vistos));
+						return;
+					}
+					var nome = ctrl.$name;
+					if (!nome || vistos[nome]) return;
+					vistos[nome] = true;
+					lista.push(labelDoCampoEdicao(nome) + ' ' + (MOTIVO_ERRO_EDICAO[tipoErro] || 'está inválido') + '.');
+				});
+			});
+			return lista;
+		}
+
+		// Lista o que falta pra liberar "Salvar" - varre o form único que junta as 6
+		// abas (projetoFormGeral), então cobre pendências de qualquer guia, mesmo uma
+		// que a pessoa nunca abriu. Palavra-chave é conferida à parte porque quem trava
+		// o botão hoje é o array `palavraChave`, não o campo de texto em si.
+		// Recebe o form como argumento (em vez de ler $scope.projetoFormGeral) porque
+		// esta view aninha ng-controller="registroCtrl" por dentro de editProjetosCtrl
+		// (reaproveitando funções de escola/instituição) - o <form name="projetoFormGeral">
+		// fica no escopo FILHO do registroCtrl, nunca no escopo desta função.
+		$scope.pendenciasSalvar = function(form) {
+			if (!form) return [];
+			var lista = listarPendenciasEdicao(form.$error);
+			if ($scope.palavraChave.length === 0 && lista.indexOf(labelDoCampoEdicao('palavraChaveTexto') + ' não foi preenchido(a).') === -1) {
+				lista.push('Você precisa informar ao menos uma palavra-chave (separadas por vírgula ou ponto e vírgula).');
+			}
+			return lista;
+		};
 
 		// Um botão só, salva tudo de uma vez (era um "Salvar" por aba, cada um gravando
 		// só o pedaço daquela aba - achado confuso, e o de "Conta Usuário" dependia de

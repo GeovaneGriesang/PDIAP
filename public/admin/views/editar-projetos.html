@@ -73,6 +73,20 @@
 
 	<span flex></span>
 
+        <div style="width:210px;">
+          <md-select data-ng-model="filtroSit.situacao" placeholder="Situação" aria-label="Filtrar por situação" style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Situação:">
+              <md-option value="todos">Todas as situações</md-option>
+              <md-option value="aprovados">Aprovados (os dois tipos)</md-option>
+              <md-option value="anais">Aprovado - apresentação e anais</md-option>
+              <md-option value="apresentacao">Aprovado - somente apresentação</md-option>
+              <md-option value="nao">Não aprovados</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+
+	<span flex></span>
+
 	<div style="width:85px;">
           <md-select data-ng-model="$root.ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
@@ -169,7 +183,7 @@
           </div>
 
 
-          <div layout-gt-sm="row">
+          <div layout-gt-sm="row" data-ng-if="opcoes.resumo">
             <md-input-container class="md-block" data-ng-init="editing4=false" flex="100">
               <label>Resumo do Projeto</label>
               <textarea style="height:200px!important;" name="resumo" data-ng-model="projeto1.resumo" data-ng-class="{'input-disabled': !editing4}" data-ng-focus="editing4=true" data-ng-blur="editing4=false" minlength="500" md-maxlength="2000" rows="1" md-select-on-focus></textarea>
@@ -530,6 +544,14 @@
 </md-tab>
 </md-tabs>
 
+<div data-ng-if="(pendenciasSalvarLista = pendenciasSalvar(projetoFormGeral)).length > 0"
+     class="aviso-pendencias" style="max-width:600px;margin:24px auto 0;padding:12px 16px;border-radius:4px;background:#fff3e0;border:1px solid #ffb74d;color:#7a4a00;">
+    <b>Para salvar, complete:</b>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+        <li data-ng-repeat="p in pendenciasSalvarLista">{{p}}</li>
+    </ul>
+</div>
+
 <div class="finalizar" layout="row" layout-align="center center" style="margin:40px 0;">
   <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!projetoFormGeral.$valid || palavraChave.length === 0" data-ng-click="salvarProjetoCompleto()">
     <md-icon md-svg-icon="check" class="icon-btn-default"></md-icon>
@@ -566,8 +588,12 @@
     <div layout style="align-items:center;"><div class="red" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Cancelado</div>
     <div layout style="align-items:center;"><div class="grey" style="width:15px;height:15px;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Pendente</div>
   </div>
-  <div layout="row" style="justify-content:center;padding-bottom:30px;background:rgba(128,128,128,0.07);">
-    TOTAL: {{projetos.length}}
+  <div layout="row" style="justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 28px;padding-bottom:30px;background:rgba(128,128,128,0.07);font-size:14px;">
+    <span><b>Total:</b> {{projetos.length}}</span>
+    <span style="color:#2e7d32;"><b>Aprovados:</b> {{contagemSituacao().aprovados}}</span>
+    <span style="color:#2e7d32;">↳ Anais e apresentação: {{contagemSituacao().anais}}</span>
+    <span style="color:#c4650a;">↳ Apenas apresentação: {{contagemSituacao().apresentacao}}</span>
+    <span style="color:#c62828;"><b>Não aprovados:</b> {{contagemSituacao().naoAprovados}}</span>
   </div>
   <md-list flex style="margin-bottom:50px;" data-ng-init="ordenacao = ['aprovado','eixo']">
     <md-list-item class="list-header">
@@ -584,7 +610,7 @@
     <div data-ng-if="projetos.length === 0" flex style="text-align:center;padding-top:20px;color:rgba(0,0,0,0.4);">
       <p>Nenhum projeto cadastrado :(</p>
     </div>
-    <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | orderBy:ordenacao track by proj.numInscricao"
+    <md-list-item class="md-3-line" data-ng-repeat="proj in projetos | filter:search | filter:filtroPorSituacao | orderBy:ordenacao track by proj.numInscricao"
     ng-click="preencherCampos(proj)">
     <div layout flex="5" layout-align="center center" style="align-self:center;">
       <div style="width:15px;height:15px;border-radius:50%;"
