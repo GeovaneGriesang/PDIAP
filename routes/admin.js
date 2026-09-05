@@ -1131,8 +1131,9 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
 router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, res) => {
   try {
-    let myArray = req.body
-    ,   id = req.body[0].ID;
+    let myArray = req.body;
+    if (!myArray.length) return res.status(400).send('Nenhum integrante enviado');
+    let id = myArray[0].ID;
     if (!idValido(id)) return res.status(400).send('ID inválido');
 
     for (let j = 0; j < myArray.length; j++) {
@@ -1147,27 +1148,16 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
       }
     }
 
-    myArray.forEach(function (value, i) {
+    // Antes a resposta de sucesso saía na hora, sem esperar essas gravações
+    // terminarem (nem checar se deram erro) - então um orientador novo podia
+    // falhar em silêncio no banco (ex: erro do Mongo) enquanto o admin via
+    // "Alteração realizada com sucesso!" na tela. Agora cada integrante vira
+    // uma Promise e só respondemos depois que TODAS terminam de verdade.
+    let promessas = myArray.map(function (value) {
       if (value._id !== undefined) {
-    if (!idValido(value._id)) return;
-    let id_subdoc = value._id,
-    newIntegrante = ({
-      _id: id_subdoc,
-      tipo: value.tipo,
-      nome: value.nome,
-      email: value.email,
-      nacionalidade: value.nacionalidade,
-      cpf: splita(value.cpf),
-      telefone: splita(value.telefone),
-      tamCamiseta: value.tamCamiseta
-    });
-        projetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
-        {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
-        (err, doc) => {
-          if (err) { console.error('Erro ao editar projeto', err); return; }
-        });
-      } else if (value._id === undefined) {
+        if (!idValido(value._id)) return Promise.resolve();
         let newIntegrante = ({
+          _id: value._id,
           tipo: value.tipo,
           nome: value.nome,
           email: value.email,
@@ -1176,23 +1166,48 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
           telefone: splita(value.telefone),
           tamCamiseta: value.tamCamiseta
         });
-
-        projetoSchema.findOne({"_id": id}, (err, usr) => {
-          if (err) { console.error('Erro ao editar projeto', err); return; }
-          usr.integrantes.push(newIntegrante);
-          usr.save((err, usr) => {
-      if (err) { console.error('Erro ao editar projeto', err); return; }
+        return new Promise(function (resolve, reject) {
+          projetoSchema.findOneAndUpdate({"_id": id, "integrantes._id": value._id},
+          {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new: true},
+          (err, doc) => {
+            if (err) return reject(err);
+            resolve(doc);
           });
         });
-
-        projetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
-          if (err) { console.error('Erro ao editar projeto', err); return; }
-        });
       }
+
+      let newIntegrante = ({
+        tipo: value.tipo,
+        nome: value.nome,
+        email: value.email,
+        nacionalidade: value.nacionalidade,
+        cpf: splita(value.cpf),
+        telefone: splita(value.telefone),
+        tamCamiseta: value.tamCamiseta
+      });
+      return new Promise(function (resolve, reject) {
+        projetoSchema.findOne({"_id": id}, (err, usr) => {
+          if (err) return reject(err);
+          if (!usr) return reject(new Error('Projeto não encontrado'));
+          usr.integrantes.push(newIntegrante);
+          usr.updatedAt = Date.now();
+          usr.save((err, usr) => {
+            if (err) return reject(err);
+            resolve(usr);
+          });
+        });
+      });
     });
-    res.status(200).json(myArray);
+
+    Promise.all(promessas)
+    .then(() => res.status(200).json(myArray))
+    .catch((err) => {
+      console.error('Erro ao editar integrantes', err);
+      res.status(500).send('Falha ao salvar integrantes');
+    });
   } catch (error) {
     console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    res.status(500).send('Falha ao salvar integrantes');
   }
 });
 
