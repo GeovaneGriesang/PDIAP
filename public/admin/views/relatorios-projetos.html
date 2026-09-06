@@ -428,6 +428,47 @@
 
 				<div class="relatorios-secao">
 					<h3>
+						<span class="relatorios-titulo-clicavel" data-ng-click="aba.hospedagemExpandido = !aba.hospedagemExpandido">
+							<md-icon class="relatorios-seta" md-svg-src="{{aba.hospedagemExpandido ? 'minus' : 'plus'}}" style="width:18px;height:18px;vertical-align:middle;"></md-icon>
+							Hospedagem - relação de pessoas ({{aba.hospedagemPessoas.length}})
+						</span>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarHospedagemPessoas(aba)">
+							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
+							<md-icon md-svg-src="content-copy"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar planilha" data-ng-click="csvHospedagemPessoas(aba)">
+							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
+							<md-icon md-svg-src="file-delimited"></md-icon>
+						</md-button>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfHospedagemPessoas(aba)">
+							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+							<md-icon md-svg-src="file-pdf-box"></md-icon>
+						</md-button>
+					</h3>
+					<div class="relatorios-conteudo-retratil" data-ng-show="aba.hospedagemExpandido">
+						<table class="relatorios-tabela">
+							<thead>
+								<tr><th>Nome</th><th>Tipo</th><th>E-mail</th><th>Telefone</th><th>Projeto</th><th>Escola</th></tr>
+							</thead>
+							<tbody>
+								<tr data-ng-repeat="p in aba.hospedagemPessoas">
+									<td>{{p.nome}}</td>
+									<td>{{p.tipo}}</td>
+									<td>{{p.email}}</td>
+									<td>{{p.telefone}}</td>
+									<td>{{p.nomeProjeto}}</td>
+									<td>{{p.nomeEscola}}</td>
+								</tr>
+								<tr data-ng-if="aba.hospedagemPessoas.length === 0">
+									<td colspan="6" style="text-align:center;color:rgba(0,0,0,0.4);">Nenhuma solicitação de hospedagem</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="relatorios-secao">
+					<h3>
 						<span>Por categoria</span>
 						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Copiar" data-ng-click="copiarCategorias(aba)">
 							<md-tooltip md-direction="top">Copiar pro WhatsApp</md-tooltip>
