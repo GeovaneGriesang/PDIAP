@@ -70,6 +70,7 @@
 				escolasArray: [],
 				eixos: EIXOS.map(function(e) { return { nome: e.nome, categoria: e.categoria, num: 0 }; }),
 				projetos: [],
+				hospedagemPessoas: [],
 				alunos: {},
 				orientadores: {},
 				cidades: {},
@@ -85,6 +86,42 @@
 		function contarHospedagem(hospedagem) {
 			if (!hospedagem) return 0;
 			return hospedagem.split(',').filter(function(s) { return s.trim() !== ''; }).length;
+		}
+
+		// Mesma máscara usada ao exibir telefone em Editar Projeto (editProjetosCtrl.js)
+		// - só faz sentido pra 10/11 dígitos (fixo/celular BR); outros tamanhos (número
+		// estrangeiro) ficam como vieram, sem tentar encaixar numa máscara errada.
+		function formatarTelefone(telefone) {
+			if (!telefone || (telefone.length !== 10 && telefone.length !== 11)) return telefone || '';
+			var t = "(" + telefone;
+			t = t.substring(0,3) + ")" + t.substring(3);
+			t = t.substring(0,4) + " " + t.substring(4);
+			t = t.substring(0,9) + "-" + t.substring(9);
+			return t;
+		}
+
+		// O campo "hospedagem" do projeto só guarda os NOMES (texto livre, separados por
+		// vírgula) de quem precisa - cruza com "integrantes" do mesmo projeto pra achar
+		// e-mail/telefone de cada um. Sem correspondência (nome digitado diferente do
+		// cadastrado), ainda entra na lista com e-mail/telefone em branco - melhor
+		// aparecer incompleto do que sumir da lista de quem precisa de hospedagem.
+		function pessoasComHospedagem(proj) {
+			if (!proj.hospedagem) return [];
+			var nomes = proj.hospedagem.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s !== ''; });
+			return nomes.map(function(nomeSolicitado) {
+				var integrante = (proj.integrantes || []).filter(function(i) {
+					return (i.nome || '').trim().toLowerCase() === nomeSolicitado.toLowerCase();
+				})[0];
+				return {
+					nome: nomeSolicitado,
+					email: integrante ? integrante.email : '',
+					telefone: formatarTelefone(integrante ? integrante.telefone : ''),
+					tipo: integrante ? integrante.tipo : '',
+					nomeProjeto: proj.nomeProjeto,
+					numInscricao: proj.numInscricao,
+					nomeEscola: proj.nomeEscola || ''
+				};
+			});
 		}
 
 		// Chave pra reconhecer a MESMA pessoa repetida em mais de um projeto: usa o
@@ -130,6 +167,7 @@
 		function acumular(agregado, proj) {
 			agregado.countTotal++;
 			agregado.countHospedagem += contarHospedagem(proj.hospedagem);
+			agregado.hospedagemPessoas = agregado.hospedagemPessoas.concat(pessoasComHospedagem(proj));
 
 			if (proj.categoria === 'Fundamental I (1º ao 5º anos)') agregado.countFundamentalI++;
 			else if (proj.categoria === 'Fundamental II (6º ao 9º anos)') agregado.countFundamentalII++;
@@ -348,6 +386,9 @@
 		function finalizarAgregacao(agregado) {
 			agregado.escolasArray = escolasParaArray(agregado.escolas);
 			agregado.escolasTotal = somarCampo(agregado.escolasArray, 'num');
+
+			agregado.hospedagemPessoas.sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || '', 'pt-BR'); });
+			agregado.hospedagemExpandido = false;
 
 			agregado.categoriasArray = ordenarComMax([
 				{ nome: 'Fundamental I (1º ao 5º anos)', num: agregado.countFundamentalI },
@@ -609,6 +650,21 @@
 			};
 		}
 
+		// Relação de nome/e-mail/telefone de quem solicitou hospedagem, pra quem for
+		// organizar a hospedagem entrar em contato direto - diferente de dadosHospedagem
+		// (só a contagem), aqui é pessoa por pessoa.
+		function dadosHospedagemPessoas(aba) {
+			return {
+				colunas: [
+					{ texto: 'Nome', largura: '*' }, { texto: 'Tipo', largura: 70 }, { texto: 'E-mail', largura: 140 },
+					{ texto: 'Telefone', largura: 90 }, { texto: 'Projeto', largura: 120 }, { texto: 'Escola', largura: 120 }
+				],
+				linhas: aba.hospedagemPessoas.map(function(p) {
+					return [p.nome, p.tipo, p.email, p.telefone, p.nomeProjeto, p.nomeEscola];
+				})
+			};
+		}
+
 		function dadosCategorias(aba) {
 			return {
 				colunas: [{ texto: 'Categoria', largura: '*' }, { texto: 'Projetos', largura: 80 }],
@@ -735,6 +791,9 @@
 		$scope.csvTotalHospedagem = function(aba) { csvDe('hospedagem' + sufixo(aba), dadosHospedagem(aba)); };
 		$scope.pdfTotalHospedagem = function(aba) { pdfDe(tituloAba('Hospedagem', aba), null, dadosHospedagem(aba), null, nomeArquivoPdf('Hospedagem', aba)); };
 
+		$scope.csvHospedagemPessoas = function(aba) { csvDe('hospedagem-pessoas' + sufixo(aba), dadosHospedagemPessoas(aba)); };
+		$scope.pdfHospedagemPessoas = function(aba) { var d = dadosHospedagemPessoas(aba); pdfDe(tituloAba('Hospedagem - relação de pessoas', aba), d.linhas.length + ' pessoa(s)', d, 'landscape', nomeArquivoPdf('Hospedagem_Pessoas', aba)); };
+
 		$scope.csvCategorias = function(aba) { csvDe('por-categoria' + sufixo(aba), dadosCategorias(aba)); };
 		$scope.pdfCategorias = function(aba) { pdfDe(tituloAba('Por categoria', aba), null, dadosCategorias(aba), null, nomeArquivoPdf('Por_Categoria', aba)); };
 
@@ -790,6 +849,14 @@
 			return '*Total e hospedagem — ' + aba.nome + '*\n' +
 				'- Total de projetos: *' + aba.countTotal + '*\n' +
 				'- Pessoas com hospedagem solicitada: *' + aba.countHospedagem + '*';
+		}
+
+		function textoHospedagemPessoas(aba) {
+			var linhas = aba.hospedagemPessoas.map(function(p) {
+				var contato = [p.email, p.telefone].filter(function(v) { return v; }).join(' / ');
+				return '- ' + p.nome + (p.tipo ? ' (' + p.tipo + ')' : '') + ' — ' + p.nomeProjeto + (contato ? '\n  ' + contato : '');
+			});
+			return '*Hospedagem - relação de pessoas — ' + aba.nome + '*\n' + (linhas.length ? linhas.join('\n') : '(nenhuma solicitação)');
 		}
 
 		function textoCategorias(aba) {
@@ -936,6 +1003,9 @@
 		};
 		$scope.copiarTotalHospedagem = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoTotalHospedagem(aba));
+		};
+		$scope.copiarHospedagemPessoas = function(aba) {
+			copiarTexto(cabecalho(aba) + '\n\n' + textoHospedagemPessoas(aba));
 		};
 		$scope.copiarCategorias = function(aba) {
 			copiarTexto(cabecalho(aba) + '\n\n' + textoCategorias(aba));
