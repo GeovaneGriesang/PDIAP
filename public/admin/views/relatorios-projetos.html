@@ -134,7 +134,12 @@
 	}
 	.relatorios-seta {
 		flex: 0 0 20px;
-		margin-right: 4px;
+		/* O md-icon do Angular Material vem com "margin: auto" por padrão - como ele é
+		   item de um container flex (.relatorios-titulo-clicavel), essa margem automática
+		   sobrevivia à esquerda (só a direita era sobrescrita) e empurrava ícone+título
+		   inteiros pra direita, sobrando espaço vazio à esquerda. Zerar todas as margens
+		   e só então reabrir a direita evita esse vazamento. */
+		margin: 0 4px 0 0;
 		color: rgba(0,0,0,0.45);
 	}
 	.relatorios-detalhe-camiseta {
@@ -292,8 +297,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfResumo(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfResumo(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 	</div>
@@ -334,8 +339,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTudo(aba, true)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfTudo(aba, true)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</div>
@@ -348,8 +353,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTudo(aba, false)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfTudo(aba, false)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</div>
@@ -362,8 +367,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfResumoExecutivo(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfResumoExecutivo(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</div>
@@ -380,8 +385,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTotaisPorNivel(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfTotaisPorNivel(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -411,8 +416,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfTotalHospedagem(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfTotalHospedagem(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -440,8 +445,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfHospedagemPessoas(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfHospedagemPessoas(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -478,8 +483,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfCategorias(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfCategorias(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -507,8 +512,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfEixosGrupo(aba, grupo)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfEixosGrupo(aba, grupo)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -536,8 +541,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfCamisetas(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfCamisetas(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -581,8 +586,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfEscolas(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfEscolas(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -618,8 +623,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfAlunos(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfAlunos(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -665,8 +670,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfProjetosPorCategoriaEixo(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfProjetosPorCategoriaEixo(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -706,8 +711,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfProjetos(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfProjetos(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -761,8 +766,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfOrientadores(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfOrientadores(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
@@ -805,8 +810,8 @@
 							<md-tooltip md-direction="top">Baixar planilha (CSV)</md-tooltip>
 							<md-icon md-svg-src="file-delimited"></md-icon>
 						</md-button>
-						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Gerar PDF" data-ng-click="pdfLocalizacao(aba)">
-							<md-tooltip md-direction="top">Gerar PDF</md-tooltip>
+						<md-button class="md-icon-button relatorios-btn-copiar" aria-label="Baixar PDF" data-ng-click="pdfLocalizacao(aba)">
+							<md-tooltip md-direction="top">Baixar PDF</md-tooltip>
 							<md-icon md-svg-src="file-pdf-box"></md-icon>
 						</md-button>
 					</h3>
