@@ -45,25 +45,20 @@
 			return logoDataUri;
 		}
 
-		// Monta e abre o PDF. `opcoes`:
+		// Monta e baixa o PDF. `opcoes`:
 		//   titulo (obrigatório), subtitulo, orientacao ('portrait'|'landscape', default
 		//   'portrait'), conteudo (array de nós pdfMake - o corpo do relatório em si,
 		//   normalmente um título+tabela por seção, já formatado por quem chama),
-		//   arquivo (nome sugerido pro Salvar como, sem ".pdf" - some no metadado
-		//   "Title" do PDF, que é o que o visualizador do Chrome usa como nome de
-		//   arquivo padrão; sem isso o "Salvar como" cai num UUID da blob: URL).
+		//   arquivo (nome do arquivo baixado, sem ".pdf" - ver nomeArquivoPdf() em
+		//   relatoriosCtrl.js pro padrão usado, ex: "2026_Hospedagem").
+		//
+		// Antes abria o PDF numa aba nova (blob: URL) e contava com o metadado "Title"
+		// do PDF pro "Salvar como" sugerir o nome certo - na prática o navegador nem
+		// sempre respeita isso (e nem chega a existir esse metadado se o Chrome estiver
+		// configurado pra baixar PDF direto em vez de abrir), daí o nome do arquivo saía
+		// um UUID da blob: URL. Baixar direto com <a download="..."> força o nome certo
+		// de verdade, em qualquer navegador/configuração - sem depender de metadado.
 		function gerar(opcoes) {
-			// A aba precisa abrir NESTE exato instante, ainda síncrono com o clique que
-			// chamou essa função - é o motivo do comentário no próprio código-fonte do
-			// pdfMake ("we have to open the window immediately... otherwise popup
-			// blockers will stop us"). Carregar a logo é assíncrono (busca a imagem,
-			// converte num <canvas>); esperar isso terminar pra só DEPOIS chamar
-			// pdfMake...open() - como este código fazia antes - abre a aba tarde demais:
-			// o navegador não reconhece mais como resposta direta ao clique e ou bloqueia
-			// a aba, ou ela abre em branco e nunca é preenchida ("about:blank"). Abrindo
-			// aqui e preenchendo o location.href só depois que o PDF fica pronto (mesma
-			// técnica que o pdfMake usa internamente, só que na hora certa) resolve.
-			var janela = window.open('', '_blank');
 			return $q.when(carregarLogo()).then(function(logo) {
 				// "fit" (não "width" sozinho): o arquivo original tem uma faixa de espaço
 				// vazio em volta do texto, então escalar só pela LARGURA mantendo a
@@ -113,20 +108,19 @@
 					defaultStyle: opcoes.estiloPadrao || { fontSize: 9 },
 					info: opcoes.arquivo ? { title: opcoes.arquivo } : undefined
 				};
-				try {
-					// getBuffer + Blob (não getDataUrl): Chrome bloqueia silenciosamente a
-					// navegação de uma aba pra uma URL "data:" (restrição de segurança contra
-					// phishing) - "janela.location.href = dataUrl" não dava erro nenhum, só
-					// deixava a aba em about:blank pra sempre. "blob:" não tem essa restrição.
-					pdfMake.createPdf(docDefinition).getBuffer(function(buffer) {
-						if (!janela) return;
-						var blob = new Blob([buffer], { type: 'application/pdf' });
-						janela.location.href = URL.createObjectURL(blob);
-					});
-				} catch (e) {
-					if (janela) janela.close();
-					throw e;
-				}
+				pdfMake.createPdf(docDefinition).getBuffer(function(buffer) {
+					var blob = new Blob([buffer], { type: 'application/pdf' });
+					var url = URL.createObjectURL(blob);
+					var link = document.createElement('a');
+					link.href = url;
+					link.download = (opcoes.arquivo || 'relatorio') + '.pdf';
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+					// Revoga só depois de um tempo - revogar na hora derruba o download em
+					// alguns navegadores, que ainda estão lendo o blob nesse instante.
+					setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+				});
 			});
 		}
 
