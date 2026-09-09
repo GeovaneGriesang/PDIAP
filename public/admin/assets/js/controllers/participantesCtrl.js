@@ -8,6 +8,7 @@
 		$scope.eventos1 = [];
 		$scope.eventos2 = [];
 		$scope.eventos3 = [];
+		$scope.eventos4 = [];
 		$rootScope.participantes = [];
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
@@ -46,7 +47,9 @@
 							$scope.eventos2.push(evento);
 						} else if (value.tipo === 'Oficina') {
 							$scope.eventos3.push(evento);
-						}	
+						} else if (value.tipo === 'Palestra') {
+							$scope.eventos4.push(evento);
+						}
 					}
 					
 				});
@@ -131,6 +134,7 @@
 			$scope.eventos1 = [];
 			$scope.eventos2 = [];
 			$scope.eventos3 = [];
+			$scope.eventos4 = [];
 			mostraEventos();
 
 			$scope.CPFparticipantes = [];
@@ -159,6 +163,7 @@
 			var eventos1 = $scope.eventos1;
 			var eventos2 = $scope.eventos2;
 			var eventos3 = $scope.eventos3;
+			var eventos4 = $scope.eventos4;
 			$mdDialog.show({
 				controller: function dialogParticipanteController($scope, $rootScope, $mdToast, $mdDialog, adminAPI) {
 					$scope.toast = function(message,tema) {
@@ -169,6 +174,7 @@
 					$scope.eventos1 = eventos1;
 					$scope.eventos2 = eventos2;
 					$scope.eventos3 = eventos3;
+					$scope.eventos4 = eventos4;
 					angular.forEach(participante.eventos, function (value, key) {
 						for (var x in $scope.eventos1) {
 							if ($scope.eventos1[x].titulo === value.titulo) {
@@ -185,6 +191,11 @@
 								$scope.eventos3[z].selected = true;
 							}
 						}
+						for (var w in $scope.eventos4) {
+							if ($scope.eventos4[w].titulo === value.titulo) {
+								$scope.eventos4[w].selected = true;
+							}
+						}
 					});
 					$scope.alterarParticipante = function(participante) {
 						participante.eventos = [];
@@ -196,6 +207,9 @@
 							eventos.push(value);
 						});
 						angular.forEach(participante.eventos3, function (value, key) {
+							eventos.push(value);
+						});
+						angular.forEach(participante.eventos4, function (value, key) {
 							eventos.push(value);
 						});
 
@@ -258,6 +272,9 @@
 								}
 								for (var z in $scope.eventos3) {
 									$scope.eventos3[z].selected = false;
+								}
+								for (var w in $scope.eventos4) {
+									$scope.eventos4[w].selected = false;
 								}
 								// console.log("inserido:");
 								// console.log({

@@ -97,6 +97,15 @@
               </md-select>
               <div class="md-errors-spacer"></div>
             </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
+              <label>Palestra</label>
+              <md-select name="tipo" data-ng-model="participante.eventos" multiple>
+                <md-option data-ng-repeat="evt in eventos4" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}">{{evt.titulo}}</md-option>
+                <p class="select-vazio" data-ng-if="eventos4.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
+              </md-select>
+              <div class="md-errors-spacer"></div>
+            </md-input-container>
           </div>
           <!-- </div> -->
           <!-- <div layout="column" layout-align="center center" data-ng-if="btnAdd">

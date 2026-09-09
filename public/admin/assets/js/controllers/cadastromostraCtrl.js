@@ -19,6 +19,8 @@
       $scope.textocertificado_roficinas;
       $scope.textocertificado_academica;
       $scope.textocertificado_docentes;
+      $scope.textocertificado_ppalestra;
+      $scope.textocertificado_rpalestra;
 
       // Máscaras disponíveis por campo de texto - variam porque cada certificado é emitido
       // pra um tipo diferente de destinatário/evento (ver homeCtrl.js#emitirCertificado1),
@@ -75,6 +77,16 @@
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Descrição da participação'},
           {chave:'cargaHoraria', desc:'Carga horária'}
+        ],
+        ppalestra: [
+          {chave:'nome', desc:'Nome do participante'},
+          {chave:'eventos', desc:'Nome da(s) palestra(s)'},
+          {chave:'cargaHoraria', desc:'Carga horária total'}
+        ],
+        rpalestra: [
+          {chave:'responsavel', desc:'Nome do(a) palestrante'},
+          {chave:'titulo', desc:'Título da palestra'},
+          {chave:'cargaHoraria', desc:'Carga horária'}
         ]
       };
 
@@ -108,6 +120,8 @@
              $scope.textocertificado_roficinas = $scope.certificados[i].textoROficinas;
              $scope.textocertificado_academica = $scope.certificados[i].textoAcademica;
              $scope.textocertificado_docentes = $scope.certificados[i].textoDocentes;
+             $scope.textocertificado_ppalestra = $scope.certificados[i].textoPPalestra;
+             $scope.textocertificado_rpalestra = $scope.certificados[i].textoRPalestra;
              $scope.imagemExistente = $scope.certificados[i].imagem;
              $scope.imagemFundoExistente = $scope.certificados[i].imagemFundo;
           }
@@ -179,6 +193,8 @@
             'textoROficinas' : $scope.textocertificado_roficinas,
             'textoAcademica' : $scope.textocertificado_academica,
             'textoDocentes' : $scope.textocertificado_docentes,
+            'textoPPalestra' : $scope.textocertificado_ppalestra,
+            'textoRPalestra' : $scope.textocertificado_rpalestra,
             'ano_certificado' : $scope.ano
           };
 

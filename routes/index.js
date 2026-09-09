@@ -170,7 +170,7 @@ router.post('/emitirCertificado', (req, res) => {
 
   function pesquisaParticipante(cpf) {
     return new Promise(function (fullfill, reject) {
-      participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas eventos createdAt -_id', (err, usr) => {
+      participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas tokenPalestra eventos createdAt -_id', (err, usr) => {
         if (err) return reject(err)
         fullfill(usr)
       })
@@ -313,6 +313,7 @@ router.post('/emitirCertificado', (req, res) => {
     // let array = []
     let contador1 = false;
     let contador2 = false;
+    let contador3 = false;
     if (usr[0].eventos.length > 0) {
       for (var i in usr[0].eventos) {
         if (usr[0].eventos[i].tipo === 'Oficina') {
@@ -320,6 +321,9 @@ router.post('/emitirCertificado', (req, res) => {
         }
         else if (usr[0].eventos[i].tipo === 'Seminário Saberes Docentes') {
           contador2 = true;
+        }
+        else if (usr[0].eventos[i].tipo === 'Palestra') {
+          contador3 = true;
         }
       }
     }
@@ -346,6 +350,17 @@ router.post('/emitirCertificado', (req, res) => {
         })
       }));
     }
+    if (usr[0].tokenPalestra === undefined && contador3) {
+      let newId = new mongoose.mongo.ObjectId()
+      gravacoes.push(new Promise((fullfill, reject) => {
+        participanteSchema.findOneAndUpdate({'cpf':cpf},
+          {'$set': {'tokenPalestra': newId}}, [{new:true}],
+          (err, usr) => {
+            if (err) return reject(err);
+            fullfill(usr);
+        })
+      }));
+    }
     return Promise.all(gravacoes).then(() => pesquisaParticipante(cpf))
   })
   .then(usr => {
@@ -356,6 +371,7 @@ router.post('/emitirCertificado', (req, res) => {
       nome: usr[0].nome,
       tokenSaberes: usr[0].tokenSaberes,
       tokenOficinas: usr[0].tokenOficinas,
+      tokenPalestra: usr[0].tokenPalestra,
       eventos: usr[0].eventos,
       ano: ano
     }
@@ -605,6 +621,16 @@ router.post('/conferirCertificado', (req, res) => {
     })
   }
 
+  function pesquisaParticipantePalestra(id) {
+    return new Promise(function (fulfill, reject) {
+      participanteSchema.find({'tokenPalestra':id}, 'nome tokenPalestra cpf eventos createdAt -_id', (err, usr) => {
+        if (err) return reject(err)
+        fulfill(usr)
+        console.log("4")
+      })
+    })
+  }
+
   function pesquisaEvento(id) {
     return new Promise(function (fulfill, reject) {
       eventoSchema.find({'responsavel':{$elemMatch:{'certificados._id':id}}}, 'tipo titulo cargaHoraria data responsavel.$ createdAt -_id', (err, usr) => {
@@ -689,6 +715,20 @@ router.post('/conferirCertificado', (req, res) => {
    })
    .catch(err => console.log("Não encontrou nada nos participantes oficinas. " + err.message))
 
+   const eight = pesquisaParticipantePalestra(id).then(usr => {
+    var ano = new Date(usr[0].createdAt).getFullYear();
+    var obj = {
+      tipo: "Participante",
+      nome: usr[0].nome,
+      cpf: usr[0].cpf,
+      eventos: usr[0].eventos,
+      tokenPalestra: usr[0].tokenPalestra,
+      ano: ano
+    };
+    return obj;
+   })
+   .catch(err => console.log("Não encontrou nada nos participantes palestra. " + err.message))
+
   const five = pesquisaEvento(id).then(usr => {
      var ano = new Date(usr[0].createdAt).getFullYear();
      let participante = {
@@ -742,7 +782,7 @@ router.post('/conferirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada nos projetos - orientadores. " + err.message))
 
-  Promise.all([one, two, three, four, five, six, seven])
+  Promise.all([one, two, three, four, five, six, seven, eight])
   .then(arr => {
     res.send(arr.filter(val => val !== undefined))
   })

@@ -148,6 +148,24 @@
                             </div>
                         </div>
                     </md-input-container>
+                    <div data-mascaras-legenda="mascaras.ppalestra"></div>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Presença palestra)" type="text" name="certificadotextoppalestra" data-ng-model="textocertificado_ppalestra" required></textarea>
+                        <div class="md-errors-spacer">
+                            <div data-ng-show="editForm.mes.$dirty">
+                                <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
+                            </div>
+                        </div>
+                    </md-input-container>
+                    <div data-mascaras-legenda="mascaras.rpalestra"></div>
+                    <md-input-container class="md-block" flex-gt-xs="110">
+                        <textarea placeholder="Texto do certificado (Responsável palestra)" type="text" name="certificadotextorpalestra" data-ng-model="textocertificado_rpalestra" required></textarea>
+                        <div class="md-errors-spacer">
+                            <div data-ng-show="editForm.mes.$dirty">
+                                <div class="message-error" data-ng-show="editForm.mes.$error.required">Obrigatório.</div>
+                            </div>
+                        </div>
+                    </md-input-container>
                     <md-input-container class="md-block" flex-gt-xs="30">
                         <md-select data-ng-model="ano" ng-change="carregaDado(ano)" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
                             <md-optgroup label="Ano:">

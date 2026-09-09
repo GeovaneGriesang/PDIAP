@@ -21,6 +21,7 @@ const ParticipantelSchema = new Schema({
 	eventos: [eventoSchema],
 	tokenSaberes : {type: String},
 	tokenOficinas : {type: String},
+	tokenPalestra : {type: String},
 	createdAt: {type: Date},
 
 	// Login do participante (dashboard próprio) - mesmo padrão do Avaliador
