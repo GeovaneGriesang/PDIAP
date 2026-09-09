@@ -16,6 +16,11 @@
 		$scope.btnAdd = true;
 		$scope.count = 1;
 
+		// null = formulário em modo "novo evento"; com um _id, o formulário está
+		// carregado pra editar aquele evento (troca o texto/comportamento do botão
+		// Salvar - ver editarEvento/cancelarEdicao/cadastrarEvento).
+		$scope.editando = null;
+
 		$scope.year = CadastraAno();
 
 		$scope.addResponsavel = function() {
@@ -55,10 +60,15 @@
 								cargaHoraria: value.cargaHoraria,
 								data: dateFormat,
 								responsavel: responsaveis,
-								createdAt: ano
+								createdAt: ano,
+								// Registro completo (com o array de responsável de verdade, nome+cpf
+								// por pessoa) - a linha da lista só mostra o resumo em texto acima,
+								// mas editarEvento() precisa dos dados originais pra preencher o
+								// formulário de novo.
+								raw: value
 							});
 							$scope.eventos.push(evento);
-						}						
+						}
 					}
 				});
 			})
@@ -74,6 +84,7 @@
 
 			$scope.btnAdd = true;
 			$scope.count = 1;
+			$scope.editando = null;
 
 			mostraEventos();
 		}
@@ -96,6 +107,28 @@
 			var responsavel = [];
 			for (var i in evento.responsavel) {
 				responsavel.push(evento.responsavel[i]);
+			}
+
+			if ($scope.editando) {
+				let evtAtualizado = ({
+					id: $scope.editando,
+					titulo: evento.titulo,
+					tipo: evento.tipo,
+					cargaHoraria: hh+":"+mm,
+					data: dia+"/"+mes+"/"+ano,
+					responsavel: responsavel
+				});
+				adminAPI.putAtualizaEvento(evtAtualizado)
+				.success(function(data) {
+					$scope.toast('Evento atualizado com sucesso!','success-toast');
+					mostraEventos();
+					resetForm();
+				})
+				.error(function(status) {
+					$scope.toast('Falha.','failed-toast');
+					console.log("Error: "+status);
+				});
+				return;
 			}
 
 			// Cadastra o evento no ano selecionado no filtro do cabeçalho, em vez de sempre
@@ -121,6 +154,39 @@
 				$scope.toast('Falha.','failed-toast');
 				console.log("Error: "+status);
 			});
+		};
+
+		// Preenche o mesmo formulário de "Novo Evento" com os dados de um evento já
+		// existente (data/carga horária viram Date - mesmo tipo que os <input date>/<input
+		// time> do formulário esperam - convertendo de volta o formato salvo em
+		// cadastrarEvento) e troca o botão Salvar pra modo edição (ver cadastrarEvento).
+		$scope.editarEvento = function(evento) {
+			var raw = evento.raw;
+
+			var partesData = raw.data.split('/');
+			var dataObj = new Date(Number(partesData[2]), Number(partesData[1]) - 1, Number(partesData[0]));
+
+			var partesHora = raw.cargaHoraria.split(':');
+			var horaObj = new Date(1970, 0, 1, Number(partesHora[0]), Number(partesHora[1]));
+
+			$scope.evento = {
+				titulo: raw.titulo,
+				tipo: raw.tipo,
+				data: dataObj,
+				cargaHoraria: horaObj,
+				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf }; })
+			};
+			$scope.dynamicFields = raw.responsavel.map(function(r, i) { return { nome: 'nome'+(i+1), cpf: 'cpf'+(i+1) }; });
+			$scope.count = raw.responsavel.length;
+			$scope.editando = evento._id;
+
+			// A janela pode estar rolada até a lista, lá embaixo - volta pro topo, onde
+			// está o formulário que acabou de ser preenchido pra edição.
+			window.scrollTo(0, 0);
+		};
+
+		$scope.cancelarEdicao = function() {
+			resetForm();
 		};
 
 		$scope.removerEvento = function(ev,id,titulo) {
@@ -171,6 +237,7 @@
 			$scope.eventosForm.$setUntouched();
 			$scope.btnAdd = true;
 			$scope.count = 1;
+			$scope.editando = null;
 			$scope.dynamicFields = [{nome:'nome1', cpf:'cpf1'}];
 		};
 	});

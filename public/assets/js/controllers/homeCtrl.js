@@ -446,21 +446,16 @@
 						}
 
 						//usa regex pra alterar as chaves no texto pela informação correspondente Ex: ¨nome -> Mateus R. Algayer,
-						//¨nomeProjeto -> PDIAPIA, e assim por diante
-						while(texto.match(/¨\w+/) != null){
-
-							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
-								
-								for (let chave in dados) {
-									if(str == "¨"+chave){
-										// String(...) antes do toUpperCase - "ano" e "cargaHoraria" às
-										// vezes chegam como number, não string (¨ano quebrava a geração
-										// toda do PDF com "toUpperCase is not a function" nesse caso).
-										return String(dados[chave]).toUpperCase();
-									}
-								}
-							});
-						}
+						//¨nomeProjeto -> PDIAPIA, e assim por diante. Um replace só, com regex global
+						// (/g) - antes, quando a chave usada no texto não existia em "dados" (ex:
+						// alguém usa ¨eventos num texto de responsável, que só tem ¨titulo), a
+						// função de troca não retornava nada e a ocorrência virava a palavra
+						// "undefined" no certificado gerado. Agora, sem chave correspondente, o
+						// ¨placeholder simplesmente fica como está no texto - visivelmente errado,
+						// mas não confundível com um dado de verdade.
+						texto = texto.replace(/¨(\w+)/g, function(str, chave) {
+							return dados.hasOwnProperty(chave) ? String(dados[chave]).toUpperCase() : str;
+						});
 
 						// var url_1 = window.localStorage.getItem('url1');
 						// var url_2 = window.sessionStorage.getItem('url2');
@@ -534,18 +529,12 @@
 						// var url_2 = window.sessionStorage.getItem('url2');
 
 						//usa regex pra alterar as chaves no texto pela informação correspondente Ex: ¨nome -> Mateus R. Algayer,
-						//¨nomeProjeto -> PDIAPIA, e assim por diante
-						while(texto.match(/¨\w+/) != null){
-
-							texto = texto.replace(/¨\w+/, (str = texto.match(/¨\w+/)) => {
-								
-								for (let chave in dados) {
-									if(str == "¨"+chave){
-										return String(dados[chave]).toUpperCase();
-									}
-								}
-							});
-						}
+						//¨nomeProjeto -> PDIAPIA, e assim por diante (ver comentário equivalente em
+						// emitirCertificado1 - ¨chave sem correspondência em "dados" fica como está,
+						// em vez de virar "undefined").
+						texto = texto.replace(/¨(\w+)/g, function(str, chave) {
+							return dados.hasOwnProperty(chave) ? String(dados[chave]).toUpperCase() : str;
+						});
 
 						var docDefinition = {
 							pageSize: 'A4',

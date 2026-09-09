@@ -145,6 +145,50 @@ router.put('/removeEvento', miPermiso("3"), (req, res) => {
   }
 });
 
+// Antes só dava pra apagar um evento e recriar do zero. Casa responsável enviado por cpf
+// com um responsável já existente no evento (por cpf, já sem pontuação) e REAPROVEITA o
+// subdocumento dele (mesmo _id, mesmo array "certificados") - só troca o nome. Um
+// responsável cujo cpf não bate com nenhum já existente vira um subdocumento novo (sem
+// certificado emitido ainda). Sem isso, reescrever o array inteiro trocaria o _id de todo
+// mundo e quebraria o link de quem já baixou certificado de responsável desse evento
+// (o token de validação é achado por responsavel._id, não por cpf).
+router.put('/atualizaEvento', miPermiso("3"), (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+
+    eventoSchema.findOne({"_id": id}, (err, evt) => {
+      if (err) { console.error('Erro ao atualizar evento', err); return res.status(500).send('Falha ao atualizar evento'); }
+      if (!evt) return res.status(404).send('Evento não encontrado');
+
+      let responsaveisAtuais = evt.responsavel || [];
+      let responsaveisNovos = (req.body.responsavel || []).map((r) => {
+        let cpfLimpo = splita(r.cpf);
+        let existente = responsaveisAtuais.find((ra) => ra.cpf === cpfLimpo);
+        if (existente) {
+          existente.nome = r.nome;
+          return existente;
+        }
+        return { nome: r.nome, cpf: cpfLimpo };
+      });
+
+      evt.tipo = req.body.tipo;
+      evt.titulo = req.body.titulo;
+      evt.cargaHoraria = req.body.cargaHoraria;
+      evt.data = req.body.data;
+      evt.responsavel = responsaveisNovos;
+
+      evt.save((err, doc) => {
+        if (err) { console.error('Erro ao atualizar evento', err); return res.status(500).send('Falha ao atualizar evento'); }
+        res.status(200).json(doc);
+      });
+    });
+  } catch (error){
+    console.log('findOne error--> ${error}');
+    res.status(500).send('Falha ao atualizar evento');
+  }
+});
+
 // Feiras externas (Mostratec, Mostratec Júnior, MOCITEC, etc) para as quais um projeto pode
 // ser classificado - cadastradas por ano, com as categorias às quais se aplicam e o texto do
 // certificado de classificação (ver premiacao.html/details.premiacao.html e getFeirasInfo).

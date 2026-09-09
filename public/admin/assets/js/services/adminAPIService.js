@@ -232,6 +232,15 @@
 			return $http(request);
 		};
 
+		let _putAtualizaEvento = function(evento) {
+			const request = {
+				url: '/admin/atualizaEvento',
+				method: 'PUT',
+				data: evento
+			}
+			return $http(request);
+		};
+
 		// Salva as notas de avaliação de um projeto (mesma rota já usada pelo app
 		// autônomo de avaliação em admin/avaliacao/assets/js/services/avaliacaoAPIService.js).
 		let _putAvaliacao = function(id, notas) {
@@ -611,6 +620,7 @@
 			putPremiadoProjetos: _putPremiadoProjetos,
 			postEvento: _postEvento,
 			getEventos: _getEventos,
+			putAtualizaEvento: _putAtualizaEvento,
 			putAvaliacao: _putAvaliacao,
 			postFeira: _postFeira,
 			getFeiras: _getFeiras,
