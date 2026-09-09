@@ -138,6 +138,7 @@
 						let eventos = '';
 						let evts3 = '';
 						let ch3 = '0:00';
+						let datas3 = '';
 						angular.forEach(data[i].eventos, function (value, key){
 							if (value.tipo === "Oficina") {
 								if (evts1 === '') {
@@ -156,10 +157,16 @@
 								}
 								ch2 = somaHora(value.cargaHoraria,ch2);
 							} else if (value.tipo === "Palestra") {
+								// datas3 acompanha evts3 posição a posição (mesmo separador ", "),
+								// pra manter as duas listas alinhadas mesmo quando algum vínculo
+								// antigo de participante-evento não tem data salva (value.data
+								// undefined vira string vazia naquela posição, não pula a posição).
 								if (evts3 === '') {
 									evts3 = value.titulo;
+									datas3 = value.data || '';
 								} else {
 									evts3 = evts3+', '+value.titulo;
+									datas3 = datas3+', '+(value.data || '');
 								}
 								ch3 = somaHora(value.cargaHoraria,ch3);
 							}
@@ -190,6 +197,9 @@
 								nome: data[i].nome,
 								token: data[i].tokenPalestra,
 								eventos: evts3,
+								titulo: evts3,
+								data: datas3,
+								tipo: "Palestra",
 								cargaHoraria: ch3,
 								ano: data[i].ano
 							};

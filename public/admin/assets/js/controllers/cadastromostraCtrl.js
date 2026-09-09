@@ -87,6 +87,9 @@
         ppalestra: [
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Nome da(s) palestra(s)'},
+          {chave:'titulo', desc:'Nome da(s) palestra(s)'},
+          {chave:'data', desc:'Data do evento'},
+          {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária total'}
         ],
         rpalestra: [

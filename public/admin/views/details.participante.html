@@ -44,7 +44,7 @@
         <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
           <label>Semana Acadêmica</label>
           <md-select name="tipo" data-ng-model="participante.eventos1" multiple>
-            <md-option data-ng-repeat="evt in eventos1" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <md-option data-ng-repeat="evt in eventos1" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria,'data':evt.data}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
             <p class="select-vazio" data-ng-if="eventos1.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
           </md-select>
           <div class="md-errors-spacer"></div>
@@ -53,7 +53,7 @@
         <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
           <label>Saberes Docentes</label>
           <md-select name="tipo" data-ng-model="participante.eventos2" multiple>
-            <md-option data-ng-repeat="evt in eventos2" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <md-option data-ng-repeat="evt in eventos2" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria,'data':evt.data}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
             <p class="select-vazio" data-ng-if="eventos2.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
           </md-select>
           <div class="md-errors-spacer"></div>
@@ -62,7 +62,7 @@
         <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
           <label>Oficina</label>
           <md-select name="tipo" data-ng-model="participante.eventos3" multiple>
-            <md-option data-ng-repeat="evt in eventos3" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <md-option data-ng-repeat="evt in eventos3" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria,'data':evt.data}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
             <p class="select-vazio" data-ng-if="eventos3.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
           </md-select>
           <div class="md-errors-spacer"></div>
@@ -71,7 +71,7 @@
         <md-input-container class="md-block selectCustom1" flex-gt-xs="30">
           <label>Palestra</label>
           <md-select name="tipo" data-ng-model="participante.eventos4" multiple>
-            <md-option data-ng-repeat="evt in eventos4" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
+            <md-option data-ng-repeat="evt in eventos4" ng-value="{'tipo':evt.tipo,'titulo':evt.titulo,'cargaHoraria':evt.cargaHoraria,'data':evt.data}" data-ng-selected="evt.selected">{{evt.titulo}}</md-option>
             <p class="select-vazio" data-ng-if="eventos4.length === 0" value="0">NENHUM EVENTO CADASTRADO</p>
           </md-select>
           <div class="md-errors-spacer"></div>
