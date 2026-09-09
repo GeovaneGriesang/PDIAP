@@ -516,6 +516,8 @@ router.post('/postCertificado', (req, res) => {
           textoROficinas: req.body.data.textoROficinas,
           textoAcademica: req.body.data.textoAcademica,
           textoDocentes: req.body.data.textoDocentes,
+          textoPPalestra: req.body.data.textoPPalestra,
+          textoRPalestra: req.body.data.textoRPalestra,
           ano_certificado: req.body.data.ano_certificado
         });
         //envia o Schema para cMostra-controller para salvar os dados no banco

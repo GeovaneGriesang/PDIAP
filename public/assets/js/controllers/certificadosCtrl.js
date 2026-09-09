@@ -32,6 +32,8 @@
 					let ch1 = '0:00';
 					let ch2 = '0:00';
 					let evts2 = '';
+					let evts3 = '';
+					let ch3 = '0:00';
 					angular.forEach(data[0].eventos, function (value, key){
 						if (data[0].tokenOficinas === token && value.tipo === "Oficina") {
 							if (evts1 === '') {
@@ -49,13 +51,23 @@
 								// eventos = eventos + value.titulo+': '+value.cargaHoraria+' hora (s).\n';
 							}
 							ch2 = somaHora(value.cargaHoraria,ch2);
+						} else if (data[0].tokenPalestra === token && value.tipo === "Palestra") {
+							if (evts3 === '') {
+								evts3 = value.titulo;
+							} else {
+								evts3 = evts3+', '+value.titulo;
+							}
+							ch3 = somaHora(value.cargaHoraria,ch3);
 						}
 					});
-					if (evts1 !== '') {						
+					if (evts1 !== '') {
 						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Oficina(s):</b> '+evts1+'</br><b>Carga Horária total:</b> '+ch1+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
 					}
 					if (evts2 !== '') {
 						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Evento(s):</b> '+evts2+'</br><b>Carga Horária total:</b> '+ch2+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
+					}
+					if (evts3 !== '') {
+						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Palestra(s):</b> '+evts3+'</br><b>Carga Horária total:</b> '+ch3+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
 					}
 				}
 				else if (data[0].tipo === 'ProjetoAluno') {					
@@ -72,6 +84,8 @@
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Conferencista</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
 					} else if(data[0].evento.tipo === 'Semana Acadêmica') {
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Responsável Semana Acadêmica</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
+					} else if(data[0].evento.tipo === 'Palestra') {
+						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Palestrante</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
 					}
 				}
 				else if (data[0].tipo === 'Premiado') {

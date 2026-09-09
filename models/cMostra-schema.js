@@ -42,6 +42,12 @@ const CadastroMostraSchema = new Schema({
     textoDocentes: {
         type: String
     },
+    textoPPalestra: {
+        type: String
+    },
+    textoRPalestra: {
+        type: String
+    },
     ano_certificado: {
 		type: Number
 	}

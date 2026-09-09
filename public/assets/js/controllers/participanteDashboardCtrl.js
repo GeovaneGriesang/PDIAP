@@ -6,7 +6,7 @@
 	.controller('participanteDashboardCtrl', function($scope, $rootScope, $window, $http, $mdToast, participanteAPI, projetosAPI) {
 
 		$scope.participante = $rootScope.participanteLogado || {};
-		$scope.certificados = { oficina: null, saberes: null };
+		$scope.certificados = { oficina: null, saberes: null, palestra: null };
 
 		// Se por algum motivo chegou aqui sem ter definido senha ainda (ex: voltou pelo
 		// histórico do navegador), manda pra tela obrigatória em vez de mostrar o dashboard.
@@ -67,6 +67,47 @@
 					}]
 				};
 				pdfMake.createPdf(docDefinition).download('Certificado_Oficinas_MOVACI_' + cert.ano + '.pdf');
+			})
+			.error(function(status) {
+				console.log('Error: ' + status);
+			});
+		};
+
+		// Certificado de Palestra - mesma lógica de baixarCertificadoOficina acima, só troca
+		// o campo de texto e o nome do arquivo.
+		$scope.baixarCertificadoPalestra = function() {
+			var cert = $scope.certificados.palestra;
+			projetosAPI.getMostra()
+			.success(function(dadosMostra) {
+				var dadosCertificado = encontrarDadosCertificado(dadosMostra, cert.ano);
+				if (!dadosCertificado) {
+					$scope.toast('Certificado do ano ' + cert.ano + ' ainda não foi cadastrado.', 'failed-toast');
+					return;
+				}
+
+				var texto = dadosCertificado.textoPPalestra || '';
+				while (texto.match(/¨\w+/) != null) {
+					texto = texto.replace(/¨\w+/, function(str) {
+						var chave = str.slice(1);
+						return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
+					});
+				}
+
+				var agora = new Date();
+				var docDefinition = {
+					pageSize: 'A4',
+					pageOrientation: 'landscape',
+					background: [{ image: dadosCertificado.imagem, width: 841, alignment: 'center' }],
+					content: [
+						{ text: texto + "\n\n\n\n", alignment: 'justify', margin: [50,210,50,0], fontSize: 16 },
+						{ text: 'Venâncio Aires, ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear() + '.', alignment: 'center', fontSize: 14 }
+					],
+					footer: [{
+						text: 'Número de validação: ' + cert.token + '. As informações deste certificado podem ser validadas em www.movaci.com.br/certificados.',
+						alignment: 'center', fontSize: 11
+					}]
+				};
+				pdfMake.createPdf(docDefinition).download('Certificado_Palestra_MOVACI_' + cert.ano + '.pdf');
 			})
 			.error(function(status) {
 				console.log('Error: ' + status);

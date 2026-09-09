@@ -165,11 +165,13 @@ router.get('/dashboard/meus-certificados', ensureParticipante, (req, res) => {
   let eventos = req.user.eventos || [];
   let temOficina = eventos.some((e) => e.tipo === 'Oficina');
   let temSaberes = eventos.some((e) => e.tipo === 'Seminário Saberes Docentes');
+  let temPalestra = eventos.some((e) => e.tipo === 'Palestra');
 
   let garantirTokens = (callback) => {
     let campos = {};
     if (temOficina && !req.user.tokenOficinas) campos.tokenOficinas = new mongoose.Types.ObjectId();
     if (temSaberes && !req.user.tokenSaberes) campos.tokenSaberes = new mongoose.Types.ObjectId();
+    if (temPalestra && !req.user.tokenPalestra) campos.tokenPalestra = new mongoose.Types.ObjectId();
     if (Object.keys(campos).length === 0) return callback(null, req.user);
     ParticipanteSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true }, callback);
   };
@@ -178,7 +180,7 @@ router.get('/dashboard/meus-certificados', ensureParticipante, (req, res) => {
     if (err) { console.error('Erro ao gerar token de certificado do participante', err); return res.status(500).send('Erro ao carregar certificados.'); }
 
     let ano = new Date(participante.createdAt).getFullYear();
-    let resposta = { oficina: null, saberes: null };
+    let resposta = { oficina: null, saberes: null, palestra: null };
 
     if (temOficina) {
       let titulos = '';
@@ -189,6 +191,17 @@ router.get('/dashboard/meus-certificados', ensureParticipante, (req, res) => {
         cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
       });
       resposta.oficina = { nome: participante.nome, token: participante.tokenOficinas, eventos: titulos, cargaHoraria: cargaHoraria, ano: ano };
+    }
+
+    if (temPalestra) {
+      let titulos = '';
+      let cargaHoraria = '0:00';
+      eventos.forEach((e) => {
+        if (e.tipo !== 'Palestra') return;
+        titulos = titulos === '' ? e.titulo : titulos + ', ' + e.titulo;
+        cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
+      });
+      resposta.palestra = { nome: participante.nome, token: participante.tokenPalestra, eventos: titulos, cargaHoraria: cargaHoraria, ano: ano };
     }
 
     if (temSaberes) {

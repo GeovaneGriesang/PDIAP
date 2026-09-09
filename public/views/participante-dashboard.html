@@ -13,13 +13,21 @@
 
       <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
         <h3 style="margin-top:0;color:#225024;">Certificados</h3>
-        <p data-ng-if="!certificados.oficina && !certificados.saberes" style="color:rgba(0,0,0,0.6);">
+        <p data-ng-if="!certificados.oficina && !certificados.saberes && !certificados.palestra" style="color:rgba(0,0,0,0.6);">
           Nenhum certificado disponível ainda.
         </p>
 
         <div data-ng-if="certificados.oficina" layout="row" layout-align="space-between center" style="padding:8px 0;border-bottom:1px solid #eee;">
           <span>Certificado de Oficina(s) - {{certificados.oficina.ano}}</span>
           <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-click="baixarCertificadoOficina()">
+            <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+            Baixar
+          </md-button>
+        </div>
+
+        <div data-ng-if="certificados.palestra" layout="row" layout-align="space-between center" style="padding:8px 0;border-bottom:1px solid #eee;">
+          <span>Certificado de Palestra(s) - {{certificados.palestra.ano}}</span>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-click="baixarCertificadoPalestra()">
             <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
             Baixar
           </md-button>

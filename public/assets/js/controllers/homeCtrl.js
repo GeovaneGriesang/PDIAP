@@ -56,6 +56,8 @@
 		var saberesDocentes = [];
 		var oficina = [];
 		var presenca_oficina = undefined;
+		var palestra = [];
+		var presenca_palestra = undefined;
 		var premiados = [];
 		var mencao_honrosa = [];
 		var classificacoesFeira = [];
@@ -112,6 +114,8 @@
 				saberesDocentes = [];
 				oficina = [];
 				presenca_oficina = undefined;
+				palestra = [];
+				presenca_palestra = undefined;
 				premiados = [];
 				mencao_honrosa = [];
 				classificacoesFeira = [];
@@ -132,6 +136,8 @@
 						// let evts2 = '';
 						let ch2 = '0:00';
 						let eventos = '';
+						let evts3 = '';
+						let ch3 = '0:00';
 						angular.forEach(data[i].eventos, function (value, key){
 							if (value.tipo === "Oficina") {
 								if (evts1 === '') {
@@ -149,6 +155,13 @@
 									eventos = eventos + value.titulo+': '+value.cargaHoraria+' hora (s).\n';
 								}
 								ch2 = somaHora(value.cargaHoraria,ch2);
+							} else if (value.tipo === "Palestra") {
+								if (evts3 === '') {
+									evts3 = value.titulo;
+								} else {
+									evts3 = evts3+', '+value.titulo;
+								}
+								ch3 = somaHora(value.cargaHoraria,ch3);
 							}
 						});
 						if (evts1 !== '') {
@@ -168,6 +181,16 @@
 								token: data[i].tokenSaberes,
 								cargaHoraria: ch2,
 								eventos: eventos,
+								ano: data[i].ano
+							};
+						}
+						if (evts3 !== '') {
+							countCertificados++;
+							presenca_palestra = {
+								nome: data[i].nome,
+								token: data[i].tokenPalestra,
+								eventos: evts3,
+								cargaHoraria: ch3,
 								ano: data[i].ano
 							};
 						}
@@ -196,6 +219,8 @@
 								saberesDocentes.push(value);
 							} else if (value.tipo === "Oficina") {
 								oficina.push(value);
+							} else if (value.tipo === "Palestra") {
+								palestra.push(value);
 							}
 						});
 					}
@@ -225,7 +250,7 @@
 					.success(function(dadosMostra){
 						projetosAPI.getFeiras()
 						.success(function(dadosFeiras){
-							visualizarCertificados(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,countCertificados);
+							visualizarCertificados(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,countCertificados,palestra,presenca_palestra);
 						});
 					});
 				} else {
@@ -273,7 +298,7 @@
 			}, function() {});
 		};
 
-		let visualizarCertificados = function(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,numCertificados,ev) {
+		let visualizarCertificados = function(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,numCertificados,palestra,presenca_palestra,ev) {
 			$mdDialog.show({
 				controller: function dialogCertificateController($scope, $window, $mdDialog) {
 					$scope.avaliador = [];
@@ -288,6 +313,8 @@
 					$scope.mencao_honrosa = [];
 					$scope.classificacoesFeira = [];
 					$scope.presenca_saberes = [];
+					$scope.palestra = [];
+					$scope.presenca_palestra = [];
 
 					$scope.avaliador = avaliador;
 					$scope.participante = participante;
@@ -302,6 +329,8 @@
 					$scope.mencao_honrosa = mencao_honrosa;
 					$scope.classificacoesFeira = classificacoesFeira;
 					$scope.presenca_saberes = presenca_saberes;
+					$scope.palestra = palestra;
+					$scope.presenca_palestra = presenca_palestra;
 
 					var date = new Date();
 					var mes = date.getMonth();
@@ -333,31 +362,24 @@
 					}
 
 					$scope.emitirCertificado1 = function(tipo,modo,dados) {
-						var ano2 = new Date(dados.createdAt);
+						// Ano do CERTIFICADO em si (não o ano atual, usado só na data de emissão no
+						// rodapé) - dados.ano já vem pronto do backend pra todo tipo de certificado.
+						// Antes vinha de "new Date(dados.createdAt).getFullYear()", mas presença de
+						// oficina/palestra (participante genérico) nunca teve createdAt nesse objeto
+						// - virava "Invalid Date" e o while() abaixo rodava pra sempre até estourar
+						// o array (dadosMostra[i] undefined), travando a geração do PDF.
+						var ano2 = dados.ano;
 						var dados_certificado = {};
 						var texto = "";
 
-						//loopa pelos dados das mostras e encontra a mostra que melhor se encaixa naquele certificado
-						// for(var i = dadosMostra.length - 1; i >= 0; i--){
-						// 	var ano_certificado = new Date(dadosMostra[i].createdAt)
-						// 	if(ano_certificado < ano2){
-						// 		dados_certificado = dadosMostra[i];
-						// 		break;
-						// 	}
-						// }	
-
-
-						//Itera pelos certificados para encontrar o layout necessário
-						var isso = true;
-						var i = 0;
-						
-						//procura o layout correto de certificado
-						while(isso){
-							if(dadosMostra[i].ano_certificado == ano2.getFullYear()){
+						//Itera pelos certificados pra encontrar o layout do ano certo - sem "achar",
+						// dados_certificado fica {} (e o texto sai undefined, avisando que falta
+						// cadastrar o certificado daquele ano em vez de travar a tela).
+						for (var i = 0; i < dadosMostra.length; i++) {
+							if (dadosMostra[i].ano_certificado == ano2) {
 								dados_certificado = dadosMostra[i];
-								isso = false;
+								break;
 							}
-							i++;
 						}
 						
 						if (tipo === 'Avaliador') {
@@ -417,6 +439,10 @@
 							// {text: '' +edicao+ ' MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e Tecnologia '+
 							// 'Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de ' +realizacao+'.\n\n'];
 							texto = dados_certificado.textoAcademica;
+						} else if (tipo === 'Presenca-palestra') {
+							texto = dados_certificado.textoPPalestra;
+						} else if (tipo === 'Responsavel-palestra') {
+							texto = dados_certificado.textoRPalestra;
 						}
 
 						//usa regex pra alterar as chaves no texto pela informação correspondente Ex: ¨nome -> Mateus R. Algayer,
@@ -427,7 +453,10 @@
 								
 								for (let chave in dados) {
 									if(str == "¨"+chave){
-										return dados[chave].toUpperCase(); 
+										// String(...) antes do toUpperCase - "ano" e "cargaHoraria" às
+										// vezes chegam como number, não string (¨ano quebrava a geração
+										// toda do PDF com "toUpperCase is not a function" nesse caso).
+										return String(dados[chave]).toUpperCase();
 									}
 								}
 							});
@@ -474,7 +503,7 @@
 						if (modo === 1) {
 							//pdfMake.createPdf(docDefinition).open();
 						} else if (modo === 2) {
-							pdfMake.createPdf(docDefinition).download('Certificado_'+tipo+'_MOVACI_'+ano2.getFullYear()+'.pdf');
+							pdfMake.createPdf(docDefinition).download('Certificado_'+tipo+'_MOVACI_'+ano2+'.pdf');
 						}
 					}
 
@@ -512,7 +541,7 @@
 								
 								for (let chave in dados) {
 									if(str == "¨"+chave){
-										return dados[chave].toUpperCase(); 
+										return String(dados[chave]).toUpperCase();
 									}
 								}
 							});
