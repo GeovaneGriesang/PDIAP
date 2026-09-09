@@ -170,11 +170,17 @@
         </div>
       </div>
       <div class="md-list-item-text" flex="15" style="margin-right:5px;text-align:center;">
-        <h3>{{::evt.data}}</h3>
+        <h3>{{evt.data}}</h3>
       </div>
       <div class="md-list-item-text" layout="column" style="padding-right:15px;">
-        <h3>{{::evt.cargaHoraria}} - {{::evt.titulo}}</h3>
-        <p>{{::evt.responsavel}}</p>
+        <!-- Sem "::" (one-time binding) de propósito: evento agora pode ser EDITADO (ver
+             editarEvento()), então essa linha precisa continuar observando o valor depois
+             da primeira renderização - com "::" ela travava no título/data/hora/responsável
+             de quando o evento foi criado e nunca atualizava, mesmo com o dado certo já
+             salvo no banco e em $scope.eventos (mostraEventos() já reflete o valor novo, só
+             o "::" impedia o Angular de repintar o texto). -->
+        <h3>{{evt.cargaHoraria}} - {{evt.titulo}}</h3>
+        <p>{{evt.responsavel}}</p>
       </div>
       <div flex="20" style="display:flex;align-self:center;justify-content:center;">
         <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;margin-right:8px;" aria-label="Editar evento" ng-click="editarEvento(evt)">
