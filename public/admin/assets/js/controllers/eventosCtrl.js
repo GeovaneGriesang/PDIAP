@@ -37,37 +37,44 @@
 			adminAPI.getEventos()
 			.success(function(eventos) {
 				angular.forEach(eventos, function (value, key) {
-					var index = $scope.eventos.map(function(e) { return e._id; }).indexOf(value._id);
-					if (index === -1) {
-						let responsaveis = "";
-						let dateFormat = "";
-						angular.forEach(value.responsavel, function (value, key) {
-							if (responsaveis !== "") {
-								responsaveis = responsaveis+", "+value.nome;
-							} else {
-								responsaveis = value.nome;
-							}
-						});
-						dateFormat = value.data.slice(0,-5);
-						//dateFormat = value.data;
+					let responsaveis = "";
+					let dateFormat = "";
+					angular.forEach(value.responsavel, function (value, key) {
+						if (responsaveis !== "") {
+							responsaveis = responsaveis+", "+value.nome;
+						} else {
+							responsaveis = value.nome;
+						}
+					});
+					dateFormat = value.data.slice(0,-5);
+					//dateFormat = value.data;
 
-						var ano = new Date(value.createdAt).getFullYear();
-						if(ano == $scope.ano){
-							let evento = ({
-								_id: value._id,
-								tipo: value.tipo,
-								titulo: value.titulo,
-								cargaHoraria: value.cargaHoraria,
-								data: dateFormat,
-								responsavel: responsaveis,
-								createdAt: ano,
-								// Registro completo (com o array de responsável de verdade, nome+cpf
-								// por pessoa) - a linha da lista só mostra o resumo em texto acima,
-								// mas editarEvento() precisa dos dados originais pra preencher o
-								// formulário de novo.
-								raw: value
-							});
+					var ano = new Date(value.createdAt).getFullYear();
+					if(ano == $scope.ano){
+						let evento = ({
+							_id: value._id,
+							tipo: value.tipo,
+							titulo: value.titulo,
+							cargaHoraria: value.cargaHoraria,
+							data: dateFormat,
+							responsavel: responsaveis,
+							createdAt: ano,
+							// Registro completo (com o array de responsável de verdade, nome+cpf
+							// por pessoa) - a linha da lista só mostra o resumo em texto acima,
+							// mas editarEvento() precisa dos dados originais pra preencher o
+							// formulário de novo.
+							raw: value
+						});
+						// Antes só entrava se o _id ainda não estivesse na lista - então editar
+						// um evento gravava certo no banco, mas a linha na tela continuava com o
+						// título/data/responsável antigos até recarregar a página inteira (o
+						// "de novo" nunca substituía, só "de novo" mesmo). Atualiza no lugar
+						// quando já existe, em vez de ignorar.
+						var index = $scope.eventos.map(function(e) { return e._id; }).indexOf(value._id);
+						if (index === -1) {
 							$scope.eventos.push(evento);
+						} else {
+							$scope.eventos[index] = evento;
 						}
 					}
 				});
