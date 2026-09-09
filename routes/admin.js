@@ -499,6 +499,7 @@ router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração 
           tipo: value.tipo
           ,titulo: value.titulo
           ,cargaHoraria: value.cargaHoraria
+          ,data: value.data
         });
         newParticipante.eventos.push(newEvento);
       });
@@ -672,6 +673,7 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
           tipo: value.tipo
           ,titulo: value.titulo
           ,cargaHoraria: value.cargaHoraria
+          ,data: value.data
         });
 
         participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true}, (err, doc) => {

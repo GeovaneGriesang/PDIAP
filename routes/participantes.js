@@ -195,13 +195,15 @@ router.get('/dashboard/meus-certificados', ensureParticipante, (req, res) => {
 
     if (temPalestra) {
       let titulos = '';
+      let datas = '';
       let cargaHoraria = '0:00';
       eventos.forEach((e) => {
         if (e.tipo !== 'Palestra') return;
         titulos = titulos === '' ? e.titulo : titulos + ', ' + e.titulo;
+        datas = datas === '' ? (e.data || '') : datas + ', ' + (e.data || '');
         cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
       });
-      resposta.palestra = { nome: participante.nome, token: participante.tokenPalestra, eventos: titulos, cargaHoraria: cargaHoraria, ano: ano };
+      resposta.palestra = { nome: participante.nome, token: participante.tokenPalestra, eventos: titulos, titulo: titulos, data: datas, tipo: 'Palestra', cargaHoraria: cargaHoraria, ano: ano };
     }
 
     if (temSaberes) {

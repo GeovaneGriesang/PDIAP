@@ -6,7 +6,12 @@ const mongoose = require('mongoose')
 const eventoSchema = new Schema({
 	tipo: {type: String},
 	titulo: {type: String},
-	cargaHoraria: {type: String}
+	cargaHoraria: {type: String},
+	// Data do evento (dd/mm/aaaa, mesmo formato de models/evento-schema.js) - copiada do
+	// evento no momento em que o participante é vinculado a ele (ver
+	// admin.js#criarParticipante/atualizaParticipante). Precisa disso pra máscara ¨data
+	// no certificado de presença (ver homeCtrl.js#buscarCPF).
+	data: {type: String}
 });
 
 const ParticipantelSchema = new Schema({
