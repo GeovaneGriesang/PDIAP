@@ -56,6 +56,8 @@
         saberes: [
           {chave:'responsavel', desc:'Nome do responsável/conferencista'},
           {chave:'titulo', desc:'Título da apresentação'},
+          {chave:'data', desc:'Data do evento'},
+          {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         poficinas: [
@@ -66,11 +68,15 @@
         roficinas: [
           {chave:'responsavel', desc:'Nome do responsável pela oficina'},
           {chave:'titulo', desc:'Título da oficina'},
+          {chave:'data', desc:'Data do evento'},
+          {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         academica: [
           {chave:'responsavel', desc:'Nome do responsável/conferencista'},
           {chave:'titulo', desc:'Título da apresentação'},
+          {chave:'data', desc:'Data do evento'},
+          {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         docentes: [
@@ -86,6 +92,8 @@
         rpalestra: [
           {chave:'responsavel', desc:'Nome do(a) palestrante'},
           {chave:'titulo', desc:'Título da palestra'},
+          {chave:'data', desc:'Data do evento'},
+          {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ]
       };

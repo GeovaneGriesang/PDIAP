@@ -383,7 +383,14 @@ router.post('/emitirCertificado', (req, res) => {
   const four = pesquisaEvento(cpf).then(usr => {
     let gravacoes = [];
     for (let i in usr) {
-      if (usr[i].responsavel[0].certificados == undefined || usr[i].responsavel[0].certificados._id == undefined) {
+      // responsavel.certificados é array (ver models/evento-schema.js), diferente do
+      // "certificados" de integrante de projeto (objeto único, mesmo nome de campo, schema
+      // diferente) - checar ".certificados._id" direto no array (sem [0]) sempre dá
+      // undefined, então isso gerava um TOKEN NOVO a cada busca por esse cpf, mesmo já
+      // existindo um - qualquer link de validação já compartilhado ficava invalidado
+      // (o número mostrado em certificadosCtrl.js não batia mais com o token atual).
+      let certificados = usr[i].responsavel[0].certificados;
+      if (!certificados || certificados.length === 0 || certificados[0]._id == undefined) {
         gravacoes.push(inserirTokenEvento(cpf, usr[i].responsavel[0]._id, "Evento"));
       }
     }
@@ -396,6 +403,7 @@ router.post('/emitirCertificado', (req, res) => {
         	  responsavel: usr[i].responsavel[0].nome,
         	  tipo: usr[i].tipo,
         	  titulo: usr[i].titulo,
+        	  data: usr[i].data,
         	  cargaHoraria: usr[i].cargaHoraria,
         	  token: usr[i].responsavel[0].certificados[0]._id,
         	  tokentipo: usr[i].responsavel[0].certificados[0].tipo,
@@ -737,7 +745,9 @@ router.post('/conferirCertificado', (req, res) => {
        tipo: usr[0].tipo,
        titulo: usr[0].titulo,
        cargaHoraria: usr[0].cargaHoraria,
-       token: usr[0].responsavel[0].certificados._id,
+       // certificados é array em responsavel (ver comentário na função "four" acima) -
+       // sem o [0] aqui, token sempre saía undefined.
+       token: usr[0].responsavel[0].certificados[0]._id,
        ano: ano
      }
      return {

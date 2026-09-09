@@ -45,12 +45,13 @@
 				}
 
 				var texto = dadosCertificado.textoPOficinas || '';
-				while (texto.match(/¨\w+/) != null) {
-					texto = texto.replace(/¨\w+/, function(str) {
-						var chave = str.slice(1);
-						return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
-					});
-				}
+				// Um replace só, com regex global (/g) - o while()+replace() não-global
+				// antigo travava a aba pra sempre quando o texto usava uma ¨chave que não
+				// existe em "cert": a troca não acontecia, o texto não mudava, e o while()
+				// nunca via a condição de parada (mesmo bug corrigido em homeCtrl.js).
+				texto = texto.replace(/¨(\w+)/g, function(str, chave) {
+					return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
+				});
 
 				var agora = new Date();
 				var docDefinition = {
@@ -86,12 +87,9 @@
 				}
 
 				var texto = dadosCertificado.textoPPalestra || '';
-				while (texto.match(/¨\w+/) != null) {
-					texto = texto.replace(/¨\w+/, function(str) {
-						var chave = str.slice(1);
-						return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
-					});
-				}
+				texto = texto.replace(/¨(\w+)/g, function(str, chave) {
+					return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
+				});
 
 				var agora = new Date();
 				var docDefinition = {
@@ -127,12 +125,9 @@
 				}
 
 				var texto = dadosCertificado.textoDocentes || '';
-				while (texto.match(/¨\w+/) != null) {
-					texto = texto.replace(/¨\w+/, function(str) {
-						var chave = str.slice(1);
-						return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
-					});
-				}
+				texto = texto.replace(/¨(\w+)/g, function(str, chave) {
+					return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
+				});
 
 				var agora = new Date();
 				var docDefinition = {

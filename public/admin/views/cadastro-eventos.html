@@ -35,7 +35,7 @@
     <md-content>
       <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
         <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
-          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo Evento</span>
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">{{editando ? 'Editar Evento' : 'Novo Evento'}}</span>
         </h3>
         <form name="eventosForm" novalidate class="eventos-form">
           <div layout-gt-xs="row" style="margin-top:15px;">
@@ -130,9 +130,10 @@
             </div>
           </div>
           <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+            <a data-ng-if="editando" data-ng-click="cancelarEdicao()" class="btn-apagar" style="margin-right:20px;">Cancelar edição</a>
             <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!eventosForm.$valid" data-ng-click="cadastrarEvento(evento)">
               <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
-              <span style="vertical-align:middle;">Salvar</span>
+              <span style="vertical-align:middle;">{{editando ? 'Atualizar' : 'Salvar'}}</span>
             </md-button>
           </div>
           <span us-spinner>
@@ -175,7 +176,10 @@
         <h3>{{::evt.cargaHoraria}} - {{::evt.titulo}}</h3>
         <p>{{::evt.responsavel}}</p>
       </div>
-      <div flex="15" style="display:flex;align-self:center;justify-content:center;">
+      <div flex="20" style="display:flex;align-self:center;justify-content:center;">
+        <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;margin-right:8px;" aria-label="Editar evento" ng-click="editarEvento(evt)">
+          <span style="vertical-align:middle;font-size:13px;">Editar</span>
+        </md-button>
         <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Remover evento" ng-click="removerEvento($event,evt._id,evt.titulo)">
           <md-icon md-svg-icon="close" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
           <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Apagar</span>
