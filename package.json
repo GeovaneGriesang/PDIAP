@@ -27,7 +27,7 @@
     "mongoose-auto-increment": "^5.0.1",
     "mongoose-unique-validator": "^1.0.2",
     "morgan": "~1.6.1",
-    "multer": "^1.2.0",
+    "multer": "^2.3.0",
     "nodemailer": "^2.5.0",
     "nodemailer-smtp-transport": "^2.6.0",
     "nodemailer-wellknown": "^0.1.10",
