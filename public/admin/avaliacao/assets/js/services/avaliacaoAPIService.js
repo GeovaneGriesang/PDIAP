@@ -24,6 +24,14 @@
 			return $http(request);
 		};
 
+		let _getFeiras = function() {
+			const request = {
+				url: '/admin/mostraFeiras',
+				method: 'GET'
+			}
+			return $http(request);
+		};
+
 		let _putAvaliacao = function(id,notas) {
 			const request = {
 				url: '/avaliadores/addNota',
@@ -39,6 +47,7 @@
 		return {
 			postLoginAvaliador: _postLoginAvaliador,
 			getTodosProjetos: _getTodosProjetos,
+			getFeiras: _getFeiras,
 			putAvaliacao: _putAvaliacao
 		};
 	});

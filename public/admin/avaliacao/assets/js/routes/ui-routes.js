@@ -59,7 +59,8 @@
 				'ranking1@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking1.html' },
 				'ranking2@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking2.html' },
 				'ranking3@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking3.html' },
-				'mostratec@ranking': { templateUrl: '/admin/avaliacao/views/list-mostratec.html' }
+				'feiras@ranking': { templateUrl: '/admin/avaliacao/views/list-feiras.html' },
+				'mencaoHonrosa@ranking': { templateUrl: '/admin/avaliacao/views/list-mencao-honrosa.html' }
 			},
 			resolve: {
 				loggedin: checkLoggedin
