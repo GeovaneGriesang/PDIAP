@@ -15,6 +15,16 @@
 			$window.open('/projetos/inscricao', '_blank');
 		};
 
+		// Ranking (3 melhores projetos por eixo, calculado a partir das notas lançadas em
+		// Avaliação) mora num terceiro app Angular (módulo PDIAPav, public/admin/avaliacao/),
+		// mesmo caso do abrirInsercaoProjeto acima - nova aba de verdade. Usar
+		// href+target="_blank" direto no md-list-item não funciona: a diretiva mdListItem só
+		// copia um conjunto fixo de atributos (href, ng-href, ui-sref, ng-click...) pro <a>
+		// que ela gera por baixo dos panos, e "target" não está nessa lista.
+		$scope.abrirRanking = function() {
+			$window.open('/ranking/2016', '_blank');
+		};
+
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
 			$mdToast.show(toast);
