@@ -1,0 +1,33 @@
+<md-content>
+  <div id="logo-impressao" style="margin:0 0 40px 50px;display:none;">
+    <img src="/admin/avaliacao/assets/images/logo.png" width="37%"></img>
+  </div>
+  <section>
+    <div style="padding:55px 0 1px 0;background:#f7f7f7;" align="center">
+      <h3 style="text-align:center;margin:0;font-size:22px;width:80%;" class="title-categoria">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Menção Honrosa</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <div data-ng-if="mencaoHonrosa.length === 0" style="padding:40px 0;text-align:center;color:rgba(0,0,0,0.4);">
+        Nenhum projeto marcado com menção honrosa até o momento (ver "Projetos &gt; Premiação").
+      </div>
+      <md-list-item class="md-3-line" aria-label="Menção honrosa"
+        data-ng-repeat="proj in mencaoHonrosa | orderBy:'nomeProjeto'"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <md-icon md-svg-src="ribbon"></md-icon>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <p>{{::proj.categoria}} - {{::proj.eixo}}</p>
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+</md-content>

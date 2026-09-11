@@ -66,248 +66,131 @@
 		$rootScope.ori_eixo7 = [];
 
 		$rootScope.trouxas = [];
+		$rootScope.mencaoHonrosa = [];
+		$rootScope.feirasComProjetos = [];
 		$scope.searchProject = "";
 
+		// Constrói o objeto de exibição comum (total da nota + orientadores/alunos já
+		// concatenados) uma vez só por projeto - antes essa mesma conta era copiada e colada
+		// em 4 lugares (uma por categoria + "trouxas"), o que deixava fácil de esquecer um
+		// lugar ao adicionar um novo uso (caso de menção honrosa/feiras abaixo).
+		function construirObjExibicao(value) {
+			var total;
+			if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
+				total = (value.avaliacao[2] !== undefined)
+					? value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2]
+					: value.avaliacao[0]+value.avaliacao[1];
+			} else {
+				total = 0;
+				value.avaliacao = undefined;
+			}
+			var orientadores = "";
+			var alunos = "";
+			angular.forEach(value.integrantes, function (integrante) {
+				if (integrante.tipo === 'Orientador') {
+					orientadores = orientadores === "" ? integrante.nome : orientadores+", "+integrante.nome;
+				}
+				if (integrante.tipo === 'Aluno') {
+					alunos = alunos === "" ? integrante.nome : alunos+", "+integrante.nome;
+				}
+			});
+			return {
+				_id: value._id,
+				numInscricao: value.numInscricao,
+				nomeProjeto: value.nomeProjeto,
+				nomeEscola: value.nomeEscola,
+				categoria: value.categoria,
+				eixo: value.eixo,
+				orientadores: orientadores,
+				alunos: alunos,
+				avaliacao: value.avaliacao,
+				total: total
+			};
+		}
+
 		let carregarProjetos = function() {
-			avaliacaoAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
-					var ano = new Date(value.createdAt).getFullYear();
-					var ano_atual = new Date(Date.now()).getFullYear();
-					if(ano == ano_atual){
-					if (value.aprovado === true && (value.avaliacao !== undefined || value.participa === true)) {
-						if (value.categoria === 'Fundamental I (1º ao 5º anos)') {
-							if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
-								if (value.avaliacao[2] !== undefined) {
-									var total = value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2];
-								} else {
-									var total = value.avaliacao[0]+value.avaliacao[1];
-								}
-							} else {
-								var total = 0;
-								value.avaliacao = undefined;
-							}
-							let orientadores = "";
-							let alunos = "";
-							angular.forEach(value.integrantes, function (value, key) {
-								if (value.tipo === 'Orientador') {
-									if (orientadores !== "") {
-										orientadores = orientadores+", "+value.nome;
-									} else {
-										orientadores = value.nome;
-									}
-								}
-								if (value.tipo === 'Aluno') {
-									if (alunos !== "") {
-										alunos = alunos+", "+value.nome;
-									} else {
-										alunos = value.nome;
-									}
-								}
-							});
-							let obj = ({
-								_id: value._id,
-								numInscricao: value.numInscricao,
-								nomeProjeto: value.nomeProjeto,
-								nomeEscola: value.nomeEscola,
-								categoria: value.categoria,
-								eixo: value.eixo,
-								orientadores: orientadores,
-								alunos: alunos,
-								avaliacao: value.avaliacao,
-								total: total
-							});
+			var anoAtual = new Date(Date.now()).getFullYear();
 
-							switch(value.eixo) {
-								case 'Ciências da Natureza e suas tecnologias':
-								$rootScope.eixo1_1.push(obj);
-								break;
-								case 'Ciências Humanas e suas tecnologias':
-								$rootScope.eixo1_2.push(obj);
-								break;
-								case 'Linguagens, Códigos e suas tecnologias':
-								$rootScope.eixo1_3.push(obj);
-								break;
-								case 'Matemática e suas tecnologias':
-								$rootScope.eixo1_4.push(obj);
-								break;
-								default:
-								// default code block
-							}
-						} else if (value.categoria === 'Fundamental II (6º ao 9º anos)') {
-							if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
-								if (value.avaliacao[2] !== undefined) {
-									var total = value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2];
-								} else {
-									var total = value.avaliacao[0]+value.avaliacao[1];
-								}
-							} else {
-								var total = 0;
-								value.avaliacao = undefined;
-							}
-							let orientadores = "";
-							let alunos = "";
-							angular.forEach(value.integrantes, function (value, key) {
-								if (value.tipo === 'Orientador') {
-									if (orientadores !== "") {
-										orientadores = orientadores+", "+value.nome;
-									} else {
-										orientadores = value.nome;
-									}
-								}
-								if (value.tipo === 'Aluno') {
-									if (alunos !== "") {
-										alunos = alunos+", "+value.nome;
-									} else {
-										alunos = value.nome;
-									}
-								}
-							});
-							let obj = ({
-								_id: value._id,
-								numInscricao: value.numInscricao,
-								nomeProjeto: value.nomeProjeto,
-								nomeEscola: value.nomeEscola,
-								categoria: value.categoria,
-								eixo: value.eixo,
-								orientadores: orientadores,
-								alunos: alunos,
-								avaliacao: value.avaliacao,
-								total: total
-							});
+			// Feiras externas (Mostratec etc.) cadastradas pro ano atual - carrega antes dos
+			// projetos pra já poder agrupar por feira na mesma passada (ver
+			// value.feirasClassificadas abaixo). tipo:'edicao' é a própria edição do
+			// MOVACI/PDIAP reaproveitando essa coleção (ver models/feira-schema.js), não uma
+			// feira de classificação de verdade - fica de fora.
+			avaliacaoAPI.getFeiras().success(function(feiras) {
+				$rootScope.feirasComProjetos = feiras
+					.filter(function(f) { return f.tipo !== 'edicao' && f.ano === anoAtual; })
+					.map(function(f) { return {feira: f, projetos: []}; });
 
-							switch(value.eixo) {
-								case 'Ciências da Natureza e suas tecnologias':
-								$rootScope.eixo2_1.push(obj);
-								break;
-								case 'Ciências Humanas e suas tecnologias':
-								$rootScope.eixo2_2.push(obj);
-								break;
-								case 'Linguagens, Códigos e suas tecnologias':
-								$rootScope.eixo2_3.push(obj);
-								break;
-								case 'Matemática e suas tecnologias':
-								$rootScope.eixo2_4.push(obj);
-								break;
-								default:
-								// default code block
-							}
-						} else if (value.categoria === 'Ensino Médio, Técnico e Superior') {
-							if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
-								if (value.avaliacao[2] !== undefined) {
-									var total = value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2];
-								} else {
-									var total = value.avaliacao[0]+value.avaliacao[1];
-								}
-							} else {
-								var total = 0;
-								value.avaliacao = undefined;
-							}
-							let orientadores = "";
-							let alunos = "";
-							angular.forEach(value.integrantes, function (value, key) {
-								if (value.tipo === 'Orientador') {
-									if (orientadores !== "") {
-										orientadores = orientadores+", "+value.nome;
-									} else {
-										orientadores = value.nome;
-									}
-								}
-								if (value.tipo === 'Aluno') {
-									if (alunos !== "") {
-										alunos = alunos+", "+value.nome;
-									} else {
-										alunos = value.nome;
-									}
-								}
-							});
-							let obj = ({
-								_id: value._id,
-								numInscricao: value.numInscricao,
-								nomeProjeto: value.nomeProjeto,
-								nomeEscola: value.nomeEscola,
-								categoria: value.categoria,
-								eixo: value.eixo,
-								orientadores: orientadores,
-								alunos: alunos,
-								avaliacao: value.avaliacao,
-								total: total
-							});
-							$rootScope.projetos.push(obj);
+				avaliacaoAPI.getTodosProjetos()
+				.success(function(projetos) {
+					angular.forEach(projetos, function (value, key) {
+						var ano = new Date(value.createdAt).getFullYear();
+						if (ano !== anoAtual) return;
+						if (value.aprovado !== true) return;
 
-							switch(value.eixo) {
-								case 'Ciências Agrárias, Exatas e da Terra':
-								$rootScope.eixo1.push(obj);
-								break;
-								case 'Ciências Ambientais, Biológicas e da Saúde':
-								$rootScope.eixo2.push(obj);
-								break;
-								case 'Ciências Humanas e Sociais Aplicadas':
-								$rootScope.eixo3.push(obj);
-								break;
-								case 'Línguas e Artes':
-								$rootScope.eixo4.push(obj);
-								break;
-								case 'Extensão':
-								$rootScope.eixo5.push(obj);
-								break;
-								case 'Ciências da Computação':
-								$rootScope.eixo6.push(obj);
-								break;
-								case 'Engenharias':
-								$rootScope.eixo7.push(obj);
-								break;
-								default:
-								// default code block
-							}
-						}
+						// Snapshot ANTES de construirObjExibicao, que pode zerar
+						// value.avaliacao (caso [] vazio) - preserva o mesmo critério de
+						// sempre pra decidir se entra no ranking por eixo (avaliado ou
+						// participação confirmada) ou só em "trouxas".
+						var elegivelRanking = value.avaliacao !== undefined || value.participa === true;
+						let obj = construirObjExibicao(value);
 
-					} else if(value.aprovado === true) {
-						if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
-							if (value.avaliacao[2] !== undefined) {
-								var total = value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2];
-							} else {
-								var total = value.avaliacao[0]+value.avaliacao[1];
+						if (elegivelRanking) {
+							if (value.categoria === 'Fundamental I (1º ao 5º anos)') {
+								switch(value.eixo) {
+									case 'Ciências da Natureza e suas tecnologias': $rootScope.eixo1_1.push(obj); break;
+									case 'Ciências Humanas e suas tecnologias': $rootScope.eixo1_2.push(obj); break;
+									case 'Linguagens, Códigos e suas tecnologias': $rootScope.eixo1_3.push(obj); break;
+									case 'Matemática e suas tecnologias': $rootScope.eixo1_4.push(obj); break;
+									default:
+									// default code block
+								}
+							} else if (value.categoria === 'Fundamental II (6º ao 9º anos)') {
+								switch(value.eixo) {
+									case 'Ciências da Natureza e suas tecnologias': $rootScope.eixo2_1.push(obj); break;
+									case 'Ciências Humanas e suas tecnologias': $rootScope.eixo2_2.push(obj); break;
+									case 'Linguagens, Códigos e suas tecnologias': $rootScope.eixo2_3.push(obj); break;
+									case 'Matemática e suas tecnologias': $rootScope.eixo2_4.push(obj); break;
+									default:
+									// default code block
+								}
+							} else if (value.categoria === 'Ensino Médio, Técnico e Superior') {
+								$rootScope.projetos.push(obj);
+								switch(value.eixo) {
+									case 'Ciências Agrárias, Exatas e da Terra': $rootScope.eixo1.push(obj); break;
+									case 'Ciências Ambientais, Biológicas e da Saúde': $rootScope.eixo2.push(obj); break;
+									case 'Ciências Humanas e Sociais Aplicadas': $rootScope.eixo3.push(obj); break;
+									case 'Línguas e Artes': $rootScope.eixo4.push(obj); break;
+									case 'Extensão': $rootScope.eixo5.push(obj); break;
+									case 'Ciências da Computação': $rootScope.eixo6.push(obj); break;
+									case 'Engenharias': $rootScope.eixo7.push(obj); break;
+									default:
+									// default code block
+								}
 							}
 						} else {
-							var total = 0;
-							value.avaliacao = undefined;
+							$rootScope.trouxas.push(obj);
 						}
-						let orientadores = "";
-						let alunos = "";
-						angular.forEach(value.integrantes, function (value, key) {
-							if (value.tipo === 'Orientador') {
-								if (orientadores !== "") {
-									orientadores = orientadores+", "+value.nome;
-								} else {
-									orientadores = value.nome;
+
+						// Menção honrosa e classificação pra feiras externas são marcadas à
+						// parte (Projetos > Premiação), independente do ranking por nota
+						// acima - por isso checa sempre, pra qualquer projeto aprovado.
+						if (value.premiacao === 'Mencao_honrosa') {
+							$rootScope.mencaoHonrosa.push(obj);
+						}
+						if (value.feirasClassificadas && value.feirasClassificadas.length > 0) {
+							$rootScope.feirasComProjetos.forEach(function(grupo) {
+								if (value.feirasClassificadas.indexOf(grupo.feira._id) !== -1) {
+									grupo.projetos.push(obj);
 								}
-							}
-							if (value.tipo === 'Aluno') {
-								if (alunos !== "") {
-									alunos = alunos+", "+value.nome;
-								} else {
-									alunos = value.nome;
-								}
-							}
-						});
-						let obj = ({
-							_id: value._id,
-							numInscricao: value.numInscricao,
-							nomeProjeto: value.nomeProjeto,
-							nomeEscola: value.nomeEscola,
-							categoria: value.categoria,
-							eixo: value.eixo,
-							orientadores: orientadores,
-							alunos: alunos,
-							avaliacao: value.avaliacao,
-							total: total
-						});
-						$rootScope.trouxas.push(obj);
-					}
-                }
+							});
+						}
+					});
+					$scope.reordenar();
+				})
+				.error(function(status) {
+					console.log(status);
 				});
-                		$scope.reordenar();
 			})
 			.error(function(status) {
 				console.log(status);
@@ -549,6 +432,38 @@
 			return ($rootScope[chave] || []).filter(function(p) { return p && p._id; }).slice(0, 3);
 		}
 
+		// Seções de classificação pra feiras externas e menção honrosa - cross-cutting
+		// (não são por eixo/categoria como o resto do PDF, um projeto de qualquer eixo pode
+		// ter sido marcado assim em Projetos > Premiação), por isso mostram Categoria/Eixo
+		// como colunas em vez de vir implícito no título da seção. Sem coluna de
+		// colocação/pontuação nas duas - não é esse o critério aqui, e entram do mesmo jeito
+		// nas duas versões do PDF (baixarPdfColocacao/baixarPdfDestaques).
+		function secoesFeirasEMencaoHonrosa() {
+			var colunas = [
+				{ texto: 'Nº Inscrição', largura: 55 },
+				{ texto: 'Projeto', largura: '*' },
+				{ texto: 'Categoria', largura: 90 },
+				{ texto: 'Eixo', largura: 100 },
+				{ texto: 'Escola', largura: 100 },
+				{ texto: 'Aluno(s)', largura: 110 },
+				{ texto: 'Orientador(es)', largura: 110 }
+			];
+			function linhasDe(lista) {
+				return lista.map(function(p) {
+					return [p.numInscricao, p.nomeProjeto, p.categoria, p.eixo, p.nomeEscola, p.alunos, p.orientadores];
+				});
+			}
+			var secoes = [];
+			$rootScope.feirasComProjetos.forEach(function(grupo) {
+				if (grupo.projetos.length === 0) return;
+				secoes.push({ titulo: 'Classificados - ' + grupo.feira.nome, colunas: colunas, linhas: linhasDe(grupo.projetos) });
+			});
+			if ($rootScope.mencaoHonrosa.length > 0) {
+				secoes.push({ titulo: 'Menção Honrosa', colunas: colunas, linhas: linhasDe($rootScope.mencaoHonrosa) });
+			}
+			return secoes;
+		}
+
 		// PDF com a colocação de verdade (1º, 2º, 3º + pontuação) - uma seção por eixo que
 		// tem pelo menos um projeto avaliado, na mesma ordem das abas da tela.
 		$scope.baixarPdfColocacao = function() {
@@ -574,6 +489,7 @@
 					});
 				});
 			});
+			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
 			relatorioPdfService.tabelas({
 				titulo: 'Ranking - 1º, 2º e 3º colocados',
 				subtitulo: 'MOVACI ' + new Date().getFullYear(),
@@ -609,6 +525,7 @@
 					});
 				});
 			});
+			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
 			relatorioPdfService.tabelas({
 				titulo: 'Ranking - Destaques',
 				subtitulo: 'MOVACI ' + new Date().getFullYear(),

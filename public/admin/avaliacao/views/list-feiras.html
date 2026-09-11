@@ -1,0 +1,36 @@
+<md-content>
+  <div id="logo-impressao" style="margin:0 0 40px 50px;display:none;">
+    <img src="/admin/avaliacao/assets/images/logo.png" width="37%"></img>
+  </div>
+  <div data-ng-if="feirasComProjetos.length === 0" style="padding:60px 0;text-align:center;color:rgba(0,0,0,0.4);">
+    Nenhuma feira cadastrada para o ano atual (ver "Eventos &gt; Cadastrar Feiras").
+  </div>
+  <section data-ng-repeat="grupo in feirasComProjetos">
+    <div style="padding:25px 0;background:#f7f7f7;" align="center">
+      <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 15px 0;font-size:15px;width:70%;">
+        <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">{{grupo.feira.nome}}</span>
+      </h3>
+    </div>
+    <md-list flex>
+      <md-divider></md-divider>
+      <div data-ng-if="grupo.projetos.length === 0" style="padding:20px 0;text-align:center;color:rgba(0,0,0,0.4);">
+        Nenhum projeto classificado até o momento.
+      </div>
+      <md-list-item class="md-3-line" aria-label="Classificado"
+        data-ng-repeat="proj in grupo.projetos | orderBy:'nomeProjeto'"
+        ng-click="visualizarDetalhes(proj,$event)">
+        <div layout flex="5" layout-align="center center" style="align-self:center;">
+          <md-icon md-svg-src="bookmark-check"></md-icon>
+        </div>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+          <p>{{::proj.categoria}} - {{::proj.eixo}}</p>
+          <p>{{::proj.nomeEscola}}</p>
+          <p>Orientador(es): {{::proj.orientadores}}</p>
+          <p>Aluno(s): {{::proj.alunos}}</p>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+  </section>
+</md-content>
