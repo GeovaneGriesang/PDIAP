@@ -25,7 +25,12 @@ const FeiraSchema = new Schema({
 	diasAvaliacao: [{
 		data: {type: String},
 		turnos: [{type: String}]
-	}]
+	}],
+	// Quantos projetos por eixo (dentro de cada categoria) contam como "Premiado" ao usar
+	// Ranking > Confirmar premiados - só faz sentido em tipo:'edicao'. Sem valor gravado
+	// (edições antigas, ou a edição do ano ainda nem foi criada), assume-se 3 - ver
+	// GET /admin/configPremiacao.
+	numPremiadosPorEixo: {type: Number}
 }, { collection: 'feiras' });
 
 const Feira = module.exports = mongoose.model('Feira', FeiraSchema);

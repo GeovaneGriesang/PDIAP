@@ -1024,6 +1024,67 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
   }
 });
 
+// Quantos projetos por eixo contam como "Premiado" ao confirmar (Ranking > Confirmar
+// premiados) - lido/gravado por ano no mesmo documento tipo:'edicao' que já guarda
+// categoriasEixos/diasAvaliacao (ver models/feira-schema.js). Sem registro pro ano
+// (edições antigas, ou a edição ainda nem foi criada em Cadastrar Feiras), assume 3.
+router.get('/configPremiacao', miPermiso("3","2"), (req, res) => {
+  var ano = parseInt(req.query.ano, 10);
+  if (!ano) return res.status(400).send('Ano inválido.');
+  feiraSchema.findOne({ tipo: 'edicao', ano: ano }, (err, doc) => {
+    if (err) { console.error('Erro ao buscar configuração de premiação', err); return res.status(500).send('Erro ao buscar configuração.'); }
+    res.send({ numPremiadosPorEixo: (doc && doc.numPremiadosPorEixo) || 3 });
+  });
+});
+
+// Marca premiacao:'Premiado' + colocacao nos projetos informados (o "destaque" de cada
+// eixo, já calculado no cliente - ver rankingCtrl.js#confirmarPremiados) e desmarca quem
+// tinha sido premiado antes nesse mesmo ano mas não está mais na lista nova (evita deixar
+// premiado "fantasma" de uma rodada anterior de confirmação). Grava numPremiadosPorEixo
+// pro ano, pra próxima vez que a tela de Ranking carregar já vir com esse valor.
+router.post('/confirmarPremiados', miPermiso("3"), (req, res) => {
+  try {
+    var ano = parseInt(req.body.ano, 10);
+    var numPremiadosPorEixo = parseInt(req.body.numPremiadosPorEixo, 10);
+    var premiados = req.body.premiados;
+    if (!ano) return res.status(400).send('Ano inválido.');
+    if (!numPremiadosPorEixo || numPremiadosPorEixo < 1) return res.status(400).send('Quantidade de premiados por eixo inválida.');
+    if (!Array.isArray(premiados) || premiados.length === 0) return res.status(400).send('Nenhum projeto pra confirmar.');
+    if (!premiados.every(function(p) { return idValido(p.id) && Number.isInteger(p.colocacao) && p.colocacao > 0; })) {
+      return res.status(400).send('Lista de premiados inválida.');
+    }
+
+    var idsNovos = premiados.map(function(p) { return p.id; });
+    var filtroAno = { createdAt: { $gte: new Date(ano, 0, 1), $lt: new Date(ano + 1, 0, 1) } };
+
+    projetoSchema.updateMany(
+      Object.assign({ premiacao: 'Premiado', _id: { $nin: idsNovos } }, filtroAno),
+      { $unset: { premiacao: '', colocacao: '' } },
+      (err) => {
+        if (err) { console.error('Erro ao desmarcar premiados antigos', err); return res.status(500).send('Erro ao confirmar premiados.'); }
+
+        async.eachSeries(premiados, function(p, next) {
+          projetoSchema.findByIdAndUpdate(p.id, { premiacao: 'Premiado', colocacao: p.colocacao }, next);
+        }, function(err) {
+          if (err) { console.error('Erro ao marcar premiados novos', err); return res.status(500).send('Erro ao confirmar premiados.'); }
+
+          feiraSchema.findOneAndUpdate(
+            { tipo: 'edicao', ano: ano },
+            { $set: { numPremiadosPorEixo: numPremiadosPorEixo }, $setOnInsert: { tipo: 'edicao', ano: ano, createdAt: new Date() } },
+            { upsert: true },
+            (err) => {
+              if (err) { console.error('Erro ao gravar quantidade de premiados por eixo', err); }
+              res.send({ marcados: premiados.length });
+            }
+          );
+        });
+      }
+    );
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
+
 // Mesmo espírito de /enviarEmailProjetos, mas pra avaliadores - schema mais simples (um
 // e-mail por avaliador, sem integrantes aninhados), então não precisa de destinatário/tipo.
 router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {

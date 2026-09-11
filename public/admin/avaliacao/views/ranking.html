@@ -2,26 +2,47 @@
   /* Cabeçalho (toolbar) e a barra de abas (guia) fixos no topo ao rolar a lista - cada
      elemento gruda no topo da janela (sticky) empilhado em sequência, um abaixo do
      outro; o "top" da barra de abas é a altura da toolbar acima dela (medida direto no
-     navegador). */
+     navegador).
+
+     A guia NÃO usa <md-tabs> de propósito: md-dynamic-height só recalcula a altura de
+     verdade enquanto <md-tabs> mantém overflow:hidden (usa isso internamente pra medir/
+     animar a troca de aba) - forçar overflow visível (necessário pra sticky funcionar)
+     trava a altura no maior valor já calculado, então trocar pra uma aba mais curta
+     (Fundamental I/II, com poucos projetos) deixava um espaço vazio enorme sobrando
+     embaixo (do tamanho da aba mais longa, Ensino Médio) e, ao rolar até tentar
+     "alcançar" esse vazio, o cabeçalho saía dos limites do próprio container e
+     desaparecia. Uma barra de abas simples (divs + ng-click/ng-show) não tem esse
+     conflito: cada aba oculta some de vez do fluxo (display:none via ng-show), a altura
+     da página sempre bate com o conteúdo real da aba ativa, e não há overflow nenhum
+     pra brigar com o sticky. */
   #ranking-toolbar-topo {
     position: sticky;
     top: 0;
     z-index: 2;
   }
-  /* md-dynamic-height deixa o <md-tabs> com overflow:hidden (usa isso pra animar a
-     altura ao trocar de aba) - isso "prende" um sticky de qualquer filho dentro dos
-     seus próprios limites, então a barra de abas nunca gruda de verdade no topo da
-     janela. Como as abas já são independentes (cada uma com sua própria rolagem via
-     ui-view) e não dependem da animação de altura pra funcionar, sobrescreve pra
-     overflow visível só nesta tela. */
-  #ranking-tabs {
-    overflow: visible !important;
-  }
-  #ranking-tabs md-tabs-wrapper {
+  #ranking-tab-strip {
     position: sticky;
-    top: 70px;
+    top: 140px;
     z-index: 1;
     background: #fff;
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  #ranking-tab-strip .ranking-tab {
+    flex: 1;
+    text-align: center;
+    padding: 16px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.54);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  #ranking-tab-strip .ranking-tab.active {
+    color: #225024;
+    border-bottom-color: #225024;
   }
 </style>
 <div>
@@ -73,25 +94,33 @@
             </md-menu-content>
           </md-menu>
         </div>
+        <div class="md-toolbar-tools" style="height:56px;min-height:56px;">
+          <span flex></span>
+          <div style="width:230px;" layout="row" layout-align="start center">
+            <label style="font-size:13px;color:#225024;white-space:nowrap;margin-right:8px;">Premiados por eixo:</label>
+            <input type="number" min="1" step="1" data-ng-model="numPremiadosPorEixo" style="width:50px;font-size:15px;color:#225024;">
+          </div>
+          <span flex="5"></span>
+          <md-button md-no-ink class="no-hover" style="font-size:13px;color:#225024;" ng-click="confirmarPremiados($event)">
+            <md-icon md-svg-src="check-circle" style="color:#225024;width:24px;height:24px;"></md-icon>
+            Confirmar premiados
+          </md-button>
+          <span flex></span>
+        </div>
       </md-toolbar>
 
-      <md-tabs md-dynamic-height md-border-bottom flex="100" id="ranking-tabs">
-        <md-tab label="Fundamental I" flex data-ng-cloak>
-          <div ui-view="ranking1" id="imprimir"></div>
-        </md-tab>
-        <md-tab label="Fundamental II" flex data-ng-cloak>
-          <div ui-view="ranking2" id="imprimir"></div>
-        </md-tab>
-        <md-tab label="Ensino Médio, Técnico e Superior" flex data-ng-cloak>
-          <div ui-view="ranking3" id="imprimir"></div>
-        </md-tab>
-        <md-tab label="Feiras" flex data-ng-cloak>
-          <div ui-view="feiras" id="imprimir"></div>
-        </md-tab>
-        <md-tab label="Menção Honrosa" flex data-ng-cloak>
-          <div ui-view="mencaoHonrosa" id="imprimir"></div>
-        </md-tab>
-    </md-tabs>
+      <div id="ranking-tab-strip">
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'fund1'}" ng-click="abaAtiva = 'fund1'">Fundamental I</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'fund2'}" ng-click="abaAtiva = 'fund2'">Fundamental II</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'ensinoMedio'}" ng-click="abaAtiva = 'ensinoMedio'">Ensino Médio, Técnico e Superior</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'feiras'}" ng-click="abaAtiva = 'feiras'">Feiras</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'mencaoHonrosa'}" ng-click="abaAtiva = 'mencaoHonrosa'">Menção Honrosa</div>
+      </div>
+      <div ng-show="abaAtiva === 'fund1'"><div ui-view="ranking1" id="imprimir"></div></div>
+      <div ng-show="abaAtiva === 'fund2'"><div ui-view="ranking2" id="imprimir"></div></div>
+      <div ng-show="abaAtiva === 'ensinoMedio'"><div ui-view="ranking3" id="imprimir"></div></div>
+      <div ng-show="abaAtiva === 'feiras'"><div ui-view="feiras" id="imprimir"></div></div>
+      <div ng-show="abaAtiva === 'mencaoHonrosa'"><div ui-view="mencaoHonrosa" id="imprimir"></div></div>
   </section>
 </div>
 </div>

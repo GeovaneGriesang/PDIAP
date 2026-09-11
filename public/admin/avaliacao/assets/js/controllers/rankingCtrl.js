@@ -54,6 +54,12 @@
 	.module('PDIAPav')
 	.controller('rankingCtrl', function($scope, $rootScope, $mdDialog, $filter, avaliacaoAPI, relatorioPdfService) {
 
+		// Guia (barra de abas) controlada na mão via ng-show, não <md-tabs> - ver comentário
+		// no <style> de ranking.html sobre por que (conflito entre md-dynamic-height e o
+		// cabeçalho fixo/sticky). "fund1" replica o mesmo primeiro-aba-ativa-por-padrão que
+		// <md-tabs> já tinha.
+		$scope.abaAtiva = 'fund1';
+
 		$rootScope.projetos = [];
 		$rootScope.eixo1_1 = [];
 		$rootScope.eixo1_2 = [];
@@ -278,7 +284,14 @@
 
 		carregarProjetos();
 
-		$scope.reordenar = function(){					
+		// Quantos projetos por eixo contam como "Premiado" ao confirmar - gravado por ano
+		// (ver GET /admin/configPremiacao), começa em 3 até o usuário mudar e confirmar.
+		$scope.numPremiadosPorEixo = 3;
+		avaliacaoAPI.getConfigPremiacao(new Date(Date.now()).getFullYear())
+			.success(function(data) { $scope.numPremiadosPorEixo = data.numPremiadosPorEixo; })
+			.error(function(status) { console.log(status); });
+
+		$scope.reordenar = function(){
 			$rootScope.ori_eixo1_1 = $filter('orderBy')($rootScope.eixo1_1,'-total',false);
 			$rootScope.ori_eixo1_2 = $filter('orderBy')($rootScope.eixo1_2,'-total',false);
 			$rootScope.ori_eixo1_3 = $filter('orderBy')($rootScope.eixo1_3,'-total',false);
@@ -453,7 +466,15 @@
 		// reordenar() acima) - filtra os placeholders {_id:null} que recarregar() pode ter
 		// deixado pra trás se o usuário trocou pra ordenação alfabética antes de baixar o PDF.
 		function top3(chave) {
-			return ($rootScope[chave] || []).filter(function(p) { return p && p._id; }).slice(0, 3);
+			return topN(chave, 3);
+		}
+
+		// Igual a top3, mas com a quantidade configurável - usado por confirmarPremiados
+		// abaixo (top3 continua fixo em 3 de propósito, só pros PDFs de resultado - mudar
+		// numPremiadosPorEixo não afeta o "1º, 2º e 3º colocados" do PDF, só quem confirmar
+		// marca como Premiado).
+		function topN(chave, n) {
+			return ($rootScope[chave] || []).filter(function(p) { return p && p._id; }).slice(0, n);
 		}
 
 		// Seções de classificação pra feiras externas e menção honrosa - cross-cutting
@@ -557,6 +578,60 @@
 				secoes: secoes,
 				arquivo: new Date().getFullYear() + '_Ranking_Destaques'
 			});
+		};
+
+		// Confirma os destaques (top N por eixo, N = numPremiadosPorEixo) como Premiado de
+		// verdade: grava premiacao:'Premiado' + colocacao em cada projeto no banco (mesmos
+		// campos usados em Projetos > Premiação) e desmarca quem tinha sido premiado antes
+		// nesse ano mas caiu do top N numa nova rodada de confirmação. NÃO mexe em
+		// feirasClassificadas/menção honrosa - esses continuam só manuais (Projetos >
+		// Premiação), não fazem parte desse fluxo automático.
+		$scope.confirmarPremiados = function(ev) {
+			var premiados = [];
+			GRUPOS_EIXOS.forEach(function(grupo) {
+				grupo.eixos.forEach(function(eixo) {
+					topN(eixo.chave, $scope.numPremiadosPorEixo).forEach(function(p, i) {
+						premiados.push({ id: p._id, colocacao: i + 1 });
+					});
+				});
+			});
+
+			if (premiados.length === 0) {
+				$mdDialog.show($mdDialog.alert()
+					.title('Nada pra confirmar')
+					.textContent('Nenhum projeto avaliado até o momento nos eixos desta tela.')
+					.ok('Entendi')
+					.targetEvent(ev));
+				return;
+			}
+
+			var confirm = $mdDialog.confirm()
+				.title('Confirmar premiados?')
+				.textContent('Isso vai marcar ' + premiados.length + ' projeto(s) (top ' + $scope.numPremiadosPorEixo + ' de cada eixo) como Premiado, com a colocação de cada um. Quem estava premiado antes nesse ano e não está mais entre os primeiros ' + $scope.numPremiadosPorEixo + ' do seu eixo será desmarcado. Feiras/menção honrosa continuam manuais. Essa ação não pode ser desfeita.')
+				.targetEvent(ev)
+				.ok('Confirmar')
+				.cancel('Cancelar');
+			$mdDialog.show(confirm).then(function() {
+				avaliacaoAPI.postConfirmarPremiados({
+					ano: new Date(Date.now()).getFullYear(),
+					numPremiadosPorEixo: $scope.numPremiadosPorEixo,
+					premiados: premiados
+				})
+				.success(function(data) {
+					$mdDialog.show($mdDialog.alert()
+						.title('Premiados confirmados')
+						.textContent(data.marcados + ' projeto(s) marcado(s) como Premiado.')
+						.ok('Entendi')
+						.targetEvent(ev));
+				})
+				.error(function(status) {
+					$mdDialog.show($mdDialog.alert()
+						.title('Falha ao confirmar')
+						.textContent('Não foi possível confirmar os premiados. ' + status)
+						.ok('Entendi')
+						.targetEvent(ev));
+				});
+			}, function() {});
 		};
 	});
 })();
