@@ -9,6 +9,10 @@
 		$scope.searchProject = "";
 		$scope.year = CadastraAno();
 
+		// Resumo de totais do ano filtrado (ver cabeçalho em avaliacao.html) - conta TODOS
+		// os projetos do ano, não só os aprovados (que é tudo que $scope.projetos guarda).
+		$scope.resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoEspecificado: 0, naoAprovados: 0 };
+
 		// O ano do filtro fica no $rootScope pra seguir o mesmo padrão das outras telas
 		// (Selecionar aprovados/Presença/Premiação) - sem seleção prévia, cai no ano atual.
 		let anoPersistido = $rootScope.ano;
@@ -16,11 +20,19 @@
 
 		let carregarProjetos = function() {
 			$scope.projetos = [];
+			var resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoEspecificado: 0, naoAprovados: 0 };
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
-					if (value.aprovado === true && ano == $rootScope.ano) {
+					if (ano !== $rootScope.ano) return;
+					resumo.total++;
+					if (value.aprovado === true) {
+						resumo.aprovados++;
+						if (value.tipoAprovacao === 'anais') resumo.anais++;
+						else if (value.tipoAprovacao === 'apresentacao') resumo.apresentacao++;
+						else resumo.naoEspecificado++;
+
 						var avaliacao = (value.avaliacao !== undefined && value.avaliacao.length > 0) ? value.avaliacao : [];
 						let obj = ({
 							_id: value._id,
@@ -33,8 +45,11 @@
 							avaliado: avaliacao.length > 0
 						});
 						$scope.projetos.push(obj);
+					} else {
+						resumo.naoAprovados++;
 					}
 				});
+				$scope.resumo = resumo;
 			})
 			.error(function(status) {
 				console.log(status);

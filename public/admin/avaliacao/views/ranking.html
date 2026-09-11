@@ -1,3 +1,29 @@
+<style>
+  /* Cabeçalho (toolbar) e a barra de abas (guia) fixos no topo ao rolar a lista - cada
+     elemento gruda no topo da janela (sticky) empilhado em sequência, um abaixo do
+     outro; o "top" da barra de abas é a altura da toolbar acima dela (medida direto no
+     navegador). */
+  #ranking-toolbar-topo {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  /* md-dynamic-height deixa o <md-tabs> com overflow:hidden (usa isso pra animar a
+     altura ao trocar de aba) - isso "prende" um sticky de qualquer filho dentro dos
+     seus próprios limites, então a barra de abas nunca gruda de verdade no topo da
+     janela. Como as abas já são independentes (cada uma com sua própria rolagem via
+     ui-view) e não dependem da animação de altura pra funcionar, sobrescreve pra
+     overflow visível só nesta tela. */
+  #ranking-tabs {
+    overflow: visible !important;
+  }
+  #ranking-tabs md-tabs-wrapper {
+    position: sticky;
+    top: 70px;
+    z-index: 1;
+    background: #fff;
+  }
+</style>
 <div>
   <span us-spinner>
     <div layout="row" layout-sm="column" layout-align="space-around">
@@ -6,7 +32,7 @@
   </span>
   <div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
     <section layout="column" role="main" flex>
-      <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp" id="ranking-toolbar-topo">
         <div class="md-toolbar-tools">
           <div>
             <img src="admin/assets/images/logo3-b.png" width="120px" id="logo" style="margin-left:40px;padding-right:15px;border-right:1px solid #225024;"></img>
@@ -49,7 +75,7 @@
         </div>
       </md-toolbar>
 
-      <md-tabs md-dynamic-height md-border-bottom flex="100">
+      <md-tabs md-dynamic-height md-border-bottom flex="100" id="ranking-tabs">
         <md-tab label="Fundamental I" flex data-ng-cloak>
           <div ui-view="ranking1" id="imprimir"></div>
         </md-tab>

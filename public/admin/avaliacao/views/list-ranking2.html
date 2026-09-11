@@ -15,7 +15,7 @@
     </div>
     <md-list flex>
       <md-divider></md-divider>
-      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3, empatado: proj.empatado}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_1"
         ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;" ng-if="">
@@ -44,7 +44,7 @@
     </div>
     <md-list flex>
       <md-divider></md-divider>
-      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3, empatado: proj.empatado}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_2"
         ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
@@ -73,7 +73,7 @@
     </div>
     <md-list flex>
       <md-divider></md-divider>
-      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3, empatado: proj.empatado}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_3"
         ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
@@ -102,7 +102,7 @@
     </div>
     <md-list flex>
       <md-divider></md-divider>
-      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3}" aria-label="Ranking"
+      <md-list-item class="md-3-line" ng-class="{listItem:$index >= 3, empatado: proj.empatado}" aria-label="Ranking"
         data-ng-repeat="proj in eixo2_4"
         ng-click="visualizarDetalhes(proj,$event)" ng-if="proj._id != undefined">
         <div ng-if="rank != 'nomeProjeto'" layout flex="5" layout-align="center center" style="align-self:center;">
