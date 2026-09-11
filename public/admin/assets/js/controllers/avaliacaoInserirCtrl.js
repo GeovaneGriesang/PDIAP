@@ -11,7 +11,8 @@
 
 		// Resumo de totais do ano filtrado (ver cabeçalho em avaliacao.html) - conta TODOS
 		// os projetos do ano, não só os aprovados (que é tudo que $scope.projetos guarda).
-		$scope.resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoEspecificado: 0, naoAprovados: 0 };
+		// Mesmo padrão/cores de contagemSituacao() em projetosCtrl.js (Projetos > Presença).
+		$scope.resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
 
 		// O ano do filtro fica no $rootScope pra seguir o mesmo padrão das outras telas
 		// (Selecionar aprovados/Presença/Premiação) - sem seleção prévia, cai no ano atual.
@@ -20,7 +21,7 @@
 
 		let carregarProjetos = function() {
 			$scope.projetos = [];
-			var resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoEspecificado: 0, naoAprovados: 0 };
+			var resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
@@ -29,9 +30,8 @@
 					resumo.total++;
 					if (value.aprovado === true) {
 						resumo.aprovados++;
-						if (value.tipoAprovacao === 'anais') resumo.anais++;
-						else if (value.tipoAprovacao === 'apresentacao') resumo.apresentacao++;
-						else resumo.naoEspecificado++;
+						if (value.tipoAprovacao === 'apresentacao') resumo.apresentacao++;
+						else resumo.anais++;
 
 						var avaliacao = (value.avaliacao !== undefined && value.avaliacao.length > 0) ? value.avaliacao : [];
 						let obj = ({

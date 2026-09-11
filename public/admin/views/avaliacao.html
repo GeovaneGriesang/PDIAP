@@ -73,13 +73,12 @@
         <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Fundamental II</div>
         <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Ensino Médio, Técnico e Superior</div>
       </div>
-      <div layout="column" style="align-items:center;padding-bottom:30px;background:rgba(128,128,128,0.07);font-size:14px;">
-        <div><b>Total:</b> {{resumo.total}}</div>
-        <div><b>Aprovados:</b> {{resumo.aprovados}}</div>
-        <div style="padding-left:25px;color:rgba(0,0,0,0.7);">↳ Anais e apresentação: {{resumo.anais}}</div>
-        <div style="padding-left:25px;color:rgba(0,0,0,0.7);">↳ Apenas apresentação: {{resumo.apresentacao}}</div>
-        <div data-ng-if="resumo.naoEspecificado > 0" style="padding-left:25px;color:rgba(0,0,0,0.7);">↳ Não especificado: {{resumo.naoEspecificado}}</div>
-        <div><b>Não aprovados:</b> {{resumo.naoAprovados}}</div>
+      <div layout="row" style="justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 28px;padding-bottom:30px;background:rgba(128,128,128,0.07);font-size:14px;">
+        <span><b>Total:</b> {{resumo.total}}</span>
+        <span style="color:#2e7d32;"><b>Aprovados:</b> {{resumo.aprovados}}</span>
+        <span style="color:#2e7d32;">↳ Anais e apresentação: {{resumo.anais}}</span>
+        <span style="color:#c4650a;">↳ Apenas apresentação: {{resumo.apresentacao}}</span>
+        <span style="color:#c62828;"><b>Não aprovados:</b> {{resumo.naoAprovados}}</span>
       </div>
       <md-list flex style="margin-bottom:50px;">
         <md-list-item class="list-header">
