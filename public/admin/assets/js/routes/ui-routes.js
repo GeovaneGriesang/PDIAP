@@ -70,6 +70,11 @@
 			templateUrl: 'admin/views/enviar-email-avaliadores.html',
 			controller: 'enviarEmailAvaliadoresCtrl'
 		})
+		.state('master.enviar-email-premiados', {
+			url: "/avaliacao/enviar-email-premiados",
+			templateUrl: 'admin/views/enviar-email-premiados.html',
+			controller: 'enviarEmailPremiadosCtrl'
+		})
 		.state('master.relatorio-avaliadores', {
 			url: "/avaliadores/relatorio",
 			templateUrl: 'admin/views/relatorio-avaliadores.html',

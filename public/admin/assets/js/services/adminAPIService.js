@@ -115,6 +115,15 @@
 			return $http(request);
 		};
 
+		let _postEnviarEmailPremiados = function(payload) {
+			const request = {
+				url: '/admin/enviarEmailPremiados',
+				method: 'POST',
+				data: payload
+			}
+			return $http(request);
+		};
+
 		let _postEnviarEmailParticipantes = function(payload) {
 			const request = {
 				url: '/admin/enviarEmailParticipantes',
@@ -609,6 +618,7 @@
 			putSetAprovados: _putSetAprovados,
 			postEnviarEmailProjetos: _postEnviarEmailProjetos,
 			postEnviarEmailAvaliadores: _postEnviarEmailAvaliadores,
+			postEnviarEmailPremiados: _postEnviarEmailPremiados,
 			postEnviarEmailParticipantes: _postEnviarEmailParticipantes,
 			putSetAvaliadores: _putSetAvaliadores,
 			putUnsetAprovados: _putUnsetAprovados,

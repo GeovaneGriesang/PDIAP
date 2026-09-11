@@ -908,7 +908,10 @@ router.get('/projetos/relatorios.zip', miPermiso("3"), (req, res) => {
 function _resolveDestinatarios(projeto, destinatario) {
   var camposProjeto = {
     nomeProjeto: projeto.nomeProjeto, categoria: projeto.categoria, eixo: projeto.eixo,
-    numInscricao: projeto.numInscricao, nomeEscola: projeto.nomeEscola, estado: projeto.estado, cidade: projeto.cidade
+    numInscricao: projeto.numInscricao, nomeEscola: projeto.nomeEscola, estado: projeto.estado, cidade: projeto.cidade,
+    // Só faz sentido pra quem foi marcado Premiado (Projetos > Premiação) - fica undefined
+    // pros demais, e a máscara ¨colocacao some sem quebrar em /enviarEmailProjetos.
+    colocacao: projeto.colocacao
   };
   if (destinatario === 'principal') {
     return projeto.email ? [Object.assign({ nome: projeto.nomeProjeto, email: projeto.email }, camposProjeto)] : [];
@@ -940,6 +943,54 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
 
     projetoSchema.find({ _id: { $in: ids } }, '-password', (err, projetos) => {
       if (err) { console.error('Erro ao buscar projetos para email em massa', err); return; }
+
+      var vistos = {};
+      var destinatarios = [];
+      projetos.forEach(function(projeto) {
+        _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
+          var chave = d.email.toLowerCase();
+          if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
+        });
+      });
+
+      res.send({ total: destinatarios.length });
+
+      var transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com', port: 587,
+        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+      });
+      async.eachSeries(destinatarios, function(d, next) {
+        transport.sendMail({
+          from: 'MOVACI <va-movaci@ifsul.edu.br>',
+          to: d.email,
+          subject: _aplicaMascaras(assunto, d),
+          html: _aplicaMascaras(corpo, d)
+        }, function(err) {
+          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
+        });
+      });
+    });
+  } catch (error) {
+    console.log('findOne error--> ${error}');
+  }
+});
+
+// Mesmo espírito de /enviarEmailProjetos, mas só pros projetos marcados premiacao:'Premiado'
+// (ver Projetos > Premiação) - reaproveita _resolveDestinatarios (aluno/orientador/etc), que
+// já inclui colocacao em camposProjeto.
+router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
+  try {
+    var ids = req.body.idsProjetos;
+    var destinatario = req.body.destinatario;
+    var assunto = req.body.assunto;
+    var corpo = req.body.corpo;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um projeto.');
+    if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
+    if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+
+    projetoSchema.find({ _id: { $in: ids }, premiacao: 'Premiado' }, '-password', (err, projetos) => {
+      if (err) { console.error('Erro ao buscar projetos premiados para email em massa', err); return; }
 
       var vistos = {};
       var destinatarios = [];
