@@ -44,11 +44,31 @@
 			return $http(request);
 		};
 
+		let _getConfigPremiacao = function(ano) {
+			const request = {
+				url: '/admin/configPremiacao',
+				method: 'GET',
+				params: { ano: ano }
+			}
+			return $http(request);
+		};
+
+		let _postConfirmarPremiados = function(payload) {
+			const request = {
+				url: '/admin/confirmarPremiados',
+				method: 'POST',
+				data: payload
+			}
+			return $http(request);
+		};
+
 		return {
 			postLoginAvaliador: _postLoginAvaliador,
 			getTodosProjetos: _getTodosProjetos,
 			getFeiras: _getFeiras,
-			putAvaliacao: _putAvaliacao
+			putAvaliacao: _putAvaliacao,
+			getConfigPremiacao: _getConfigPremiacao,
+			postConfirmarPremiados: _postConfirmarPremiados
 		};
 	});
 })();
