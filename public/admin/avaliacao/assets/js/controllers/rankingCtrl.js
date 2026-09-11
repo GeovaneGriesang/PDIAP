@@ -1,9 +1,36 @@
 (function(){
 	'use strict';
 
+	// Grupos categoria/eixo na mesma ordem das abas e seções da tela (ver ranking.html e
+	// list-ranking1/2/3.html) - usado só pra montar os PDFs de resultado (baixarPdfColocacao/
+	// baixarPdfDestaques abaixo), lendo os arrays já carregados/ordenados em $rootScope.
+	var GRUPOS_EIXOS = [
+		{categoria: 'Fundamental I', eixos: [
+			{nome: 'Ciências da Natureza e suas tecnologias', chave: 'eixo1_1'},
+			{nome: 'Ciências Humanas e suas tecnologias', chave: 'eixo1_2'},
+			{nome: 'Linguagens, Códigos e suas tecnologias', chave: 'eixo1_3'},
+			{nome: 'Matemática e suas tecnologias', chave: 'eixo1_4'}
+		]},
+		{categoria: 'Fundamental II', eixos: [
+			{nome: 'Ciências da Natureza e suas tecnologias', chave: 'eixo2_1'},
+			{nome: 'Ciências Humanas e suas tecnologias', chave: 'eixo2_2'},
+			{nome: 'Linguagens, Códigos e suas tecnologias', chave: 'eixo2_3'},
+			{nome: 'Matemática e suas tecnologias', chave: 'eixo2_4'}
+		]},
+		{categoria: 'Ensino Médio, Técnico e Superior', eixos: [
+			{nome: 'Ciências Agrárias, Exatas e da Terra', chave: 'eixo1'},
+			{nome: 'Ciências Ambientais, Biológicas e da Saúde', chave: 'eixo2'},
+			{nome: 'Ciências Humanas e Sociais Aplicadas', chave: 'eixo3'},
+			{nome: 'Línguas e Artes', chave: 'eixo4'},
+			{nome: 'Extensão', chave: 'eixo5'},
+			{nome: 'Ciências da Computação', chave: 'eixo6'},
+			{nome: 'Engenharias', chave: 'eixo7'}
+		]}
+	];
+
 	angular
 	.module('PDIAPav')
-	.controller('rankingCtrl', function($scope, $rootScope, $mdDialog, $filter, avaliacaoAPI) {
+	.controller('rankingCtrl', function($scope, $rootScope, $mdDialog, $filter, avaliacaoAPI, relatorioPdfService) {
 
 		$rootScope.projetos = [];
 		$rootScope.eixo1_1 = [];
@@ -511,9 +538,84 @@
 				$rootScope.eixo6 = $filter('orderBy')($rootScope.ori_eixo6,filtro,false);
 				$rootScope.eixo7 = $filter('orderBy')($rootScope.ori_eixo7,filtro,false);
 			}
-			
-			
+
+
 		}
-        
+
+		// Top 3 de um eixo (array já carregado/ordenado por -total em $rootScope, ver
+		// reordenar() acima) - filtra os placeholders {_id:null} que recarregar() pode ter
+		// deixado pra trás se o usuário trocou pra ordenação alfabética antes de baixar o PDF.
+		function top3(chave) {
+			return ($rootScope[chave] || []).filter(function(p) { return p && p._id; }).slice(0, 3);
+		}
+
+		// PDF com a colocação de verdade (1º, 2º, 3º + pontuação) - uma seção por eixo que
+		// tem pelo menos um projeto avaliado, na mesma ordem das abas da tela.
+		$scope.baixarPdfColocacao = function() {
+			var secoes = [];
+			GRUPOS_EIXOS.forEach(function(grupo) {
+				grupo.eixos.forEach(function(eixo) {
+					var top = top3(eixo.chave);
+					if (top.length === 0) return;
+					secoes.push({
+						titulo: grupo.categoria + ' - ' + eixo.nome,
+						colunas: [
+							{ texto: 'Colocação', largura: 60 },
+							{ texto: 'Pontuação', largura: 60 },
+							{ texto: 'Nº Inscrição', largura: 60 },
+							{ texto: 'Projeto', largura: '*' },
+							{ texto: 'Escola', largura: 110 },
+							{ texto: 'Aluno(s)', largura: 120 },
+							{ texto: 'Orientador(es)', largura: 120 }
+						],
+						linhas: top.map(function(p, i) {
+							return [(i + 1) + 'º', p.total, p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
+						})
+					});
+				});
+			});
+			relatorioPdfService.tabelas({
+				titulo: 'Ranking - 1º, 2º e 3º colocados',
+				subtitulo: 'MOVACI ' + new Date().getFullYear(),
+				orientacao: 'landscape',
+				secoes: secoes,
+				arquivo: new Date().getFullYear() + '_Ranking_Colocacao'
+			});
+		};
+
+		// PDF só com os 3 destaques de cada eixo, sem revelar quem ficou em 1º/2º/3º: nem
+		// coluna de colocação, nem de pontuação, e a ordem de exibição é alfabética (não por
+		// nota) - senão a posição na lista já entregaria o resultado.
+		$scope.baixarPdfDestaques = function() {
+			var secoes = [];
+			GRUPOS_EIXOS.forEach(function(grupo) {
+				grupo.eixos.forEach(function(eixo) {
+					var destaques = top3(eixo.chave).sort(function(a, b) {
+						return (a.nomeProjeto || '').localeCompare(b.nomeProjeto || '');
+					});
+					if (destaques.length === 0) return;
+					secoes.push({
+						titulo: grupo.categoria + ' - ' + eixo.nome,
+						colunas: [
+							{ texto: 'Nº Inscrição', largura: 60 },
+							{ texto: 'Projeto', largura: '*' },
+							{ texto: 'Escola', largura: 110 },
+							{ texto: 'Aluno(s)', largura: 120 },
+							{ texto: 'Orientador(es)', largura: 120 }
+						],
+						linhas: destaques.map(function(p) {
+							return [p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
+						})
+					});
+				});
+			});
+			relatorioPdfService.tabelas({
+				titulo: 'Ranking - Destaques',
+				subtitulo: 'MOVACI ' + new Date().getFullYear(),
+				orientacao: 'landscape',
+				secoes: secoes,
+				arquivo: new Date().getFullYear() + '_Ranking_Destaques'
+			});
+		};
 	});
 })();
