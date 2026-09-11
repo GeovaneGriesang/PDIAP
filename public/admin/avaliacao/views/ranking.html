@@ -26,10 +26,26 @@
 
           <span flex></span>
 
-          <md-button onclick="print()" class="no-hover" style="font-size:13px;color:#225024;margin-right:30px;">
-            <md-icon md-svg-src="printer" style="color:#225024;width:28px;height:28px;"></md-icon>
-            Imprimir
-          </md-button>
+          <md-menu>
+            <md-button md-no-ink class="no-hover" style="font-size:13px;color:#225024;margin-right:30px;" ng-click="$mdOpenMenu($event)">
+              <md-icon md-svg-src="file-pdf-box" style="color:#225024;width:28px;height:28px;"></md-icon>
+              Baixar PDF
+            </md-button>
+            <md-menu-content width="4">
+              <md-menu-item>
+                <md-button ng-click="baixarPdfColocacao()" class="grey-text darken-3">
+                  <md-icon md-svg-src="trophy" class="grey-text darken-3"></md-icon>
+                  Com colocação (1º, 2º, 3º)
+                </md-button>
+              </md-menu-item>
+              <md-menu-item>
+                <md-button ng-click="baixarPdfDestaques()" class="grey-text darken-3">
+                  <md-icon md-svg-src="star" class="grey-text darken-3"></md-icon>
+                  Destaques (sem colocação)
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
         </div>
       </md-toolbar>
 
