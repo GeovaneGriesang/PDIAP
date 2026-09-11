@@ -153,6 +153,12 @@ md-checkbox.md-checked .md-ink-ripple {
 .kkkkk {
   display: none;
 }
+/* Projetos empatados numa pontuação que afeta o pódio (1º-3º lugar) - ver
+   rankingCtrl.js#marcarEmpates. Chama atenção pra quem precisa de desempate manual. */
+md-list-item.empatado {
+  background-color: #fff8e1 !important;
+  border-left: 4px solid #f9a825;
+}
 @media print {
   /* salvar premiação sem a pontuação ======================================= */
   .pontuacao { display: none !important; }

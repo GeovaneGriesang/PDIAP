@@ -2,8 +2,9 @@
 	'use strict';
 
 	// Grupos categoria/eixo na mesma ordem das abas e seções da tela (ver ranking.html e
-	// list-ranking1/2/3.html) - usado só pra montar os PDFs de resultado (baixarPdfColocacao/
-	// baixarPdfDestaques abaixo), lendo os arrays já carregados/ordenados em $rootScope.
+	// list-ranking1/2/3.html) - usado pra montar os PDFs de resultado (baixarPdfColocacao/
+	// baixarPdfDestaques abaixo) e pra saber quais chaves de $rootScope marcar empate
+	// (marcarEmpates), lendo os arrays já carregados/ordenados em $rootScope.
 	var GRUPOS_EIXOS = [
 		{categoria: 'Fundamental I', eixos: [
 			{nome: 'Ciências da Natureza e suas tecnologias', chave: 'eixo1_1'},
@@ -27,6 +28,27 @@
 			{nome: 'Engenharias', chave: 'eixo7'}
 		]}
 	];
+
+	var TODAS_CHAVES_EIXO = GRUPOS_EIXOS.reduce(function(acc, grupo) {
+		return acc.concat(grupo.eixos.map(function(e) { return e.chave; }));
+	}, []);
+
+	// Marca (proj.empatado = true) quem está empatado numa pontuação que afeta o pódio -
+	// tanto empates dentro do 1º-3º quanto um 4º colocado (ou mais abaixo) empatado com o
+	// 3º, que também precisa aparecer pra ajudar no desempate. Empate abaixo dessa faixa
+	// (ex: 5º empatado com 6º) não importa pro resultado e não é destacado. `lista` já
+	// vem ordenada por -total (ver reordenar() abaixo).
+	function marcarEmpates(lista) {
+		if (!lista || lista.length === 0) return;
+		var corte = lista.length >= 3 ? lista[2].total : lista[lista.length - 1].total;
+		var contagem = {};
+		lista.forEach(function(p) {
+			if (p.total >= corte) contagem[p.total] = (contagem[p.total] || 0) + 1;
+		});
+		lista.forEach(function(p) {
+			p.empatado = p.total >= corte && contagem[p.total] > 1;
+		});
+	}
 
 	angular
 	.module('PDIAPav')
@@ -290,6 +312,8 @@
 			$rootScope.eixo5 = $rootScope.ori_eixo5;
 			$rootScope.eixo6 = $rootScope.ori_eixo6;
 			$rootScope.eixo7 = $rootScope.ori_eixo7;
+
+			TODAS_CHAVES_EIXO.forEach(function(chave) { marcarEmpates($rootScope[chave]); });
 		}
 
 		$scope.recarregar = function(filtro){

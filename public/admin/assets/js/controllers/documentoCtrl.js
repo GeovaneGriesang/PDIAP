@@ -9,6 +9,9 @@
         $scope.year = typeof CadastraAno === 'function' ? CadastraAno() : [new Date().getFullYear()];
         $scope.titulo_documento = "";
         $scope.ano = $scope.year[0];
+        // Filtro por ano da lista abaixo - independente do "ano" do formulário de cadastro
+        // acima (esse é o ano do documento que está sendo enviado agora).
+        $scope.filtroAno = $scope.year[0];
         $scope.Exibe_documento = false;
         $scope.documentos = [];
         $scope.spinnerActive = false; // Controle do carregamento
