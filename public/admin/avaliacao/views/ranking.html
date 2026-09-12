@@ -18,7 +18,55 @@
   #ranking-toolbar-topo {
     position: sticky;
     top: 0;
+    z-index: 3;
+  }
+  /* Painel de premiados (total geral + configurar/confirmar) - fundo claro de propósito,
+     separado da toolbar verde escura: texto branco-sobre-verde ficava sem contraste pra
+     um controle "vivo" (input + botão), e misturado com Baixar PDF/Ranqueamento deixava a
+     toolbar poluída. Um painel claro, no mesmo espírito das barras de "Total:"/legenda já
+     usadas em outras telas (Presença, Avaliação), separa melhor essa área. */
+  #ranking-premiados-painel {
+    position: sticky;
+    top: 70px;
     z-index: 2;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 14px 30px;
+  }
+  #ranking-premiados-painel .premiados-total-geral {
+    font-size: 14px;
+    color: #225024;
+    display: flex;
+    align-items: center;
+  }
+  #ranking-premiados-painel .premiados-controles {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  #ranking-premiados-painel .premiados-input-grupo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #ranking-premiados-painel .premiados-input-grupo label {
+    font-size: 13px;
+    color: rgba(0,0,0,0.6);
+    white-space: nowrap;
+  }
+  #ranking-premiados-painel .premiados-input-grupo input {
+    width: 56px;
+    font-size: 15px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 4px;
   }
   #ranking-tab-strip {
     position: sticky;
@@ -43,6 +91,13 @@
   #ranking-tab-strip .ranking-tab.active {
     color: #225024;
     border-bottom-color: #225024;
+  }
+  .ranking-total-categoria {
+    text-align: center;
+    padding: 16px 0;
+    background: rgba(128,128,128,0.07);
+    font-size: 14px;
+    color: #225024;
   }
 </style>
 <div>
@@ -94,20 +149,24 @@
             </md-menu-content>
           </md-menu>
         </div>
-        <div class="md-toolbar-tools" style="height:56px;min-height:56px;">
-          <span flex></span>
-          <div style="width:230px;" layout="row" layout-align="start center">
-            <label style="font-size:13px;color:#225024;white-space:nowrap;margin-right:8px;">Premiados por eixo:</label>
-            <input type="number" min="1" step="1" data-ng-model="numPremiadosPorEixo" style="width:50px;font-size:15px;color:#225024;">
-          </div>
-          <span flex="5"></span>
-          <md-button md-no-ink class="no-hover" style="font-size:13px;color:#225024;" ng-click="confirmarPremiados($event)">
-            <md-icon md-svg-src="check-circle" style="color:#225024;width:24px;height:24px;"></md-icon>
-            Confirmar premiados
-          </md-button>
-          <span flex></span>
-        </div>
       </md-toolbar>
+
+      <div id="ranking-premiados-painel">
+        <div class="premiados-total-geral">
+          <md-icon md-svg-src="trophy" style="color:#225024;width:20px;height:20px;margin-right:8px;"></md-icon>
+          <span><b>Total premiados:</b> {{totalPremiadosGeral}}</span>
+        </div>
+        <div class="premiados-controles">
+          <div class="premiados-input-grupo">
+            <label for="premiados-por-eixo">Premiados por eixo</label>
+            <input id="premiados-por-eixo" type="number" min="1" step="1" data-ng-model="numPremiadosPorEixo">
+          </div>
+          <md-button class="md-raised md-primary green darken-1" aria-label="Confirmar premiados" ng-click="confirmarPremiados($event)">
+            <md-icon md-svg-src="check-circle" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
+            <span style="vertical-align:middle;">Confirmar premiados</span>
+          </md-button>
+        </div>
+      </div>
 
       <div id="ranking-tab-strip">
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'fund1'}" ng-click="abaAtiva = 'fund1'">Fundamental I</div>
@@ -116,9 +175,18 @@
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'feiras'}" ng-click="abaAtiva = 'feiras'">Feiras</div>
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'mencaoHonrosa'}" ng-click="abaAtiva = 'mencaoHonrosa'">Menção Honrosa</div>
       </div>
-      <div ng-show="abaAtiva === 'fund1'"><div ui-view="ranking1" id="imprimir"></div></div>
-      <div ng-show="abaAtiva === 'fund2'"><div ui-view="ranking2" id="imprimir"></div></div>
-      <div ng-show="abaAtiva === 'ensinoMedio'"><div ui-view="ranking3" id="imprimir"></div></div>
+      <div ng-show="abaAtiva === 'fund1'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosFund1}}</b></div>
+        <div ui-view="ranking1" id="imprimir"></div>
+      </div>
+      <div ng-show="abaAtiva === 'fund2'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosFund2}}</b></div>
+        <div ui-view="ranking2" id="imprimir"></div>
+      </div>
+      <div ng-show="abaAtiva === 'ensinoMedio'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosEnsinoMedio}}</b></div>
+        <div ui-view="ranking3" id="imprimir"></div>
+      </div>
       <div ng-show="abaAtiva === 'feiras'"><div ui-view="feiras" id="imprimir"></div></div>
       <div ng-show="abaAtiva === 'mencaoHonrosa'"><div ui-view="mencaoHonrosa" id="imprimir"></div></div>
   </section>
