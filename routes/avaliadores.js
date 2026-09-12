@@ -298,6 +298,14 @@ router.put('/addNota', ensureAuthenticated, (req, res) => {
 	ProjetoSchema.findOne({_id: id}, (err, usr) => {
 		if (err) { console.error('Erro', err); return; }
 		usr.avaliacao = arrayNota;
+		// Lançar nota é sinal de que o(a) pesquisador(a) esteve presente pra apresentar o
+		// projeto - confirma participação automaticamente (ver Projetos > Presença), pra
+		// equipe de credenciamento não precisar marcar de novo manualmente o que a nota já
+		// atesta. Só marca ao lançar nota de verdade (arrayNota não vazio); apagar a
+		// avaliação não desfaz uma presença já confirmada.
+		if (Array.isArray(arrayNota) && arrayNota.length > 0) {
+			usr.participa = true;
+		}
 		usr.save((err, usr) => {
 			if (err) { console.error('Erro', err); return; }
 		});
