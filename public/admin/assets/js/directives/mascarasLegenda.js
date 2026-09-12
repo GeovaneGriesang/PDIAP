@@ -2,12 +2,17 @@
 	'use strict';
 
 	// Legenda de máscaras (¨chave) usada nos textos de e-mail e de certificado: mostra as
-	// máscaras disponíveis como chips verdes clicáveis (mesmo espírito visual dos chips de
+	// máscaras disponíveis como chips clicáveis (mesmo espírito visual dos chips de
 	// palavras-chave do cadastro de projetos) que, ao clicar, inserem a máscara no campo de
 	// texto logo em seguida no HTML (textarea ou input dentro do elemento seguinte). Fica
 	// ANTES do campo de propósito - colocar depois gerava confusão visual, já que a legenda
 	// ficava colada no campo seguinte e parecia pertencer a ele, não ao campo anterior.
 	// Um ícone de ajuda ao lado explica o funcionamento e lista o significado de cada máscara.
+	//
+	// Cada item pode ter um `tipo` ('condicao' ou 'variavel', além do padrão - substituição
+	// simples), usado só pra dar uma cor diferente ao chip (ver style.css) e, no caso de
+	// 'condicao', inserir um molde pronto (`insere`) em vez do texto literal da chave (que
+	// nesse caso descreve a sintaxe, não é o que deve ir de fato no campo).
 	//
 	// Uso: <div mascaras-legenda="[{chave:'nome',desc:'Nome do destinatário'}, ...]"></div>
 	// logo antes do <md-input-container> (ou elemento equivalente) que contém o campo alvo.
@@ -20,7 +25,7 @@
 			template:
 				'<div class="mascaras-legenda">' +
 					'<span class="mascaras-legenda-chips">' +
-						'<span class="mascara-chip" data-ng-repeat="m in mascaras track by m.chave" data-ng-click="inserir(m.chave)" title="Clique para inserir">&#168;{{m.chave}}</span>' +
+						'<span class="mascara-chip" data-ng-class="{\'mascara-chip-condicao\': m.tipo === \'condicao\', \'mascara-chip-variavel\': m.tipo === \'variavel\'}" data-ng-repeat="m in mascaras track by m.chave" data-ng-click="inserir(m)" title="Clique para inserir">&#168;{{m.chave}}</span>' +
 					'</span>' +
 					'<md-icon md-svg-src="help-circle" class="mascara-ajuda-icon" data-ng-click="ajuda($event)" aria-label="Ajuda sobre máscaras"></md-icon>' +
 				'</div>',
@@ -31,10 +36,10 @@
 					return seguinte.querySelector('textarea, input') || (seguinte.matches && seguinte.matches('textarea, input') ? seguinte : null);
 				}
 
-				scope.inserir = function(chave) {
+				scope.inserir = function(m) {
 					var campo = campoAlvo();
 					if (!campo) return;
-					var mascara = '¨' + chave;
+					var mascara = m.tipo === 'condicao' ? m.insere : ('¨' + m.chave);
 					var inicio = campo.selectionStart != null ? campo.selectionStart : campo.value.length;
 					var fim = campo.selectionEnd != null ? campo.selectionEnd : campo.value.length;
 					var valor = campo.value || '';
@@ -46,9 +51,14 @@
 				};
 
 				scope.ajuda = function(ev) {
-					var lista = scope.mascaras.map(function(m) {
+					var normais = scope.mascaras.filter(function(m) { return !m.tipo; });
+					var especiais = scope.mascaras.filter(function(m) { return !!m.tipo; });
+					var lista = normais.map(function(m) {
 						return '¨' + m.chave + ' — ' + m.desc;
 					}).join('\n');
+					var explicacaoEspeciais = especiais.length === 0 ? '' :
+						'\n\nCondição e variáveis (só fazem sentido dentro de um ¨SE()):\n' +
+						especiais.map(function(m) { return '¨' + m.chave + ' — ' + m.desc; }).join('\n');
 					$mdDialog.show(
 						$mdDialog.alert()
 						.parent(angular.element(document.body))
@@ -57,7 +67,7 @@
 						.textContent(
 							'Clique em uma máscara (chip verde) para inseri-la no campo de texto logo abaixo, na posição do cursor. ' +
 							'Ao salvar ou enviar, cada máscara é substituída automaticamente pelo dado correspondente de quem vai receber ' +
-							'o e-mail ou o certificado.\n\n' + lista
+							'o e-mail ou o certificado.\n\n' + lista + explicacaoEspeciais
 						)
 						.ok('Entendi')
 						.targetEvent(ev)

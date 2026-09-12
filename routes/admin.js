@@ -911,7 +911,13 @@ function _resolveDestinatarios(projeto, destinatario) {
     numInscricao: projeto.numInscricao, nomeEscola: projeto.nomeEscola, estado: projeto.estado, cidade: projeto.cidade,
     // Só faz sentido pra quem foi marcado Premiado (Projetos > Premiação) - fica undefined
     // pros demais, e a máscara ¨colocacao some sem quebrar em /enviarEmailProjetos.
-    colocacao: projeto.colocacao
+    colocacao: projeto.colocacao,
+    // Booleanos só usados dentro de ¨SE(...) em /enviarEmailPremiados (ver _resolveCondicionais)
+    // e ¨feiraNome, que só resolve o nome de verdade se a query fez populate('feirasClassificadas').
+    premiado: projeto.premiacao === 'Premiado',
+    mencaoHonrosa: projeto.premiacao === 'Mencao_honrosa',
+    classificado: !!(projeto.feirasClassificadas && projeto.feirasClassificadas.length > 0),
+    feiraNome: (projeto.feirasClassificadas || []).map(function(f) { return f && f.nome; }).filter(Boolean).join(', ')
   };
   if (destinatario === 'principal') {
     return projeto.email ? [Object.assign({ nome: projeto.nomeProjeto, email: projeto.email }, camposProjeto)] : [];
@@ -929,6 +935,67 @@ function _aplicaMascaras(texto, dados) {
     var chave = match.slice(1);
     return dados[chave] !== undefined && dados[chave] !== null ? String(dados[chave]) : match;
   });
+}
+
+// Resolve ¨SE(condicao;seVerdadeiro;seFalso) escaneando parênteses na mão em vez de regex -
+// os textos verdadeiro/falso podem ter parênteses de verdade (ex: nome de categoria), o que
+// quebraria uma regex "não-gulosa" simples. Suporta ¨SE aninhado (resolvido por recursão).
+// Mesma implementação do lado do cliente (enviarEmailPremiadosCtrl.js), só pra pré-visualização.
+function _resolveCondicionais(texto, avaliarCondicao) {
+  texto = texto || '';
+  var resultado = '';
+  var i = 0;
+  while (i < texto.length) {
+    var inicio = texto.indexOf('¨SE(', i);
+    if (inicio === -1) { resultado += texto.slice(i); break; }
+    resultado += texto.slice(i, inicio);
+    var pos = inicio + 4;
+    var profundidade = 1;
+    var args = [];
+    var argAtual = '';
+    while (pos < texto.length && profundidade > 0) {
+      var ch = texto[pos];
+      if (ch === '(') { profundidade++; argAtual += ch; }
+      else if (ch === ')') {
+        profundidade--;
+        if (profundidade === 0) break;
+        argAtual += ch;
+      } else if (ch === ';' && profundidade === 1 && args.length < 2) {
+        args.push(argAtual);
+        argAtual = '';
+      } else {
+        argAtual += ch;
+      }
+      pos++;
+    }
+    args.push(argAtual);
+    while (args.length < 3) args.push('');
+    if (pos >= texto.length && texto[pos] !== ')') {
+      resultado += texto.slice(inicio, pos + 1);
+      i = pos + 1;
+      continue;
+    }
+    var condicao = args[0].trim();
+    var textoVerdadeiro = _resolveCondicionais(args[1], avaliarCondicao);
+    var textoFalso = _resolveCondicionais(args[2], avaliarCondicao);
+    resultado += avaliarCondicao(condicao) ? textoVerdadeiro : textoFalso;
+    i = pos + 1;
+  }
+  return resultado;
+}
+
+// Aplica ¨SE(...) e, no resultado, as máscaras ¨chave simples - usada só em
+// /enviarEmailPremiados, onde essas condições fazem sentido (ver mascarasDisponiveis em
+// enviarEmailPremiadosCtrl.js).
+function _aplicaMascarasComCondicao(texto, dados) {
+  var avaliarCondicao = function(condicao) {
+    var chave = condicao.replace(/^¨/, '').toUpperCase();
+    if (chave === 'CLASSIFICADO') return !!dados.classificado;
+    if (chave === 'PREMIADO') return !!dados.premiado;
+    if (chave === 'MENCAO_HONROSA') return !!dados.mencaoHonrosa;
+    return false;
+  };
+  return _aplicaMascaras(_resolveCondicionais(texto, avaliarCondicao), dados);
 }
 
 router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
@@ -976,9 +1043,11 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
   }
 });
 
-// Mesmo espírito de /enviarEmailProjetos, mas só pros projetos marcados premiacao:'Premiado'
-// (ver Projetos > Premiação) - reaproveita _resolveDestinatarios (aluno/orientador/etc), que
-// já inclui colocacao em camposProjeto.
+// Mesmo espírito de /enviarEmailProjetos, mas só pros projetos em destaque: Premiado, Menção
+// honrosa ou classificado pra alguma feira externa (ver Projetos > Premiação) - reaproveita
+// _resolveDestinatarios (aluno/orientador/etc), que já inclui colocacao/premiado/mencaoHonrosa/
+// classificado/feiraNome em camposProjeto. populate('feirasClassificadas') é o que permite
+// ¨feiraNome resolver o nome de verdade (sem isso seria só o ObjectId).
 router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
   try {
     var ids = req.body.idsProjetos;
@@ -989,7 +1058,10 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
 
-    projetoSchema.find({ _id: { $in: ids }, premiacao: 'Premiado' }, '-password', (err, projetos) => {
+    projetoSchema.find({
+      _id: { $in: ids },
+      $or: [{ premiacao: { $in: ['Premiado', 'Mencao_honrosa'] } }, { 'feirasClassificadas.0': { $exists: true } }]
+    }, '-password').populate('feirasClassificadas').exec((err, projetos) => {
       if (err) { console.error('Erro ao buscar projetos premiados para email em massa', err); return; }
 
       var vistos = {};
@@ -1011,8 +1083,8 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
         transport.sendMail({
           from: 'MOVACI <va-movaci@ifsul.edu.br>',
           to: d.email,
-          subject: _aplicaMascaras(assunto, d),
-          html: _aplicaMascaras(corpo, d)
+          subject: _aplicaMascarasComCondicao(assunto, d),
+          html: _aplicaMascarasComCondicao(corpo, d)
         }, function(err) {
           if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
           setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP

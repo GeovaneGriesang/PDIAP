@@ -57,18 +57,27 @@
     </md-toolbar>
 
     <md-content>
-      <div layout="row" layout-align="center center" style="justify-content:center;padding:20px 0;background:rgba(128,128,128,0.07);gap:16px;">
-        <span><b>Total de premiados:</b> {{projetos.length}}</span>
+      <div layout="row" layout-wrap layout-align="center center" style="justify-content:center;padding:20px 0;background:rgba(128,128,128,0.07);gap:16px;">
+        <span><b>Total:</b> {{projetos.length}}</span>
+        <div style="width:170px;">
+          <md-select data-ng-model="criterioOrdenacao" placeholder="Ordenar por" data-ng-change="recarregarOrdenacao(criterioOrdenacao)" style="width:100%!important;">
+            <md-option value="colocacao">Colocação</md-option>
+            <md-option value="categoriaEixo">Categoria e Eixo</md-option>
+          </md-select>
+        </div>
         <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(projetos | filter:search)">Selecionar todos os filtrados</md-button>
+        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Premiado')">Selecionar premiados</md-button>
+        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Mencao_honrosa')">Selecionar menção honrosa</md-button>
+        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Classificado')">Selecionar classificados</md-button>
         <md-button class="md-raised" data-ng-click="limparSelecao()">Limpar seleção</md-button>
       </div>
       <div data-ng-if="projetos.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">
-        Nenhum projeto marcado como premiado neste ano (ver Projetos &gt; Premiação).
+        Nenhum projeto premiado, com menção honrosa ou classificado para feira neste ano (ver Projetos &gt; Premiação).
       </div>
-      <md-list flex data-ng-init="ordenacao = ['colocacao','categoria']">
+      <md-list flex>
         <md-list-item class="list-header">
           <div class="md-list-item-text" flex="80" layout="column" style="text-align:center;">
-            <p>Projetos premiados</p>
+            <p>Projetos em destaque</p>
           </div>
           <div class="md-list-item-text" flex="20" layout="column" style="text-align:center;">
             <p>Enviar</p>
@@ -81,7 +90,16 @@
             <h3><b data-ng-if="proj.colocacao">{{proj.colocacao}}º -</b> {{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
             <p>{{::proj.categoria}} / {{::proj.eixo}}</p>
           </div>
-          <div layout flex="20" layout-align="center center" style="align-self:center;">
+          <div layout="row" layout-align="end center" flex="15" style="align-self:center;gap:6px;">
+            <div data-ng-if="proj.premiacao === 'Premiado' || proj.premiacao === 'Mencao_honrosa'" layout="row" layout-align="center center" class="md-whiteframe-1dp green2" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+              <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Premiado'">Premiado</span>
+              <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Mencao_honrosa'">Menção</span>
+            </div>
+            <div data-ng-if="proj.feirasClassificadas.length > 0" layout="row" layout-align="center center" class="md-whiteframe-1dp roxo" style="width:78px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+              <span style="font-weight:500;">Classificado</span>
+            </div>
+          </div>
+          <div layout flex="5" layout-align="center center" style="align-self:center;">
             <md-checkbox aria-label="Check" data-ng-model="proj.selecionado" data-ng-click="contador(proj.selecionado, proj._id)"></md-checkbox>
           </div>
           <md-divider></md-divider>
@@ -121,7 +139,22 @@
           <md-button class="md-raised" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>
         </div>
 
-        <div data-ng-if="previaAssunto || previaCorpo" style="background:#fff;border:1px solid #ddd;padding:20px;margin-bottom:20px;">
+        <div data-ng-if="previaTemCondicao" style="margin-bottom:20px;">
+          <p style="color:rgba(0,0,0,0.5);font-size:13px;margin:0 0 10px 0;">A mensagem usa uma condição ¨SE(...) - veja como fica nos dois cenários possíveis:</p>
+          <div style="background:#fff;border:1px solid #1565c0;border-left:4px solid #1565c0;padding:20px;margin-bottom:10px;">
+            <p style="color:#1565c0;font-weight:500;margin:0 0 8px 0;">Se a condição for VERDADEIRA:</p>
+            <p><strong>Assunto:</strong> {{previaAssuntoVerdadeiro}}</p>
+            <p><strong>Corpo:</strong></p>
+            <p style="white-space:pre-wrap;">{{previaCorpoVerdadeiro}}</p>
+          </div>
+          <div style="background:#fff;border:1px solid #ddd;border-left:4px solid #9e9e9e;padding:20px;">
+            <p style="color:#616161;font-weight:500;margin:0 0 8px 0;">Se a condição for FALSA:</p>
+            <p><strong>Assunto:</strong> {{previaAssuntoFalso}}</p>
+            <p><strong>Corpo:</strong></p>
+            <p style="white-space:pre-wrap;">{{previaCorpoFalso}}</p>
+          </div>
+        </div>
+        <div data-ng-if="!previaTemCondicao && (previaAssunto || previaCorpo)" style="background:#fff;border:1px solid #ddd;padding:20px;margin-bottom:20px;">
           <p><strong>Assunto:</strong> {{previaAssunto}}</p>
           <p><strong>Corpo:</strong></p>
           <p style="white-space:pre-wrap;">{{previaCorpo}}</p>
