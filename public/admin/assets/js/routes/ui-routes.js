@@ -120,6 +120,11 @@
 			templateUrl: 'admin/views/historico-emails.html',
 			controller: 'historicoEmailsCtrl'
 		})
+		.state('master.inconsistencias', {
+			url: "/inconsistencias",
+			templateUrl: 'admin/views/inconsistencias.html',
+			controller: 'inconsistenciasCtrl'
+		})
 		.state('master.cadastro-participantes', {
 			url: "/cadastro-participantes",
 			templateUrl: 'admin/views/cadastro-participantes.html',

@@ -557,6 +557,12 @@ md-dialog .md-dialog-content-body p {
 .texto-situacao-nao, .select-situacao-nao .md-select-value {
   color: #c62828 !important;
 }
+/* Aba ativa do menu Inconsistências (ver inconsistencias.html) - barra escura simples,
+   sem md-tabs, então só precisa marcar a aba selecionada com uma borda inferior. */
+.inconsistencia-tab-ativa {
+  border-bottom: 3px solid #43a047;
+  font-weight: 500;
+}
 .btn-options {
   background: #eee !important;
   color: #424242 !important;
