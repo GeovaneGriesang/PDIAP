@@ -418,7 +418,7 @@
 		// Listagem geral de cada categoria - todos os eixos juntos numa lista só, pontuados
 		// por nota (usada nas abas "Geral - ..." pra decidir quem classificar pra feiras
 		// externas tipo Mostratec, já que essa decisão é por categoria inteira, não por
-		// eixo). A ordenação em si (Alfabético/Pontuação) fica no template via orderBy,
+		// eixo). A ordenação em si (Alfabético/Total) fica no template via orderBy,
 		// lendo $scope.rank (mesmo seletor "Ranqueamento" já usado nas abas por eixo).
 		function juntarEixos(chaves) {
 			var lista = [];
