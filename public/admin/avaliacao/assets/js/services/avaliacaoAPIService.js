@@ -62,13 +62,26 @@
 			return $http(request);
 		};
 
+		// Mesma rota usada em Projetos > Premiação (adminAPIService.js#putPremiadoProjetos) -
+		// permite editar Premiado/Menção honrosa/classificação pra feiras direto da tela de
+		// Ranking, sem precisar sair pra outra tela.
+		let _putPremiadoProjetos = function(payload) {
+			const request = {
+				url: '/admin/setPremiadoProjetos',
+				method: 'PUT',
+				data: payload
+			}
+			return $http(request);
+		};
+
 		return {
 			postLoginAvaliador: _postLoginAvaliador,
 			getTodosProjetos: _getTodosProjetos,
 			getFeiras: _getFeiras,
 			putAvaliacao: _putAvaliacao,
 			getConfigPremiacao: _getConfigPremiacao,
-			postConfirmarPremiados: _postConfirmarPremiados
+			postConfirmarPremiados: _postConfirmarPremiados,
+			putPremiadoProjetos: _putPremiadoProjetos
 		};
 	});
 })();
