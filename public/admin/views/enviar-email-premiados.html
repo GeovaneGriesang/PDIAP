@@ -65,11 +65,11 @@
             <md-option value="categoriaEixo">Categoria e Eixo</md-option>
           </md-select>
         </div>
-        <md-button class="md-raised" data-ng-click="selecionarTodosFiltrados(projetos | filter:search)">Selecionar todos os filtrados</md-button>
-        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Premiado')">Selecionar premiados</md-button>
-        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Mencao_honrosa')">Selecionar menção honrosa</md-button>
-        <md-button class="md-raised" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Classificado')">Selecionar classificados</md-button>
-        <md-button class="md-raised" data-ng-click="limparSelecao()">Limpar seleção</md-button>
+        <md-button class="md-raised green darken-1" data-ng-click="selecionarTodosFiltrados(projetos | filter:search)">Selecionar todos os filtrados</md-button>
+        <md-button class="md-raised green darken-1" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Premiado')">Selecionar premiados</md-button>
+        <md-button class="md-raised green darken-1" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Mencao_honrosa')">Selecionar menção honrosa</md-button>
+        <md-button class="md-raised green darken-1" data-ng-click="selecionarPorStatus(projetos | filter:search, 'Classificado')">Selecionar classificados</md-button>
+        <md-button class="md-raised green darken-1" data-ng-click="limparSelecao()">Limpar seleção</md-button>
       </div>
       <div data-ng-if="projetos.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">
         Nenhum projeto premiado, com menção honrosa ou classificado para feira neste ano (ver Projetos &gt; Premiação).
@@ -136,7 +136,7 @@
         </md-input-container>
 
         <div layout="row" layout-align="center center" style="margin:10px 0 20px 0;">
-          <md-button class="md-raised" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>
+          <md-button class="md-raised green darken-1" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>
         </div>
 
         <div data-ng-if="previaTemCondicao" style="margin-bottom:20px;">
