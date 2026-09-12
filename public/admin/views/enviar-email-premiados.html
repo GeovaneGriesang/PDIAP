@@ -139,8 +139,14 @@
           <md-button class="md-raised green darken-1" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>
         </div>
 
+        <div data-ng-if="previaProjetoInfo" style="margin-bottom:12px;font-size:13px;color:rgba(0,0,0,0.6);">
+          Pré-visualização baseada no projeto <b>{{previaProjetoInfo.numInscricao}} - {{previaProjetoInfo.nomeProjeto}}</b>, que hoje está:
+          <b data-ng-style="{color: previaProjetoInfo.premiado ? '#2e7d32' : 'inherit'}">{{previaProjetoInfo.premiado ? 'Premiado' : 'Não premiado'}}</b>,
+          <b data-ng-style="{color: previaProjetoInfo.mencaoHonrosa ? '#2e7d32' : 'inherit'}">{{previaProjetoInfo.mencaoHonrosa ? 'com Menção honrosa' : 'sem Menção honrosa'}}</b> e
+          <b data-ng-style="{color: previaProjetoInfo.classificado ? '#2e7d32' : 'inherit'}">{{previaProjetoInfo.classificado ? 'Classificado' : 'não Classificado'}}</b> pra alguma feira.
+        </div>
         <div data-ng-if="previaTemCondicao" style="margin-bottom:20px;">
-          <p style="color:rgba(0,0,0,0.5);font-size:13px;margin:0 0 10px 0;">A mensagem usa uma condição ¨SE(...) - veja como fica nos dois cenários possíveis:</p>
+          <p style="color:rgba(0,0,0,0.5);font-size:13px;margin:0 0 10px 0;">A mensagem usa uma condição ¨SE(...) - veja como fica nos dois cenários possíveis, MESMO que este projeto específico não atenda a condição de verdade (o cenário "verdadeira" é só uma prévia hipotética, não afirma que este projeto está classificado/premiado/com menção):</p>
           <div style="background:#fff;border:1px solid #1565c0;border-left:4px solid #1565c0;padding:20px;margin-bottom:10px;">
             <p style="color:#1565c0;font-weight:500;margin:0 0 8px 0;">Se a condição for VERDADEIRA:</p>
             <p><strong>Assunto:</strong> {{previaAssuntoVerdadeiro}}</p>

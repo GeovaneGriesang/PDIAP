@@ -81,6 +81,20 @@
 							console.log('Error: '+status);
 						});
 					};
+					// Uma nota lançada errada não podia mais virar "sem nota" (só dava pra
+					// sobrescrever por outro número, o que é diferente de nunca ter sido
+					// avaliado) - confirma antes por ser destrutivo (perde a nota atual).
+					$scope.confirmarRemoverNotas = function(ev) {
+						var confirm = $mdDialog.confirm()
+							.title('Remover notas?')
+							.textContent('O projeto "' + $scope.details.nomeProjeto + '" vai voltar a ficar sem nenhuma nota lançada. Essa ação não pode ser desfeita.')
+							.targetEvent(ev)
+							.ok('Remover')
+							.cancel('Cancelar');
+						$mdDialog.show(confirm).then(function() {
+							$scope.addNotas($scope.details._id, []);
+						}, function() {});
+					};
 					$scope.toast = function(message,tema) {
 						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000);
 						$mdToast.show(toast);

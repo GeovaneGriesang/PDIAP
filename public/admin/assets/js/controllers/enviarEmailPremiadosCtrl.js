@@ -242,10 +242,20 @@ function _avaliarCondicaoPorDados(dados) {
 		$scope.previaCorpoVerdadeiro = '';
 		$scope.previaAssuntoFalso = '';
 		$scope.previaCorpoFalso = '';
+		// Mostrado junto da pré-visualização quando há condição - o texto de "condição
+		// verdadeira" é sempre gerado, mesmo que o projeto usado pra pré-visualizar não
+		// atenda essa condição de verdade (é assim de propósito, pra dar pra revisar os
+		// dois textos possíveis de uma vez) - só que sem deixar isso claro, dava a entender
+		// que ¨feiraNome tinha quebrado quando na real o projeto só não estava classificado.
+		$scope.previaProjetoInfo = null;
 		$scope.gerarPreVisualizacao = function() {
 			var projeto = $scope.projetos.filter(function(p) { return $scope.idsSelecionados.indexOf(p._id) !== -1; })[0];
 			if (!projeto) return;
 			var dados = _dadosDoProjeto(projeto);
+			$scope.previaProjetoInfo = {
+				numInscricao: projeto.numInscricao, nomeProjeto: projeto.nomeProjeto,
+				premiado: dados.premiado, mencaoHonrosa: dados.mencaoHonrosa, classificado: dados.classificado
+			};
 
 			$scope.previaTemCondicao = /¨SE\(/.test($scope.assunto || '') || /¨SE\(/.test($scope.corpo || '');
 			if ($scope.previaTemCondicao) {

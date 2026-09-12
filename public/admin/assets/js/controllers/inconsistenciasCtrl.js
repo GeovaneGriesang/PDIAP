@@ -159,6 +159,19 @@
 							console.log('Error: ' + status);
 						});
 					};
+					// Mesmo mecanismo de avaliacaoInserirCtrl.js - remove uma nota lançada
+					// errada, voltando o projeto a "sem nota nenhuma".
+					$scope.confirmarRemoverNotas = function(ev) {
+						var confirm = $mdDialog.confirm()
+							.title('Remover notas?')
+							.textContent('O projeto "' + $scope.details.nomeProjeto + '" vai voltar a ficar sem nenhuma nota lançada. Essa ação não pode ser desfeita.')
+							.targetEvent(ev)
+							.ok('Remover')
+							.cancel('Cancelar');
+						$mdDialog.show(confirm).then(function() {
+							$scope.addNotas($scope.details._id, []);
+						}, function() {});
+					};
 					$scope.toast = function(message, tema) {
 						$mdToast.show($mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000));
 					};
