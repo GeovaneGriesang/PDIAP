@@ -33,7 +33,7 @@
     <!-- <img src="admin/assets/images/logo3-b.png" width="120px" style="margin-right:16px;"></img> -->
     <span flex></span>
     <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px 0 0 5px;">
-      <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
+      <md-icon md-svg-src="refresh" style="color:#356937;width:30px;height:30px;cursor:pointer;" ng-click="recarregar()" aria-label="Atualizar"><md-tooltip md-direction="bottom">Atualizar</md-tooltip></md-icon>
     </div>
     <div class="search-field" flex="30">
       <input placeholder="Buscar" style="width:100%!important;" ng-model="search[query]" ng-model-options="{ debounce: 600 }"/>
