@@ -500,6 +500,21 @@ md-list-item .md-button {
 .mascara-chip:hover {
   background: #2e7d32;
 }
+/* ¨SE(condição;seVerdadeiro;seFalso) - azul, pra diferenciar do verde das máscaras comuns */
+.mascara-chip.mascara-chip-condicao {
+  background: #1565c0;
+}
+.mascara-chip.mascara-chip-condicao:hover {
+  background: #0d47a1;
+}
+/* ¨CLASSIFICADO / ¨PREMIADO / ¨MENCAO_HONROSA - só valem dentro de um ¨SE(), terceira cor
+   pra não confundir nem com o verde (substituição simples) nem com o azul (condição) */
+.mascara-chip.mascara-chip-variavel {
+  background: #e65100;
+}
+.mascara-chip.mascara-chip-variavel:hover {
+  background: #bf360c;
+}
 .mascara-ajuda-icon {
   width: 20px;
   height: 20px;
