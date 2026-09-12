@@ -100,7 +100,8 @@
 				adminAPI.postEnviarEmailAvaliadores({
 					idsAvaliadores: $scope.idsSelecionados,
 					assunto: $scope.assunto,
-					corpo: $scope.corpo
+					corpo: $scope.corpo,
+					ano: $rootScope.ano
 				})
 				.success(function(data) {
 					$scope.toast('E-mail sendo enviado para ' + data.total + ' destinatário(s)!', 'success-toast');

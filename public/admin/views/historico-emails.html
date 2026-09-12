@@ -1,0 +1,90 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Histórico de E-mails</h4>
+      </div>
+    </md-toolbar>
+    <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+        <span flex></span>
+        <div style="background:rgba(255,255,255,0.1);padding:9px;border-radius:5px;">
+          <md-icon md-svg-src="magnify" style="color:#356937;width:30px;height:30px;"></md-icon>
+        </div>
+        <div class="search-field" flex="25">
+          <input placeholder="Buscar por assunto" style="width:100%!important;" ng-model="search[query]" ng-model-options="{ debounce: 600 }"/>
+        </div>
+        <span flex="5"></span>
+        <div style="width:170px;">
+          <md-select data-ng-model="filtroOrigem" placeholder="Origem" style="width:100%!important;font-size:17px;">
+            <md-option value="todos">Todas as origens</md-option>
+            <md-option value="projetos">Projetos</md-option>
+            <md-option value="premiados">Premiados</md-option>
+            <md-option value="avaliadores">Avaliadores</md-option>
+            <md-option value="participantes">Participantes</md-option>
+          </md-select>
+        </div>
+        <span flex="5"></span>
+        <div style="width:85px;">
+          <md-select data-ng-model="$root.ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
+            <md-optgroup label="Ano:">
+              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year track by years" data-ng-click="recarregar()">{{years}}</md-option>
+            </md-optgroup>
+          </md-select>
+        </div>
+        <span flex></span>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <div style="text-align:center;padding:20px 0;background:rgba(128,128,128,0.07);">
+        <b>Total de envios:</b> {{(historico | filter:search | filter:filtrarPorOrigem).length}}
+      </div>
+      <div data-ng-if="historico.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">
+        Nenhum e-mail em massa enviado neste ano.
+      </div>
+      <md-list flex>
+        <md-list-item class="list-header">
+          <div class="md-list-item-text" flex="55" layout="column" style="text-align:center;">
+            <p>Assunto</p>
+          </div>
+          <div class="md-list-item-text" flex="15" layout="column" style="text-align:center;">
+            <p>Origem</p>
+          </div>
+          <div class="md-list-item-text" flex="15" layout="column" style="text-align:center;">
+            <p>Destinatários</p>
+          </div>
+          <div class="md-list-item-text" flex="15" layout="column" style="text-align:center;">
+            <p>Data</p>
+          </div>
+          <md-divider></md-divider>
+        </md-list-item>
+        <md-divider></md-divider>
+        <md-list-item class="md-3-line" data-ng-repeat="item in historico | filter:search | filter:filtrarPorOrigem track by item._id" ng-click="verDetalhes(item, $event)">
+          <div class="md-list-item-text" layout="column">
+            <h3>{{::item.assunto}}</h3>
+            <p>Enviado por {{::item.usuario}}<span data-ng-if="item.destinatarioTipo"> — Destinatário: {{::item.destinatarioTipo}}</span></p>
+          </div>
+          <div class="md-list-item-text" flex="15" style="text-align:center;">
+            <p>{{origemLabel(item.origem)}}</p>
+          </div>
+          <div class="md-list-item-text" flex="15" style="text-align:center;">
+            <p>{{::item.quantidade}}</p>
+          </div>
+          <div class="md-list-item-text" flex="15" style="text-align:center;">
+            <p>{{::item.data | date:"dd/MM/yyyy HH:mm"}}</p>
+          </div>
+          <md-divider></md-divider>
+        </md-list-item>
+      </md-list>
+    </md-content>
+  </section>
+</div>

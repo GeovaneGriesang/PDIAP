@@ -115,6 +115,11 @@
 			templateUrl: 'admin/views/cadastro-escolas.html',
 			controller: 'escolasCtrl'
 		})
+		.state('master.historico-emails', {
+			url: "/historico-emails",
+			templateUrl: 'admin/views/historico-emails.html',
+			controller: 'historicoEmailsCtrl'
+		})
 		.state('master.cadastro-participantes', {
 			url: "/cadastro-participantes",
 			templateUrl: 'admin/views/cadastro-participantes.html',

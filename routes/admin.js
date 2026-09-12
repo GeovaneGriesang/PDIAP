@@ -16,6 +16,7 @@ const express = require('express')
 , feiraSchema = require('../models/feira-schema')
 , escolaSchema = require('../models/escola-schema')
 , participanteSchema = require('../models/participante-schema')
+, emailHistoricoSchema = require('../models/email-historico-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
 , crypto = require('crypto')
@@ -998,6 +999,16 @@ function _aplicaMascarasComCondicao(texto, dados) {
   return _aplicaMascaras(_resolveCondicionais(texto, avaliarCondicao), dados);
 }
 
+// Grava um registro de histórico por envio em massa (não por destinatário - inflaria demais),
+// nas 4 telas de e-mail (Projetos/Avaliadores/Premiados/Participantes). Fire-and-forget: o
+// e-mail já foi confirmado no cliente (res.send({total}) já rodou antes de chamar isso), então
+// uma falha aqui só vira log, nunca deve derrubar o envio de verdade.
+function _registrarHistoricoEmail(dados) {
+  emailHistoricoSchema.create(dados, function(err) {
+    if (err) console.error('Erro ao gravar histórico de e-mail', err);
+  });
+}
+
 router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
   try {
     var ids = req.body.idsProjetos;
@@ -1021,6 +1032,10 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
       });
 
       res.send({ total: destinatarios.length });
+      _registrarHistoricoEmail({
+        ano: req.body.ano, origem: 'projetos', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
+        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+      });
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
@@ -1074,6 +1089,10 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
       });
 
       res.send({ total: destinatarios.length });
+      _registrarHistoricoEmail({
+        ano: req.body.ano, origem: 'premiados', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
+        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+      });
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
@@ -1185,6 +1204,10 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
       });
 
       res.send({ total: destinatarios.length });
+      _registrarHistoricoEmail({
+        ano: req.body.ano, origem: 'avaliadores', assunto: assunto, corpo: corpo,
+        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+      });
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
@@ -1232,6 +1255,10 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
       });
 
       res.send({ total: destinatarios.length });
+      _registrarHistoricoEmail({
+        ano: req.body.ano, origem: 'participantes', assunto: assunto, corpo: corpo,
+        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+      });
 
       var transport = nodemailer.createTransport({
         host: 'smtp.gmail.com', port: 587,
@@ -1252,6 +1279,17 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
   } catch (error) {
     console.log('findOne error--> ${error}');
   }
+});
+
+// Histórico de e-mails em massa (Projetos/Avaliadores/Premiados/Participantes), por ano - ver
+// menu "Histórico de E-mails" e _registrarHistoricoEmail acima, chamado nas 4 rotas de envio.
+router.get('/historicoEmails', miPermiso("3"), (req, res) => {
+  var ano = parseInt(req.query.ano, 10);
+  if (!ano) return res.status(400).send('Ano inválido.');
+  emailHistoricoSchema.find({ ano: ano }).sort({ data: -1 }).exec((err, historico) => {
+    if (err) { console.error('Erro ao buscar histórico de e-mails', err); return res.status(500).send('Erro ao buscar histórico.'); }
+    res.send(historico);
+  });
 });
 
 router.post('/avaliador', miPermiso("2","3"), (req, res) => {
