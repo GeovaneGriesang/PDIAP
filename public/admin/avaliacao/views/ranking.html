@@ -121,7 +121,7 @@
           <md-select data-ng-model="rank" placeholder="Rank" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ranqueamento:">
               <md-option id="Alfa" value="nomeProjeto" data-ng-click="recarregar('nomeProjeto')">Alfabético</md-option>
-              <md-option id="Rank" value="-total" data-ng-selected="true" data-ng-click="recarregar('-total')">Pontuação</md-option>
+              <md-option id="Rank" value="-total" data-ng-selected="true" data-ng-click="recarregar('-total')">Total</md-option>
             </md-optgroup>
           </md-select>
         </div>
@@ -194,7 +194,7 @@
       <div ng-show="abaAtiva === 'mencaoHonrosa'"><div ui-view="mencaoHonrosa" id="imprimir"></div></div>
 
       <!-- Abas "Geral - ..." - todos os eixos da categoria juntos, ordenados por
-           Alfabético/Pontuação (mesmo seletor "Ranqueamento" da toolbar), pra decidir
+           Alfabético/Total (mesmo seletor "Ranqueamento" da toolbar), pra decidir
            classificação pra feiras externas (Mostratec etc.) olhando a categoria inteira,
            não só um eixo. Clicar num projeto abre direto a edição de Premiado/Menção
            honrosa/classificação (mesma tela de Projetos > Premiação), sem precisar sair
