@@ -133,10 +133,12 @@
 				alunos: alunos,
 				avaliacao: value.avaliacao,
 				total: total,
-				// Pra contagem de "Total premiados" (por categoria e geral) e pra saber quem já
-				// está confirmado - ver totalPremiadosGeral/Fund1/Fund2/EnsinoMedio abaixo.
+				// Pra contagem de "Total premiados" (por categoria e geral), pro selo de
+				// Premiado/Menção/Classificado (independente do modo de ordenação - ver
+				// abrirDetalhesPremiacao abaixo) e pra editar isso sem sair da tela.
 				premiacao: value.premiacao,
-				colocacao: value.colocacao
+				colocacao: value.colocacao,
+				feirasClassificadas: value.feirasClassificadas
 			};
 		}
 
@@ -285,6 +287,55 @@
 			});
 		};
 
+		// Editar Premiado/Menção honrosa/classificação pra feiras direto das abas "Geral -
+		// ..." do Ranking - mesma tela/lógica de Projetos > Premiação
+		// (projetosCtrl.js#visualizarDetalhesPremiacao + details.premiacao.html), só
+		// reaproveitando avaliacaoAPI em vez de adminAPI (módulos Angular diferentes) e
+		// recarregando com carregarProjetos() no lugar de $rootScope.recarregar.
+		$scope.abrirDetalhesPremiacao = function(projeto, ev) {
+			$mdDialog.show({
+				controller: function dialogController($scope, $mdDialog, $mdToast, avaliacaoAPI) {
+					$scope.details = projeto;
+					$scope.premiacao = { _id: projeto._id };
+					$scope.feirasDisponiveis = [];
+					$scope.premiacao.feirasSelecionadas = {};
+					avaliacaoAPI.getFeiras().success(function(feiras) {
+						angular.forEach(feiras, function(feira) {
+							if (feira.tipo !== 'edicao' && feira.ano === new Date(Date.now()).getFullYear() && feira.categorias.indexOf(projeto.categoria) !== -1) {
+								$scope.feirasDisponiveis.push(feira);
+								if (projeto.feirasClassificadas && projeto.feirasClassificadas.indexOf(feira._id) !== -1) {
+									$scope.premiacao.feirasSelecionadas[feira._id] = true;
+								}
+							}
+						});
+					});
+
+					$scope.setPremiado = function() {
+						$scope.premiacao.feirasClassificadas = Object.keys($scope.premiacao.feirasSelecionadas).filter(function(id) {
+							return $scope.premiacao.feirasSelecionadas[id];
+						});
+						avaliacaoAPI.putPremiadoProjetos($scope.premiacao).success(function() {
+							$scope.toast('Projeto premiado com sucesso!', 'success-toast');
+							$mdDialog.hide();
+							setTimeout(carregarProjetos, 750);
+						}).error(function(status) {
+							$scope.toast('Falha ao salvar. ' + status, 'failed-toast');
+						});
+					};
+					$scope.toast = function(message, tema) {
+						var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000);
+						$mdToast.show(toast);
+					};
+					$scope.hide = function() { $mdDialog.hide(); };
+					$scope.cancel = function() { $mdDialog.cancel(); };
+				},
+				templateUrl: 'admin/avaliacao/views/details-premiacao-ranking.html',
+				parent: angular.element(document.body),
+				targetEvent: ev,
+				clickOutsideToClose: false
+			});
+		};
+
 		// $rootScope.ordenacao = ['categoria','eixo'];
 		// $rootScope.ordenarPor = function(campo) {
 		// 	$rootScope.ordenacao = campo;
@@ -341,7 +392,12 @@
 
 			TODAS_CHAVES_EIXO.forEach(function(chave) { marcarEmpates($rootScope[chave]); });
 			atualizarContadoresPremiados();
+			atualizarGerais();
 		}
+
+		var CHAVES_FUND1 = ['eixo1_1', 'eixo1_2', 'eixo1_3', 'eixo1_4'];
+		var CHAVES_FUND2 = ['eixo2_1', 'eixo2_2', 'eixo2_3', 'eixo2_4'];
+		var CHAVES_ENSINO_MEDIO = ['eixo1', 'eixo2', 'eixo3', 'eixo4', 'eixo5', 'eixo6', 'eixo7'];
 
 		// Total de projetos já confirmados como Premiado (premiacao:'Premiado' - ver
 		// confirmarPremiados abaixo) por categoria e no geral, pro painel no topo da tela.
@@ -353,10 +409,26 @@
 			return total;
 		}
 		function atualizarContadoresPremiados() {
-			$scope.totalPremiadosFund1 = contarPremiados(['eixo1_1', 'eixo1_2', 'eixo1_3', 'eixo1_4']);
-			$scope.totalPremiadosFund2 = contarPremiados(['eixo2_1', 'eixo2_2', 'eixo2_3', 'eixo2_4']);
-			$scope.totalPremiadosEnsinoMedio = contarPremiados(['eixo1', 'eixo2', 'eixo3', 'eixo4', 'eixo5', 'eixo6', 'eixo7']);
+			$scope.totalPremiadosFund1 = contarPremiados(CHAVES_FUND1);
+			$scope.totalPremiadosFund2 = contarPremiados(CHAVES_FUND2);
+			$scope.totalPremiadosEnsinoMedio = contarPremiados(CHAVES_ENSINO_MEDIO);
 			$scope.totalPremiadosGeral = $scope.totalPremiadosFund1 + $scope.totalPremiadosFund2 + $scope.totalPremiadosEnsinoMedio;
+		}
+
+		// Listagem geral de cada categoria - todos os eixos juntos numa lista só, pontuados
+		// por nota (usada nas abas "Geral - ..." pra decidir quem classificar pra feiras
+		// externas tipo Mostratec, já que essa decisão é por categoria inteira, não por
+		// eixo). A ordenação em si (Alfabético/Pontuação) fica no template via orderBy,
+		// lendo $scope.rank (mesmo seletor "Ranqueamento" já usado nas abas por eixo).
+		function juntarEixos(chaves) {
+			var lista = [];
+			chaves.forEach(function(chave) { lista = lista.concat($rootScope[chave] || []); });
+			return lista.filter(function(p) { return p && p._id; });
+		}
+		function atualizarGerais() {
+			$scope.geralFund1 = juntarEixos(CHAVES_FUND1);
+			$scope.geralFund2 = juntarEixos(CHAVES_FUND2);
+			$scope.geralEnsinoMedio = juntarEixos(CHAVES_ENSINO_MEDIO);
 		}
 
 		$scope.recarregar = function(filtro){

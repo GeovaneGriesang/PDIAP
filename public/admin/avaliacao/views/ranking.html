@@ -121,7 +121,7 @@
           <md-select data-ng-model="rank" placeholder="Rank" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ranqueamento:">
               <md-option id="Alfa" value="nomeProjeto" data-ng-click="recarregar('nomeProjeto')">Alfabético</md-option>
-              <md-option id="Rank" value="-total" data-ng-selected="true" data-ng-click="recarregar('-total')">Total</md-option>
+              <md-option id="Rank" value="-total" data-ng-selected="true" data-ng-click="recarregar('-total')">Pontuação</md-option>
             </md-optgroup>
           </md-select>
         </div>
@@ -170,8 +170,11 @@
 
       <div id="ranking-tab-strip">
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'fund1'}" ng-click="abaAtiva = 'fund1'">Fundamental I</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'geralFund1'}" ng-click="abaAtiva = 'geralFund1'">Geral - Fund. I</div>
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'fund2'}" ng-click="abaAtiva = 'fund2'">Fundamental II</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'geralFund2'}" ng-click="abaAtiva = 'geralFund2'">Geral - Fund. II</div>
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'ensinoMedio'}" ng-click="abaAtiva = 'ensinoMedio'">Ensino Médio, Técnico e Superior</div>
+        <div class="ranking-tab" ng-class="{active: abaAtiva === 'geralEnsinoMedio'}" ng-click="abaAtiva = 'geralEnsinoMedio'">Geral - Ensino Médio</div>
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'feiras'}" ng-click="abaAtiva = 'feiras'">Feiras</div>
         <div class="ranking-tab" ng-class="{active: abaAtiva === 'mencaoHonrosa'}" ng-click="abaAtiva = 'mencaoHonrosa'">Menção Honrosa</div>
       </div>
@@ -189,6 +192,103 @@
       </div>
       <div ng-show="abaAtiva === 'feiras'"><div ui-view="feiras" id="imprimir"></div></div>
       <div ng-show="abaAtiva === 'mencaoHonrosa'"><div ui-view="mencaoHonrosa" id="imprimir"></div></div>
+
+      <!-- Abas "Geral - ..." - todos os eixos da categoria juntos, ordenados por
+           Alfabético/Pontuação (mesmo seletor "Ranqueamento" da toolbar), pra decidir
+           classificação pra feiras externas (Mostratec etc.) olhando a categoria inteira,
+           não só um eixo. Clicar num projeto abre direto a edição de Premiado/Menção
+           honrosa/classificação (mesma tela de Projetos > Premiação), sem precisar sair
+           daqui - diferente das abas por eixo acima, que só mostram detalhes (view-only). -->
+      <div ng-show="abaAtiva === 'geralFund1'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosFund1}}</b></div>
+        <md-list flex data-ng-if="geralFund1.length > 0">
+          <md-divider></md-divider>
+          <md-list-item class="md-3-line" data-ng-repeat="proj in geralFund1 | orderBy:rank track by proj._id" ng-click="abrirDetalhesPremiacao(proj, $event)">
+            <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+              <h3>{{::proj.total}}</h3>
+            </div>
+            <div class="md-list-item-text" layout="column">
+              <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+              <p>{{::proj.eixo}}</p>
+              <p>{{::proj.nomeEscola}}</p>
+              <p>Orientador(es): {{::proj.orientadores}}</p>
+              <p>Aluno(s): {{::proj.alunos}}</p>
+            </div>
+            <div flex="20" layout="row" layout-align="end center">
+              <div data-ng-if="proj.premiacao === 'Premiado' || proj.premiacao === 'Mencao_honrosa'" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{green2: proj.premiacao !== undefined}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Premiado'">Premiado</span>
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Mencao_honrosa'">Menção</span>
+              </div>
+              <span flex="5"></span>
+              <div data-ng-if="proj.feirasClassificadas.length > 0" layout="row" layout-align="center center" class="md-whiteframe-1dp roxo" style="width:78px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;">Classificado</span>
+              </div>
+            </div>
+            <md-divider></md-divider>
+          </md-list-item>
+        </md-list>
+        <div data-ng-if="geralFund1.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">Nenhum projeto avaliado até o momento.</div>
+      </div>
+      <div ng-show="abaAtiva === 'geralFund2'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosFund2}}</b></div>
+        <md-list flex data-ng-if="geralFund2.length > 0">
+          <md-divider></md-divider>
+          <md-list-item class="md-3-line" data-ng-repeat="proj in geralFund2 | orderBy:rank track by proj._id" ng-click="abrirDetalhesPremiacao(proj, $event)">
+            <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+              <h3>{{::proj.total}}</h3>
+            </div>
+            <div class="md-list-item-text" layout="column">
+              <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+              <p>{{::proj.eixo}}</p>
+              <p>{{::proj.nomeEscola}}</p>
+              <p>Orientador(es): {{::proj.orientadores}}</p>
+              <p>Aluno(s): {{::proj.alunos}}</p>
+            </div>
+            <div flex="20" layout="row" layout-align="end center">
+              <div data-ng-if="proj.premiacao === 'Premiado' || proj.premiacao === 'Mencao_honrosa'" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{green2: proj.premiacao !== undefined}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Premiado'">Premiado</span>
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Mencao_honrosa'">Menção</span>
+              </div>
+              <span flex="5"></span>
+              <div data-ng-if="proj.feirasClassificadas.length > 0" layout="row" layout-align="center center" class="md-whiteframe-1dp roxo" style="width:78px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;">Classificado</span>
+              </div>
+            </div>
+            <md-divider></md-divider>
+          </md-list-item>
+        </md-list>
+        <div data-ng-if="geralFund2.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">Nenhum projeto avaliado até o momento.</div>
+      </div>
+      <div ng-show="abaAtiva === 'geralEnsinoMedio'">
+        <div class="ranking-total-categoria">Premiados nesta categoria: <b>{{totalPremiadosEnsinoMedio}}</b></div>
+        <md-list flex data-ng-if="geralEnsinoMedio.length > 0">
+          <md-divider></md-divider>
+          <md-list-item class="md-3-line" data-ng-repeat="proj in geralEnsinoMedio | orderBy:rank track by proj._id" ng-click="abrirDetalhesPremiacao(proj, $event)">
+            <div class="md-list-item-text pontuacao" flex="10" style="margin-right:5px;text-align:center;">
+              <h3>{{::proj.total}}</h3>
+            </div>
+            <div class="md-list-item-text" layout="column">
+              <h3>{{::proj.numInscricao}} - {{::proj.nomeProjeto}}</h3>
+              <p>{{::proj.eixo}}</p>
+              <p>{{::proj.nomeEscola}}</p>
+              <p>Orientador(es): {{::proj.orientadores}}</p>
+              <p>Aluno(s): {{::proj.alunos}}</p>
+            </div>
+            <div flex="20" layout="row" layout-align="end center">
+              <div data-ng-if="proj.premiacao === 'Premiado' || proj.premiacao === 'Mencao_honrosa'" layout="row" layout-align="center center" class="md-whiteframe-1dp" data-ng-class="{green2: proj.premiacao !== undefined}" style="width:58px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Premiado'">Premiado</span>
+                <span style="font-weight:500;" data-ng-if="proj.premiacao === 'Mencao_honrosa'">Menção</span>
+              </div>
+              <span flex="5"></span>
+              <div data-ng-if="proj.feirasClassificadas.length > 0" layout="row" layout-align="center center" class="md-whiteframe-1dp roxo" style="width:78px;height:20px;border-radius:4px;font-size:10px;color:#f5f5f5;">
+                <span style="font-weight:500;">Classificado</span>
+              </div>
+            </div>
+            <md-divider></md-divider>
+          </md-list-item>
+        </md-list>
+        <div data-ng-if="geralEnsinoMedio.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">Nenhum projeto avaliado até o momento.</div>
+      </div>
   </section>
 </div>
 </div>

@@ -397,6 +397,11 @@ md-list-item.list-header .md-no-style {
 .green1 {
   background: #4caf50;
 }
+/* Mesma cor do selo "Premiado"/"Menção" em Projetos > Premiação
+   (public/admin/assets/css/style.css) - usado nas abas "Geral - ..." do Ranking. */
+.green2 {
+  background: #2E8B57;
+}
 .red {
   background: #f44336;
 }
