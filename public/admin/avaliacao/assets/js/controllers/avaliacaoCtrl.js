@@ -9,6 +9,7 @@
 		$scope.searchProject = "";
 
 		let carregarProjetos = function() {
+			$rootScope.projetos = [];
 			avaliacaoAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
@@ -41,6 +42,9 @@
 			});
 		};
 		$scope.carregarProjetos = carregarProjetos;
+		// Botão de atualizar (ícone de lupa antigo, ver avaliacao.html) - mesmo nome usado em
+		// todo o resto do site pra recarregar os dados da tela sem precisar dar F5.
+		$scope.recarregar = carregarProjetos;
 
 		// $scope.querySearch = function querySearch(query) {
 		// 	let deferred = $q.defer();
