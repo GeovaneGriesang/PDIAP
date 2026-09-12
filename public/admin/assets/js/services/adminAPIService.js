@@ -97,6 +97,15 @@
 			return $http(request);
 		};
 
+		let _getHistoricoEmails = function(ano) {
+			const request = {
+				url: '/admin/historicoEmails',
+				method: 'GET',
+				params: { ano: ano }
+			}
+			return $http(request);
+		};
+
 		let _postEnviarEmailProjetos = function(payload) {
 			const request = {
 				url: '/admin/enviarEmailProjetos',
@@ -634,6 +643,7 @@
 			putAvaliacao: _putAvaliacao,
 			postFeira: _postFeira,
 			getFeiras: _getFeiras,
+			getHistoricoEmails: _getHistoricoEmails,
 			removeFeira: _removeFeira,
 			editarFeira: _putEditarFeira,
 			postEscola: _postEscola,
