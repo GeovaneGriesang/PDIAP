@@ -132,12 +132,25 @@
 				orientadores: orientadores,
 				alunos: alunos,
 				avaliacao: value.avaliacao,
-				total: total
+				total: total,
+				// Pra contagem de "Total premiados" (por categoria e geral) e pra saber quem já
+				// está confirmado - ver totalPremiadosGeral/Fund1/Fund2/EnsinoMedio abaixo.
+				premiacao: value.premiacao,
+				colocacao: value.colocacao
 			};
 		}
 
 		let carregarProjetos = function() {
 			var anoAtual = new Date(Date.now()).getFullYear();
+
+			// Zera os acumuladores antes de recarregar - carregarProjetos() agora é chamado
+			// de novo depois de confirmarPremiados() (pra atualizar os totais na tela), e sem
+			// isso cada chamada extra ia EMPILHAR projetos duplicados em cima dos que já
+			// estavam nesses arrays (só eram zerados uma vez, na inicialização do controller).
+			TODAS_CHAVES_EIXO.forEach(function(chave) { $rootScope[chave] = []; });
+			$rootScope.projetos = [];
+			$rootScope.trouxas = [];
+			$rootScope.mencaoHonrosa = [];
 
 			// Feiras externas (Mostratec etc.) cadastradas pro ano atual - carrega antes dos
 			// projetos pra já poder agrupar por feira na mesma passada (ver
@@ -327,6 +340,23 @@
 			$rootScope.eixo7 = $rootScope.ori_eixo7;
 
 			TODAS_CHAVES_EIXO.forEach(function(chave) { marcarEmpates($rootScope[chave]); });
+			atualizarContadoresPremiados();
+		}
+
+		// Total de projetos já confirmados como Premiado (premiacao:'Premiado' - ver
+		// confirmarPremiados abaixo) por categoria e no geral, pro painel no topo da tela.
+		function contarPremiados(chaves) {
+			var total = 0;
+			chaves.forEach(function(chave) {
+				total += ($rootScope[chave] || []).filter(function(p) { return p && p._id && p.premiacao === 'Premiado'; }).length;
+			});
+			return total;
+		}
+		function atualizarContadoresPremiados() {
+			$scope.totalPremiadosFund1 = contarPremiados(['eixo1_1', 'eixo1_2', 'eixo1_3', 'eixo1_4']);
+			$scope.totalPremiadosFund2 = contarPremiados(['eixo2_1', 'eixo2_2', 'eixo2_3', 'eixo2_4']);
+			$scope.totalPremiadosEnsinoMedio = contarPremiados(['eixo1', 'eixo2', 'eixo3', 'eixo4', 'eixo5', 'eixo6', 'eixo7']);
+			$scope.totalPremiadosGeral = $scope.totalPremiadosFund1 + $scope.totalPremiadosFund2 + $scope.totalPremiadosEnsinoMedio;
 		}
 
 		$scope.recarregar = function(filtro){
@@ -623,6 +653,9 @@
 						.textContent(data.marcados + ' projeto(s) marcado(s) como Premiado.')
 						.ok('Entendi')
 						.targetEvent(ev));
+					// Recarrega do servidor pra os totais de premiados (painel do topo e de
+					// cada categoria) refletirem o resultado de imediato, sem precisar dar F5.
+					carregarProjetos();
 				})
 				.error(function(status) {
 					$mdDialog.show($mdDialog.alert()
