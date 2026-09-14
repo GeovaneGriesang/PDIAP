@@ -135,15 +135,7 @@
           <textarea name="corpo" data-ng-model="corpo" rows="8" placeholder="Ex: Olá ¨nome, o projeto ¨nomeProjeto conquistou o ¨colocacao lugar..."></textarea>
         </md-input-container>
 
-        <div layout="row" layout-align="center center" style="margin:10px 0 20px 0;flex-wrap:wrap;gap:12px;">
-          <div data-ng-if="idsSelecionados.length > 1" style="width:320px;">
-            <md-input-container class="md-block" style="margin:0;">
-              <label>Pré-visualizar usando o projeto</label>
-              <md-select data-ng-model="projetoPreviaId" data-ng-change="gerarPreVisualizacao()">
-                <md-option data-ng-repeat="p in projetosSelecionados() track by p._id" data-ng-value="p._id">{{p.numInscricao}} - {{p.nomeProjeto}}</md-option>
-              </md-select>
-            </md-input-container>
-          </div>
+        <div layout="row" layout-align="center center" style="margin:10px 0 20px 0;">
           <md-button class="md-raised green darken-1" data-ng-disabled="idsSelecionados.length === 0" data-ng-click="gerarPreVisualizacao()">Pré-visualizar</md-button>
         </div>
 
