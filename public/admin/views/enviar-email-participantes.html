@@ -77,7 +77,7 @@
             <p data-ng-if="!part.email" style="color:#f44336;">Sem e-mail cadastrado</p>
           </div>
           <div layout flex="20" layout-align="center center" style="align-self:center;">
-            <md-checkbox aria-label="Check" data-ng-disabled="!part.email" data-ng-model="part.selecionado" data-ng-click="contador(part.selecionado, part._id)"></md-checkbox>
+            <md-checkbox aria-label="Check" data-ng-disabled="!part.email" data-ng-model="part.selecionado" data-ng-change="contador(part.selecionado, part._id)"></md-checkbox>
           </div>
           <md-divider></md-divider>
         </md-list-item>

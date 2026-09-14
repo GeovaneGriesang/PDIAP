@@ -76,7 +76,7 @@
             <p>{{::ava.email}}</p>
           </div>
           <div layout flex="20" layout-align="center center" style="align-self:center;">
-            <md-checkbox aria-label="Check" data-ng-model="ava.selecionado" data-ng-click="contador(ava.selecionado, ava._id)"></md-checkbox>
+            <md-checkbox aria-label="Check" data-ng-model="ava.selecionado" data-ng-change="contador(ava.selecionado, ava._id)"></md-checkbox>
           </div>
           <md-divider></md-divider>
         </md-list-item>
