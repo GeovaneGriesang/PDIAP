@@ -1,0 +1,15 @@
+<md-dialog aria-label="Detalhes do e-mail" class="details2">
+  <div style="display:flex;min-height:64px;width:calc(100% - 4em);background:#2e7d32;padding:1em 2em;color:#f5f5f5;">
+    <p style="align-self:center;font-weight:500;font-size:16px;margin:0;">{{item.assunto}}</p>
+    <span flex></span>
+    <md-icon md-svg-src="close" data-ng-click="fechar()" class="btn-close" style="cursor:pointer;align-self:center;"></md-icon>
+  </div>
+  <div style="padding:1em 2em;overflow:auto!important;max-height:70vh;">
+    <p><b>Enviado em:</b> {{item.data | date:"dd/MM/yyyy HH:mm"}} por {{item.usuario}}</p>
+    <p><b>Origem:</b> {{origemLabel(item.origem)}}<span data-ng-if="item.destinatarioTipo"> — Destinatário: {{item.destinatarioTipo}}</span></p>
+    <p><b>Corpo:</b></p>
+    <p style="white-space:pre-wrap;background:#fff;border:1px solid #ddd;padding:12px;border-radius:4px;color:rgba(0,0,0,0.87);">{{item.corpo}}</p>
+    <p><b>Destinatários ({{item.destinatarios.length}}):</b></p>
+    <p style="max-height:200px;overflow-y:auto;background:#fff;border:1px solid #ddd;padding:12px;border-radius:4px;color:rgba(0,0,0,0.87);">{{item.destinatarios.join(", ")}}</p>
+  </div>
+</md-dialog>
