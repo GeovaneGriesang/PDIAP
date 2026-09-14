@@ -248,8 +248,21 @@ function _avaliarCondicaoPorDados(dados) {
 		// dois textos possíveis de uma vez) - só que sem deixar isso claro, dava a entender
 		// que ¨feiraNome tinha quebrado quando na real o projeto só não estava classificado.
 		$scope.previaProjetoInfo = null;
+		// Com muitos projetos selecionados de uma vez (ex: todos os premiados), a
+		// pré-visualização sempre pegava o primeiro da lista - o admin não tinha como
+		// escolher um projeto específico pra conferir (ex: um dos classificados, no meio de
+		// dezenas de não-classificados). Esse seletor deixa escolher qual dos selecionados
+		// usar de base; some quando só há 1 selecionado (não tem o que escolher).
+		$scope.projetoPreviaId = null;
+		$scope.projetosSelecionados = function() {
+			return $scope.projetos.filter(function(p) { return $scope.idsSelecionados.indexOf(p._id) !== -1; });
+		};
 		$scope.gerarPreVisualizacao = function() {
-			var projeto = $scope.projetos.filter(function(p) { return $scope.idsSelecionados.indexOf(p._id) !== -1; })[0];
+			var selecionados = $scope.projetosSelecionados();
+			if (!$scope.projetoPreviaId || $scope.idsSelecionados.indexOf($scope.projetoPreviaId) === -1) {
+				$scope.projetoPreviaId = selecionados.length > 0 ? selecionados[0]._id : null;
+			}
+			var projeto = selecionados.filter(function(p) { return p._id === $scope.projetoPreviaId; })[0];
 			if (!projeto) return;
 			var dados = _dadosDoProjeto(projeto);
 			$scope.previaProjetoInfo = {
