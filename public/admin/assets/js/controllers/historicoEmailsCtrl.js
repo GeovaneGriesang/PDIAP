@@ -47,23 +47,8 @@
 			$mdDialog.show({
 				targetEvent: ev,
 				clickOutsideToClose: true,
-				locals: { item: item },
-				template:
-					'<md-dialog aria-label="Detalhes do e-mail" style="max-width:700px;">' +
-						'<md-dialog-content style="padding:24px;">' +
-							'<h2 style="margin-top:0;">{{item.assunto}}</h2>' +
-							'<p><b>Enviado em:</b> {{item.data | date:"dd/MM/yyyy HH:mm"}} por {{item.usuario}}</p>' +
-							'<p><b>Origem:</b> {{origemLabel(item.origem)}}<span data-ng-if="item.destinatarioTipo"> — Destinatário: {{item.destinatarioTipo}}</span></p>' +
-							'<p><b>Corpo:</b></p>' +
-							'<p style="white-space:pre-wrap;background:#f7f7f7;padding:12px;border-radius:4px;">{{item.corpo}}</p>' +
-							'<p><b>Destinatários ({{item.destinatarios.length}}):</b></p>' +
-							'<p style="max-height:200px;overflow-y:auto;background:#f7f7f7;padding:12px;border-radius:4px;">{{item.destinatarios.join(", ")}}</p>' +
-						'</md-dialog-content>' +
-						'<md-dialog-actions layout="row">' +
-							'<span flex></span>' +
-							'<md-button data-ng-click="fechar()" class="md-primary">Fechar</md-button>' +
-						'</md-dialog-actions>' +
-					'</md-dialog>',
+				parent: angular.element(document.body),
+				templateUrl: 'admin/views/details.historico-email.html',
 				controller: function($scope, $mdDialog) {
 					$scope.item = item;
 					$scope.origemLabel = function(o) { return ORIGEM_LABEL[o] || o; };
