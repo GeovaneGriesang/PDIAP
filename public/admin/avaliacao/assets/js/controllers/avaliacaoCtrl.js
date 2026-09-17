@@ -59,6 +59,25 @@
 					$scope.habilitaDesempate = function() {
 						$scope.desempate = !$scope.desempate;
 					}
+					// Quantos avaliadores esta edição usa (ver models/feira-schema.js,
+					// numAvaliadoresPorProjeto) - esta tela só lista projetos do ano corrente
+					// (ver carregarProjetos acima), então é seguro assumir o mesmo ano aqui.
+					// Assume 2 até a resposta chegar, pra não deixar o formulário em branco.
+					$scope.numAvaliadoresRange = [0, 1];
+					$scope.indiceDesempate = 2;
+					avaliacaoAPI.getFeiras()
+					.success(function(feiras) {
+						var ano_atual = new Date(Date.now()).getFullYear();
+						var edicao = feiras.filter(function(f) { return f.tipo === 'edicao' && f.ano == ano_atual; })[0];
+						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
+						var range = [];
+						for (var i = 0; i < n; i++) range.push(i);
+						$scope.numAvaliadoresRange = range;
+						$scope.indiceDesempate = n;
+					})
+					.error(function(status) {
+						console.log('Error: '+status);
+					});
 					$scope.addNotas = function(id,notas) {
 						console.log(notas);
 						avaliacaoAPI.putAvaliacao(id,notas)

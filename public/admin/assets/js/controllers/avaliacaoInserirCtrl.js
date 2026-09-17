@@ -63,12 +63,29 @@
 
 		$scope.visualizarDetalhes = function(projeto,ev) {
 			$mdDialog.show({
-				controller: function dialogController($scope, $mdDialog, $mdToast, adminAPI) {
+				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
 					$scope.details = projeto;
 					$scope.desempate = false;
 					$scope.habilitaDesempate = function() {
 						$scope.desempate = !$scope.desempate;
 					};
+					// Quantos avaliadores esta edição usa (ver models/feira-schema.js,
+					// numAvaliadoresPorProjeto) - todo projeto listado já está filtrado pro
+					// ano corrente ($rootScope.ano), então é seguro usá-lo direto aqui.
+					// Assume 2 até a promise resolver, pra não deixar o formulário em branco.
+					$scope.numAvaliadoresRange = [0, 1];
+					$scope.indiceDesempate = 2;
+					adminAPI.getNumAvaliadores($rootScope.ano)
+					.success(function(data) {
+						var n = data.n;
+						var range = [];
+						for (var i = 0; i < n; i++) range.push(i);
+						$scope.numAvaliadoresRange = range;
+						$scope.indiceDesempate = n;
+					})
+					.error(function(status) {
+						console.log('Error: '+status);
+					});
 					$scope.addNotas = function(id,notas) {
 						adminAPI.putAvaliacao(id,notas)
 						.success(function(data, status) {

@@ -11,22 +11,16 @@
     </h3>
     <div layout="column" layout-align="center center" style="background:#e0e0e0;padding-top:40px;">
       <form name="avaliacaoForm" novalidate>
-        <div layout="row" style="justify-content:center;">
-          <p>Nota do avaliador 1:</p>
-          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;">
-            <input type="number" placeholder="000" name="nota1" data-ng-model="details.avaliacao[0]" required/>
+        <div layout="row" style="justify-content:center;" data-ng-repeat="i in numAvaliadoresRange track by i">
+          <p>Nota do avaliador {{i+1}}:</p>
+          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;" data-ng-style="{'margin-left': i > 0 ? '0.8em' : 0}">
+            <input type="number" placeholder="000" name="{{'nota'+(i+1)}}" data-ng-model="details.avaliacao[i]" required/>
           </md-input-container>
         </div>
-        <div layout="row" style="justify-content:center;">
-          <p>Nota do avaliador 2:</p>
-          <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;margin-left:0.8em;">
-            <input type="number" placeholder="000" name="nota2" data-ng-model="details.avaliacao[1]" required/>
-          </md-input-container>
-        </div>
-        <div layout="row" style="justify-content:center;" data-ng-if="desempate || details.avaliacao.length == 3">
+        <div layout="row" style="justify-content:center;" data-ng-if="desempate || details.avaliacao.length > indiceDesempate">
           <p>Nota do desempate:</p>
           <md-input-container md-no-float class="md-block" style="min-width:75px!important;width:75px;margin-left:0.8em;">
-            <input type="number" placeholder="000" name="nota3" data-ng-model="details.avaliacao[2]" required/>
+            <input type="number" placeholder="000" name="notaDesempate" data-ng-model="details.avaliacao[indiceDesempate]" required/>
           </md-input-container>
         </div>
         <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
