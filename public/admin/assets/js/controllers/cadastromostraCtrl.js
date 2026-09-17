@@ -5,7 +5,10 @@
     .controller('cadastromostraCtrl', function($scope, adminAPI) {
 
       $scope.certificados = [];
-      $scope.year = CadastraAno();
+      $scope.mostras = [];
+      adminAPI.getMostras()
+      .success(function(mostras) { $scope.mostras = mostras; })
+      .error(function(status) { console.log('Error: '+status); });
 
       //algumas scopes para recuperar os dados
 

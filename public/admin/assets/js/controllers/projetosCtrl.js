@@ -10,19 +10,21 @@
 		$scope.idAprovados = [];
 		$scope.count = 0;
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
 
 		// O ano do filtro fica no $rootScope (em vez de $scope) para persistir ao navegar entre
 		// "Selecionar aprovados", "Presença" e "Premiação" - as três usam este mesmo controller,
 		// mas o ui-router recria a instância a cada troca de página, então um $scope.ano se
 		// perderia a cada navegação. Sem seleção prévia nesta sessão, cai no ano atual.
 		//
-		// O valor persistido precisa ser guardado ANTES e reaplicado só depois de um $timeout:
-		// o próprio <md-select>+ng-repeat de opções de ano, ao ser recriado do zero nesta troca
-		// de página, religa cada <md-option> (2016, 2017, ..., ano atual) e no processo reescreve
-		// o ng-model a cada uma (bug conhecido do Angular Material com ng-repeat dentro de
-		// md-select), deixando o modelo travado no último ano da lista se não corrigirmos depois
-		// que essa religação (síncrona) terminar.
+		// O valor persistido precisa ser guardado ANTES e reaplicado só depois que a lista de
+		// Mostras (async, ver adminAPI.getMostras() abaixo) terminar de carregar: o próprio
+		// <md-select>+ng-repeat de opções, ao ser recriado do zero nesta troca de página, religa
+		// cada <md-option> e no processo reescreve o ng-model a cada uma (bug conhecido do
+		// Angular Material com ng-repeat dentro de md-select), deixando o modelo travado na
+		// última Mostra da lista se não corrigirmos depois que essa religação terminar - e como
+		// a lista só é preenchida depois da resposta HTTP, a correção também precisa esperar por
+		// ela (um $timeout(0) sozinho dispararia cedo demais, antes da lista chegar).
 		let anoPersistido = $rootScope.ano;
 		$rootScope.ano = anoPersistido || new Date().getFullYear();
 
@@ -224,7 +226,6 @@
 			$scope.idProjetosAnais = [];
 			$scope.idProjetosApresentacao = [];
 			$scope.idProjetosReprovados = [];
-			$scope.year = CadastraAno();
 			carregarProjetos();
 		}
 
@@ -334,7 +335,7 @@
 					$scope.premiacao = {_id:projeto._id};
 
 					// Feiras aplicáveis a este projeto: só as cadastradas pro ano/categoria dele
-					// (ver "Eventos > Cadastrar Feiras") - cada uma vira um checkbox independente
+					// (ver "Eventos > Feiras Filiadas") - cada uma vira um checkbox independente
 					// de Premiação/Menção Honrosa (details.premiacao.html).
 					$scope.feirasDisponiveis = [];
 					$scope.premiacao.feirasSelecionadas = {};
@@ -434,10 +435,18 @@
 			$scope.search = $rootScope.search = {};
 		}
 
-		$timeout(function() {
-			if (anoPersistido) {
-				$rootScope.ano = anoPersistido;
-			}
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				if (anoPersistido) {
+					$rootScope.ano = anoPersistido;
+				}
+				carregarProjetos();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
 			carregarProjetos();
 		});
 

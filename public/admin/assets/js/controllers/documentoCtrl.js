@@ -6,12 +6,15 @@
     .controller('documentoCtrl', function($scope, $mdDialog, adminAPI) {
 
         // Declaração e inicialização segura das scopes
-        $scope.year = typeof CadastraAno === 'function' ? CadastraAno() : [new Date().getFullYear()];
+        $scope.mostras = [];
         $scope.titulo_documento = "";
-        $scope.ano = $scope.year[0];
+        $scope.ano = new Date().getFullYear();
         // Filtro por ano da lista abaixo - independente do "ano" do formulário de cadastro
         // acima (esse é o ano do documento que está sendo enviado agora).
-        $scope.filtroAno = $scope.year[0];
+        $scope.filtroAno = new Date().getFullYear();
+        adminAPI.getMostras()
+        .success(function(mostras) { $scope.mostras = mostras; })
+        .error(function(status) { console.log('Error: '+status); });
         $scope.Exibe_documento = false;
         $scope.documentos = [];
         $scope.spinnerActive = false; // Controle do carregamento

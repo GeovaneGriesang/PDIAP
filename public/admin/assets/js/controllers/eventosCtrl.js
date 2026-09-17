@@ -21,7 +21,10 @@
 		// Salvar - ver editarEvento/cancelarEdicao/cadastrarEvento).
 		$scope.editando = null;
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 
 		$scope.addResponsavel = function() {
 			$scope.count++;

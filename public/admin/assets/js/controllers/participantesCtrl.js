@@ -13,7 +13,10 @@
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 
 		let formatCPF = function(cpf) {
 			return cpf;

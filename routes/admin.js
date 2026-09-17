@@ -1120,7 +1120,7 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
 // Quantos projetos por eixo contam como "Premiado" ao confirmar (Ranking > Confirmar
 // premiados) - lido/gravado por ano no mesmo documento tipo:'edicao' que já guarda
 // categoriasEixos/diasAvaliacao (ver models/feira-schema.js). Sem registro pro ano
-// (edições antigas, ou a edição ainda nem foi criada em Cadastrar Feiras), assume 3.
+// (edições antigas, ou a edição ainda nem foi criada em Mostra), assume 3.
 router.get('/configPremiacao', miPermiso("3","2"), (req, res) => {
   var ano = parseInt(req.query.ano, 10);
   if (!ano) return res.status(400).send('Ano inválido.');

@@ -169,8 +169,8 @@
                     <md-input-container class="md-block" flex-gt-xs="30">
                         <md-select data-ng-model="ano" ng-change="carregaDado(ano)" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
                             <md-optgroup label="Ano:">
-                              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year" data-ng-click="confereCertificado()">{{years}}  
-                                <span data-ng-if="confereCertificado(years)">(Certificado Cadastrado)</span>
+                              <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano" data-ng-click="confereCertificado()">{{m.nome}}
+                                <span data-ng-if="confereCertificado(m.ano)">(Certificado Cadastrado)</span>
                               </md-option>
                             </md-optgroup>
                         </md-select>

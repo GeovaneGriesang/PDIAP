@@ -96,7 +96,7 @@
 		// tipo:'edicao') em vez do JSON estático fixo. Se nenhuma edição própria estiver
 		// cadastrada pro ano informado (feira ainda não criada), cai pro JSON estático como
 		// fallback - garante que inscrição/avaliadores continuam funcionando sem quebrar
-		// enquanto o admin não configurar a primeira edição em Cadastrar Feiras.
+		// enquanto o admin não configurar a primeira edição em Mostra.
 		let _getCategoriasEixos = function(ano) {
 			var deferred = $q.defer();
 			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {

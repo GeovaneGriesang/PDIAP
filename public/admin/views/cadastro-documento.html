@@ -20,7 +20,7 @@
             <div style="width:85px;">
               <md-select data-ng-model="filtroAno" placeholder="Ano" style="width:100%!important;font-size:17px;">
                 <md-optgroup label="Ano:">
-                  <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year">{{years}}</md-option>
+                  <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano">{{m.nome}}</md-option>
                 </md-optgroup>
               </md-select>
             </div>
@@ -48,7 +48,7 @@
                     <md-input-container class="md-block" flex-gt-xs="30">
                         <md-select data-ng-model="ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
                             <md-optgroup label="Ano:">
-                                <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year">{{years}}</md-option>
+                                <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano">{{m.nome}}</md-option>
                             </md-optgroup>
                         </md-select>
                     </md-input-container>        

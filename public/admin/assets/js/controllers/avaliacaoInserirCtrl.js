@@ -7,7 +7,10 @@
 
 		$scope.projetos = [];
 		$scope.searchProject = "";
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 
 		// Resumo de totais do ano filtrado (ver cabeçalho em avaliacao.html) - conta TODOS
 		// os projetos do ano, não só os aprovados (que é tudo que $scope.projetos guarda).

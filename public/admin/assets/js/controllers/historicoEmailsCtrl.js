@@ -8,7 +8,10 @@
 	.controller('historicoEmailsCtrl', function($scope, $rootScope, $mdDialog, adminAPI) {
 
 		$scope.historico = [];
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 
 		var ORIGEM_LABEL = {

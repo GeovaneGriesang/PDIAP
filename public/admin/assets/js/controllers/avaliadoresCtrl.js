@@ -9,7 +9,10 @@
 		$scope.count = 0;
 		$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 
 		$scope.listaCategorias = [];
 		adminAPI.getCategoriasEixos(new Date().getFullYear())

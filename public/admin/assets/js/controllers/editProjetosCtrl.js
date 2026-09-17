@@ -51,14 +51,15 @@
 		$scope.projetoEmail = '';
 		$scope.integrantes = [];
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
 
 		// Mesmo esquema usado em projetosCtrl.js (Selecionar aprovados/Presença/Premiação):
 		// o ano fica no $rootScope pra persistir ao navegar entre as páginas de "Projetos",
-		// e o valor persistido só é reaplicado depois de um $timeout porque o próprio
-		// <md-select> com as opções de ano, ao ser recriado do zero nesta página, religa
-		// cada <md-option> e reescreve o ng-model a cada uma (bug do Angular Material com
-		// ng-repeat dentro de md-select), travando no último ano da lista.
+		// e o valor persistido só é reaplicado depois que a lista de Mostras (async, ver
+		// adminAPI.getMostras() abaixo) terminar de carregar, porque o próprio <md-select>
+		// com as opções, ao ser recriado do zero nesta página, religa cada <md-option> e
+		// reescreve o ng-model a cada uma (bug do Angular Material com ng-repeat dentro de
+		// md-select), travando na última Mostra da lista.
 		let anoPersistido = $rootScope.ano;
 		$rootScope.ano = anoPersistido || new Date().getFullYear();
 
@@ -250,10 +251,18 @@
 				console.log(status);
 			});
 		};
-		$timeout(function() {
-			if (anoPersistido) {
-				$rootScope.ano = anoPersistido;
-			}
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				if (anoPersistido) {
+					$rootScope.ano = anoPersistido;
+				}
+				$scope.carregarProjetos();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
 			$scope.carregarProjetos();
 		});
 		
