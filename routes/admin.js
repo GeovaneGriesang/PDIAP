@@ -203,7 +203,8 @@ router.post('/criarFeira', miPermiso("3"), (req, res) => {
       createdAt: req.body.createdAt,
       tipo: req.body.tipo,
       categoriasEixos: req.body.categoriasEixos,
-      diasAvaliacao: req.body.diasAvaliacao
+      diasAvaliacao: req.body.diasAvaliacao,
+      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto
     });
     newFeira.save((err, data) => {
       if (err) { console.error('Erro ao criar feira', err); return; }
@@ -224,7 +225,8 @@ router.put('/editarFeira', miPermiso("3"), (req, res) => {
       textoCertificado: req.body.textoCertificado,
       tipo: req.body.tipo,
       categoriasEixos: req.body.categoriasEixos,
-      diasAvaliacao: req.body.diasAvaliacao
+      diasAvaliacao: req.body.diasAvaliacao,
+      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto
     }, (err) => {
       if (err) { console.error('Erro ao editar feira', err); return; }
     });
