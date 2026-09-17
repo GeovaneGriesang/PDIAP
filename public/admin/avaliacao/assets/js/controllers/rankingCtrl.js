@@ -105,9 +105,9 @@
 		function construirObjExibicao(value) {
 			var total;
 			if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
-				total = (value.avaliacao[2] !== undefined)
-					? value.avaliacao[0]+value.avaliacao[1]+value.avaliacao[2]
-					: value.avaliacao[0]+value.avaliacao[1];
+				// Soma todas as notas presentes (2, 3 ou mais avaliadores, +desempate se
+				// houver) - ver models/feira-schema.js, numAvaliadoresPorProjeto.
+				total = value.avaliacao.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
 			} else {
 				total = 0;
 				value.avaliacao = undefined;
@@ -245,6 +245,21 @@
 			$mdDialog.show({
 				controller: function dialogController($scope, $rootScope, $mdDialog, $mdToast, avaliacaoAPI) {
 					$scope.details = projeto;
+					// Quantos avaliadores esta edição usa (ver models/feira-schema.js,
+					// numAvaliadoresPorProjeto) - esta tela só lista o ano corrente.
+					$scope.numAvaliadoresRange = [0, 1];
+					avaliacaoAPI.getFeiras()
+					.success(function(feiras) {
+						var ano_atual = new Date(Date.now()).getFullYear();
+						var edicao = feiras.filter(function(f) { return f.tipo === 'edicao' && f.ano == ano_atual; })[0];
+						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
+						var range = [];
+						for (var i = 0; i < n; i++) range.push(i);
+						$scope.numAvaliadoresRange = range;
+					})
+					.error(function(status) {
+						console.log('Error: '+status);
+					});
 					// $scope.desempate = false;
 					// $scope.habilitaDesempate = function() {
 					// 	$scope.desempate = !$scope.desempate;

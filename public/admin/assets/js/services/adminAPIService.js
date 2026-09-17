@@ -510,6 +510,21 @@
 			return comSuccessError(deferred.promise);
 		};
 
+		// Quantos avaliadores lançam nota por projeto na edição de um ano (ver
+		// models/feira-schema.js, tipo:'edicao', numAvaliadoresPorProjeto) - sem edição
+		// própria cadastrada, ou sem esse campo preenchido nela, assume-se 2 (padrão
+		// histórico do PDIAP/MOVACI).
+		let _getNumAvaliadores = function(ano) {
+			var deferred = $q.defer();
+			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {
+				var edicao = (response.data || []).filter(function(f) {
+					return f.tipo === 'edicao' && f.ano == ano;
+				})[0];
+				deferred.resolve({ data: { n: (edicao && edicao.numAvaliadoresPorProjeto) || 2 }, status: response.status });
+			}, deferred.reject);
+			return comSuccessError(deferred.promise);
+		};
+
 		let _getEstados = function() {
 			const request = {
 				url: 'assets/js/estados-cidades.json',
@@ -667,6 +682,7 @@
 			getCategorias: _getCategorias,
 			getCategoriasEixos: _getCategoriasEixos,
 			getDiasAvaliacao: _getDiasAvaliacao,
+			getNumAvaliadores: _getNumAvaliadores,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,

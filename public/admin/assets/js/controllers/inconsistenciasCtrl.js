@@ -21,10 +21,11 @@
 		$scope.naoAprovado = [];
 
 		// Mesma conta de "total" usada no Ranking (rankingCtrl.js#construirObjExibicao):
-		// soma das notas, incluindo a de desempate (avaliacao[2]) quando já existir.
+		// soma de todas as notas presentes (2, 3 ou mais avaliadores, +desempate se houver -
+		// ver models/feira-schema.js, numAvaliadoresPorProjeto).
 		function total(avaliacao) {
 			if (!avaliacao || avaliacao.length === 0) return 0;
-			return avaliacao[2] !== undefined ? avaliacao[0] + avaliacao[1] + avaliacao[2] : avaliacao[0] + avaliacao[1];
+			return avaliacao.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
 		}
 
 		// Empate = 2+ projetos do mesmo categoria+eixo com a mesma pontuação total - só entre
