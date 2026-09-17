@@ -105,6 +105,11 @@
 			templateUrl: 'admin/views/cadastro-feiras.html',
 			controller: 'feirasCtrl'
 		})
+		.state('master.mostra', {
+			url: "/mostra",
+			templateUrl: 'admin/views/mostra.html',
+			controller: 'mostraCtrl'
+		})
 		.state('master.cadastro-documento', {
 			url: "/cadastro-documento",
 			templateUrl: 'admin/views/cadastro-documento.html',

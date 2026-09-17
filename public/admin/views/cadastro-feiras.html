@@ -11,7 +11,7 @@
         <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
           <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
         </md-button>
-        <h4 class="md-title" style="color:#225024;margin:0!important;">Eventos | Cadastrar Feiras</h4>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Eventos | Feiras Externas de Classificação</h4>
       </div>
 
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
@@ -36,14 +36,6 @@
           <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">{{feira._id ? 'Editar Feira' : 'Nova Feira'}}</span>
         </h3>
         <form name="feirasForm" novalidate class="eventos-form">
-          <md-input-container class="md-block selectCustom1" flex-gt-xs>
-            <label>Tipo</label>
-            <md-select name="tipo" data-ng-model="feira.tipo" required>
-              <md-option value="classificacao">Feira externa de classificação (ex: Mostratec)</md-option>
-              <md-option value="edicao">Edição própria do MOVACI/PDIAP</md-option>
-            </md-select>
-          </md-input-container>
-
           <md-input-container class="md-block" flex-gt-xs>
             <label>Nome</label>
             <input type="text" name="nome" data-ng-model="feira.nome" required/>
@@ -54,82 +46,27 @@
             </div>
           </md-input-container>
 
-          <div data-ng-if="feira.tipo !== 'edicao'">
-            <div layout="row" style="margin-top:10px;">
-              <div class="bloco-left" flex="20" hide-xs>
-                <span>Categorias</span>
-              </div>
-              <div class="bloco-right" flex-xs="100" flex="80">
-                <md-checkbox aria-label="Fundamental I" data-ng-model="feira.categoriaFundamentalI" style="display:flex;margin-right:0;">Fundamental I (1º ao 5º anos)</md-checkbox>
-                <md-checkbox aria-label="Fundamental II" data-ng-model="feira.categoriaFundamentalII" style="display:flex;margin-right:0;">Fundamental II (6º ao 9º anos)</md-checkbox>
-                <md-checkbox aria-label="Ensino Médio" data-ng-model="feira.categoriaEnsinoMedio" style="display:flex;margin-right:0;">Ensino Médio, Técnico e Superior</md-checkbox>
-              </div>
+          <div layout="row" style="margin-top:10px;">
+            <div class="bloco-left" flex="20" hide-xs>
+              <span>Categorias</span>
             </div>
-
-            <div data-mascaras-legenda="mascarasDisponiveis"></div>
-            <md-input-container class="md-block" flex-gt-xs style="margin-top:15px;">
-              <label>Texto do certificado de classificação</label>
-              <textarea data-ng-model="feira.textoCertificado" style="overflow:hidden;resize:none;" required></textarea>
-              <div class="md-errors-spacer">
-                <div data-ng-if="feirasForm.textoCertificado.$dirty">
-                  <div class="message-error" data-ng-if="feirasForm.textoCertificado.$error.required">Obrigatório.</div>
-                </div>
-              </div>
-            </md-input-container>
-          </div>
-
-          <div data-ng-if="feira.tipo === 'edicao'">
-            <div layout="row" style="margin-top:20px;align-items:center;">
-              <div class="bloco-left" flex="20" hide-xs>
-                <span>Categorias/eixos</span>
-              </div>
-              <div class="bloco-right" flex-xs="100" flex="80">
-                <md-button class="md-raised green darken-1" style="text-transform:none;margin-left:0;" ng-click="copiarDeEdicaoAnterior($event)">
-                  Copiar de edição anterior
-                </md-button>
-                <div data-ng-repeat="cat in feira.categoriasEixos" style="margin:12px 0;padding:12px;background:#fff;border-radius:4px;">
-                  <div layout="row">
-                    <md-input-container class="md-block" flex style="margin:0;">
-                      <label>Nome da categoria</label>
-                      <input type="text" data-ng-model="cat.categoria"/>
-                    </md-input-container>
-                    <md-button class="md-icon-button" aria-label="Remover categoria" ng-click="removerCategoria($index)">
-                      <md-icon md-svg-src="close"></md-icon>
-                    </md-button>
-                  </div>
-                  <md-chips ng-model="cat.eixos" placeholder="Adicionar eixo temático..."></md-chips>
-                </div>
-                <md-button class="md-raised green darken-1" style="text-transform:none;margin-left:0;" ng-click="adicionarCategoria()">
-                  <md-icon md-svg-src="plus"></md-icon> Adicionar categoria
-                </md-button>
-              </div>
-            </div>
-
-            <div layout="row" style="margin-top:20px;align-items:flex-start;">
-              <div class="bloco-left" flex="20" hide-xs>
-                <span>Dias/turnos de avaliação</span>
-              </div>
-              <div class="bloco-right" flex-xs="100" flex="80">
-                <div data-ng-repeat="dia in feira.diasAvaliacao" layout="row" style="margin:8px 0;align-items:center;">
-                  <md-input-container class="md-block" flex="30" style="margin:0;">
-                    <label>Data</label>
-                    <input type="text" data-ng-model="dia.data" placeholder="Ex: 26/09"/>
-                  </md-input-container>
-                  <div flex="55" style="padding:0 10px;">
-                    <md-checkbox data-ng-repeat="turno in TURNOS_DISPONIVEIS" aria-label="{{turno}}"
-                      data-ng-checked="turnoSelecionado(dia, turno)" data-ng-click="alternarTurno(dia, turno)"
-                      style="display:inline-block;margin-right:12px;">{{turno}}</md-checkbox>
-                  </div>
-                  <md-button class="md-icon-button" aria-label="Remover dia" ng-click="removerDia($index)">
-                    <md-icon md-svg-src="close"></md-icon>
-                  </md-button>
-                </div>
-                <md-button class="md-raised green darken-1" style="text-transform:none;margin-left:0;" ng-click="adicionarDia()">
-                  <md-icon md-svg-src="plus"></md-icon> Adicionar dia
-                </md-button>
-              </div>
+            <div class="bloco-right" flex-xs="100" flex="80">
+              <md-checkbox aria-label="Fundamental I" data-ng-model="feira.categoriaFundamentalI" style="display:flex;margin-right:0;">Fundamental I (1º ao 5º anos)</md-checkbox>
+              <md-checkbox aria-label="Fundamental II" data-ng-model="feira.categoriaFundamentalII" style="display:flex;margin-right:0;">Fundamental II (6º ao 9º anos)</md-checkbox>
+              <md-checkbox aria-label="Ensino Médio" data-ng-model="feira.categoriaEnsinoMedio" style="display:flex;margin-right:0;">Ensino Médio, Técnico e Superior</md-checkbox>
             </div>
           </div>
+
+          <div data-mascaras-legenda="mascarasDisponiveis"></div>
+          <md-input-container class="md-block" flex-gt-xs style="margin-top:15px;">
+            <label>Texto do certificado de classificação</label>
+            <textarea data-ng-model="feira.textoCertificado" style="overflow:hidden;resize:none;" required></textarea>
+            <div class="md-errors-spacer">
+              <div data-ng-if="feirasForm.textoCertificado.$dirty">
+                <div class="message-error" data-ng-if="feirasForm.textoCertificado.$error.required">Obrigatório.</div>
+              </div>
+            </div>
+          </md-input-container>
 
           <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
             <md-button data-ng-if="feira._id" class="md-raised" style="text-transform:none;" aria-label="Cancelar" data-ng-click="cancelarEdicao()">
@@ -160,9 +97,8 @@
         <md-list-item class="md-3-line" data-ng-repeat="fei in feiras track by fei._id"
         style="padding:0 45px;">
         <div class="md-list-item-text" layout="column" style="padding-right:15px;">
-          <h3>{{::fei.nome}} <span data-ng-if="fei.tipo === 'edicao'" style="font-size:11px;background:#2e7d32;color:#fff;padding:2px 6px;border-radius:10px;vertical-align:middle;">EDIÇÃO PRÓPRIA</span></h3>
-          <p data-ng-if="fei.tipo !== 'edicao'">{{::fei.categorias.join(', ')}}</p>
-          <p data-ng-if="fei.tipo === 'edicao'">{{::fei.categoriasEixos.length}} categoria(s), {{::fei.diasAvaliacao.length}} dia(s) de avaliação</p>
+          <h3>{{::fei.nome}}</h3>
+          <p>{{::fei.categorias.join(', ')}}</p>
         </div>
         <div flex="20" style="display:flex;align-self:center;justify-content:center;">
           <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;margin-right:8px;" aria-label="Editar feira" ng-click="editarFeiraForm(fei)">

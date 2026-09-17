@@ -30,7 +30,12 @@ const FeiraSchema = new Schema({
 	// Ranking > Confirmar premiados - só faz sentido em tipo:'edicao'. Sem valor gravado
 	// (edições antigas, ou a edição do ano ainda nem foi criada), assume-se 3 - ver
 	// GET /admin/configPremiacao.
-	numPremiadosPorEixo: {type: Number}
+	numPremiadosPorEixo: {type: Number},
+	// Quantos avaliadores lançam nota por projeto (2 hoje; ex: 2027 pode usar 3) - só faz
+	// sentido em tipo:'edicao'. Sem valor gravado (edições antigas, ou a edição ainda nem
+	// foi criada), assume-se 2 - ver adminAPI.getFeiras()/getFeirasInfo e os fallbacks em
+	// avaliacaoInserirCtrl.js/avaliacaoCtrl.js.
+	numAvaliadoresPorProjeto: {type: Number}
 }, { collection: 'feiras' });
 
 const Feira = module.exports = mongoose.model('Feira', FeiraSchema);
