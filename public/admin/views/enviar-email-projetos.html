@@ -59,7 +59,7 @@
         <div style="width:85px;">
           <md-select data-ng-model="$root.ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
-              <md-option ng-value="years" data-ng-selected="true" data-ng-repeat="years in year track by years" data-ng-click="recarregar()">{{years}}</md-option>
+              <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano" data-ng-click="recarregar()">{{m.nome}}</md-option>
             </md-optgroup>
           </md-select>
         </div>

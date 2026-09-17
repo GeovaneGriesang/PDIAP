@@ -6,7 +6,10 @@
 	.controller('enviarEmailParticipantesCtrl', function($scope, $rootScope, $mdDialog, adminAPI) {
 
 		$scope.participantes = [];
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 
 		let carregarParticipantes = function() {

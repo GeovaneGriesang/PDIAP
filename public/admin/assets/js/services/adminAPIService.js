@@ -525,6 +525,19 @@
 			return comSuccessError(deferred.promise);
 		};
 
+		// Lista de Mostras cadastradas (ver models/feira-schema.js, tipo:'edicao'), mais
+		// recente primeiro - usada pra popular os seletores "Ano" do admin, que agora mostram
+		// o nome da Mostra em vez do ano puro (CadastraAno()).
+		let _getMostras = function() {
+			var deferred = $q.defer();
+			_getFeiras().then(function(response) {
+				var mostras = (response.data || []).filter(function(f) { return f.tipo === 'edicao'; })
+					.sort(function(a, b) { return b.ano - a.ano; });
+				deferred.resolve({ data: mostras, status: response.status });
+			}, deferred.reject);
+			return comSuccessError(deferred.promise);
+		};
+
 		let _getEstados = function() {
 			const request = {
 				url: 'assets/js/estados-cidades.json',
@@ -683,6 +696,7 @@
 			getCategoriasEixos: _getCategoriasEixos,
 			getDiasAvaliacao: _getDiasAvaliacao,
 			getNumAvaliadores: _getNumAvaliadores,
+			getMostras: _getMostras,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,

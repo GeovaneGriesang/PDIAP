@@ -471,7 +471,10 @@
 			agregado.localizacaoExpandido = false;
 		}
 
-		$scope.year = CadastraAno();
+		$scope.mostras = [];
+		adminAPI.getMostras()
+		.success(function(mostras) { $scope.mostras = mostras; })
+		.error(function(status) { console.log('Error: '+status); });
 		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 
 		$scope.carregarRelatorios = function() {
