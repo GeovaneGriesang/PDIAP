@@ -13,7 +13,8 @@ const express = require('express')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , ProjetoSchema = require('../models/projeto-schema')
-, AvaliadorSchema = require('../models/avaliador-schema');
+, AvaliadorSchema = require('../models/avaliador-schema')
+, feiraSchema = require('../models/feira-schema');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -69,6 +70,11 @@ router.post('/registro', (req, res) => {
 	let anoValido = !isNaN(anoInformado) && anoInformado >= 2016 && anoInformado <= new Date().getFullYear();
 	let createdAt = anoValido ? new Date(new Date().setFullYear(anoInformado)) : Date.now();
 
+	// A qual Mostra este avaliador pertence (Fase 2, ver memória project-mostra-ano-nao-unico):
+	// vem do slug do link de inscrição usado (/avaliadores/inscricao/:slug), resolvido pro _id
+	// da Feira correspondente. Sem slug (link antigo, tela do admin, ou nenhuma edição com
+	// slug ainda), feiraId fica undefined - mesmo comportamento de antes da Fase 2.
+	let prosseguirComCriacao = function(feiraId) {
 	let newAvaliador = AvaliadorSchema({
 		nome: req.body.nome,
 		email: req.body.email,
@@ -85,9 +91,10 @@ router.post('/registro', (req, res) => {
 		turnos: req.body.turnos,
 		disponibilidade: Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : [],
 		avaliacao: req.body.avaliacao,
-		createdAt: createdAt
+		createdAt: createdAt,
+		feiraId: feiraId
 	});
-		
+
 
 	Avaliador.createAvaliador(newAvaliador, (callback) => {});
 
@@ -122,6 +129,16 @@ router.post('/registro', (req, res) => {
 	});
 
 	res.send('success');
+	};
+
+	if (req.body.slug) {
+		feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, feira) => {
+			if (err) { console.error('Erro ao resolver edição do slug', err); return res.status(500).send('error'); }
+			prosseguirComCriacao(feira ? feira._id : undefined);
+		});
+	} else {
+		prosseguirComCriacao(undefined);
+	}
 });
 
 router.get('/loggedin', ensureAuthenticated, (req, res) => {

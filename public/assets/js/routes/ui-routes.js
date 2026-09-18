@@ -105,6 +105,15 @@
           templateUrl: '/views/inscricao.html',
           controller: 'registroCtrl',
         })
+        // Mesmo template/controller de 'inscricao', com :slug (Fase 2, ver memória
+        // project-mostra-ano-nao-unico) - liga a inscrição a uma Mostra específica quando
+        // houver mais de uma edição aberta em paralelo. Dois states em vez de :slug opcional
+        // no mesmo state, mesmo padrão já usado neste arquivo pra :token (ex: avaliadorNovaSenha).
+        .state('inscricao-edicao', {
+          url: '/projetos/inscricao/:slug',
+          templateUrl: '/views/inscricao.html',
+          controller: 'registroCtrl',
+        })
 
         .state('regulamento', {
           url: '/regulamento',
@@ -149,6 +158,13 @@
         //descomentar para possibilitar a inscrição de avaliadores
         .state('avaliadores', {
           url: '/avaliadores/inscricao',
+          templateUrl: '/views/avaliadores.html',
+          controller: 'avaliadoresCtrl',
+        })
+        // Mesmo template/controller de 'avaliadores', com :slug - ver comentário em
+        // 'inscricao-edicao' acima.
+        .state('avaliadores-edicao', {
+          url: '/avaliadores/inscricao/:slug',
           templateUrl: '/views/avaliadores.html',
           controller: 'avaliadoresCtrl',
         })

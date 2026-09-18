@@ -47,6 +47,23 @@
           </md-input-container>
 
           <md-input-container class="md-block" flex-gt-xs>
+            <label>Link de inscrição</label>
+            <input type="text" name="slug" data-ng-model="feira.slug" placeholder="Ex: xi-movaci" ng-pattern="/^[a-z0-9]+(-[a-z0-9]+)*$/"/>
+            <div class="md-errors-spacer">
+              <div data-ng-if="mostraForm.slug.$dirty">
+                <div class="message-error" data-ng-if="mostraForm.slug.$error.pattern">Use só letras minúsculas, números e hífen (ex: xi-movaci).</div>
+              </div>
+            </div>
+          </md-input-container>
+          <div layout="row" layout-align="start center" style="margin:-10px 0 15px 0;flex-wrap:wrap;">
+            <md-button class="md-raised" style="text-transform:none;margin-left:0;font-size:12px;" data-ng-disabled="!feira.nome" ng-click="gerarSlug()">Gerar do nome</md-button>
+            <span style="margin-left:12px;font-size:13px;color:rgba(0,0,0,0.6);word-break:break-all;" data-ng-if="feira.slug">
+              Inscrição de projeto: {{urlBase}}/projetos/inscricao/{{feira.slug}}<br/>
+              Inscrição de avaliador: {{urlBase}}/avaliadores/inscricao/{{feira.slug}}
+            </span>
+          </div>
+
+          <md-input-container class="md-block" flex-gt-xs>
             <label>Quantidade de avaliadores por projeto</label>
             <input type="number" name="numAvaliadoresPorProjeto" min="2" data-ng-model="feira.numAvaliadoresPorProjeto" required/>
             <div class="md-errors-spacer">
@@ -107,6 +124,71 @@
               </md-button>
             </div>
           </div>
+
+          <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+          <h3 style="text-align:center;font-size:15px;">Prazo — Cadastro de Projetos (nesta Mostra)</h3>
+          <div layout-align="center center" layout="row">
+            <md-checkbox aria-label="Check" data-ng-model="feira.prazoProjetos.ativo">Inscrição habilitada</md-checkbox>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Prazo até</label>
+              <input type="datetime-local" name="dataPrazoProjetos" data-ng-model="feira.prazoProjetos.dataPrazo" />
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="60">
+              <label>Texto exibido até o prazo</label>
+              <input type="text" name="textoPrazoProjetos" data-ng-model="feira.prazoProjetos.textoPrazo" placeholder="Ex: Inscrições até 23/08 às 23:59" />
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Prorrogação até (opcional)</label>
+              <input type="datetime-local" name="dataProrrogacaoProjetos" data-ng-model="feira.prazoProjetos.dataProrrogacao" />
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="60">
+              <label>Texto exibido durante a prorrogação</label>
+              <input type="text" name="textoProrrogacaoProjetos" data-ng-model="feira.prazoProjetos.textoProrrogacao" placeholder="Ex: Inscrições prorrogadas até dia xx/xx, às 23:59h" />
+            </md-input-container>
+          </div>
+          <md-input-container class="md-block" flex="100">
+            <label>Texto exibido após o encerramento</label>
+            <input type="text" name="textoEncerradoProjetos" data-ng-model="feira.prazoProjetos.textoEncerrado" placeholder="Ex: Inscrições encerradas" />
+          </md-input-container>
+
+          <hr size="3" style="background:green!important;margin-top:1.5em!important;">
+          <h3 style="text-align:center;font-size:15px;">Prazo — Cadastro de Avaliadores (nesta Mostra)</h3>
+          <div layout-align="center center" layout="row">
+            <md-checkbox aria-label="Check" data-ng-model="feira.prazoAvaliadores.ativo">Inscrição habilitada</md-checkbox>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Prazo até</label>
+              <input type="datetime-local" name="dataPrazoAvaliadores" data-ng-model="feira.prazoAvaliadores.dataPrazo" />
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="60">
+              <label>Texto exibido até o prazo</label>
+              <input type="text" name="textoPrazoAvaliadores" data-ng-model="feira.prazoAvaliadores.textoPrazo" placeholder="Ex: Inscrições até 23/08 às 23:59" />
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-xs>
+              <label>Prorrogação até (opcional)</label>
+              <input type="datetime-local" name="dataProrrogacaoAvaliadores" data-ng-model="feira.prazoAvaliadores.dataProrrogacao" />
+            </md-input-container>
+            <div flex="5" hide-xs></div>
+            <md-input-container class="md-block" flex-gt-xs="60">
+              <label>Texto exibido durante a prorrogação</label>
+              <input type="text" name="textoProrrogacaoAvaliadores" data-ng-model="feira.prazoAvaliadores.textoProrrogacao" placeholder="Ex: Inscrições prorrogadas até dia xx/xx, às 23:59h" />
+            </md-input-container>
+          </div>
+          <md-input-container class="md-block" flex="100">
+            <label>Texto exibido após o encerramento</label>
+            <input type="text" name="textoEncerradoAvaliadores" data-ng-model="feira.prazoAvaliadores.textoEncerrado" placeholder="Ex: Inscrições encerradas" />
+          </md-input-container>
+          <hr size="3" style="background:green!important;margin-top:1.5em!important;">
 
           <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
             <md-button data-ng-if="feira._id" class="md-raised" style="text-transform:none;" aria-label="Cancelar" data-ng-click="cancelarEdicao()">

@@ -3,10 +3,32 @@
 
 	angular
 	.module('PDIAP')
-	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, projetosAPI, documentoValidatorService) {
-	
+	.controller('registroCtrl', function($scope, $rootScope, $mdDialog, $mdConstant, $q, $window, $location, $timeout, $stateParams, projetosAPI, documentoValidatorService) {
+
 		// Estado geral da tela de inscrição.
 		$scope.cadastro_projetos = true;
+
+		// Fase 2 (ver memória project-mostra-ano-nao-unico): a qual Mostra esta inscrição
+		// pertence. Vem do slug na URL (/projetos/inscricao/:slug, state 'inscricao-edicao')
+		// quando presente; sem slug (link antigo, ou state 'inscricao' comum), resolve pela
+		// única edição com inscrição de projetos aberta - se houver 2+ abertas ao mesmo
+		// tempo, edicoesParaEscolher populado faz a view mostrar uma lista em vez do form
+		// (ver inscricao.html).
+		$scope.mostraSlug = $stateParams.slug || null;
+		$scope.edicoesParaEscolher = null;
+		$scope.carregarEdicoes = function() {
+			if ($scope.mostraSlug) return;
+			projetosAPI.getEdicoesInscricao().success(function(edicoes) {
+				var abertas = (edicoes || []).filter(function(e) { return e.projetos && e.projetos.aberto && e.slug; });
+				if (abertas.length === 1) {
+					$scope.mostraSlug = abertas[0].slug;
+				} else if (abertas.length > 1) {
+					$scope.edicoesParaEscolher = abertas;
+				}
+			})
+			.error(function(status) { console.log(status); });
+		};
+		$scope.carregarEdicoes();
 
 		// Vídeo tutorial "como se inscrever": fica escondido por padrão e expande/recolhe na
 		// própria página ao clicar no botão (mesmo padrão de "+/-" já usado em outras telas),
@@ -56,6 +78,7 @@
 		// Envia o projeto ao backend e trata a resposta de sucesso ou erro.
 		$scope.registrarProjeto = function(projeto) {
 			projeto.palavraChave = $scope.palavrasChave;
+			projeto.slug = $scope.mostraSlug;
 			projetosAPI.saveProjeto(projeto)
 			.success(function(data, status) {
 				if (status === 202) {

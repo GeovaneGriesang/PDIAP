@@ -273,12 +273,26 @@
 			return $http(request);
 		}
 
+		// Mostras (Feira tipo:'edicao') com status de inscrição de projetos/avaliadores por
+		// edição - usado pela home (homeCtrl.js) e pelos formulários de inscrição
+		// (registroCtrl.js/avaliadoresCtrl.js) pra resolver a edição certa pelo slug da URL,
+		// ou pela única edição aberta quando não há slug. Ver Fase 2, memória
+		// project-mostra-ano-nao-unico.
+		let _getEdicoesInscricao = function(){
+			const request = {
+				url: '/getEdicoesInscricao',
+				method: 'GET',
+			}
+			return $http(request);
+		}
+
 		return {
 			getEdits: _getEdits,
 			getOpcoes: _getOpcoes,
 			saveProjeto: _saveProjeto,
 			saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,
+			getEdicoesInscricao: _getEdicoesInscricao,
 			postLogin: _postLogin,
 			getProjeto: _getProjeto,
 			getCategorias: _getCategorias,

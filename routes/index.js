@@ -920,6 +920,11 @@ router.post('/registro', testaUsername2,
       tamCamiseta: req.body.tamCamisetaAluno3
     });
 
+    // A qual Mostra este projeto pertence (Fase 2, ver memória project-mostra-ano-nao-unico):
+    // vem do slug do link de inscrição usado (/projetos/inscricao/:slug), resolvido aqui pro
+    // _id da Feira correspondente. Sem slug (link antigo, ou nenhuma edição com slug ainda),
+    // feiraId fica undefined - mesmo comportamento de antes da Fase 2.
+    let prosseguirComCriacao = function(feiraId) {
     let newProject = new ProjetoSchema({
       nomeProjeto: req.body.nomeProjeto,
       categoria: req.body.categoria,
@@ -936,7 +941,8 @@ router.post('/registro', testaUsername2,
       permissao: 1,
       createdAt: Date.now(),
       resumo: req.body.resumo,
-      palavraChave: req.body.palavraChave
+      palavraChave: req.body.palavraChave,
+      feiraId: feiraId
     });
 
     newProject.integrantes.push(newIntegrante);
@@ -1006,6 +1012,16 @@ router.post('/registro', testaUsername2,
         res.send({redirect: '/projetos'});
       });
     });
+    };
+
+    if (req.body.slug) {
+      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, feira) => {
+        if (err) { console.error('Erro ao resolver edição do slug', err); return res.status(500).send('error'); }
+        prosseguirComCriacao(feira ? feira._id : undefined);
+      });
+    } else {
+      prosseguirComCriacao(undefined);
+    }
   }
 });
 
@@ -1246,6 +1262,17 @@ router.get('/getFeirasInfo', function(req, res){
   });
 });
 
+// Mostras (Feira tipo:'edicao') com status de inscrição (aberta/prorrogada/encerrada) de
+// projetos e avaliadores por edição - público, usado pela home e pelos formulários de
+// inscrição pra saber que link/texto mostrar (Fase 2, ver memória
+// project-mostra-ano-nao-unico).
+router.get('/getEdicoesInscricao', function(req, res){
+  Admin.getEdicoesInscricao((err, edicoes) => {
+    if (err) { console.error(err); return res.sendStatus(500); }
+    res.status(200).send(edicoes);
+  });
+});
+
 // Escolas aprovadas (ver models/escola-schema.js) - lista usada pra seleção no cadastro
 // de projeto, no lugar do texto livre digitado antes. Só as aprovadas: uma pendente
 // não deveria aparecer pra outra pessoa selecionar antes do admin revisar.
@@ -1377,7 +1404,10 @@ router.all('/404', function(req, res, next) {
   res.render('layout.ejs');
 });
 
-router.get('/projetos/inscricao', function(req, res, next) {
+// :slug opcional (Fase 2) - liga a inscrição a uma Mostra específica (ver
+// models/feira-schema.js#slug); sem slug continua funcionando como antes (o client
+// resolve a edição aberta automaticamente, ver public/assets/js/controllers/registroCtrl.js).
+router.get('/projetos/inscricao/:slug?', function(req, res, next) {
   res.render('layout.ejs');
 });
 
@@ -1389,7 +1419,8 @@ router.get('/solicitar-escola', function(req, res, next) {
   res.render('layout.ejs');
 });
 
-router.get('/avaliadores/inscricao', function(req, res, next) {
+// :slug opcional (Fase 2) - mesma lógica de /projetos/inscricao/:slug? acima.
+router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
   res.render('layout.ejs');
 });
 

@@ -39,13 +39,38 @@
 
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){
-				$scope.edits = edits;				
+				$scope.edits = edits;
 			})
 			.error(function(status) {
 				console.log(status);
 			});
 		}
 		$scope.carregarEdits();
+
+		// Mostras (Fase 2, ver memória project-mostra-ano-nao-unico): substitui o link
+		// único e fixo de "Cadastrar projeto"/"Cadastrar avaliador" (antes controlado só
+		// pelo prazo global do singleton Admin, ver edits[0] acima) por um botão POR
+		// edição com inscrição aberta, cada um com seu próprio link (/inscricao/:slug) e
+		// texto de prazo - permite duas Mostras em paralelo com prazos diferentes.
+		$scope.edicoes = [];
+		$scope.carregarEdicoes = function(){
+			projetosAPI.getEdicoesInscricao().success(function(edicoes){
+				$scope.edicoes = edicoes || [];
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		}
+		$scope.carregarEdicoes();
+
+		// Usado em layout2.ejs pra decidir se mostra "Nenhum botão disponível" no menu
+		// (antes checava só edits[0].cadastro_projetos/cadastro_avaliadores - agora
+		// verifica se ALGUMA edição tem projetos ou avaliadores com inscrição aberta).
+		$scope.algumaInscricaoAberta = function() {
+			return ($scope.edicoes || []).some(function(e) {
+				return (e.projetos && e.projetos.aberto) || (e.avaliadores && e.avaliadores.aberto);
+			});
+		};
 
 		var countCertificados = 0;
 		var avaliador = [];

@@ -36,8 +36,20 @@
   </svg>
 </div>
 
+<!-- Fase 2 (ver memória project-mostra-ano-nao-unico): 2+ Mostras com inscrição de
+     avaliadores aberta ao mesmo tempo e sem slug na URL - escolhe antes do formulário. -->
+<md-content flex layout="column" layout-align="center center" class="inscricao-content avaliadores-content" data-ng-if="edicoesParaEscolher">
+  <div style="width:85%;max-width:600px;text-align:center;padding:24px 0;">
+    <h2>Para qual edição é a sua inscrição?</h2>
+    <p>Há mais de uma Mostra com inscrições abertas no momento - escolha abaixo.</p>
+    <div data-ng-repeat="ed in edicoesParaEscolher" style="margin:16px 0;">
+      <a class="button special" ng-href="/avaliadores/inscricao/{{ed.slug}}">{{ed.nome}}</a>
+    </div>
+  </div>
+</md-content>
+
 <!-- Formulário -->
-<md-content flex layout="column" layout-align="center center" class="inscricao-content avaliadores-content">
+<md-content flex layout="column" layout-align="center center" class="inscricao-content avaliadores-content" data-ng-if="!edicoesParaEscolher">
   <form name="avaliadoresForm" novalidate ng-disabled="!cadastroAvaliadores">
     <div layout-gt-xs="row">
       <md-input-container class="md-block" flex-gt-xs>

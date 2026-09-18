@@ -11,7 +11,7 @@
 	// um só com uma flag de modo.
 	angular
 	.module('PDIAPa')
-	.controller('mostraCtrl', function($scope, $mdDialog, $mdToast, adminAPI) {
+	.controller('mostraCtrl', function($scope, $window, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -22,6 +22,22 @@
 		$scope.ano = new Date().getFullYear();
 		$scope.year = CadastraAno();
 		$scope.TURNOS_DISPONIVEIS = ['Manhã', 'Tarde', 'Noite'];
+
+		// Base da URL pra mostrar o link de inscrição completo (ver Fase 2, memória
+		// project-mostra-ano-nao-unico) - lido do próprio navegador, não hardcoded, pra
+		// funcionar igual em produção e em teste local.
+		$scope.urlBase = $window.location.origin;
+
+		// Gera o slug (link de inscrição) a partir do nome da Mostra: minúsculas, sem
+		// acento, espaços viram hífen - mesma ideia de "slug" comum na web, sem
+		// precedente nenhum no resto do sistema (primeira vez que isso aparece aqui).
+		$scope.gerarSlug = function() {
+			$scope.feira.slug = (feira => (feira || '')
+				.normalize('NFD').replace(/[̀-ͯ]/g, '')
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, '-')
+				.replace(/^-+|-+$/g, ''))($scope.feira.nome);
+		};
 
 		let mostraFeiras = function() {
 			$scope.feiras = [];
@@ -43,8 +59,11 @@
 			mostraFeiras();
 		}
 
+		let novoPrazo = function() {
+			return { ativo: true, dataPrazo: null, textoPrazo: '', dataProrrogacao: null, textoProrrogacao: '', textoEncerrado: '' };
+		};
 		let novaFeiraForm = function() {
-			return { tipo: 'edicao', categoriasEixos: [], diasAvaliacao: [], numAvaliadoresPorProjeto: 2 };
+			return { tipo: 'edicao', categoriasEixos: [], diasAvaliacao: [], numAvaliadoresPorProjeto: 2, slug: '', prazoProjetos: novoPrazo(), prazoAvaliadores: novoPrazo() };
 		};
 		$scope.feira = novaFeiraForm();
 
@@ -118,7 +137,10 @@
 				createdAt: feira.createdAt || new Date(),
 				categoriasEixos: feira.categoriasEixos,
 				diasAvaliacao: feira.diasAvaliacao,
-				numAvaliadoresPorProjeto: feira.numAvaliadoresPorProjeto
+				numAvaliadoresPorProjeto: feira.numAvaliadoresPorProjeto,
+				slug: (feira.slug || '').trim(),
+				prazoProjetos: feira.prazoProjetos,
+				prazoAvaliadores: feira.prazoAvaliadores
 			};
 
 			var pedido;
@@ -135,9 +157,11 @@
 				mostraFeiras();
 				resetForm();
 			})
-			.error(function(status) {
-				$scope.toast('Falha.','failed-toast');
-				console.log("Error: "+status);
+			.error(function(data) {
+				// Mostra o motivo de verdade quando o servidor manda um (ex: link de
+				// inscrição duplicado) - só cai no genérico se vier vazio.
+				$scope.toast(data || 'Falha.','failed-toast');
+				console.log("Error: "+data);
 			});
 		};
 
@@ -149,6 +173,9 @@
 			form.categoriasEixos = form.categoriasEixos || [];
 			form.diasAvaliacao = form.diasAvaliacao || [];
 			form.numAvaliadoresPorProjeto = form.numAvaliadoresPorProjeto || 2;
+			form.slug = form.slug || '';
+			form.prazoProjetos = form.prazoProjetos || novoPrazo();
+			form.prazoAvaliadores = form.prazoAvaliadores || novoPrazo();
 			$scope.feira = form;
 			window.scrollTo(0, 0);
 		};

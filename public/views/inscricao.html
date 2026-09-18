@@ -36,7 +36,20 @@
 		</svg>
 	</div>
 
-	<md-content flex layout="column" layout-align="center center" class="inscricao-content">
+	<!-- Fase 2 (ver memória project-mostra-ano-nao-unico): se houver 2+ Mostras com
+	     inscrição de projetos aberta ao mesmo tempo e a pessoa caiu aqui sem indicar qual
+	     (link sem slug), mostra uma lista pra escolher em vez do formulário direto - evita
+	     inscrever sem querer na edição errada. -->
+	<md-content flex layout="column" layout-align="center center" class="inscricao-content" data-ng-if="edicoesParaEscolher">
+		<div style="width:85%;max-width:600px;text-align:center;padding:24px 0;">
+			<h2>Para qual edição é a sua inscrição?</h2>
+			<p>Há mais de uma Mostra com inscrições abertas no momento - escolha abaixo.</p>
+			<div data-ng-repeat="ed in edicoesParaEscolher" style="margin:16px 0;">
+				<a class="button special" ng-href="/projetos/inscricao/{{ed.slug}}">{{ed.nome}}</a>
+			</div>
+		</div>
+	</md-content>
+	<md-content flex layout="column" layout-align="center center" class="inscricao-content" data-ng-if="!edicoesParaEscolher">
 		<!-- Vídeo tutorial: fica escondido atrás de um botão em vez de já vir tocando/visível
 		     na página, que ficava "agressivo" demais. Expande/recolhe na própria página (em
 		     vez de abrir num diálogo à parte, que cortava o vídeo). -->

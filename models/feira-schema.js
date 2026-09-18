@@ -35,7 +35,32 @@ const FeiraSchema = new Schema({
 	// sentido em tipo:'edicao'. Sem valor gravado (edições antigas, ou a edição ainda nem
 	// foi criada), assume-se 2 - ver adminAPI.getFeiras()/getFeirasInfo e os fallbacks em
 	// avaliacaoInserirCtrl.js/avaliacaoCtrl.js.
-	numAvaliadoresPorProjeto: {type: Number}
+	numAvaliadoresPorProjeto: {type: Number},
+	// Link de inscrição próprio da edição (ex: "xi-movaci" -> /projetos/inscricao/xi-movaci)
+	// - só faz sentido em tipo:'edicao'. Único entre edições (checado em routes/admin.js
+	// POST /criarFeira e PUT /editarFeira), permite que duas Mostras no mesmo ano tenham
+	// links de inscrição separados - ver memória project-mostra-ano-nao-unico (Fase 2).
+	slug: {type: String},
+	// Prazo de inscrição PRÓPRIO desta edição (mesma forma de models/admin-schema.js
+	// prazoProjetos/prazoAvaliadores, computado por utils/prazo.js#computaPrazo) - permite
+	// que duas edições em paralelo tenham calendários de inscrição independentes. Só faz
+	// sentido em tipo:'edicao'.
+	prazoProjetos: {
+		ativo: { type: Boolean, default: true },
+		dataPrazo: { type: Date },
+		textoPrazo: { type: String },
+		dataProrrogacao: { type: Date },
+		textoProrrogacao: { type: String },
+		textoEncerrado: { type: String }
+	},
+	prazoAvaliadores: {
+		ativo: { type: Boolean, default: true },
+		dataPrazo: { type: Date },
+		textoPrazo: { type: String },
+		dataProrrogacao: { type: Date },
+		textoProrrogacao: { type: String },
+		textoEncerrado: { type: String }
+	}
 }, { collection: 'feiras' });
 
 const Feira = module.exports = mongoose.model('Feira', FeiraSchema);

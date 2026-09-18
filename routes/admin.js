@@ -194,21 +194,38 @@ router.put('/atualizaEvento', miPermiso("3"), (req, res) => {
 // certificado de classificação (ver premiacao.html/details.premiacao.html e getFeirasInfo).
 router.post('/criarFeira', miPermiso("3"), (req, res) => {
   try {
-    let newFeira = new feiraSchema({
-      nome: req.body.nome,
-      categorias: req.body.categorias,
-      textoCertificado: req.body.textoCertificado,
-      ano: req.body.ano,
-      createdAt: req.body.createdAt,
-      tipo: req.body.tipo,
-      categoriasEixos: req.body.categoriasEixos,
-      diasAvaliacao: req.body.diasAvaliacao,
-      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto
-    });
-    newFeira.save((err, data) => {
-      if (err) { console.error('Erro ao criar feira', err); return; }
-    });
-    res.send('success');
+    let criar = () => {
+      let newFeira = new feiraSchema({
+        nome: req.body.nome,
+        categorias: req.body.categorias,
+        textoCertificado: req.body.textoCertificado,
+        ano: req.body.ano,
+        createdAt: req.body.createdAt,
+        tipo: req.body.tipo,
+        categoriasEixos: req.body.categoriasEixos,
+        diasAvaliacao: req.body.diasAvaliacao,
+        numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
+        slug: req.body.slug,
+        prazoProjetos: req.body.prazoProjetos,
+        prazoAvaliadores: req.body.prazoAvaliadores
+      });
+      newFeira.save((err, data) => {
+        if (err) { console.error('Erro ao criar feira', err); return; }
+      });
+      res.send('success');
+    };
+    // Link de inscrição (slug) precisa ser único entre edições - diferente do "ano" (que
+    // pode se repetir de propósito, ver memória project-mostra-ano-nao-unico), um slug
+    // repetido faria duas Mostras disputarem a mesma URL de inscrição.
+    if (req.body.tipo === 'edicao' && req.body.slug) {
+      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, existente) => {
+        if (err) { console.error('Erro ao verificar link de inscrição existente', err); return res.status(500).send('Erro ao verificar link de inscrição existente'); }
+        if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
+        criar();
+      });
+    } else {
+      criar();
+    }
   } catch (error){
     console.log('findOne error--> ${error}');
   }
@@ -218,18 +235,32 @@ router.put('/editarFeira', miPermiso("3"), (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    feiraSchema.findOneAndUpdate({'_id': id}, {
-      nome: req.body.nome,
-      categorias: req.body.categorias,
-      textoCertificado: req.body.textoCertificado,
-      tipo: req.body.tipo,
-      categoriasEixos: req.body.categoriasEixos,
-      diasAvaliacao: req.body.diasAvaliacao,
-      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto
-    }, (err) => {
-      if (err) { console.error('Erro ao editar feira', err); return; }
-    });
-    res.send('success');
+    let atualizar = () => {
+      feiraSchema.findOneAndUpdate({'_id': id}, {
+        nome: req.body.nome,
+        categorias: req.body.categorias,
+        textoCertificado: req.body.textoCertificado,
+        tipo: req.body.tipo,
+        categoriasEixos: req.body.categoriasEixos,
+        diasAvaliacao: req.body.diasAvaliacao,
+        numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
+        slug: req.body.slug,
+        prazoProjetos: req.body.prazoProjetos,
+        prazoAvaliadores: req.body.prazoAvaliadores
+      }, (err) => {
+        if (err) { console.error('Erro ao editar feira', err); return; }
+      });
+      res.send('success');
+    };
+    if (req.body.tipo === 'edicao' && req.body.slug) {
+      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug, _id: { $ne: id } }, (err, existente) => {
+        if (err) { console.error('Erro ao verificar link de inscrição existente', err); return res.status(500).send('Erro ao verificar link de inscrição existente'); }
+        if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
+        atualizar();
+      });
+    } else {
+      atualizar();
+    }
   } catch (error){
     console.log('findOne error--> ${error}');
   }
