@@ -15,7 +15,6 @@ const express = require('express')
 , smtpTransport = require('nodemailer-smtp-transport')
 , path = require('path')
 , EmailTemplate = require('email-templates').EmailTemplate
-, wellknown = require('nodemailer-wellknown')
 , formidable = require('formidable')
 , fs = require('fs')
 , async = require('async')
