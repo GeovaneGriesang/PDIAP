@@ -92,10 +92,10 @@
             </md-optgroup>
           </md-select>
         </div>
-    <div style="width:85px;">
+    <div style="width:220px;">
       <md-select data-ng-model="$root.ano" placeholder="Ano" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
-              <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano" data-ng-click="recarregar()">{{m.nome}}</md-option>
+              <md-option ng-value="m.ano" data-ng-selected="true" data-ng-repeat="m in mostras track by m.ano" data-ng-click="recarregar()">{{m.ano}} - {{m.nome}}</md-option>
             </md-optgroup>
           </md-select>
     </div>
