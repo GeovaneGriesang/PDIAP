@@ -28,6 +28,7 @@ const express = require('express')
 , EmailTemplate = require('email-templates').EmailTemplate
 , async = require('async')
 , rateLimit = require('express-rate-limit')
+, { body, validationResult } = require('express-validator')
 , documentoValidator = require('../utils/documentoValidator');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
@@ -831,18 +832,19 @@ router.post('/contato', (req, res) => {
 
 router.get('/registroProjeto', testaUsernameEEscola, (req, res) => {});
 
-router.post('/registro', testaUsername2, (req, res) => {
+router.post('/registro', testaUsername2,
+  body('username', 'Username is required').notEmpty(),
+  body('password', 'Password is required').notEmpty(),
+  body('password2').custom((value, { req }) => value === req.body.password).withMessage('Passwords do not match'),
+  (req, res) => {
   let  username = req.body.username
   ,   password = req.body.password
   ,   password2 = req.body.password2
 
-  req.checkBody('username', 'Username is required').notEmpty();
-  req.checkBody('password', 'Password is required').notEmpty();
-  req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
-  let errors = req.validationErrors();
+  let errors = validationResult(req);
 
-  if(errors){
-    console.log("Errors: "+errors);
+  if(!errors.isEmpty()){
+    console.log("Errors: "+JSON.stringify(errors.array()));
     return res.status(400).send('error');
   } else {
     // Orientador2/Aluno2/Aluno3 são opcionais - só valida documento/telefone deles se

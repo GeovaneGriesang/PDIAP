@@ -15,7 +15,6 @@ const express = require('express'),
       session = require('express-session'),
       { MongoStore } = require('connect-mongo'),
       LocalStrategy = require('passport-local').Strategy,
-      expressValidator = require('express-validator'),
       //flash = require('connect-flash'),
       bodyParser = require('body-parser'),
       // db-config precisa ser carregado antes das rotas/models: abre a conexão padrão do
@@ -94,24 +93,6 @@ app.use(session({
 // Passport init
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Express Validator
-app.use(expressValidator({
-  errorFormatter: (param, msg, value) => {
-      let namespace = param.split('.')
-      , root = namespace.shift()
-      , formParam = root;
-
-    while(namespace.length) {
-      formParam += '[' + namespace.shift() + ']';
-    }
-    return {
-      param : formParam,
-      msg   : msg,
-      value : value
-    };
-  }
-}));
 
 // Global Vars
 app.use((req, res, next) => {

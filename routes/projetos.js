@@ -152,15 +152,19 @@ router.post('/upload', function(req, res){
   // conteúdo em si nunca era conferido.
   form.maxFileSize = 10 * 1024 * 1024; // 10MB
   form.parse(req, function(err, fields, files) {
-    var image = files.file;
+    // A partir do formidable 3.x, files.file é um array (mesmo com um só arquivo
+    // enviado) - antes era o objeto do arquivo direto.
+    var image = files.file && files.file[0];
 
     if (err || !image) {
       res.writeHead(400, {'content-type': 'text/plain'});
       return res.end('Falha no upload (arquivo ausente ou maior que 10MB).');
     }
 
-    var nomeOriginal = (image.name || '').toLowerCase();
-    var mimetype = image.type || '';
+    // Nomes de propriedade mudaram no formidable 3.x: name→originalFilename,
+    // type→mimetype, path→filepath.
+    var nomeOriginal = (image.originalFilename || '').toLowerCase();
+    var mimetype = image.mimetype || '';
     var extensaoValida = nomeOriginal.endsWith('.pdf');
     var mimetypeValido = mimetype === 'application/pdf';
 
@@ -168,7 +172,7 @@ router.post('/upload', function(req, res){
     // mimetype enviados pelo navegador podem ser forjados pelo próprio usuário.
     var assinaturaValida = false;
     try {
-      var fd = fs.openSync(image.path, 'r');
+      var fd = fs.openSync(image.filepath, 'r');
       var buffer = Buffer.alloc(5);
       fs.readSync(fd, buffer, 0, 5, 0);
       fs.closeSync(fd);
@@ -176,7 +180,7 @@ router.post('/upload', function(req, res){
     } catch (e) {}
 
     if (!extensaoValida || !mimetypeValido || !assinaturaValida) {
-      fs.unlink(image.path, function () {});
+      fs.unlink(image.filepath, function () {});
       res.writeHead(400, {'content-type': 'text/plain'});
       return res.end('Arquivo inválido: envie um PDF de até 10MB.');
     }
@@ -186,7 +190,7 @@ router.post('/upload', function(req, res){
 
     // Pasta era fixa em "relatorios_2018" (numInscricao é global e auto-incrementado, nunca
     // reinicia por ano - então nunca colidiu entre edições, só ficava com nome enganoso).
-    var image_upload_path_old = image.path
+    var image_upload_path_old = image.filepath
     , image_upload_path_new = '../PDIAP/public/relatorios/'
     , image_upload_name = req.user.numInscricao+'.pdf'
     , image_upload_path_name = image_upload_path_new + image_upload_name;
@@ -217,9 +221,9 @@ router.post('/upload', function(req, res){
   }
 
   let dadosRelatorio = {
-    name: files.file.name,
-    size: files.file.size,
-    uploadAt: files.file.lastModifiedDate
+    name: image.originalFilename,
+    size: image.size,
+    uploadAt: image.mtime
   };
 
   if (err) { console.error(err); return; }
