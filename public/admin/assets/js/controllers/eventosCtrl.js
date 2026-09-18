@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('eventosCtrl', function($scope, $mdDialog, $mdToast, adminAPI) {
+	.controller('eventosCtrl', function($scope, $timeout, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -21,10 +21,14 @@
 		// Salvar - ver editarEvento/cancelarEdicao/cadastrarEvento).
 		$scope.editando = null;
 
+		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
+		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
+		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
+		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
+		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
+		// a lista depois que a resposta chegar.
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
 
 		$scope.addResponsavel = function() {
 			$scope.count++;
@@ -86,7 +90,19 @@
 				console.log("Error: "+status);
 			});
 		}
-		$scope.mostraEventos = mostraEventos();
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				mostraEventos();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$scope.ano = $scope.ano || new Date().getFullYear();
+			mostraEventos();
+		});
 
 		$scope.recarregar = function(){
 			$scope.eventos = [];

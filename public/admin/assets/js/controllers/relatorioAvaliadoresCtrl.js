@@ -8,13 +8,16 @@
 	// exportar.
 	angular
 	.module('PDIAPa')
-	.controller('relatorioAvaliadoresCtrl', function($scope, $rootScope, $filter, adminAPI, relatorioPdfService) {
+	.controller('relatorioAvaliadoresCtrl', function($scope, $rootScope, $timeout, $filter, adminAPI, relatorioPdfService) {
 
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
-		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
+
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona (ver
+		// adminAPI.getMostras() abaixo), religa cada <md-option> e reescreve o ng-model no
+		// processo (bug conhecido do Angular Material com ng-repeat dentro de md-select) -
+		// guarda o valor persistido ANTES e só carrega a lista depois de reaplicá-lo, senão
+		// o ano acaba travado no último item da lista.
+		let anoPersistido = $rootScope.ano;
 
 		$scope.avaliadores = [];
 		$scope.busca = '';
@@ -41,7 +44,20 @@
 				console.log('Erro ao carregar avaliadores: ' + status);
 			});
 		};
-		carregar();
+
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				carregar();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			carregar();
+		});
 
 		$scope.recarregar = function() {
 			carregar();

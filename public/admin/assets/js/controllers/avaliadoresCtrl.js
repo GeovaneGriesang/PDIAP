@@ -3,16 +3,20 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliadoresCtrl', function($scope, $window, $location, $mdDialog, $filter, adminAPI, documentoValidatorService, relatorioPdfService) {
+	.controller('avaliadoresCtrl', function($scope, $window, $location, $timeout, $mdDialog, $filter, adminAPI, documentoValidatorService, relatorioPdfService) {
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
 		$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 
+		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
+		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
+		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
+		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
+		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
+		// a lista depois que a resposta chegar.
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
 
 		$scope.listaCategorias = [];
 		adminAPI.getCategoriasEixos(new Date().getFullYear())
@@ -161,7 +165,19 @@
 				console.log("Error: "+status);
 			});
 		};
-		$scope.mostraAvaliadores = mostraAvaliadores();
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				mostraAvaliadores();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$scope.ano = $scope.ano || new Date().getFullYear();
+			mostraAvaliadores();
+		});
 
 		$scope.recarregar = function(){
 			$scope.avaliadores = [];

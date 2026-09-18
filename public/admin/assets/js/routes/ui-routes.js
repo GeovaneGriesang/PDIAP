@@ -33,6 +33,28 @@
 			return deferred.promise;
 		};
 
+		// Ao entrar no admin (login novo / F5), $rootScope.ano começa sempre vazio - em vez
+		// de cair no ano corrente do calendário (que pode nem ter Mostra cadastrada ainda,
+		// ou não ser mais a edição "ativa"), define como padrão a Mostra mais recente
+		// cadastrada (getMostras() já vem ordenada desc por ano - ver adminAPIService.js).
+		// Depende de "loggedin" pra só rodar depois que a sessão for confirmada (a rota que
+		// getMostras() usa exige autenticação). Como resolve do state pai "master", roda uma
+		// vez só por carregamento de página - navegar entre as telas do admin depois disso
+		// não reseta uma Mostra escolhida manualmente.
+		let definirMostraPadrao = function($q, $rootScope, adminAPI, loggedin) {
+			var deferred = $q.defer();
+			adminAPI.getMostras()
+			.success(function(mostras) {
+				$rootScope.ano = mostras.length ? mostras[0].ano : new Date().getFullYear();
+				deferred.resolve();
+			})
+			.error(function() {
+				$rootScope.ano = new Date().getFullYear();
+				deferred.resolve();
+			});
+			return deferred.promise;
+		};
+
 		$stateProvider
 		.state('master', {
 			url: "/master",
@@ -43,11 +65,12 @@
 				},
 				'@master': {
 					templateUrl: '/admin/views/presenca_projetos.html',
-					controller: 'projetosCtrl' 
+					controller: 'projetosCtrl'
 				}
 			},
 			resolve: {
-				loggedin: checkLoggedin
+				loggedin: checkLoggedin,
+				mostraPadrao: definirMostraPadrao
 			}
 		})
 		.state('master.seleciona-aprovados', {
