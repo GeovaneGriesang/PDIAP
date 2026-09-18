@@ -19,6 +19,11 @@ const ParticipantelSchema = new Schema({
 	// antigo, fica undefined. nome/email/cpf abaixo continuam existindo por enquanto como
 	// cópia de exibição, mas autenticação passa a ser sempre via Pessoa.
 	pessoa: { type: Schema.Types.ObjectId, ref: 'Pessoa' },
+	// A qual Mostra/edição (Feira tipo:'edicao') este participante pertence - undefined em
+	// registros antigos até rodar scripts/migrar-feiraId.js (o "ano" deles continua vindo
+	// de createdAt). Permite mais de uma Mostra no mesmo ano com listas de participantes
+	// separadas de verdade.
+	feiraId: { type: Schema.Types.ObjectId, ref: 'Feira' },
 	nome: {type: String},
 	cpf: {type: String},
 	email: {type: String},
