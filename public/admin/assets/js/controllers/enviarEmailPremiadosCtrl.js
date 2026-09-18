@@ -102,8 +102,16 @@ function _avaliarCondicaoPorDados(dados) {
 		// adminAPI.getMostras() abaixo), religa cada <md-option> e reescreve o ng-model no
 		// processo (bug conhecido do Angular Material com ng-repeat dentro de md-select) -
 		// guarda o valor persistido ANTES e só carrega a lista depois de reaplicá-lo, senão
-		// o ano acaba travado no último item da lista.
-		let anoPersistido = $rootScope.ano;
+		// a Mostra acaba travada no último item da lista.
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano fica só
+		// como valor DERIVADO, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico).
+		let mostraIdPersistido = $rootScope.mostraId;
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		// _id da feira -> nome, só pra resolver a máscara ¨feiraNome na pré-visualização (o
 		// envio de verdade resolve isso no servidor, já com populate de feirasClassificadas).
@@ -119,10 +127,9 @@ function _avaliarCondicaoPorDados(dados) {
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function(value) {
-					var ano = new Date(value.createdAt).getFullYear();
 					var classificado = !!(value.feirasClassificadas && value.feirasClassificadas.length > 0);
 					var emDestaque = value.premiacao === 'Premiado' || value.premiacao === 'Mencao_honrosa' || classificado;
-					if (ano == $rootScope.ano && emDestaque) {
+					if (adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada) && emDestaque) {
 						$scope.projetos.push({
 							_id: value._id,
 							numInscricao: value.numInscricao,
@@ -151,17 +158,20 @@ function _avaliarCondicaoPorDados(dados) {
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
+				resolverMostraSelecionada();
 				carregarProjetos();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			resolverMostraSelecionada();
 			carregarProjetos();
 		});
 
 		$scope.recarregar = function() {
+			resolverMostraSelecionada();
 			$scope.idsSelecionados = [];
 			carregarProjetos();
 		};

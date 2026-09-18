@@ -13,14 +13,25 @@
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
 
-		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
+		// $scope.mostraId nunca tinha um valor inicial próprio aqui, dependia só do que o
 		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
 		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
 		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
 		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
-		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
-		// as listas depois que a resposta chegar.
+		// Material com ng-repeat dentro de md-select) - por isso só define a Mostra e
+		// carrega as listas depois que a resposta chegar.
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como
+		// valor DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no
+		// mesmo ano (ver memória project-mostra-ano-nao-unico). mostraEventos/mostraSaberes
+		// continuam filtrando por ano puro (Evento/Saberes não têm feiraId ainda);
+		// mostraParticipantes usa pertenceAMostra porque Participante já tem feiraId.
 		$scope.mostras = [];
+
+		let resolverMostraSelecionada = function() {
+			$scope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $scope.mostraId; })[0];
+			$scope.ano = $scope.mostraSelecionada ? $scope.mostraSelecionada.ano : $scope.ano;
+		};
 
 		let formatCPF = function(cpf) {
 			return cpf;
@@ -84,8 +95,7 @@
 			.success(function(participantes) {
 				// $rootScope.participantes = [];
 				angular.forEach(participantes, function (value, key) {
-					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(adminAPI.pertenceAMostra(value, $scope.mostraSelecionada)){
 						var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(value._id);
 						if (index === -1) {
 							value.cpf = formatCPF(value.cpf);
@@ -135,7 +145,8 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				$scope.mostraId = $scope.mostraId || (mostras.length ? mostras[0]._id : null);
+				resolverMostraSelecionada();
 				mostraEventos();
 				getCPFparticipantes();
 				mostraParticipantes();
@@ -150,6 +161,7 @@
 		});
 
 		$scope.recarregar = function(){
+			resolverMostraSelecionada();
 			$scope.eventos1 = [];
 			$scope.eventos2 = [];
 			$scope.eventos3 = [];

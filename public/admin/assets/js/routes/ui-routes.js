@@ -33,10 +33,13 @@
 			return deferred.promise;
 		};
 
-		// Ao entrar no admin (login novo / F5), $rootScope.ano começa sempre vazio - em vez
-		// de cair no ano corrente do calendário (que pode nem ter Mostra cadastrada ainda,
-		// ou não ser mais a edição "ativa"), define como padrão a Mostra mais recente
+		// Ao entrar no admin (login novo / F5), $rootScope.mostraId começa sempre vazio - em
+		// vez de cair no ano corrente do calendário (que pode nem ter Mostra cadastrada
+		// ainda, ou não ser mais a edição "ativa"), define como padrão a Mostra mais recente
 		// cadastrada (getMostras() já vem ordenada desc por ano - ver adminAPIService.js).
+		// $rootScope.mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano
+		// fica só como valor derivado/exibição, porque pode haver mais de uma Mostra no mesmo
+		// ano (ver memória project-mostra-ano-nao-unico) e só o _id distingue entre elas.
 		// Depende de "loggedin" pra só rodar depois que a sessão for confirmada (a rota que
 		// getMostras() usa exige autenticação). Como resolve do state pai "master", roda uma
 		// vez só por carregamento de página - navegar entre as telas do admin depois disso
@@ -45,10 +48,13 @@
 			var deferred = $q.defer();
 			adminAPI.getMostras()
 			.success(function(mostras) {
-				$rootScope.ano = mostras.length ? mostras[0].ano : new Date().getFullYear();
+				var mostra = mostras.length ? mostras[0] : null;
+				$rootScope.mostraId = mostra ? mostra._id : null;
+				$rootScope.ano = mostra ? mostra.ano : new Date().getFullYear();
 				deferred.resolve();
 			})
 			.error(function() {
+				$rootScope.mostraId = null;
 				$rootScope.ano = new Date().getFullYear();
 				deferred.resolve();
 			});

@@ -19,8 +19,16 @@
 		// adminAPI.getMostras() abaixo), religa cada <md-option> e reescreve o ng-model no
 		// processo (bug conhecido do Angular Material com ng-repeat dentro de md-select) -
 		// guarda o valor persistido ANTES e só carrega os projetos depois de reaplicá-lo,
-		// senão o ano acaba travado no último item da lista.
-		let anoPersistido = $rootScope.ano;
+		// senão a Mostra acaba travada no último item da lista.
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano fica só
+		// como valor DERIVADO, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico).
+		let mostraIdPersistido = $rootScope.mostraId;
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		$scope.semPresenca = [];
 		$scope.empatados = [];
@@ -62,8 +70,7 @@
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function(value) {
-					var ano = new Date(value.createdAt).getFullYear();
-					if (ano !== $rootScope.ano) return;
+					if (!adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) return;
 					var temNota = value.avaliacao !== undefined && value.avaliacao.length > 0;
 					if (!temNota) return;
 
@@ -98,16 +105,21 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
+				resolverMostraSelecionada();
 				carregarProjetos();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			resolverMostraSelecionada();
 			carregarProjetos();
 		});
-		$scope.recarregar = carregarProjetos;
+		$scope.recarregar = function() {
+			resolverMostraSelecionada();
+			carregarProjetos();
+		};
 
 		$scope.toast = function(message, tema) {
 			$mdToast.show($mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(4000));

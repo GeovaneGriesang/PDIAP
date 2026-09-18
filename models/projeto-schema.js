@@ -86,6 +86,12 @@ const ProjetoSchema = new Schema({
 	colocacao: {type: Number},
 	mostratec: {type: Boolean},
 	feirasClassificadas: [{type: Schema.Types.ObjectId, ref: 'Feira'}],
+	// A qual Mostra/edição (Feira tipo:'edicao') este projeto pertence - não confundir com
+	// feirasClassificadas acima (feiras EXTERNAS tipo:'classificacao', ex Mostratec). Fica
+	// undefined em registros antigos (o "ano" deles continua vindo de createdAt até rodar
+	// scripts/migrar-feiraId.js) - permite ter mais de uma Mostra no mesmo ano com listas de
+	// projetos separadas de verdade, ver memória project-mostra-ano-nao-unico.
+	feiraId: {type: Schema.Types.ObjectId, ref: 'Feira'},
 	token: {type:String}
 
 // }, { collection: 'betaPorcaoAPI' });

@@ -54,14 +54,21 @@
 		$scope.mostras = [];
 
 		// Mesmo esquema usado em projetosCtrl.js (Selecionar aprovados/Presença/Premiação):
-		// o ano fica no $rootScope pra persistir ao navegar entre as páginas de "Projetos",
+		// a Mostra fica no $rootScope pra persistir ao navegar entre as páginas de "Projetos",
 		// e o valor persistido só é reaplicado depois que a lista de Mostras (async, ver
 		// adminAPI.getMostras() abaixo) terminar de carregar, porque o próprio <md-select>
 		// com as opções, ao ser recriado do zero nesta página, religa cada <md-option> e
 		// reescreve o ng-model a cada uma (bug do Angular Material com ng-repeat dentro de
 		// md-select), travando na última Mostra da lista.
-		let anoPersistido = $rootScope.ano;
-		$rootScope.ano = anoPersistido || new Date().getFullYear();
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano fica só
+		// como valor DERIVADO, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico).
+		let mostraIdPersistido = $rootScope.mostraId;
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		// Mesmo esquema acima, pro critério e texto de busca: ficam em $rootScope pra
 		// sobreviver à troca de página dentro de "Projetos" (inclusive indo pra
@@ -74,8 +81,9 @@
 		$scope.search = $rootScope.search;
 
 		$scope.recarregar = function(){
+			resolverMostraSelecionada();
 			resetForm();
-			
+
 			$rootScope.cidades = [];
 			$scope.alterado = false;
 			$scope.palavraChave = [];
@@ -230,8 +238,7 @@
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
-					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $rootScope.ano){
+					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js e
 						// projetosCtrl.js) pra permitir filtrar por orientador/aluno.
 						value.orientadores = "";
@@ -255,14 +262,15 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				if (anoPersistido) {
-					$rootScope.ano = anoPersistido;
-				}
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
+				resolverMostraSelecionada();
 				$scope.carregarProjetos();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
+			resolverMostraSelecionada();
 			$scope.carregarProjetos();
 		});
 		

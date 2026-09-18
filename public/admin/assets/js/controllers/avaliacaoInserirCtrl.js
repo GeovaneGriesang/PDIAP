@@ -14,14 +14,22 @@
 		// Mesmo padrão/cores de contagemSituacao() em projetosCtrl.js (Projetos > Presença).
 		$scope.resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
 
-		// O ano do filtro fica no $rootScope pra seguir o mesmo padrão das outras telas
+		// A Mostra do filtro fica no $rootScope pra seguir o mesmo padrão das outras telas
 		// (Selecionar aprovados/Presença/Premiação) - sem seleção prévia, cai na Mostra mais
 		// recente (já pré-definida pelo resolve mostraPadrao do state "master" - ver
 		// ui-routes.js). O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma
 		// assíncrona logo abaixo, religa cada <md-option> e reescreve o ng-model no processo
 		// (bug conhecido do Angular Material com ng-repeat dentro de md-select) - por isso
 		// guarda o valor persistido ANTES e só carrega os projetos depois de reaplicá-lo.
-		let anoPersistido = $rootScope.ano;
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano fica só
+		// como valor DERIVADO, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico).
+		let mostraIdPersistido = $rootScope.mostraId;
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		let carregarProjetos = function() {
 			$scope.projetos = [];
@@ -29,8 +37,7 @@
 			adminAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
-					var ano = new Date(value.createdAt).getFullYear();
-					if (ano !== $rootScope.ano) return;
+					if (!adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) return;
 					resumo.total++;
 					if (value.aprovado === true) {
 						resumo.aprovados++;
@@ -62,6 +69,7 @@
 		$scope.carregarProjetos = carregarProjetos;
 
 		$scope.recarregar = function() {
+			resolverMostraSelecionada();
 			carregarProjetos();
 		};
 
@@ -79,7 +87,7 @@
 					// Assume 2 até a promise resolver, pra não deixar o formulário em branco.
 					$scope.numAvaliadoresRange = [0, 1];
 					$scope.indiceDesempate = 2;
-					adminAPI.getNumAvaliadores($rootScope.ano)
+					adminAPI.getNumAvaliadores($rootScope.mostraId)
 					.success(function(data) {
 						var n = data.n;
 						var range = [];
@@ -149,13 +157,15 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
+				resolverMostraSelecionada();
 				carregarProjetos();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			resolverMostraSelecionada();
 			carregarProjetos();
 		});
 	});

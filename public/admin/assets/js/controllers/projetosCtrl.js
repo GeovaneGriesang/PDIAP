@@ -12,10 +12,16 @@
 
 		$scope.mostras = [];
 
-		// O ano do filtro fica no $rootScope (em vez de $scope) para persistir ao navegar entre
-		// "Selecionar aprovados", "Presença" e "Premiação" - as três usam este mesmo controller,
-		// mas o ui-router recria a instância a cada troca de página, então um $scope.ano se
-		// perderia a cada navegação. Sem seleção prévia nesta sessão, cai no ano atual.
+		// A Mostra do filtro fica no $rootScope (em vez de $scope) para persistir ao navegar
+		// entre "Selecionar aprovados", "Presença" e "Premiação" - as três usam este mesmo
+		// controller, mas o ui-router recria a instância a cada troca de página, então um
+		// $scope.mostraId se perderia a cada navegação.
+		//
+		// A chave de seleção de verdade é $rootScope.mostraId (o _id da Feira) - $rootScope.ano
+		// fica só como valor DERIVADO da Mostra selecionada, porque pode haver mais de uma
+		// Mostra no mesmo ano (ver memória project-mostra-ano-nao-unico) e só o _id distingue
+		// entre elas. Outros trechos deste controller (baixarZip, feiras de premiação) continuam
+		// lendo $rootScope.ano normalmente - eles não mudam.
 		//
 		// O valor persistido precisa ser guardado ANTES e reaplicado só depois que a lista de
 		// Mostras (async, ver adminAPI.getMostras() abaixo) terminar de carregar: o próprio
@@ -25,8 +31,15 @@
 		// última Mostra da lista se não corrigirmos depois que essa religação terminar - e como
 		// a lista só é preenchida depois da resposta HTTP, a correção também precisa esperar por
 		// ela (um $timeout(0) sozinho dispararia cedo demais, antes da lista chegar).
-		let anoPersistido = $rootScope.ano;
-		$rootScope.ano = anoPersistido || new Date().getFullYear();
+		let mostraIdPersistido = $rootScope.mostraId;
+
+		// Resolve $rootScope.mostraSelecionada (a Mostra completa) a partir de $rootScope.mostraId
+		// e deriva $rootScope.ano dela - chamado depois de trocar a seleção e depois de carregar
+		// a lista de Mostras pela primeira vez.
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		// Mesmo esquema acima, pro critério e texto de busca: ficam em $rootScope pra
 		// sobreviver à troca de página entre "Selecionar aprovados", "Presença" e
@@ -45,7 +58,7 @@
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $rootScope.ano){
+					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js) pra
 						// permitir filtrar por orientador/aluno no menu de busca - o filtro genérico
 						// do Angular (filter:search) só alcança campos escalares de primeiro nível.
@@ -219,6 +232,7 @@
 		};
 
 		$rootScope.recarregar = function(){
+			resolverMostraSelecionada();
 			$rootScope.projetos = [];
 			$scope.searchProject = "";
 			$scope.idAprovados = [];
@@ -439,9 +453,12 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				if (anoPersistido) {
-					$rootScope.ano = anoPersistido;
+				if (mostraIdPersistido) {
+					$rootScope.mostraId = mostraIdPersistido;
+				} else if (!$rootScope.mostraId && mostras.length) {
+					$rootScope.mostraId = mostras[0]._id;
 				}
+				resolverMostraSelecionada();
 				carregarProjetos();
 			});
 		})

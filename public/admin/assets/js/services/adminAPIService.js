@@ -510,19 +510,31 @@
 			return comSuccessError(deferred.promise);
 		};
 
-		// Quantos avaliadores lançam nota por projeto na edição de um ano (ver
+		// Quantos avaliadores lançam nota por projeto na Mostra selecionada (ver
 		// models/feira-schema.js, tipo:'edicao', numAvaliadoresPorProjeto) - sem edição
 		// própria cadastrada, ou sem esse campo preenchido nela, assume-se 2 (padrão
-		// histórico do PDIAP/MOVACI).
-		let _getNumAvaliadores = function(ano) {
+		// histórico do PDIAP/MOVACI). Filtra por _id (não por ano) porque pode haver mais
+		// de uma Mostra no mesmo ano - ver memória project-mostra-ano-nao-unico.
+		let _getNumAvaliadores = function(mostraId) {
 			var deferred = $q.defer();
 			$http({ url: '/getFeirasInfo', method: 'GET' }).then(function(response) {
 				var edicao = (response.data || []).filter(function(f) {
-					return f.tipo === 'edicao' && f.ano == ano;
+					return f.tipo === 'edicao' && f._id === mostraId;
 				})[0];
 				deferred.resolve({ data: { n: (edicao && edicao.numAvaliadoresPorProjeto) || 2 }, status: response.status });
 			}, deferred.reject);
 			return comSuccessError(deferred.promise);
+		};
+
+		// Um documento (Projeto/Avaliador/Participante) pertence à Mostra selecionada quando
+		// feiraId bate com o _id dela - registros antigos (sem feiraId, de antes de
+		// scripts/migrar-feiraId.js) continuam caindo no critério de sempre (ano de
+		// createdAt == ano da Mostra), pra não quebrar nada do histórico. Ver memória
+		// project-mostra-ano-nao-unico.
+		let _pertenceAMostra = function(doc, mostra) {
+			if (!mostra) return false;
+			if (doc.feiraId) return doc.feiraId === mostra._id;
+			return !!doc.createdAt && new Date(doc.createdAt).getFullYear() == mostra.ano;
 		};
 
 		// Lista de Mostras cadastradas (ver models/feira-schema.js, tipo:'edicao'), mais
@@ -697,6 +709,7 @@
 			getDiasAvaliacao: _getDiasAvaliacao,
 			getNumAvaliadores: _getNumAvaliadores,
 			getMostras: _getMostras,
+			pertenceAMostra: _pertenceAMostra,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,

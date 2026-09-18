@@ -9,14 +9,26 @@
 		$scope.count = 0;
 		$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 
-		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
+		// $scope.mostraId nunca tinha um valor inicial próprio aqui, dependia só do que o
 		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
 		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
 		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
 		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
-		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
-		// a lista depois que a resposta chegar.
+		// Material com ng-repeat dentro de md-select) - por isso só define a Mostra e
+		// carrega a lista depois que a resposta chegar.
+		//
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como
+		// valor DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no
+		// mesmo ano (ver memória project-mostra-ano-nao-unico) e só o _id distingue entre
+		// elas. registrarAvaliador continua gravando avaliador.ano = $scope.ano (não muda
+		// - ainda é um número válido, só que agora derivado da Mostra em vez de ser a
+		// própria chave do seletor).
 		$scope.mostras = [];
+
+		let resolverMostraSelecionada = function() {
+			$scope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $scope.mostraId; })[0];
+			$scope.ano = $scope.mostraSelecionada ? $scope.mostraSelecionada.ano : $scope.ano;
+		};
 
 		$scope.listaCategorias = [];
 		adminAPI.getCategoriasEixos(new Date().getFullYear())
@@ -131,7 +143,7 @@
 					if (index === -1) {
 						if(value.avaliacao === true) $scope.count++;
 						var ano = new Date(value.createdAt).getFullYear();
-						if(ano == $scope.ano){
+						if(adminAPI.pertenceAMostra(value, $scope.mostraSelecionada)){
 							var cpf = formatCPF(value.cpf);
 							/*var avaliacao = false;
 							if(value.avaliacao !== undefined) avaliacao = value.avaliacao;*/
@@ -169,7 +181,8 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				$scope.mostraId = $scope.mostraId || (mostras.length ? mostras[0]._id : null);
+				resolverMostraSelecionada();
 				mostraAvaliadores();
 			});
 		})
@@ -180,6 +193,7 @@
 		});
 
 		$scope.recarregar = function(){
+			resolverMostraSelecionada();
 			$scope.avaliadores = [];
 			$scope.count = 0;
 			$scope.idAvaliadoresMarcados = [];
