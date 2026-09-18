@@ -10,7 +10,7 @@
 	// novos do zero, sem esse tipo de reatribuição escondida.
 	angular
 	.module('PDIAPa')
-	.controller('relatoriosCtrl', function($scope, $rootScope, $mdToast, adminAPI, relatorioPdfService) {
+	.controller('relatoriosCtrl', function($scope, $rootScope, $timeout, $mdToast, adminAPI, relatorioPdfService) {
 
 		var EIXOS = [
 			{nome:"Ciências da Natureza e suas tecnologias", categoria: "Fundamental I (1º ao 5º anos)"},
@@ -472,10 +472,13 @@
 		}
 
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
-		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
+
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona (ver
+		// adminAPI.getMostras() no fim do controller), religa cada <md-option> e reescreve
+		// o ng-model no processo (bug conhecido do Angular Material com ng-repeat dentro de
+		// md-select) - guarda o valor persistido ANTES e só carrega os relatórios depois de
+		// reaplicá-lo, senão o ano acaba travado no último item da lista.
+		let anoPersistido = $rootScope.ano;
 
 		$scope.carregarRelatorios = function() {
 			var relatorio = { countAprovados: 0, countParticipaSim: 0, countParticipaNao: 0, countPendente: 0 };
@@ -1083,6 +1086,18 @@
 			});
 		};
 
-		$scope.carregarRelatorios();
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				$scope.carregarRelatorios();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			$scope.carregarRelatorios();
+		});
 	});
 })();

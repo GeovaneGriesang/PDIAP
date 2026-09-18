@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('participantesCtrl', function($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
+	.controller('participantesCtrl', function($scope, $rootScope, $timeout, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.eventos1 = [];
 		$scope.eventos2 = [];
@@ -13,10 +13,14 @@
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
 
+		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
+		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
+		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
+		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
+		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
+		// as listas depois que a resposta chegar.
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
 
 		let formatCPF = function(cpf) {
 			return cpf;
@@ -61,8 +65,6 @@
 				console.log("Error: "+status);
 			});
 		};
-		$scope.mostraEventos = mostraEventos();
-
 		let getCPFparticipantes = function() {
 			adminAPI.getCPFparticipantes()
 			.success(function(cpfs) {
@@ -77,8 +79,6 @@
 				console.log('Error: '+JSON.stringify(status));
 			});
 		};
-		$scope.getCPFparticipantes = getCPFparticipantes();
-
 		let mostraParticipantes = function() {
 			adminAPI.getParticipantes()
 			.success(function(participantes) {
@@ -99,8 +99,6 @@
 				console.log("Error: "+status);
 			});
 		};
-		$scope.mostraParticipantes = mostraParticipantes();
-
 		let mostraSaberes = function() {
 			adminAPI.getTodosSaberes()
 			.success(function(saberes) {
@@ -132,6 +130,24 @@
 				console.log("Error: "+status);
 			});
 		};
+
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				mostraEventos();
+				getCPFparticipantes();
+				mostraParticipantes();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$scope.ano = $scope.ano || new Date().getFullYear();
+			mostraEventos();
+			getCPFparticipantes();
+			mostraParticipantes();
+		});
 
 		$scope.recarregar = function(){
 			$scope.eventos1 = [];

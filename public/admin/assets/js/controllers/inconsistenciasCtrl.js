@@ -10,14 +10,17 @@
 	// corrigir tudo aqui mesmo sem precisar ir cata a projeto nas telas de origem.
 	angular
 	.module('PDIAPa')
-	.controller('inconsistenciasCtrl', function($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
+	.controller('inconsistenciasCtrl', function($scope, $rootScope, $timeout, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.abaAtiva = 'semPresenca';
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
-		$rootScope.ano = $rootScope.ano || new Date().getFullYear();
+
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona (ver
+		// adminAPI.getMostras() abaixo), religa cada <md-option> e reescreve o ng-model no
+		// processo (bug conhecido do Angular Material com ng-repeat dentro de md-select) -
+		// guarda o valor persistido ANTES e só carrega os projetos depois de reaplicá-lo,
+		// senão o ano acaba travado no último item da lista.
+		let anoPersistido = $rootScope.ano;
 
 		$scope.semPresenca = [];
 		$scope.empatados = [];
@@ -90,7 +93,20 @@
 			})
 			.error(function(status) { console.log(status); });
 		};
-		carregarProjetos();
+
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				carregarProjetos();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			carregarProjetos();
+		});
 		$scope.recarregar = carregarProjetos;
 
 		$scope.toast = function(message, tema) {

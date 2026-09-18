@@ -2,13 +2,28 @@
     'use strict';
     angular
     .module('PDIAPa')
-    .controller('cadastromostraCtrl', function($scope, adminAPI) {
+    .controller('cadastromostraCtrl', function($scope, $timeout, adminAPI) {
 
       $scope.certificados = [];
       $scope.mostras = [];
+
+      // O ano padrão (a Mostra mais recente) só pode ser definido depois que TANTO a
+      // lista de Mostras quanto os certificados já cadastrados chegarem (são 2 chamadas
+      // assíncronas independentes) - e só depois que o <md-select>+ng-repeat de Mostras
+      // religar suas opções, senão o Material reescreve o ng-model sozinho (bug conhecido
+      // com ng-repeat dentro de md-select) e derruba o valor que acabamos de definir.
+      var mostrasProntas = false, certificadosProntos = false;
+      var definirAnoPadrao = function() {
+        if (!mostrasProntas || !certificadosProntos) return;
+        $timeout(function() {
+          $scope.ano = $scope.mostras.length ? $scope.mostras[0].ano : new Date().getFullYear();
+          $scope.carregaDado($scope.ano);
+        });
+      };
+
       adminAPI.getMostras()
-      .success(function(mostras) { $scope.mostras = mostras; })
-      .error(function(status) { console.log('Error: '+status); });
+      .success(function(mostras) { $scope.mostras = mostras; mostrasProntas = true; definirAnoPadrao(); })
+      .error(function(status) { console.log('Error: '+status); mostrasProntas = true; definirAnoPadrao(); });
 
       //algumas scopes para recuperar os dados
 
@@ -153,11 +168,11 @@
 
       adminAPI.getCertificado().success(function(certificados){
         $scope.certificados = certificados;
-        // Carrega automaticamente o certificado do ano atual ao entrar na página, se já
+        // Carrega automaticamente o certificado do ano padrão ao entrar na página, se já
         // existir um cadastrado - antes só carregava quando o usuário reselecionava o ano
         // manualmente no filtro (ng-change não dispara sozinho no primeiro carregamento).
-        $scope.ano = new Date().getFullYear();
-        $scope.carregaDado($scope.ano);
+        certificadosProntos = true;
+        definirAnoPadrao();
       });
 
       // Mostra uma prévia da imagem assim que o usuário escolhe um arquivo novo, antes de

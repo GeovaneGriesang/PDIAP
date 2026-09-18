@@ -7,11 +7,13 @@
   <div style="padding:1em 2em;overflow:auto!important;">
     <p style="color:rgba(0,0,0,0.6);font-size:13px;">Escolha de qual edição copiar as categorias e eixos. Só as categorias/eixos serão copiados - dias/turnos de avaliação continuam em branco.</p>
     <md-list>
-      <md-list-item class="md-2-line" data-ng-repeat="ed in edicoes" data-ng-click="escolher(ed)" style="cursor:pointer;">
-        <div class="md-list-item-text">
-          <h3>{{ed.nome || ('Edição ' + ed.ano)}} ({{ed.ano}})</h3>
-          <p>{{ed.categoriasEixos.length}} categoria(s)</p>
-        </div>
+      <md-list-item class="md-2-line" data-ng-repeat="ed in edicoes">
+        <md-button class="md-no-style" style="width:100%;text-align:left;text-transform:none;" data-ng-click="escolher(ed)">
+          <div class="md-list-item-text">
+            <h3>{{ed.nome || ('Edição ' + ed.ano)}} ({{ed.ano}})</h3>
+            <p>{{ed.categoriasEixos.length}} categoria(s)</p>
+          </div>
+        </md-button>
       </md-list-item>
     </md-list>
   </div>

@@ -3,7 +3,7 @@
     'use strict';
     angular
     .module('PDIAPa')
-    .controller('documentoCtrl', function($scope, $mdDialog, adminAPI) {
+    .controller('documentoCtrl', function($scope, $timeout, $mdDialog, adminAPI) {
 
         // Declaração e inicialização segura das scopes
         $scope.mostras = [];
@@ -12,8 +12,20 @@
         // Filtro por ano da lista abaixo - independente do "ano" do formulário de cadastro
         // acima (esse é o ano do documento que está sendo enviado agora).
         $scope.filtroAno = new Date().getFullYear();
+
+        // O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona,
+        // religa cada <md-option> e reescreve o ng-model no processo (bug conhecido do
+        // Angular Material com ng-repeat dentro de md-select) - por isso só define o ano
+        // padrão (a Mostra mais recente) depois que a lista chegar e terminar de religar.
         adminAPI.getMostras()
-        .success(function(mostras) { $scope.mostras = mostras; })
+        .success(function(mostras) {
+            $scope.mostras = mostras;
+            $timeout(function() {
+                var anoPadrao = mostras.length ? mostras[0].ano : new Date().getFullYear();
+                $scope.ano = anoPadrao;
+                $scope.filtroAno = anoPadrao;
+            });
+        })
         .error(function(status) { console.log('Error: '+status); });
         $scope.Exibe_documento = false;
         $scope.documentos = [];

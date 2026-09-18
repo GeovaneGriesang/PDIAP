@@ -3,14 +3,11 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliacaoInserirCtrl', function($scope, $rootScope, $mdDialog, adminAPI) {
+	.controller('avaliacaoInserirCtrl', function($scope, $rootScope, $timeout, $mdDialog, adminAPI) {
 
 		$scope.projetos = [];
 		$scope.searchProject = "";
 		$scope.mostras = [];
-		adminAPI.getMostras()
-		.success(function(mostras) { $scope.mostras = mostras; })
-		.error(function(status) { console.log('Error: '+status); });
 
 		// Resumo de totais do ano filtrado (ver cabeçalho em avaliacao.html) - conta TODOS
 		// os projetos do ano, não só os aprovados (que é tudo que $scope.projetos guarda).
@@ -18,9 +15,13 @@
 		$scope.resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
 
 		// O ano do filtro fica no $rootScope pra seguir o mesmo padrão das outras telas
-		// (Selecionar aprovados/Presença/Premiação) - sem seleção prévia, cai no ano atual.
+		// (Selecionar aprovados/Presença/Premiação) - sem seleção prévia, cai na Mostra mais
+		// recente (já pré-definida pelo resolve mostraPadrao do state "master" - ver
+		// ui-routes.js). O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma
+		// assíncrona logo abaixo, religa cada <md-option> e reescreve o ng-model no processo
+		// (bug conhecido do Angular Material com ng-repeat dentro de md-select) - por isso
+		// guarda o valor persistido ANTES e só carrega os projetos depois de reaplicá-lo.
 		let anoPersistido = $rootScope.ano;
-		$rootScope.ano = anoPersistido || new Date().getFullYear();
 
 		let carregarProjetos = function() {
 			$scope.projetos = [];
@@ -144,6 +145,18 @@
 			$scope.query = campo;
 		};
 
-		carregarProjetos();
+		adminAPI.getMostras()
+		.success(function(mostras) {
+			$scope.mostras = mostras;
+			$timeout(function() {
+				$rootScope.ano = anoPersistido || new Date().getFullYear();
+				carregarProjetos();
+			});
+		})
+		.error(function(status) {
+			console.log('Error: '+status);
+			$rootScope.ano = anoPersistido || new Date().getFullYear();
+			carregarProjetos();
+		});
 	});
 })();
