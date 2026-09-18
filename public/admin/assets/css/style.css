@@ -838,3 +838,19 @@ md-radio-button .md-label {
 .categoria-eixo-chip md-icon:hover {
   opacity: 1;
 }
+
+/* O <md-chips> do Angular Material (ver mostra.html, campo de eixos temáticos) trava o
+   campo de digitar num tamanho fixo pequeno (~175px, o "size" padrão de um <input> sem CSS
+   de largura) em vez de ocupar o espaço disponível na linha - bug/limitação conhecida do
+   componente (o container é bloco flutuante, não flex, então não estica sozinho), o texto
+   digitado fica cortado. Tira o float e faz o campo ocupar a linha inteira (cai pra uma
+   linha própria quando já existem chips antes dele, em vez de ficar espremido do lado). */
+md-chips .md-chip-input-container {
+  display: block !important;
+  float: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+md-chips .md-chip-input-container input.md-input {
+  width: 100% !important;
+}
