@@ -16,7 +16,6 @@ const express = require('express'),
       { MongoStore } = require('connect-mongo'),
       LocalStrategy = require('passport-local').Strategy,
       //flash = require('connect-flash'),
-      bodyParser = require('body-parser'),
       // db-config precisa ser carregado antes das rotas/models: abre a conexão padrão do
       // Mongoose que os models (incluindo o plugin de auto-incremento em projeto-schema.js)
       // passam a reaproveitar, em vez de cada um abrir sua própria conexão com o banco.
@@ -42,8 +41,10 @@ app.use(logger('dev'));
 // estilos/scripts inline e recursos de CDNs externas, que uma CSP padrão bloquearia.
 // Mantém os demais cabeçalhos de segurança do helmet (X-Frame-Options, nosniff, HSTS, etc.).
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(bodyParser.json({limit : '10mb' }));
-app.use(bodyParser.urlencoded({ extended: false, limit : '10mb' }));
+// Express 4.16+ já embute o mesmo body-parser standalone que era usado antes (express.json()
+// é baseado direto em bodyParser.json()) - troca sem mudar comportamento, um pacote a menos.
+app.use(express.json({limit : '10mb' }));
+app.use(express.urlencoded({ extended: false, limit : '10mb' }));
 app.use(cookieParser());
 // Vídeos precisam de um Cache-Control com max-age > 0: o padrão do Express (max-age=0)
 // faz o navegador revalidar com If-None-Match a cada requisição de range, e como o
