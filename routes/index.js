@@ -22,7 +22,6 @@ const express = require('express')
 , nodemailer = require('nodemailer')
 , adminSchema = require('../models/admin-schema')
 , mongoose = require('mongoose')
-, smtpTransport = require('nodemailer-smtp-transport')
 , path = require('path')
 , fs = require('fs')
 , EmailTemplate = require('email-templates').EmailTemplate
@@ -803,14 +802,14 @@ router.post('/contato', (req, res) => {
   ,   assunto = req.body.assunto
   ,   mensagem = req.body.mensagem;
 
-  const transporter = nodemailer.createTransport(smtpTransport({
+  const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     auth: {
       user: process.env.SMTP_GMAIL_USER,
       pass: process.env.SMTP_GMAIL_PASS
     }
-  }));
+  });
 
   var mailOptions = {
     from: 'va-movaci@ifsul.edu.br',
@@ -1175,14 +1174,14 @@ router.post('/redefinir-senha', authLimiter, (req, res) => {
         var templatesDir = path.resolve(__dirname, '..', 'templates')
         var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))
         // Prepare nodemailer transport object
-        const transport = nodemailer.createTransport(smtpTransport({
+        const transport = nodemailer.createTransport({
           host: 'smtp.gmail.com',
           port: 587,
           auth: {
             user: process.env.SMTP_GMAIL_USER,
             pass: process.env.SMTP_GMAIL_PASS
           }
-        }));
+        });
 
         var locals = {
           email: email,

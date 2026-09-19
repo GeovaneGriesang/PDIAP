@@ -22,7 +22,6 @@ const express = require('express')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
 , nodemailer = require('nodemailer')
-, EmailTemplate = require('email-templates').EmailTemplate
 , avaliadorSchema = require('../models/avaliador-schema')
 , AvaliadorController = require('../controllers/avaliador-controller')
 , saberesSchema = require('../models/saberes-schema')
