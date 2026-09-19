@@ -2,7 +2,6 @@
 
 const express = require('express')
 , nodemailer = require('nodemailer')
-, smtpTransport = require('nodemailer-smtp-transport')
 , EmailTemplate = require('email-templates').EmailTemplate
 , path = require('path')
 , router = express.Router()

@@ -4,7 +4,6 @@ const mongoose = require('mongoose')
 ,	bcrypt = require('bcryptjs')
 ,	autoIncrement = require('mongoose-auto-increment')
 ,	Schema = mongoose.Schema;
-	mongoose.plugin(schema => { schema.options.usePushEach = true });
 
 // Antes abria uma segunda conexão própria com o banco só pra isso (mongoose.createConnection),
 // além da conexão principal já aberta por configs/db-config.js. Reaproveita a conexão padrão
@@ -51,7 +50,7 @@ const ProjetoSchema = new Schema({
 	estado: {type: String},
 
 
-	username: {type: String, required: true, unique: true, uniqueCaseInsensitive:true},
+	username: {type: String, required: true, unique: true},
 	email: {type: String, required: true},
 	password: {type: String, required: true},
 	permissao: {type: String},
