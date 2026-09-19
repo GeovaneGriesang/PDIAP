@@ -2,13 +2,19 @@
 
 const mongoose = require('mongoose')
 ,	bcrypt = require('bcryptjs')
-,	autoIncrement = require('mongoose-auto-increment')
 ,	Schema = mongoose.Schema;
 
-// Antes abria uma segunda conexão própria com o banco só pra isso (mongoose.createConnection),
-// além da conexão principal já aberta por configs/db-config.js. Reaproveita a conexão padrão
-// do Mongoose (que app.js garante estar aberta antes de qualquer model ser carregado).
-autoIncrement.initialize(mongoose.connection);
+// Substitui o pacote mongoose-auto-increment (abandonado, preso à API de callback do
+// Mongoose 4 - parte da migração do Nível 3/Mongoose, ver memória
+// project-dependencias-desatualizadas). Reaproveita a MESMA collection/documento contador
+// que o pacote antigo já usava ({model:'Projeto', field:'numInscricao', count:N} em
+// identitycounters), pra não resetar a numeração de projetos já existente.
+const IdentityCounterSchema = new Schema({
+	model: {type: String},
+	field: {type: String},
+	count: {type: Number, default: 0}
+}, { collection: 'identitycounters' });
+const IdentityCounter = mongoose.model('IdentityCounter', IdentityCounterSchema);
 
 const certificadoSchema = new Schema({
 	_id: {type: Schema.Types.ObjectId, ref: 'Certificado'},
@@ -34,7 +40,10 @@ const uploadSchema = new Schema({
 });
 
 const ProjetoSchema = new Schema({
-	numInscricao: {type: Schema.Types.ObjectId, ref: 'Projeto'},
+	// Número sequencial de inscrição - sempre foi um Number puro gravado direto no banco
+	// (o "ref: Projeto" antigo aqui era um erro de cópia, nunca guardou ObjectId de verdade).
+	// Atribuído em ProjetoSchema.pre('save') abaixo, só pra documentos novos.
+	numInscricao: {type: Number},
 	nomeProjeto: {type: String},
 	categoria: {type: String},
 	eixo: {type: String},
@@ -106,6 +115,22 @@ ProjetoSchema.methods.hasExpired = function(){
     return Date.now() > this.resetPasswordCreatedDate;
 };
 
-ProjetoSchema.plugin(autoIncrement.plugin, {model: 'Projeto', field: 'numInscricao'});
+// Gera numInscricao pra projetos novos - incremento atômico via $inc (mesma garantia contra
+// duplicidade em criações concorrentes que o mongoose-auto-increment já dava), reaproveitando
+// o documento contador existente em identitycounters (ver IdentityCounterSchema acima).
+ProjetoSchema.pre('save', async function(next) {
+	if (!this.isNew) return next();
+	try {
+		let counter = await IdentityCounter.findOneAndUpdate(
+			{ model: 'Projeto', field: 'numInscricao' },
+			{ $inc: { count: 1 } },
+			{ new: true, upsert: true }
+		);
+		this.numInscricao = counter.count;
+		next();
+	} catch (err) {
+		next(err);
+	}
+});
 
 const Projeto = module.exports = mongoose.model('Projeto', ProjetoSchema);
