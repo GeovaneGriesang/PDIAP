@@ -18,13 +18,18 @@ function splita(arg){
   }
 }
 
-function testaEscola(req, res) {
-  SaberesSchema.find('escola','escola -_id', (error, escolas) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else
-      return res.status(200).send(escolas);
-  });
+async function testaEscola(req, res) {
+  try {
+    // Bug pré-existente encontrado ao testar esta migração (não é regressão daqui): o
+    // primeiro argumento era a STRING 'escola' em vez de um filtro {} - o Mongoose sempre
+    // rejeitou isso (confirmado testando o código antigo, com callback, mesmo erro), então
+    // esta rota sempre devolveu 400 hoje. Corrigido pra filtro vazio (busca todos), que é o
+    // que o resto do código claramente espera (lista de escolas pro formulário público).
+    let escolas = await SaberesSchema.find({}, 'escola -_id');
+    return res.status(200).send(escolas);
+  } catch (error) {
+    return res.status(400).send({msg:"error occurred"});
+  }
 }
 
 router.get('/registro', testaEscola, (req, res) => {});
@@ -42,7 +47,7 @@ router.post('/registro', (req, res) => {
 		createdAt: Date.now()
 	});
 
-	Saberes.createSaberes(newSaberes, (callback) => {});
+	Saberes.createSaberes(newSaberes);
 
 	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos/avaliadores.
 	// Antes não existia nenhum envio aqui.

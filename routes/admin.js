@@ -736,7 +736,7 @@ router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
     resumo: req.body.resumo,
     createdAt: Date.now()
   });
-  Saberes.createSaberes(newSaberes, (callback) => {});
+  Saberes.createSaberes(newSaberes);
   res.send('success');
 });
 
