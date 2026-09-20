@@ -6,8 +6,14 @@ const bcrypt = require('bcryptjs')
 // LOGIN DO PARTICIPANTE (dashboard próprio) - mesmo padrão de controllers/avaliador-controller.js
 
 // Busca por e-mail (participante não tem "username" - login é sempre pelo e-mail cadastrado).
+// "user" aqui é o callback de quem chama (ex: routes/index.js), no formato (err, doc) -
+// mesmo contrato de antes, só que agora resolvido via Promise (Model.findOne com callback
+// direto deixa de funcionar nas versões novas do Mongoose - ver Nível 3, parte C).
 module.exports.getLoginParticipante = (email, user) => {
-	Participante.findOne({ email: email }, user);
+	Participante.findOne({ email: email }).then(
+		(participante) => user(null, participante),
+		(err) => user(err)
+	);
 };
 
 // Se o participante já definiu senha própria, compara normalmente (bcrypt). Se ainda não

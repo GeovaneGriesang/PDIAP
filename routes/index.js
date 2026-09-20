@@ -1147,10 +1147,17 @@ router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) =>
 });
 
 router.post('/logout', (req, res) => {
-  req.logout();
-  //res.sendStatus(200);
-  //res.clearCookie('userid');
-  res.redirect('/');
+  // Bug pré-existente encontrado ao testar a Etapa C2 (não é regressão daqui): desde a
+  // atualização do passport (Nível 2), req.logout() exige um callback - chamado sem
+  // argumentos, lança exceção síncrona ("req#logout requires a callback function"), o
+  // Express devolve 500 e a sessão NUNCA é encerrada de fato. Logout sempre falhou desde
+  // então. Corrigido pra passar o callback exigido.
+  req.logout((err) => {
+    if (err) { console.error('Erro ao fazer logout', err); }
+    //res.sendStatus(200);
+    //res.clearCookie('userid');
+    res.redirect('/');
+  });
 });
 
 router.post('/redefinir-senha', authLimiter, (req, res) => {
