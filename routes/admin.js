@@ -413,31 +413,28 @@ router.put('/removeEscola', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.get('/mostraAvaliadores', miPermiso("3","2"), (req, res) => {
+router.get('/mostraAvaliadores', miPermiso("3","2"), async (req, res) => {
   try {
-    avaliadorSchema.find((err, usr) => {
-      if (err) { console.error('Erro ao mostrar avaliadores', err); return; }
-      res.send(usr);
-    });
+    let usr = await avaliadorSchema.find();
+    res.send(usr);
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao mostrar avaliadores', error);
   }
 });
 
-router.put('/removeAvaliador', miPermiso("3"), (req, res) => {
+router.put('/removeAvaliador', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    avaliadorSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao remover avaliador', err); return; }
-    });
+    await avaliadorSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
-    console.log("ProjetoSchema.findOne: " + err);
+    console.error('Erro ao remover avaliador', error);
+    res.status(500).send('Erro ao remover avaliador');
   }
 });
 
-router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
+router.put('/atualizaAvaliador', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -448,7 +445,7 @@ router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
     let checagemTelefone = AvaliadorController.validarTelefone(req.body.telefone);
     if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
 
-    avaliadorSchema.findOneAndUpdate({"_id": id}, {"$set": {
+    await avaliadorSchema.findOneAndUpdate({"_id": id}, {"$set": {
       "nome": req.body.nome,
       "email": req.body.email,
       "nacionalidade": req.body.nacionalidade,
@@ -463,16 +460,15 @@ router.put('/atualizaAvaliador', miPermiso("3"), (req, res) => {
       "telefone": splita(req.body.telefone),
       "curriculo": req.body.curriculo,
       "disponibilidade": Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : []
-    }}, {new:true}, (err, doc) => {
-      if (err) { console.error('Erro ao atualizar avaliador', err); return; }
-    });
+    }}, {new:true});
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao atualizar avaliador', error);
+    res.status(500).send('Erro ao atualizar avaliador');
   }
 });
 
-router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração Lucas A. Ferreira
+router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //alteração Lucas A. Ferreira
   try {
     // E-mail é o identificador de login do participante (dashboard próprio) - exigido a
     // partir de agora pra todo cadastro novo, cadastros antigos sem e-mail só não conseguem
@@ -510,93 +506,83 @@ router.post('/criarParticipante', miPermiso("3"), (req, res) => { //alteração 
       });
     }
 
-    newParticipante.save((err, data) => {
-      if (err) { console.error('Erro ao criar participante', err); return; }
-      console.log(data);
-    });
+    await newParticipante.save();
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); //Mostra onde o erro acontece e em seguida o erro em si
+    console.error('Erro ao criar participante', error);
+    res.status(500).send('Erro ao criar participante');
   }
 });
 
-router.get('/mostraParticipante', miPermiso("3","2"), (req, res) => { 
+router.get('/mostraParticipante', miPermiso("3","2"), async (req, res) => {
   try {
-    participanteSchema.find((err, usr) => {
-      if (err) { console.error('Erro ao mostrar participante', err); return; }
-      res.send(usr);
-    });
+    let usr = await participanteSchema.find();
+    res.send(usr);
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao mostrar participante', error);
   }
 });
 
-router.put('/removeParticipante', miPermiso("3"), (req, res) => {
+router.put('/removeParticipante', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    participanteSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao remover participante', err); return; }
-    });
+    await participanteSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao remover participante', error);
+    res.status(500).send('Erro ao remover participante');
   }
 });
 
 //Mateus Roberto Algayer - 14/10/2021
 //rota para cadastro de certificado
-router.post('/postCertificado', (req, res) => {
+router.post('/postCertificado', async (req, res) => {
   try {
     //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
     //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
-    CadastroMostraSchema.remove({"ano_certificado":req.body.data.ano_certificado}, (err) => {
-      if (err) { console.error('Erro ao cadastrar certificado', err); return; }
-      //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
-        let novoCadastro = new cadastroMostraSchema({
-          imagem: req.body.data.dataUrl,
-          imagemFundo: req.body.data.dataUrlFundo,
-          textoAvaliador: req.body.data.textoAvaliador,
-          textoOrientador: req.body.data.textoOrientador,
-          textoApresentacao: req.body.data.textoApresentacao,
-          textoPremiado: req.body.data.textoPremiado,
-          textoMencao: req.body.data.textoMencao,
-          textoSaberes: req.body.data.textoSaberes,
-          textoPOficinas: req.body.data.textoPOficinas,
-          textoROficinas: req.body.data.textoROficinas,
-          textoAcademica: req.body.data.textoAcademica,
-          textoDocentes: req.body.data.textoDocentes,
-          textoPPalestra: req.body.data.textoPPalestra,
-          textoRPalestra: req.body.data.textoRPalestra,
-          ano_certificado: req.body.data.ano_certificado
-        });
-        //envia o Schema para cMostra-controller para salvar os dados no banco
-
-        //P.S.: o tratamento de erros da função abaixo está meio ruim, mas eu não sei como tratar decentemente :/
-        cadastroMostra.createMostra(novoCadastro, (callback) => {});
-        res.send('success');
+    await CadastroMostraSchema.deleteOne({"ano_certificado":req.body.data.ano_certificado});
+    //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
+    let novoCadastro = new cadastroMostraSchema({
+      imagem: req.body.data.dataUrl,
+      imagemFundo: req.body.data.dataUrlFundo,
+      textoAvaliador: req.body.data.textoAvaliador,
+      textoOrientador: req.body.data.textoOrientador,
+      textoApresentacao: req.body.data.textoApresentacao,
+      textoPremiado: req.body.data.textoPremiado,
+      textoMencao: req.body.data.textoMencao,
+      textoSaberes: req.body.data.textoSaberes,
+      textoPOficinas: req.body.data.textoPOficinas,
+      textoROficinas: req.body.data.textoROficinas,
+      textoAcademica: req.body.data.textoAcademica,
+      textoDocentes: req.body.data.textoDocentes,
+      textoPPalestra: req.body.data.textoPPalestra,
+      textoRPalestra: req.body.data.textoRPalestra,
+      ano_certificado: req.body.data.ano_certificado
     });
+    //envia o Schema para cMostra-controller para salvar os dados no banco
+    await cadastroMostra.createMostra(novoCadastro);
+    res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao cadastrar certificado', error);
+    res.status(500).send('Erro ao cadastrar certificado');
   }
 });
 
 //Mateus Roberto Algayer - 14/10/2021
 //rota para recuperar informações do certificado para AdminAPI
-router.get('/getCertificados', (req, res) => {
+router.get('/getCertificados', async (req, res) => {
   try {
-    CadastroMostraSchema.find(function(err ,data){
-      if (err) { console.error('Erro ao carregar informações do certificado', err); return; }
-      res.status(200).send(data);
-    });
+    let data = await CadastroMostraSchema.find();
+    res.status(200).send(data);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao carregar informações do certificado', error);
   }
 });
 
 //Leandro Henrique Kopp Ferreira - 14/10/2021
 //rota para cadastrar os documentos
-router.post('/postDocumento', (req, res) => {
+router.post('/postDocumento', async (req, res) => {
   console.log(req.body.pacote.exibe);
   let novoCadastro = new CadastroDocumentoSchema({
     pdf: req.body.pacote.pdf,
@@ -604,58 +590,55 @@ router.post('/postDocumento', (req, res) => {
     ano: req.body.pacote.ano,
     exibe: req.body.pacote.exibe,
   });
-  CadastroDocumento.createDocumento(novoCadastro, (callback) => {});
-  res.send('success');
+  try {
+    await CadastroDocumento.createDocumento(novoCadastro);
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao cadastrar documento', error);
+    res.status(500).send('Erro ao cadastrar documento');
+  }
 });
 
 //Leandro Henrique Kopp Ferreira - 14/10/2021
 //rota para requisição dos documentos
-router.get('/getDocumentos', (req, res) =>{
+router.get('/getDocumentos', async (req, res) =>{
   try {
-    CadastroDocumentoSchema.find(function(err ,data){
-      if (err) { console.error('Erro ao mostrar certificados', err); return; }
-      res.status(200).send(data);
-    });
+    let data = await CadastroDocumentoSchema.find();
+    res.status(200).send(data);
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao mostrar certificados', error);
   }
 });
 
 //Leandro Henrique Kopp Ferreira - 04/11/2021
-router.put('/putDocumento', miPermiso("3"), (req, res) => {
+router.put('/putDocumento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    CadastroDocumentoSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao mostrar certificados', err); return; }
-    });
+    await CadastroDocumentoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao remover documento', error);
+    res.status(500).send('Erro ao remover documento');
   }
 });
 
 //Mateus Roberto Algayer - 24/11/2021
-router.put('/putUpdateExibir', miPermiso("3"), (req, res) => {
+router.put('/putUpdateExibir', miPermiso("3"), async (req, res) => {
   try {
-  let id = req.body.id;
-  let exibe = req.body.exibe;
-  if (!idValido(id)) return res.status(400).send('ID inválido');
+    let id = req.body.id;
+    let exibe = req.body.exibe;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
 
-  CadastroDocumentoSchema.update({'_id': id},
-                                 {$set:{'exibe': exibe}},
-                                 {multi:false},
-                                 (err) =>{
-                                  if (err) { console.error('Erro ao editar documento', err); return; }
-                                 });
-
-  res.send('sucess');
-                                } catch (error) {
-                                  console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
-                                }
+    await CadastroDocumentoSchema.updateOne({'_id': id}, {$set:{'exibe': exibe}});
+    res.send('sucess');
+  } catch (error) {
+    console.error('Erro ao editar documento', error);
+    res.status(500).send('Erro ao editar documento');
+  }
 });
       
-router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
+router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
   try {
     var id = req.body.id;
     let nome = req.body.nome;
@@ -667,13 +650,11 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
     let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
     if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
-    participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true}, (err, doc) => {
-        if (err) { console.error('Erro ao atualizar participante', err); return; }
-      });
+    await participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true});
 
     if (req.body.eventos !== undefined) {
       let myArray = req.body.eventos;
-      myArray.forEach(function (value, i) {
+      for (let value of myArray) {
         var newEvento = ({
           tipo: value.tipo
           ,titulo: value.titulo
@@ -681,25 +662,29 @@ router.put('/atualizaParticipante', miPermiso("3"), (req, res) => {
           ,data: value.data
         });
 
-        participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true}, (err, doc) => {
-          if (err) { console.error('Erro ao atualizar participante', err); return; }
-        });
-      });
+        await participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true});
+      }
     }
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao atualizar participante', error);
+    res.status(500).send('Erro ao atualizar participante');
   }
 });
 
-router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
+router.post('/registroSaberes', miPermiso("3","2"), async (req, res) => {
   let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
   if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
   let checagemTelefone = documentoValidator.validarTelefone(req.body.telefone);
   if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
 
-  let newSaberes = new SaberesSchema({
+  // Bug pré-existente encontrado ao testar esta migração (não é regressão daqui): usava
+  // "SaberesSchema" (maiúsculo), nunca importado neste arquivo (só "saberesSchema",
+  // minúsculo) - todo POST aqui sempre lançava ReferenceError. Não há nenhuma tela do
+  // admin que chame esta rota hoje (confirmado - dead route), então o bug nunca foi
+  // percebido. Corrigida a grafia.
+  let newSaberes = new saberesSchema({
     tipo: req.body.tipo,
     nome: req.body.nome,
     email: req.body.email,
@@ -709,18 +694,22 @@ router.post('/registroSaberes', miPermiso("3","2"), (req, res) => {
     resumo: req.body.resumo,
     createdAt: Date.now()
   });
-  Saberes.createSaberes(newSaberes);
-  res.send('success');
+  try {
+    await Saberes.createSaberes(newSaberes);
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao registrar saberes docentes', error);
+    res.status(500).send('Erro ao registrar saberes docentes');
+  }
 });
 
-router.get('/mostraCPFparticipantes', miPermiso("3"), (req, res) => {
-  participanteSchema.find({},'cpf -_id', (error, cpfs) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred - "+error});
-    } else {
+router.get('/mostraCPFparticipantes', miPermiso("3"), async (req, res) => {
+  try {
+    let cpfs = await participanteSchema.find({},'cpf -_id');
     return res.status(200).send(cpfs);
-    }
-  });
+  } catch (error) {
+    return res.status(400).send({msg:"error occurred - "+error});
+  }
 });
 
 
@@ -1296,25 +1285,21 @@ router.get('/historicoEmails', miPermiso("3"), (req, res) => {
   });
 });
 
-router.post('/avaliador', miPermiso("2","3"), (req, res) => {
+router.post('/avaliador', miPermiso("2","3"), async (req, res) => {
   try {
-    avaliadorSchema.find((err, usr) => {
-      if (err) { console.error('Erro em avaliador', err); return; }
-      res.send(usr);
-    });
+    let usr = await avaliadorSchema.find();
+    res.send(usr);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro em avaliador', error);
   }
 });
 
-router.post('/saberes', miPermiso("2","3"), (req, res) => {
+router.post('/saberes', miPermiso("2","3"), async (req, res) => {
   try {
-    saberesSchema.find((err, usr) => {
-      if (err) { console.error('Erro em saberes docentes', err); return; }
-      res.send(usr);
-    });
+    let usr = await saberesSchema.find();
+    res.send(usr);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro em saberes docentes', error);
   }
 });
 
