@@ -48,7 +48,7 @@ router.get('/', function(req, res, next) {
   res.send('Avaliadores mt loucos nóis');
 });
 
-router.post('/registro', (req, res) => {
+router.post('/registro', async (req, res) => {
 	let checagem = Avaliador.validarDocumento(req.body.cpf);
 	if (!checagem.valido) return res.status(400).send(checagem.mensagem);
 
@@ -73,7 +73,17 @@ router.post('/registro', (req, res) => {
 	// vem do slug do link de inscrição usado (/avaliadores/inscricao/:slug), resolvido pro _id
 	// da Feira correspondente. Sem slug (link antigo, tela do admin, ou nenhuma edição com
 	// slug ainda), feiraId fica undefined - mesmo comportamento de antes da Fase 2.
-	let prosseguirComCriacao = function(feiraId) {
+	let feiraId;
+	if (req.body.slug) {
+		try {
+			let feira = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug });
+			feiraId = feira ? feira._id : undefined;
+		} catch (err) {
+			console.error('Erro ao resolver edição do slug', err);
+			return res.status(500).send('error');
+		}
+	}
+
 	let newAvaliador = AvaliadorSchema({
 		nome: req.body.nome,
 		email: req.body.email,
@@ -94,8 +104,7 @@ router.post('/registro', (req, res) => {
 		feiraId: feiraId
 	});
 
-
-	Avaliador.createAvaliador(newAvaliador, (callback) => {});
+	Avaliador.createAvaliador(newAvaliador);
 
 	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos (routes/index.js).
 	// O template já existia (templates/inscricaoavaliador) mas nunca tinha sido escrito nem
@@ -128,16 +137,6 @@ router.post('/registro', (req, res) => {
 	});
 
 	res.send('success');
-	};
-
-	if (req.body.slug) {
-		feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, feira) => {
-			if (err) { console.error('Erro ao resolver edição do slug', err); return res.status(500).send('error'); }
-			prosseguirComCriacao(feira ? feira._id : undefined);
-		});
-	} else {
-		prosseguirComCriacao(undefined);
-	}
 });
 
 router.get('/loggedin', ensureAuthenticated, (req, res) => {
@@ -158,121 +157,111 @@ router.get('/dashboard/loggedin', ensureAvaliador, (req, res) => {
 // Troca de senha - funciona tanto pro primeiro acesso (senhaDefinida false, não exige
 // senhaAtual - a "senha" usada pra logar nesse caso foi o documento) quanto pra troca
 // voluntária estando logado (senhaDefinida true, exige senhaAtual correta).
-router.post('/dashboard/trocar-senha', ensureAvaliador, (req, res) => {
+router.post('/dashboard/trocar-senha', ensureAvaliador, async (req, res) => {
   let novaSenha = req.body.novaSenha;
   if (!Avaliador.senhaForte(novaSenha)) {
     return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
   }
 
-  AvaliadorSchema.findById(req.user._id, (err, avaliador) => {
-    if (err) { console.error('Erro ao trocar senha de avaliador', err); return res.status(500).send('Erro ao trocar senha.'); }
+  try {
+    let avaliador = await AvaliadorSchema.findById(req.user._id);
     if (!avaliador) return res.status(404).send('Avaliador não encontrado.');
-
-    let prosseguir = () => {
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
-        bcrypt.hash(novaSenha, salt, (err, hash) => {
-          if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
-          avaliador.password = hash;
-          avaliador.senhaDefinida = true;
-          avaliador.save((err) => {
-            if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
-            res.send('success');
-          });
-        });
-      });
-    };
 
     if (avaliador.senhaDefinida) {
       if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
-      bcrypt.compare(req.body.senhaAtual, avaliador.password, (err, isMatch) => {
-        if (err) { console.error(err); return res.status(500).send('Erro ao trocar senha.'); }
-        if (!isMatch) return res.status(400).send('Senha atual incorreta.');
-        prosseguir();
-      });
-    } else {
-      prosseguir();
+      let isMatch = await bcrypt.compare(req.body.senhaAtual, avaliador.password);
+      if (!isMatch) return res.status(400).send('Senha atual incorreta.');
     }
-  });
+
+    let salt = await bcrypt.genSalt(10);
+    let hash = await bcrypt.hash(novaSenha, salt);
+    avaliador.password = hash;
+    avaliador.senhaDefinida = true;
+    await avaliador.save();
+    res.send('success');
+  } catch (err) {
+    console.error('Erro ao trocar senha de avaliador', err);
+    return res.status(500).send('Erro ao trocar senha.');
+  }
 });
 
 // Recuperação de senha (esqueci a senha) - mesmo padrão de routes/index.js pro Projeto:
 // token aleatório com expiração de 1h, enviado por e-mail.
-router.post('/dashboard/redefinir-senha', (req, res) => {
+router.post('/dashboard/redefinir-senha', async (req, res) => {
   let email = req.body.email;
-  AvaliadorSchema.findOne({ email: email }, (err, avaliador) => {
-    if (err) { console.error('Erro ao redefinir senha de avaliador', err); return; }
-    if (!avaliador) return res.status(404).send('E-mail não encontrado.');
+  let avaliador;
+  try {
+    avaliador = await AvaliadorSchema.findOne({ email: email });
+  } catch (err) {
+    console.error('Erro ao redefinir senha de avaliador', err);
+    return;
+  }
+  if (!avaliador) return res.status(404).send('E-mail não encontrado.');
 
-    let token = crypto.randomBytes(20).toString('hex');
-    AvaliadorSchema.findOneAndUpdate(
-      { email: email },
-      { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } },
-      (err) => {
-        if (err) { console.error(err); return; }
-      }
-    );
+  let token = crypto.randomBytes(20).toString('hex');
+  AvaliadorSchema.findOneAndUpdate(
+    { email: email },
+    { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
+  ).catch((err) => console.error(err));
 
-    res.send(email);
+  res.send(email);
 
-    var templatesDir = path.resolve(__dirname, '..', 'templates');
-    var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-avaliador'));
-    const transport = nodemailer.createTransport({
-      host: 'smtp.gmail.com', port: 587,
-      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-    });
-    var locals = { email: email, nome: avaliador.nome, url: "http://www.movaci.com.br/avaliadores/dashboard/nova-senha/" + token };
-    template.render(locals, function (err, results) {
+  var templatesDir = path.resolve(__dirname, '..', 'templates');
+  var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-avaliador'));
+  const transport = nodemailer.createTransport({
+    host: 'smtp.gmail.com', port: 587,
+    auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+  });
+  var locals = { email: email, nome: avaliador.nome, url: "http://www.movaci.com.br/avaliadores/dashboard/nova-senha/" + token };
+  template.render(locals, function (err, results) {
+    if (err) { console.error(err); return; }
+    transport.sendMail({
+      from: 'MOVACI <va-movaci@ifsul.edu.br>',
+      to: email,
+      subject: 'MOVACI - Redefinição de senha (avaliador)',
+      html: results.html,
+      text: results.text
+    }, function (err) {
       if (err) { console.error(err); return; }
-      transport.sendMail({
-        from: 'MOVACI <va-movaci@ifsul.edu.br>',
-        to: email,
-        subject: 'MOVACI - Redefinição de senha (avaliador)',
-        html: results.html,
-        text: results.text
-      }, function (err) {
-        if (err) { console.error(err); return; }
-      });
     });
   });
 });
 
-router.post('/dashboard/nova-senha/:token', (req, res) => {
-  AvaliadorSchema.findOne({ resetPasswordToken: req.params.token }, (err, avaliador) => {
-    if (err) { console.error('Erro ao definir nova senha de avaliador', err); return res.send('erro'); }
+router.post('/dashboard/nova-senha/:token', async (req, res) => {
+  try {
+    let avaliador = await AvaliadorSchema.findOne({ resetPasswordToken: req.params.token });
     if (!avaliador) return res.send('erro2');
     if (avaliador.hasExpired()) return res.send('erro3');
     if (!Avaliador.senhaForte(req.body.password)) {
       return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
     }
 
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) { console.error(err); return res.send('erro'); }
-      bcrypt.hash(req.body.password, salt, (err, hash) => {
-        if (err) { console.error(err); return res.send('erro'); }
-        avaliador.password = hash;
-        avaliador.senhaDefinida = true;
-        avaliador.resetPasswordToken = undefined;
-        avaliador.resetPasswordCreatedDate = undefined;
-        avaliador.save((err) => {
-          if (err) { console.error(err); return res.send('erro'); }
-          res.send('Senha alterada');
-        });
-      });
-    });
-  });
+    let salt = await bcrypt.genSalt(10);
+    let hash = await bcrypt.hash(req.body.password, salt);
+    avaliador.password = hash;
+    avaliador.senhaDefinida = true;
+    avaliador.resetPasswordToken = undefined;
+    avaliador.resetPasswordCreatedDate = undefined;
+    await avaliador.save();
+    res.send('Senha alterada');
+  } catch (err) {
+    console.error('Erro ao definir nova senha de avaliador', err);
+    return res.send('erro');
+  }
 });
 
 // Dados pessoais - GET pra carregar a tela, PUT pra editar (campos de identidade como
 // cpf/email/nome ficam de fora, só o admin altera esses hoje).
-router.get('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
-  AvaliadorSchema.findById(req.user._id, '-password -resetPasswordToken -resetPasswordCreatedDate', (err, avaliador) => {
-    if (err) { console.error('Erro ao buscar dados do avaliador', err); return; }
+router.get('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
+  try {
+    let avaliador = await AvaliadorSchema.findById(req.user._id, '-password -resetPasswordToken -resetPasswordCreatedDate');
     res.send(avaliador);
-  });
+  } catch (err) {
+    console.error('Erro ao buscar dados do avaliador', err);
+  }
 });
 
-router.put('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
+router.put('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
   let campos = {
     telefone: splita(req.body.telefone),
     nivelAcademico: req.body.nivelAcademico,
@@ -280,10 +269,13 @@ router.put('/dashboard/meus-dados', ensureAvaliador, (req, res) => {
     tempoAtuacao: req.body.tempoAtuacao,
     curriculo: req.body.curriculo
   };
-  AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true }, (err, avaliador) => {
-    if (err) { console.error('Erro ao atualizar dados do avaliador', err); return res.status(500).send('Erro ao salvar.'); }
+  try {
+    await AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true });
     res.send('success');
-  });
+  } catch (err) {
+    console.error('Erro ao atualizar dados do avaliador', err);
+    return res.status(500).send('Erro ao salvar.');
+  }
 });
 
 // Certificados disponíveis - mesma regra já usada na emissão pública por CPF
@@ -311,26 +303,28 @@ router.put('/addNota', ensureAuthenticated, (req, res) => {
 	,	arrayNota = req.body.adrovan;
 	if (!idValido(id)) return res.status(400).send('ID inválido');
 
-	ProjetoSchema.findOne({_id: id}, (err, usr) => {
-		if (err) { console.error('Erro', err); return; }
-		usr.avaliacao = arrayNota;
-		// Lançar nota é sinal de que o(a) pesquisador(a) esteve presente pra apresentar o
-		// projeto - confirma participação automaticamente (ver Projetos > Presença), pra
-		// equipe de credenciamento não precisar marcar de novo manualmente o que a nota já
-		// atesta. Só marca ao lançar nota de verdade (arrayNota não vazio); apagar a
-		// avaliação não desfaz uma presença já confirmada.
-		if (Array.isArray(arrayNota) && arrayNota.length > 0) {
-			usr.participa = true;
+	(async () => {
+		try {
+			let usr = await ProjetoSchema.findOne({_id: id});
+			usr.avaliacao = arrayNota;
+			// Lançar nota é sinal de que o(a) pesquisador(a) esteve presente pra apresentar o
+			// projeto - confirma participação automaticamente (ver Projetos > Presença), pra
+			// equipe de credenciamento não precisar marcar de novo manualmente o que a nota já
+			// atesta. Só marca ao lançar nota de verdade (arrayNota não vazio); apagar a
+			// avaliação não desfaz uma presença já confirmada.
+			if (Array.isArray(arrayNota) && arrayNota.length > 0) {
+				usr.participa = true;
+			}
+			await usr.save();
+		} catch (err) {
+			console.error('Erro', err);
 		}
-		usr.save((err, usr) => {
-			if (err) { console.error('Erro', err); return; }
-		});
-	});
+	})();
 	res.send(200);
 	console.log("Feito adrovão");
 
 	} catch (error) {
-		console.log("ProjetoSchema.finOne: " + err); // Alteração Lucas Ferreira
+		console.error("Erro em addNota", error);
 	}
 });
 

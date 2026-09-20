@@ -1,17 +1,14 @@
 'use strict';
 
-const mongoose = require('mongoose')
-,	bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs')
 ,	Avaliador = require('../models/avaliador-schema')
 ,	documentoValidator = require('../utils/documentoValidator');
 
-module.exports.createAvaliador = (newAvaliador, callback) => {
+module.exports.createAvaliador = async (newAvaliador) => {
 	try {
-		newAvaliador.save((err, data) => {
-			if (err) { console.error('Erro ao criar o avaliador', err); return; }
-		});
-	} catch (error) {
-		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+		await newAvaliador.save();
+	} catch (err) {
+		console.error('Erro ao criar o avaliador', err);
 	}
 };
 
@@ -23,8 +20,14 @@ module.exports.validarTelefone = documentoValidator.validarTelefone;
 // LOGIN DO AVALIADOR (dashboard próprio)
 
 // Busca por e-mail (avaliador não tem "username" - login é sempre pelo e-mail cadastrado).
+// "user" aqui é o callback de quem chama (ex: routes/index.js), no formato (err, doc) -
+// mesmo contrato de antes, só que agora resolvido via Promise (Model.findOne com callback
+// direto deixa de funcionar nas versões novas do Mongoose - ver Nível 3, parte C).
 module.exports.getLoginAvaliador = (email, user) => {
-	Avaliador.findOne({ email: email }, user);
+	Avaliador.findOne({ email: email }).then(
+		(avaliador) => user(null, avaliador),
+		(err) => user(err)
+	);
 };
 
 // Se o avaliador já definiu senha própria, compara normalmente (bcrypt). Se ainda não
