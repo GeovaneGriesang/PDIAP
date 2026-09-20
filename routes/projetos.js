@@ -17,65 +17,6 @@ const express = require('express')
 , async = require('async')
 , documentoValidator = require('../utils/documentoValidator');
 
-function testaEmail(req, res) {
-  ProjetoSchema.find('email','email -_id', (error, emails) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else
-    return res.status(200).send(emails);
-  });
-}
-
-function testaEmailEEscola(req, res) {
-  ProjetoSchema.find('email nomeEscola','email nomeEscola -_id', (error, escolas) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else
-    return res.status(200).send(escolas);
-  });
-}
-
-function testaEmail2(req, res, next) {
-  let query2 = req.body.email
-  ,   query = new RegExp(["^", query2, "$"].join(""), "i");
-
-  ProjetoSchema.find({'email':query},'email -_id', (error, emails) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else if(emails != 0) {
-      res.status(202).send("Email já cadastrado");
-    } else {
-      res.status(200).send("show");
-      return next();
-    }
-  });
-}
-
-function testaUsernameEEscola(req, res) {
-  ProjetoSchema.find('username nomeEscola','username nomeEscola -_id', (error, escolas) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else
-    return res.status(200).send(escolas);
-  });
-}
-
-function testaUsername2(req, res, next) {
-  let query2 = req.body.email
-  ,   query = new RegExp(["^", query2, "$"].join(""), "i");
-
-  ProjetoSchema.find({'username':query},'username -_id', (error, usernames) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else if(usernames != 0) {
-      res.status(202).send("Username já cadastrado");
-    } else {
-      res.status(200).send("show");
-      return next();
-    }
-  });
-}
-
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated())
   return next();
@@ -121,17 +62,22 @@ function idValido(id) {
 // integrantes) - checagem por ANO DO PROJETO (createdAt) contra o "ano" da edição
 // atual configurado em Editar > Tela inicial, não pelo ano civil (pode não bater com
 // o ano da edição em andamento). Usado por /update e /upgreice.
-function bloqueadoPorEdicaoAnterior(projetoId, callback) {
-  if (!idValido(projetoId)) return callback(null, true);
-  ProjetoSchema.findById(projetoId, 'createdAt', (err, projeto) => {
-    if (err) return callback(err);
-    if (!projeto) return callback(null, true);
-    adminSchema.findOne({ username: 'admin2' }, 'ano', (err, admin) => {
-      if (err) return callback(err);
-      let anoProjeto = new Date(projeto.createdAt).getFullYear();
-      callback(null, !!(admin && admin.ano && anoProjeto !== admin.ano));
-    });
-  });
+async function bloqueadoPorEdicaoAnterior(projetoId) {
+  if (!idValido(projetoId)) return true;
+  let projeto = await ProjetoSchema.findById(projetoId, 'createdAt');
+  if (!projeto) return true;
+  let admin = await adminSchema.findOne({ username: 'admin2' }, 'ano');
+  let anoProjeto = new Date(projeto.createdAt).getFullYear();
+  // Bug real encontrado e corrigido ao testar esta migração (impacto grave: bloqueava
+  // TODA edição de projeto/integrantes em produção, de qualquer ano): admin2.ano é
+  // gravado hoje como texto livre (ex: "de 2026", em vez do número 2026 - ver
+  // routes/admin.js, rota que salva 'ano' sem normalizar o valor recebido do formulário),
+  // então a comparação Number !== String sempre dava true. Extrai os 4 dígitos do ano
+  // de qualquer jeito que esteja gravado, número limpo ou texto solto, pra comparação
+  // funcionar nos dois casos.
+  let anoAdminMatch = admin && admin.ano != null && String(admin.ano).match(/\d{4}/);
+  let anoAdmin = anoAdminMatch ? parseInt(anoAdminMatch[0], 10) : null;
+  return !!(anoAdmin && anoProjeto !== anoAdmin);
 }
 
 router.all('/*', ensureAuthenticated, miPermiso("1"));
@@ -148,7 +94,7 @@ router.post('/upload', function(req, res){
   // qualquer tamanho, e só forçava a extensão ".pdf" no nome ao salvar — o
   // conteúdo em si nunca era conferido.
   form.maxFileSize = 10 * 1024 * 1024; // 10MB
-  form.parse(req, function(err, fields, files) {
+  form.parse(req, async function(err, fields, files) {
     // A partir do formidable 3.x, files.file é um array (mesmo com um só arquivo
     // enviado) - antes era o objeto do arquivo direto.
     var image = files.file && files.file[0];
@@ -223,39 +169,40 @@ router.post('/upload', function(req, res){
     uploadAt: image.mtime
   };
 
-  if (err) { console.error(err); return; }
-  ProjetoSchema.findOne({'_id': req.user.id}, (err, usr) => {
+  try {
+    let usr = await ProjetoSchema.findOne({'_id': req.user.id});
     usr.relatorio2 = dadosRelatorio;
-    usr.save((err, usr) => {
-      if (err) { console.error(err); return; }
-    });
-  });
+    await usr.save();
+  } catch (err) {
+    console.error(err);
+  }
   });
 });
 
-router.post('/confirma/:id/:situacao', (req, res) => {
-  if(req.params.id !== '') {
-    ProjetoSchema.findOne({'_id': req.params.id}, (err, usr) => {
-    if(err){
-      console.log("Something wrong when updating data!");
-    } else {
-      if (usr.aprovado === true && usr.participa_updated === undefined) {
-        if(req.params.situacao === '2456') {
-          ProjetoSchema.update({'_id': req.params.id}, {$set:{'participa':true, 'participa_updated':true}}, {upsert:true,new: true}, (err,docs) => {
-            if (err) { console.error(err); return; }
-            res.send(docs.nomeProjeto);
-          });
-        }
+router.post('/confirma/:id/:situacao', async (req, res) => {
+  if (req.params.id === '') return;
+  try {
+    let usr = await ProjetoSchema.findOne({'_id': req.params.id});
+    if (usr.aprovado === true && usr.participa_updated === undefined) {
+      if (req.params.situacao === '2456') {
+        // Bug pré-existente encontrado ao testar esta migração (não é regressão daqui):
+        // .update() nunca devolve o documento, mesmo com {new:true} - isso só funciona em
+        // findOneAndUpdate(). res.send(docs.nomeProjeto) sempre mandou undefined. Corrigido
+        // trocando pro método que de fato devolve o documento, que é claramente a intenção
+        // original (usar {new:true} só faz sentido se for usar o documento retornado).
+        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':true, 'participa_updated':true}}, {upsert:true, new: true});
+        return res.send(docs.nomeProjeto);
+      }
 
-        if(req.params.situacao === '9877') { //------------------------------------------------------------------9877 cod não participa
-          ProjetoSchema.update({'_id': req.params.id}, {$set:{'participa':false, 'participa_updated':true}}, {upsert:true,new: true}, (err,docs) => {
-            if (err) { console.error(err); return; }
-            res.send(docs.nomeProjeto);
-          });
-        }
-      } else
+      if (req.params.situacao === '9877') { //------------------------------------------------------------------9877 cod não participa
+        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':false, 'participa_updated':true}}, {upsert:true, new: true});
+        return res.send(docs.nomeProjeto);
+      }
+    } else {
       res.sendStatus(401);
-    }})
+    }
+  } catch (err) {
+    console.log("Something wrong when updating data!");
   }
 });
 
@@ -270,37 +217,47 @@ router.get('/update', (req, res) => {
 // Os campos "editáveis" ligados em Editar > Campos editáveis (routes/admin.js
 // /setOpcoes) valem só enquanto o projeto é da edição corrente - de um ano pra outro
 // os dados viram histórico e não devem mudar mais (ver bloqueadoPorEdicaoAnterior).
-router.put('/update', (req, res) => {
-  bloqueadoPorEdicaoAnterior(req.user.id, (err, bloqueado) => {
-    if (err) { console.error(err); return res.status(500).send('Erro ao checar edição atual'); }
-    if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
+router.put('/update', async (req, res) => {
+  let bloqueado;
+  try {
+    bloqueado = await bloqueadoPorEdicaoAnterior(req.user.id);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Erro ao checar edição atual');
+  }
+  if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
 
-    if (req.body.cep !== undefined){
-      req.body.cep = splita(req.body.cep);
-    }
-    let newProject = filtrarCamposEditaveis(req.body);
-    console.log(newProject);
+  if (req.body.cep !== undefined){
+    req.body.cep = splita(req.body.cep);
+  }
+  let newProject = filtrarCamposEditaveis(req.body);
+  console.log(newProject);
 
-    ProjetoSchema.update({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
-      if (err) { console.error(err); return; }
-      res.status(200).json(docs);
-    });
-  });
+  try {
+    // Mesmo bug/fix de POST /confirma: .update() não devolve documento mesmo com
+    // {new:true} - virou findOneAndUpdate() pra res.json(docs) mandar o projeto de
+    // verdade (antes sempre mandava só {n, nModified, ok}).
+    let docs = await ProjetoSchema.findOneAndUpdate({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, new: true});
+    res.status(200).json(docs);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
-router.put('/upgreice', (req, res) => {
+router.put('/upgreice', async (req, res) => {
 
   let myArray = req.body
   ,   id = req.user.id;
   console.log("TESTE:"+JSON.stringify(myArray));
 
-  bloqueadoPorEdicaoAnterior(id, (err, bloqueado) => {
-    if (err) { console.error(err); return res.status(500).send('Erro ao checar edição atual'); }
-    if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
-    prosseguirUpgreice();
-  });
-
-  function prosseguirUpgreice() {
+  let bloqueado;
+  try {
+    bloqueado = await bloqueadoPorEdicaoAnterior(id);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Erro ao checar edição atual');
+  }
+  if (bloqueado) return res.status(403).send('Este projeto é de uma edição anterior e não pode mais ser editado.');
 
   for (let j = 0; j < myArray.length; j++) {
     let v = myArray[j];
@@ -331,37 +288,32 @@ router.put('/upgreice', (req, res) => {
         tamCamiseta: value.tamCamiseta
       });
       ProjetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
-      {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true},
-      (err, doc) => {
-        if (err) { console.error(err); return; }
-      }
-    );
-  } else if (value._id === undefined) {
-    let newIntegrante = ({
-      tipo: value.tipo,
-      nome: value.nome,
-      email: value.email,
-      nacionalidade: value.nacionalidade,
-      cpf: splita(value.cpf),
-      telefone: splita(value.telefone),
-      tamCamiseta: value.tamCamiseta
-    });
-
-    ProjetoSchema.findOne({_id: id}, (err, usr) => {
-      if (err) { console.error(err); return; }
-      usr.integrantes.push(newIntegrante);
-      usr.save((err, usr) => {
-        if (err) { console.error(err); return; }
+        {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true})
+        .catch((err) => console.error(err));
+    } else {
+      let newIntegrante = ({
+        tipo: value.tipo,
+        nome: value.nome,
+        email: value.email,
+        nacionalidade: value.nacionalidade,
+        cpf: splita(value.cpf),
+        telefone: splita(value.telefone),
+        tamCamiseta: value.tamCamiseta
       });
-    });
 
-    ProjetoSchema.update({_id: id}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err, docs) => {
-      if (err) { console.error(err); return; }
-    });
-  }
+      // Bug real encontrado e corrigido ao testar esta migração (impacto grave: era
+      // impossível adicionar um integrante novo a um projeto, só editar um que já tinha
+      // _id): o Mongoose 4 gera um modificador $pushAll pra "usr.integrantes.push(...) +
+      // usr.save()", removido pelo MongoDB desde a versão 3.6 - a operação sempre falhava
+      // silenciosamente (erro só ia pro console.error). $push nativo via updateOne() é
+      // atômico e não passa pelo diff do Mongoose, então não tem esse problema - também
+      // junta em uma única operação o que antes eram duas chamadas separadas (push+save
+      // e o updateOne de updatedAt).
+      ProjetoSchema.updateOne({_id: id}, {$push: {integrantes: newIntegrante}, $set: {updatedAt: Date.now()}})
+        .catch((err) => console.error(err));
+    }
   });
   res.redirect('/home/update');
-  }
 });
 
 
