@@ -713,67 +713,48 @@ router.get('/mostraCPFparticipantes', miPermiso("3"), async (req, res) => {
 });
 
 
-router.put('/setPresencaProjetos', miPermiso("3"), (req, res) => {
+router.put('/setPresencaProjetos', miPermiso("3"), async (req, res) => {
   try {
     let myArray0 = req.body.integrantesPresentes;
     let myArray1 = req.body.integrantesAusentes;
 
-    for (var i = 0; i < myArray0.length; i++) {
-      let id_integ = myArray0[i];
-      projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
-      {"$set": {"integrantes.$.presenca": true}}, {new:true},
-      (err, doc) => {
-        if (err) { console.error('Erro ao mostrar presença do projeto', err); return; }
-      }
-    );
+    for (let id_integ of myArray0) {
+      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$set": {"integrantes.$.presenca": true}}, {new:true});
     }
-    for (var i = 0; i < myArray1.length; i++) {
-      let id_integ = myArray1[i];
-      projetoSchema.findOneAndUpdate({"integrantes._id": id_integ},
-      {"$unset": {"integrantes.$.presenca": true}}, {new:true},
-      (err, doc) => {
-        if (err) { console.error('Erro ao mostrar presença do projeto', err); return; }
-      }
-    );
+    for (let id_integ of myArray1) {
+      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$unset": {"integrantes.$.presenca": true}}, {new:true});
     }
-    console.log("log antes de sucesso presença");
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao definir presença dos projetos', error);
+    res.status(500).send('Erro ao definir presença dos projetos');
   }
 });
 
-router.put('/setPremiadoProjetos', miPermiso("3"), (req, res) => {
+router.put('/setPremiadoProjetos', miPermiso("3"), async (req, res) => {
   try {
     let premiacao = req.body;
-    if(premiacao.premiacao === 'Premiado'){
-    if(premiacao.colocacao === undefined){premiacao.colocacao = null;}
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
-      if (err) { console.error('Erro ao atribuir premiação', err); return; }
-    });
-    } else if(premiacao.premiacao === 'Mencao_honrosa'){
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
-      if (err) { console.error('Erro ao atribuir premiação', err); return; }
-    });
-    } else if(premiacao.premiacao === '') {
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","feirasClassificadas":"", "token":""}}, (err, doc) =>{
-      if (err) { console.error('Erro ao atribuir premiação', err); return; }
-    });
+    if (premiacao.premiacao === 'Premiado') {
+      if (premiacao.colocacao === undefined) { premiacao.colocacao = null; }
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
+    } else if (premiacao.premiacao === 'Mencao_honrosa') {
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
+    } else if (premiacao.premiacao === '') {
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","feirasClassificadas":"", "token":""}});
     } else {
-    // Projeto sem Premiação/Menção Honrosa marcada (premiacao.premiacao vazio/undefined) ainda
-    // pode ter sido classificado pra uma ou mais feiras - esses dois conceitos são independentes
-    // (ver details.premiacao.html), então salva a classificação mesmo sem prêmio.
-    projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"feirasClassificadas":premiacao.feirasClassificadas}},{new:true}, (err, doc) =>{
-      if (err) { console.error('Erro ao atribuir premiação', err); return; }
-    });
+      // Projeto sem Premiação/Menção Honrosa marcada (premiacao.premiacao vazio/undefined) ainda
+      // pode ter sido classificado pra uma ou mais feiras - esses dois conceitos são independentes
+      // (ver details.premiacao.html), então salva a classificação mesmo sem prêmio.
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
     }
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao atribuir premiação', error);
+    res.status(500).send('Erro ao atribuir premiação');
   }
 });
 
-router.post('/edit', miPermiso("3"), (req, res) => {
+router.post('/edit', miPermiso("3"), async (req, res) => {
 	try {
     let obj = {
       ano: req.body[0].ano,
@@ -788,14 +769,11 @@ router.post('/edit', miPermiso("3"), (req, res) => {
       botoes: req.body[0].botoes,
       destaques: req.body[0].destaques
     };
-    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'solicitacao_escola':obj.solicitacao_escola,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}], (err, usr) =>{
-      if (err) { console.error('Erro ao editar', err); return; }
-      else {
-        res.send('success');	
-      }
-    })
+    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'solicitacao_escola':obj.solicitacao_escola,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}]);
+    res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao editar', error);
+    res.status(500).send('Erro ao editar');
   }
 });
 
@@ -806,16 +784,15 @@ router.get('/editar', (req, res) => {
 	});
 });
 
-router.post('/setOpcoes', miPermiso("3"), (req, res) => {
+router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
 	try {
     let obj = req.body;
-    console.log("OBJ:"+JSON.stringify(obj));	
-    adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true}, (err, usr) =>{
-      if (err) { console.error('Erro ao editar', err); return; }
-      else res.send('success');		
-    })
+    console.log("OBJ:"+JSON.stringify(obj));
+    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true});
+    res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao editar', error);
+    res.status(500).send('Erro ao editar');
   }
 });
 
@@ -1112,13 +1089,16 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
 // premiados) - lido/gravado por ano no mesmo documento tipo:'edicao' que já guarda
 // categoriasEixos/diasAvaliacao (ver models/feira-schema.js). Sem registro pro ano
 // (edições antigas, ou a edição ainda nem foi criada em Mostra), assume 3.
-router.get('/configPremiacao', miPermiso("3","2"), (req, res) => {
+router.get('/configPremiacao', miPermiso("3","2"), async (req, res) => {
   var ano = parseInt(req.query.ano, 10);
   if (!ano) return res.status(400).send('Ano inválido.');
-  feiraSchema.findOne({ tipo: 'edicao', ano: ano }, (err, doc) => {
-    if (err) { console.error('Erro ao buscar configuração de premiação', err); return res.status(500).send('Erro ao buscar configuração.'); }
+  try {
+    let doc = await feiraSchema.findOne({ tipo: 'edicao', ano: ano });
     res.send({ numPremiadosPorEixo: (doc && doc.numPremiadosPorEixo) || 3 });
-  });
+  } catch (error) {
+    console.error('Erro ao buscar configuração de premiação', error);
+    res.status(500).send('Erro ao buscar configuração.');
+  }
 });
 
 // Marca premiacao:'Premiado' + colocacao nos projetos informados (o "destaque" de cada
@@ -1126,7 +1106,7 @@ router.get('/configPremiacao', miPermiso("3","2"), (req, res) => {
 // tinha sido premiado antes nesse mesmo ano mas não está mais na lista nova (evita deixar
 // premiado "fantasma" de uma rodada anterior de confirmação). Grava numPremiadosPorEixo
 // pro ano, pra próxima vez que a tela de Ranking carregar já vir com esse valor.
-router.post('/confirmarPremiados', miPermiso("3"), (req, res) => {
+router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
   try {
     var ano = parseInt(req.body.ano, 10);
     var numPremiadosPorEixo = parseInt(req.body.numPremiadosPorEixo, 10);
@@ -1141,31 +1121,24 @@ router.post('/confirmarPremiados', miPermiso("3"), (req, res) => {
     var idsNovos = premiados.map(function(p) { return p.id; });
     var filtroAno = { createdAt: { $gte: new Date(ano, 0, 1), $lt: new Date(ano + 1, 0, 1) } };
 
-    projetoSchema.updateMany(
+    await projetoSchema.updateMany(
       Object.assign({ premiacao: 'Premiado', _id: { $nin: idsNovos } }, filtroAno),
-      { $unset: { premiacao: '', colocacao: '' } },
-      (err) => {
-        if (err) { console.error('Erro ao desmarcar premiados antigos', err); return res.status(500).send('Erro ao confirmar premiados.'); }
-
-        async.eachSeries(premiados, function(p, next) {
-          projetoSchema.findByIdAndUpdate(p.id, { premiacao: 'Premiado', colocacao: p.colocacao }, next);
-        }, function(err) {
-          if (err) { console.error('Erro ao marcar premiados novos', err); return res.status(500).send('Erro ao confirmar premiados.'); }
-
-          feiraSchema.findOneAndUpdate(
-            { tipo: 'edicao', ano: ano },
-            { $set: { numPremiadosPorEixo: numPremiadosPorEixo }, $setOnInsert: { tipo: 'edicao', ano: ano, createdAt: new Date() } },
-            { upsert: true },
-            (err) => {
-              if (err) { console.error('Erro ao gravar quantidade de premiados por eixo', err); }
-              res.send({ marcados: premiados.length });
-            }
-          );
-        });
-      }
+      { $unset: { premiacao: '', colocacao: '' } }
     );
+
+    for (let p of premiados) {
+      await projetoSchema.findByIdAndUpdate(p.id, { premiacao: 'Premiado', colocacao: p.colocacao });
+    }
+
+    await feiraSchema.findOneAndUpdate(
+      { tipo: 'edicao', ano: ano },
+      { $set: { numPremiadosPorEixo: numPremiadosPorEixo }, $setOnInsert: { tipo: 'edicao', ano: ano, createdAt: new Date() } },
+      { upsert: true }
+    );
+    res.send({ marcados: premiados.length });
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao confirmar premiados', error);
+    res.status(500).send('Erro ao confirmar premiados.');
   }
 });
 
@@ -1338,32 +1311,22 @@ res.send('success');
   }
 });
 
-router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), (req, res) => {
+router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), async (req, res) => {
   try {
-      let myArray0 = req.body.avaliadoresMarcados;
-      let myArray1 = req.body.avaliadoresNMarcados;
-      
-      for (var i = 0; i < myArray0.length; i++) {
-        let id_doc = myArray0[i];
-        avaliadorSchema.findOneAndUpdate({"_id": id_doc},
-        {"$set": {"avaliacao": true}}, {new:true},
-        (err, doc) => {
-          if (err) { console.error('Erro na avaliação', err); return; }
-        }
-      );
-      }
+    let myArray0 = req.body.avaliadoresMarcados;
+    let myArray1 = req.body.avaliadoresNMarcados;
 
-      for (var i = 0; i < myArray1.length; i++) {
-        let id_doc = myArray1[i];
-        avaliadorSchema.findOneAndUpdate({"_id": id_doc},
-        {"$unset": {"avaliacao": true}}, {new:true},
-        (err, doc) => {
-          if (err) { console.error('Erro na avaliação', err); return; }
-        });
-      }
+    for (let id_doc of myArray0) {
+      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$set": {"avaliacao": true}}, {new:true});
+    }
+
+    for (let id_doc of myArray1) {
+      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$unset": {"avaliacao": true}}, {new:true});
+    }
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro na avaliação', error);
+    res.status(500).send('Erro na avaliação');
   }
 });
 
