@@ -7,7 +7,6 @@ const express = require('express')
 , Projeto = require('../controllers/projeto-controller')
 , Avaliador = require('../controllers/avaliador-controller')
 , Participante = require('../controllers/participante-controller')
-, session = require('express-session')
 , ProjetoSchema = require('../models/projeto-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
@@ -25,7 +24,6 @@ const express = require('express')
 , path = require('path')
 , fs = require('fs')
 , EmailTemplate = require('email-templates').EmailTemplate
-, async = require('async')
 , rateLimit = require('express-rate-limit')
 , { body, validationResult } = require('express-validator')
 , documentoValidator = require('../utils/documentoValidator');
@@ -67,28 +65,35 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-function testaUsernameEEscola(req, res) {
-  ProjetoSchema.find('username nomeEscola','username nomeEscola -_id', (error, escolas) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else
+async function testaUsernameEEscola(req, res) {
+  try {
+    // Bug pré-existente (mesma classe do já corrigido em saberes-docentes/testaEscola -
+    // ver grupo 1 da Etapa C2): primeiro argumento era a STRING 'username nomeEscola' em
+    // vez de um filtro {} - o Mongoose sempre rejeitou isso, então esta rota sempre
+    // devolveu 400. Corrigido pra filtro vazio (busca todos), que é o que o resto do
+    // código espera (lista de username+escola já cadastrados, usada no client pra
+    // validação de duplicidade antes de enviar o formulário).
+    let escolas = await ProjetoSchema.find({}, 'username nomeEscola -_id');
     return res.status(200).send(escolas);
-  });
+  } catch (error) {
+    return res.status(400).send({msg:"error occurred"});
+  }
 }
 
-function testaUsername2(req, res, next) {
+async function testaUsername2(req, res, next) {
   let query2 = req.body.username
   ,   query = new RegExp(["^", query2, "$"].join(""), "i");
 
-  ProjetoSchema.find({'username':query},'username -_id', (error, usernames) => {
-    if(error) {
-      return res.status(400).send({msg:"error occurred"});
-    } else if(usernames != 0) {
+  try {
+    let usernames = await ProjetoSchema.find({'username':query},'username -_id');
+    if (usernames != 0) {
       res.status(202).send("Username já cadastrado");
     } else {
       return next();
     }
-  });
+  } catch (error) {
+    return res.status(400).send({msg:"error occurred"});
+  }
 }
 
 router.get('/edit', (req, res) => {
@@ -110,80 +115,52 @@ router.post('/emitirCertificado', (req, res) => {
   let cpf = splita(req.body.cpf)
   let array = []
 
-  function pesquisaProjetoAluno(cpf) {
-    return new Promise(function (fulfill, reject) {
-      ProjetoSchema.find(
-        // 'aprovado': true (não "$exists") - desde que reprovar passou a gravar
-        // aprovado:false em vez de apagar o campo, "$exists" também casava projeto
-        // REPROVADO, liberando certificado pra quem não foi selecionado.
-        {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado': true},
-        'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-      })
-    })
+  async function pesquisaProjetoAluno(cpf) {
+    // 'aprovado': true (não "$exists") - desde que reprovar passou a gravar
+    // aprovado:false em vez de apagar o campo, "$exists" também casava projeto
+    // REPROVADO, liberando certificado pra quem não foi selecionado.
+    let usr = await ProjetoSchema.find(
+      {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado': true},
+      'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id');
+    if (usr == 0) throw {};
+    return usr;
   }
 
-  function pesquisaProjetoOrientador(cpf) {
-    return new Promise(function (fulfill, reject) {
-      ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado': true},
-        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-      })
-    })
+  async function pesquisaProjetoOrientador(cpf) {
+    let usr = await ProjetoSchema.find(
+      {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado': true},
+      'integrantes.$ nomeProjeto numInscricao createdAt -_id');
+    if (usr == 0) throw {};
+    return usr;
   }
 
-
-  function inserirTokenAvaliador(cpf, id, tipo) {
-    // Bug corrigido: antes buscava por {cpf, createdAt}, mas quem chama essa função
-    // (linha abaixo, em "two") sempre passou o _id do avaliador nesse segundo argumento
-    // — nunca batia com nenhum documento (createdAt é uma Data, não um _id), então o
-    // token nunca era gravado e o avaliador ficava permanentemente sem código.
-    return new Promise(function (fullfill, reject) {
-      // A Promise nunca era resolvida (callback vazio): quem chamava essa função
-      // nunca esperava a gravação terminar de verdade.
-      avaliadorSchema.findOneAndUpdate({'_id':id},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}],(err, usr) => {
-        if (err) return reject(err);
-        fullfill(usr);
-      })
-    })
+  // Bug corrigido: antes buscava por {cpf, createdAt}, mas quem chama essa função
+  // (linha abaixo, em "two") sempre passou o _id do avaliador nesse segundo argumento
+  // — nunca batia com nenhum documento (createdAt é uma Data, não um _id), então o
+  // token nunca era gravado e o avaliador ficava permanentemente sem código.
+  // A Promise nunca era resolvida (callback vazio): quem chamava essa função
+  // nunca esperava a gravação terminar de verdade.
+  async function inserirTokenAvaliador(cpf, id, tipo) {
+    return await avaliadorSchema.findOneAndUpdate({'_id':id},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}]);
   }
 
-  function pesquisaAvaliador(cpf) {
-    return new Promise(function (fullfill, reject) {
-      // Projeção corrigida: tinha "_id -_id" ao mesmo tempo (a exclusão vencia e o _id
-      // sumia do resultado), o que quebrava o inserirTokenAvaliador logo abaixo, que
-      // depende de usr[i]._id para saber QUAL avaliador atualizar. "email" também
-      // estava faltando, apesar de ser usado no map de resposta mais abaixo.
-      avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt categoriasEixos categoriasEixosAvaliados',(err, usr) => {
-        if (err) return reject(err)
-        fullfill(usr)
-      })	
-    })
+  async function pesquisaAvaliador(cpf) {
+    // Projeção corrigida: tinha "_id -_id" ao mesmo tempo (a exclusão vencia e o _id
+    // sumia do resultado), o que quebrava o inserirTokenAvaliador logo abaixo, que
+    // depende de usr[i]._id para saber QUAL avaliador atualizar. "email" também
+    // estava faltando, apesar de ser usado no map de resposta mais abaixo.
+    return await avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt categoriasEixos categoriasEixosAvaliados');
   }
 
-  function pesquisaParticipante(cpf) {
-    return new Promise(function (fullfill, reject) {
-      participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas tokenPalestra eventos createdAt -_id', (err, usr) => {
-        if (err) return reject(err)
-        fullfill(usr)
-      })
-    })
+  async function pesquisaParticipante(cpf) {
+    return await participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas tokenPalestra eventos createdAt -_id');
   }
 
-  function pesquisaEvento(cpf) {
-    return new Promise(function (fullfill, reject) {
-      eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ createdAt', (err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fullfill(usr)
-        console.log("EVENTO \n"+usr)
-      })
-    })
+  async function pesquisaEvento(cpf) {
+    let usr = await eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ createdAt');
+    if (usr == 0) throw {};
+    console.log("EVENTO \n"+usr)
+    return usr;
   }
 
   // Bug corrigido (mesma classe do já corrigido em inserirTokenAvaliador, logo abaixo):
@@ -194,52 +171,29 @@ router.post('/emitirCertificado', (req, res) => {
   // abaixo engolia silenciosamente, sumindo com esse tipo de certificado da resposta pro
   // usuário (o caso relatado: aluno com certificado de premiação mas sem o de
   // participação, porque exatamente essa gravação perdeu a corrida).
-  function inserirToken(cpf, id, tipo) {
+  async function inserirToken(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
-    return new Promise(function (fullfill, reject) {
-      ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf,'_id':id}}},
-        {'$set': {'integrantes.$.certificados': obj}}, [{new:true}],
-        (err, usr) => {
-          if (err) return reject(err);
-          fullfill(usr);
-        })
-    });
+    return await ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf,'_id':id}}},
+      {'$set': {'integrantes.$.certificados': obj}}, [{new:true}]);
   }
 
-  function inserirTokenEvento(cpf, id, tipo) {
+  async function inserirTokenEvento(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
-    return new Promise(function (fullfill, reject) {
-      eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf,'_id':id}}},
-        {'$set': {'responsavel.$.certificados': obj}}, [{new:true}],
-        (err, usr) => {
-          if (err) return reject(err);
-          fullfill(usr);
-        })
-    });
+    return await eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf,'_id':id}}},
+      {'$set': {'responsavel.$.certificados': obj}}, [{new:true}]);
   }
 
-  function pesquisaPremiado(cpf) {
-    return new Promise(function (fullfill, reject) {
-      // Também busca projetos sem premiacao/menção mas classificados pra alguma feira (ver
-      // feirasClassificadas em projeto-schema.js) - os dois conceitos são independentes.
-      ProjetoSchema.find({'integrantes.cpf':cpf, $or:[{'premiacao':{$exists:true}}, {'feirasClassificadas':{$exists:true,$not:{$size:0}}}]}, 'integrantes.$ categoria eixo premiacao colocacao feirasClassificadas token nomeProjeto numInscricao _id createdAt',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fullfill(usr)
-      })
-    })
+  async function pesquisaPremiado(cpf) {
+    // Também busca projetos sem premiacao/menção mas classificados pra alguma feira (ver
+    // feirasClassificadas em projeto-schema.js) - os dois conceitos são independentes.
+    let usr = await ProjetoSchema.find({'integrantes.cpf':cpf, $or:[{'premiacao':{$exists:true}}, {'feirasClassificadas':{$exists:true,$not:{$size:0}}}]}, 'integrantes.$ categoria eixo premiacao colocacao feirasClassificadas token nomeProjeto numInscricao _id createdAt');
+    if (usr == 0) throw {};
+    return usr;
   }
 
-  function inserirTokenPremiado(cpf, id) {
-      var newId = new mongoose.mongo.ObjectId()
-      return new Promise(function (fullfill, reject) {
-        ProjetoSchema.findOneAndUpdate({'_id':id},
-          {'$set': {'token': newId}}, [{new:true}],
-          (err, usr) => {
-            if (err) return reject(err);
-            fullfill(usr);
-          })
-      });
+  async function inserirTokenPremiado(cpf, id) {
+    var newId = new mongoose.mongo.ObjectId()
+    return await ProjetoSchema.findOneAndUpdate({'_id':id}, {'$set': {'token': newId}}, [{new:true}]);
   }
 
   const one = pesquisaProjetoAluno(cpf).then(usr => {
@@ -328,36 +282,15 @@ router.post('/emitirCertificado', (req, res) => {
     let gravacoes = [];
     if (usr[0].tokenSaberes === undefined && contador2) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(new Promise((fullfill, reject) => {
-        participanteSchema.findOneAndUpdate({'cpf':cpf},
-          {'$set': {'tokenSaberes': newId}}, [{new:true}],
-          (err, usr) => {
-            if (err) return reject(err);
-            fullfill(usr);
-        })
-      }));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenSaberes': newId}}, [{new:true}]));
     }
     if (usr[0].tokenOficinas === undefined && contador1) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(new Promise((fullfill, reject) => {
-        participanteSchema.findOneAndUpdate({'cpf':cpf},
-          {'$set': {'tokenOficinas': newId}}, [{new:true}],
-          (err, usr) => {
-            if (err) return reject(err);
-            fullfill(usr);
-        })
-      }));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenOficinas': newId}}, [{new:true}]));
     }
     if (usr[0].tokenPalestra === undefined && contador3) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(new Promise((fullfill, reject) => {
-        participanteSchema.findOneAndUpdate({'cpf':cpf},
-          {'$set': {'tokenPalestra': newId}}, [{new:true}],
-          (err, usr) => {
-            if (err) return reject(err);
-            fullfill(usr);
-        })
-      }));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenPalestra': newId}}, [{new:true}]));
     }
     return Promise.all(gravacoes).then(() => pesquisaParticipante(cpf))
   })
@@ -571,92 +504,60 @@ router.post('/conferirCertificado', (req, res) => {
   let id = req.body.id
   if (!idValido(id)) return res.status(400).send({msg: 'ID inválido'});
 
-  function pesquisaProjetoAluno(id) {
-    return new Promise(function (fulfill, reject) {
-      ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Aluno'}}},
-        'integrantes.$ nomeProjeto numInscricao createdAt -_id',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-        console.log("1")
-      })
-    })
+  async function pesquisaProjetoAluno(id) {
+    let usr = await ProjetoSchema.find(
+      {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Aluno'}}},
+      'integrantes.$ nomeProjeto numInscricao createdAt -_id');
+    if (usr == 0) throw {};
+    console.log("1")
+    return usr;
   }
 
-  function pesquisaProjetoOrientador(id) {
-    return new Promise(function (fulfill, reject) {
-      ProjetoSchema.find(
-        {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Orientador'}}},
-        'integrantes.$ nomeProjeto createdAt -_id',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-        console.log("2")
-      })
-    })
+  async function pesquisaProjetoOrientador(id) {
+    let usr = await ProjetoSchema.find(
+      {'integrantes':{$elemMatch:{'certificados._id':id,'tipo':'Orientador'}}},
+      'integrantes.$ nomeProjeto createdAt -_id');
+    if (usr == 0) throw {};
+    console.log("2")
+    return usr;
   }
 
-  function pesquisaAvaliador(id) {
-    return new Promise(function (fulfill, reject) {
-      avaliadorSchema.find({'token':id}, 'nome cpf token createdAt -_id',(err, usr) => {
-        if (err) return reject(err)
-        fulfill(usr)
-        console.log("3")
-      })
-    })
+  async function pesquisaAvaliador(id) {
+    let usr = await avaliadorSchema.find({'token':id}, 'nome cpf token createdAt -_id');
+    console.log("3")
+    return usr;
   }
 
-  function pesquisaParticipanteSaberes(id) {
-    return new Promise(function (fulfill, reject) {
-      participanteSchema.find({'tokenSaberes':id}, 'nome tokenSaberes cpf eventos createdAt -_id', (err, usr) => {
-        if (err) return reject(err)
-        fulfill(usr)
-        console.log("4")
-      })
-    })
+  async function pesquisaParticipanteSaberes(id) {
+    let usr = await participanteSchema.find({'tokenSaberes':id}, 'nome tokenSaberes cpf eventos createdAt -_id');
+    console.log("4")
+    return usr;
   }
 
-  function pesquisaParticipanteOficinas(id) {
-    return new Promise(function (fulfill, reject) {
-      participanteSchema.find({'tokenOficinas':id}, 'nome tokenOficinas cpf eventos createdAt -_id', (err, usr) => {
-        if (err) return reject(err)
-        fulfill(usr)
-        console.log("4")
-      })
-    })
+  async function pesquisaParticipanteOficinas(id) {
+    let usr = await participanteSchema.find({'tokenOficinas':id}, 'nome tokenOficinas cpf eventos createdAt -_id');
+    console.log("4")
+    return usr;
   }
 
-  function pesquisaParticipantePalestra(id) {
-    return new Promise(function (fulfill, reject) {
-      participanteSchema.find({'tokenPalestra':id}, 'nome tokenPalestra cpf eventos createdAt -_id', (err, usr) => {
-        if (err) return reject(err)
-        fulfill(usr)
-        console.log("4")
-      })
-    })
+  async function pesquisaParticipantePalestra(id) {
+    let usr = await participanteSchema.find({'tokenPalestra':id}, 'nome tokenPalestra cpf eventos createdAt -_id');
+    console.log("4")
+    return usr;
   }
 
-  function pesquisaEvento(id) {
-    return new Promise(function (fulfill, reject) {
-      eventoSchema.find({'responsavel':{$elemMatch:{'certificados._id':id}}}, 'tipo titulo cargaHoraria data responsavel.$ createdAt -_id', (err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-        console.log("5")
-      })
-    })
+  async function pesquisaEvento(id) {
+    let usr = await eventoSchema.find({'responsavel':{$elemMatch:{'certificados._id':id}}}, 'tipo titulo cargaHoraria data responsavel.$ createdAt -_id');
+    if (usr == 0) throw {};
+    console.log("5")
+    return usr;
   }
 
-  function pesquisaPremiado(id) {
-    return new Promise(function (fulfill, reject) {
-      ProjetoSchema.find({'token':id}, 'nomeProjeto categoria eixo premiacao colocacao token createdAt -_id',(err, usr) => {
-        if (err) return reject(err)
-        if (usr == 0) return reject({err})
-        fulfill(usr)
-        console.log("6")
-      })
-    })
+  async function pesquisaPremiado(id) {
+    let usr = await ProjetoSchema.find({'token':id}, 'nomeProjeto categoria eixo premiacao colocacao token createdAt -_id');
+    if (usr == 0) throw {};
+    console.log("6")
+    return usr;
   }
 
   const one = pesquisaProjetoAluno(id).then(usr => {
@@ -835,7 +736,7 @@ router.post('/registro', testaUsername2,
   body('username', 'Username is required').notEmpty(),
   body('password', 'Password is required').notEmpty(),
   body('password2').custom((value, { req }) => value === req.body.password).withMessage('Passwords do not match'),
-  (req, res) => {
+  async (req, res) => {
   let  username = req.body.username
   ,   password = req.body.password
   ,   password2 = req.body.password2
@@ -923,7 +824,17 @@ router.post('/registro', testaUsername2,
     // vem do slug do link de inscrição usado (/projetos/inscricao/:slug), resolvido aqui pro
     // _id da Feira correspondente. Sem slug (link antigo, ou nenhuma edição com slug ainda),
     // feiraId fica undefined - mesmo comportamento de antes da Fase 2.
-    let prosseguirComCriacao = function(feiraId) {
+    let feiraId;
+    if (req.body.slug) {
+      try {
+        let feira = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug });
+        feiraId = feira ? feira._id : undefined;
+      } catch (err) {
+        console.error('Erro ao resolver edição do slug', err);
+        return res.status(500).send('error');
+      }
+    }
+
     let newProject = new ProjetoSchema({
       nomeProjeto: req.body.nomeProjeto,
       categoria: req.body.categoria,
@@ -1011,16 +922,6 @@ router.post('/registro', testaUsername2,
         res.send({redirect: '/projetos'});
       });
     });
-    };
-
-    if (req.body.slug) {
-      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, feira) => {
-        if (err) { console.error('Erro ao resolver edição do slug', err); return res.status(500).send('error'); }
-        prosseguirComCriacao(feira ? feira._id : undefined);
-      });
-    } else {
-      prosseguirComCriacao(undefined);
-    }
   }
 });
 
@@ -1102,32 +1003,19 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
 
 passport.serializeUser(function(user, done){ done(null, user.id) });
 
-passport.deserializeUser(function(id, done){
-  adminSchema.findById(id, function(err, user){
-    if(err) done(err);
-    if(user){
-      done(null, user);
-    } else {
-      ProjetoSchema.findById(id, function(err, user){
-        if(err) done(err);
-        if (user) {
-          done(null, user);
-        } else {
-          avaliadorSchema.findById(id, function(err, user){
-            if(err) done(err);
-            if (user) {
-              done(null, user);
-            } else {
-              participanteSchema.findById(id, function(err, user){
-                if(err) done(err);
-                done(null, user);
-              });
-            }
-          });
-        }
-      })
-    }
-  });
+passport.deserializeUser(async function(id, done){
+  try {
+    let user = await adminSchema.findById(id);
+    if (user) return done(null, user);
+    user = await ProjetoSchema.findById(id);
+    if (user) return done(null, user);
+    user = await avaliadorSchema.findById(id);
+    if (user) return done(null, user);
+    user = await participanteSchema.findById(id);
+    return done(null, user);
+  } catch (err) {
+    return done(err);
+  }
 });
 
 router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) => {
@@ -1160,112 +1048,118 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.post('/redefinir-senha', authLimiter, (req, res) => {
+router.post('/redefinir-senha', authLimiter, async (req, res) => {
   let username = req.body.username;
   console.log('meuusuario:'+ username);
-  crypto.randomBytes(20, (err, buf) => {
-    let token = buf.toString('hex');
+  let token = crypto.randomBytes(20).toString('hex');
 
-    ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {new: true}, function(err, doc){
-      if(err || !doc){
-        return res.status(400).send({ error: 'Não foi possível encontrar o usuário: '+username}) //ARUUMAR A MENSAGEM DE ERRO DO USUARIO
-      } else{
-        let email = doc.email;
-        let nome_projeto = doc.nomeProjeto;
-        let url = "http://www.movaci.com.br/nova-senha/"+token;
-        // let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
+  let doc;
+  try {
+    doc = await ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {new: true});
+  } catch (err) {
+    doc = null;
+  }
+  if (!doc) {
+    return res.status(400).send({ error: 'Não foi possível encontrar o usuário: '+username}) //ARUUMAR A MENSAGEM DE ERRO DO USUARIO
+  }
 
-        // res.sendStatus(200);
-        res.send(email);
+  let email = doc.email;
+  let nome_projeto = doc.nomeProjeto;
+  let url = "http://www.movaci.com.br/nova-senha/"+token;
+  // let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
 
-        var templatesDir = path.resolve(__dirname, '..', 'templates')
-        var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))
-        // Prepare nodemailer transport object
-        const transport = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 587,
-          auth: {
-            user: process.env.SMTP_GMAIL_USER,
-            pass: process.env.SMTP_GMAIL_PASS
-          }
-        });
+  // res.sendStatus(200);
+  res.send(email);
 
-        var locals = {
-          email: email,
-          projeto: nome_projeto,
-          url: url,
-        }
+  var templatesDir = path.resolve(__dirname, '..', 'templates')
+  var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))
+  // Prepare nodemailer transport object
+  const transport = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    auth: {
+      user: process.env.SMTP_GMAIL_USER,
+      pass: process.env.SMTP_GMAIL_PASS
+    }
+  });
 
-        template.render(locals, function (err, results) {
-          if (err) {
-            return console.error(err)
-          }
+  var locals = {
+    email: email,
+    projeto: nome_projeto,
+    url: url,
+  }
 
-          transport.sendMail({
-            from: 'MOVACI <va-movaci@ifsul.edu.br>',
-            to: locals.email,
-            subject: 'MOVACI - Redefinição de senha',
-            html: results.html,
-            text: results.text
-          }, function (err, responseStatus) {
-            if (err) {
-              return console.error(err)
-            }
-            console.log(responseStatus.message)
-          })
-        });
+  template.render(locals, function (err, results) {
+    if (err) {
+      return console.error(err)
+    }
+
+    transport.sendMail({
+      from: 'MOVACI <va-movaci@ifsul.edu.br>',
+      to: locals.email,
+      subject: 'MOVACI - Redefinição de senha',
+      html: results.html,
+      text: results.text
+    }, function (err, responseStatus) {
+      if (err) {
+        return console.error(err)
       }
-    });
+      console.log(responseStatus.message)
+    })
   });
 });
 
-router.post('/nova-senha/:token', (req, res) => {
-  if(req.params.token === '') {
-    res.status(400).send("erro");
-    //console.log('err');
-  } else {
-    ProjetoSchema.findOne({resetPasswordToken: (req.params.token)}, (err, usr) => {
-      if(err || !usr) {
-        res.status(400).send("erro2");
-      } else if(usr.resetPasswordToken == req.params.token && !usr.hasExpired()) {
-        usr.resetPasswordToken = undefined;
-        usr.resetPasswordCreatedDate = undefined;
-        let password = req.body.password;
+router.post('/nova-senha/:token', async (req, res) => {
+  if (req.params.token === '') {
+    return res.status(400).send("erro");
+  }
 
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(password, salt, (err, hash) => {
-            usr.password = hash;
-            usr.save((err, usr) => {
-              if (err) { console.error(err); return; }
-              //console.log(usr);
-              res.status(200).send('Senha alterada');
-            });
-          });
-        });
-      } else {
-        res.status(400).send("erro3");
-      }
-    });
-  };
+  let usr;
+  try {
+    usr = await ProjetoSchema.findOne({resetPasswordToken: (req.params.token)});
+  } catch (err) {
+    return res.status(400).send("erro2");
+  }
+  if (!usr) return res.status(400).send("erro2");
+  if (!(usr.resetPasswordToken == req.params.token && !usr.hasExpired())) {
+    return res.status(400).send("erro3");
+  }
+
+  usr.resetPasswordToken = undefined;
+  usr.resetPasswordCreatedDate = undefined;
+  let password = req.body.password;
+
+  try {
+    let salt = await bcrypt.genSalt(10);
+    let hash = await bcrypt.hash(password, salt);
+    usr.password = hash;
+    await usr.save();
+    res.status(200).send('Senha alterada');
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 //Mateus Roberto Algayer - 24/11/2021
 //Função para recuperar os dados da mostra na base de dados 
-router.get('/getMostraInfo', function(req, res){
-  CadastroMostraSchema.find(function(err ,data){
-    if (err) { console.error(err); return; }
+router.get('/getMostraInfo', async function(req, res){
+  try {
+    let data = await CadastroMostraSchema.find();
     res.status(200).send(data);
-  });
-
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 // Feiras cadastradas (nome, categorias e texto do certificado de classificação) - público,
 // mesmo padrão de exposição de /getMostraInfo, usado na emissão de certificado de classificação.
-router.get('/getFeirasInfo', function(req, res){
-  feiraSchema.find(function(err ,data){
-    if (err) { console.error(err); return; }
+router.get('/getFeirasInfo', async function(req, res){
+  try {
+    let data = await feiraSchema.find();
     res.status(200).send(data);
-  });
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 // Mostras (Feira tipo:'edicao') com status de inscrição (aberta/prorrogada/encerrada) de
@@ -1282,11 +1176,13 @@ router.get('/getEdicoesInscricao', function(req, res){
 // Escolas aprovadas (ver models/escola-schema.js) - lista usada pra seleção no cadastro
 // de projeto, no lugar do texto livre digitado antes. Só as aprovadas: uma pendente
 // não deveria aparecer pra outra pessoa selecionar antes do admin revisar.
-router.get('/getEscolasInfo', function(req, res){
-  escolaSchema.find({ status: 'aprovada' }, 'nome cidade estado cep').sort({ nome: 1 }).exec(function(err, data){
-    if (err) { console.error(err); return; }
+router.get('/getEscolasInfo', async function(req, res){
+  try {
+    let data = await escolaSchema.find({ status: 'aprovada' }, 'nome cidade estado cep').sort({ nome: 1 });
     res.status(200).send(data);
-  });
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 // Solicitação de cadastro de escola nova - usada tanto inline no cadastro de projeto
@@ -1294,7 +1190,7 @@ router.get('/getEscolasInfo', function(req, res){
 // standalone (/solicitar-escola). Sempre cria como "pendente": a inscrição de projeto
 // que originou o pedido segue normalmente usando essa escola pendente, sem travar
 // esperando o admin aprovar.
-router.post('/solicitarEscola', function(req, res){
+router.post('/solicitarEscola', async function(req, res){
   let novaEscola = new escolaSchema({
     nome: req.body.nome,
     cep: req.body.cep,
@@ -1305,18 +1201,22 @@ router.post('/solicitarEscola', function(req, res){
     solicitanteNome: req.body.solicitanteNome,
     solicitanteEmail: req.body.solicitanteEmail
   });
-  novaEscola.save(function(err, data){
-    if (err) { console.error('Erro ao solicitar escola', err); return res.status(500).send('Erro ao solicitar escola'); }
+  try {
+    let data = await novaEscola.save();
     res.status(200).send(data);
-  });
+  } catch (err) {
+    console.error('Erro ao solicitar escola', err);
+    return res.status(500).send('Erro ao solicitar escola');
+  }
 });
 
-router.get('/getDocumentosInfo', function(req, res){
-  CadastroDocumentoSchema.find({'exibe': true}, function(err ,data){
-    if (err) { console.error(err); return; }
+router.get('/getDocumentosInfo', async function(req, res){
+  try {
+    let data = await CadastroDocumentoSchema.find({'exibe': true});
     res.status(200).send(data);
-  });
-
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 
