@@ -90,7 +90,7 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
   res.send('success');
 });
 
-router.post('/criarEvento', miPermiso("3"), (req, res) => {
+router.post('/criarEvento', miPermiso("3"), async (req, res) => {
   try {
     let myArray = req.body.responsavel;
 
@@ -110,37 +110,31 @@ router.post('/criarEvento', miPermiso("3"), (req, res) => {
       newEvento.responsavel.push(newResponsavel);
     });
 
-    newEvento.save((err, data) => {
-      if (err) { console.error('Erro ao criar um evento', err); return; }
-      console.log(data);
-    });
+    let data = await newEvento.save();
+    console.log(data);
     res.send('success');
   } catch (error){
-    console.log("ProjetoSchema.findOne: " + err); //Mostra onde o erro acontece e em seguida o erro em si 
+    console.error('Erro ao criar um evento', error);
   }
 });
 
-router.get('/mostraEvento', miPermiso("3","2"), (req, res) => {
+router.get('/mostraEvento', miPermiso("3","2"), async (req, res) => {
   try {
-    eventoSchema.find((err, usr) => {
-      if (err) { console.error('Erro ao mostrar evento', err); return; }
-      res.send(usr);
-    });
+    let usr = await eventoSchema.find();
+    res.send(usr);
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao mostrar evento', error);
   }
 });
 
-router.put('/removeEvento', miPermiso("3"), (req, res) => {
+router.put('/removeEvento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    eventoSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao remover evento', err); return; }
-    });
+    await eventoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao remover evento', error);
   }
 });
 
@@ -151,39 +145,35 @@ router.put('/removeEvento', miPermiso("3"), (req, res) => {
 // certificado emitido ainda). Sem isso, reescrever o array inteiro trocaria o _id de todo
 // mundo e quebraria o link de quem já baixou certificado de responsável desse evento
 // (o token de validação é achado por responsavel._id, não por cpf).
-router.put('/atualizaEvento', miPermiso("3"), (req, res) => {
+router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
 
-    eventoSchema.findOne({"_id": id}, (err, evt) => {
-      if (err) { console.error('Erro ao atualizar evento', err); return res.status(500).send('Falha ao atualizar evento'); }
-      if (!evt) return res.status(404).send('Evento não encontrado');
+    let evt = await eventoSchema.findOne({"_id": id});
+    if (!evt) return res.status(404).send('Evento não encontrado');
 
-      let responsaveisAtuais = evt.responsavel || [];
-      let responsaveisNovos = (req.body.responsavel || []).map((r) => {
-        let cpfLimpo = splita(r.cpf);
-        let existente = responsaveisAtuais.find((ra) => ra.cpf === cpfLimpo);
-        if (existente) {
-          existente.nome = r.nome;
-          return existente;
-        }
-        return { nome: r.nome, cpf: cpfLimpo };
-      });
-
-      evt.tipo = req.body.tipo;
-      evt.titulo = req.body.titulo;
-      evt.cargaHoraria = req.body.cargaHoraria;
-      evt.data = req.body.data;
-      evt.responsavel = responsaveisNovos;
-
-      evt.save((err, doc) => {
-        if (err) { console.error('Erro ao atualizar evento', err); return res.status(500).send('Falha ao atualizar evento'); }
-        res.status(200).json(doc);
-      });
+    let responsaveisAtuais = evt.responsavel || [];
+    let responsaveisNovos = (req.body.responsavel || []).map((r) => {
+      let cpfLimpo = splita(r.cpf);
+      let existente = responsaveisAtuais.find((ra) => ra.cpf === cpfLimpo);
+      if (existente) {
+        existente.nome = r.nome;
+        return existente;
+      }
+      return { nome: r.nome, cpf: cpfLimpo };
     });
+
+    evt.tipo = req.body.tipo;
+    evt.titulo = req.body.titulo;
+    evt.cargaHoraria = req.body.cargaHoraria;
+    evt.data = req.body.data;
+    evt.responsavel = responsaveisNovos;
+
+    let doc = await evt.save();
+    res.status(200).json(doc);
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao atualizar evento', error);
     res.status(500).send('Falha ao atualizar evento');
   }
 });
@@ -191,101 +181,93 @@ router.put('/atualizaEvento', miPermiso("3"), (req, res) => {
 // Feiras externas (Mostratec, Mostratec Júnior, MOCITEC, etc) para as quais um projeto pode
 // ser classificado - cadastradas por ano, com as categorias às quais se aplicam e o texto do
 // certificado de classificação (ver premiacao.html/details.premiacao.html e getFeirasInfo).
-router.post('/criarFeira', miPermiso("3"), (req, res) => {
+router.post('/criarFeira', miPermiso("3"), async (req, res) => {
   try {
-    let criar = () => {
-      let newFeira = new feiraSchema({
-        nome: req.body.nome,
-        categorias: req.body.categorias,
-        textoCertificado: req.body.textoCertificado,
-        ano: req.body.ano,
-        createdAt: req.body.createdAt,
-        tipo: req.body.tipo,
-        categoriasEixos: req.body.categoriasEixos,
-        diasAvaliacao: req.body.diasAvaliacao,
-        numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
-        slug: req.body.slug,
-        prazoProjetos: req.body.prazoProjetos,
-        prazoAvaliadores: req.body.prazoAvaliadores
-      });
-      newFeira.save((err, data) => {
-        if (err) { console.error('Erro ao criar feira', err); return; }
-      });
-      res.send('success');
-    };
     // Link de inscrição (slug) precisa ser único entre edições - diferente do "ano" (que
     // pode se repetir de propósito, ver memória project-mostra-ano-nao-unico), um slug
     // repetido faria duas Mostras disputarem a mesma URL de inscrição.
     if (req.body.tipo === 'edicao' && req.body.slug) {
-      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug }, (err, existente) => {
-        if (err) { console.error('Erro ao verificar link de inscrição existente', err); return res.status(500).send('Erro ao verificar link de inscrição existente'); }
-        if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
-        criar();
-      });
-    } else {
-      criar();
+      let existente = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug });
+      if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
     }
-  } catch (error){
-    console.log('findOne error--> ${error}');
-  }
-});
 
-router.put('/editarFeira', miPermiso("3"), (req, res) => {
-  try {
-    let id = req.body.id;
-    if (!idValido(id)) return res.status(400).send('ID inválido');
-    let atualizar = () => {
-      feiraSchema.findOneAndUpdate({'_id': id}, {
-        nome: req.body.nome,
-        categorias: req.body.categorias,
-        textoCertificado: req.body.textoCertificado,
-        tipo: req.body.tipo,
-        categoriasEixos: req.body.categoriasEixos,
-        diasAvaliacao: req.body.diasAvaliacao,
-        numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
-        slug: req.body.slug,
-        prazoProjetos: req.body.prazoProjetos,
-        prazoAvaliadores: req.body.prazoAvaliadores
-      }, (err) => {
-        if (err) { console.error('Erro ao editar feira', err); return; }
-      });
-      res.send('success');
-    };
-    if (req.body.tipo === 'edicao' && req.body.slug) {
-      feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug, _id: { $ne: id } }, (err, existente) => {
-        if (err) { console.error('Erro ao verificar link de inscrição existente', err); return res.status(500).send('Erro ao verificar link de inscrição existente'); }
-        if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
-        atualizar();
-      });
-    } else {
-      atualizar();
-    }
-  } catch (error){
-    console.log('findOne error--> ${error}');
-  }
-});
-
-router.get('/mostraFeiras', miPermiso("3","2"), (req, res) => {
-  try {
-    feiraSchema.find((err, usr) => {
-      if (err) { console.error('Erro ao mostrar feiras', err); return; }
-      res.send(usr);
+    let newFeira = new feiraSchema({
+      nome: req.body.nome,
+      categorias: req.body.categorias,
+      textoCertificado: req.body.textoCertificado,
+      ano: req.body.ano,
+      createdAt: req.body.createdAt,
+      tipo: req.body.tipo,
+      categoriasEixos: req.body.categoriasEixos,
+      diasAvaliacao: req.body.diasAvaliacao,
+      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
+      slug: req.body.slug,
+      prazoProjetos: req.body.prazoProjetos,
+      prazoAvaliadores: req.body.prazoAvaliadores
     });
-  } catch (error){
-    console.log('findOne error--> ${error}');
-  }
-});
-
-router.put('/removeFeira', miPermiso("3"), (req, res) => {
-  try {
-    let id = req.body.id;
-    if (!idValido(id)) return res.status(400).send('ID inválido');
-    feiraSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao remover feira', err); return; }
-    });
+    await newFeira.save();
     res.send('success');
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao criar feira', error);
+    res.status(500).send('Erro ao criar feira');
+  }
+});
+
+router.put('/editarFeira', miPermiso("3"), async (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+
+    if (req.body.tipo === 'edicao' && req.body.slug) {
+      let existente = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug, _id: { $ne: id } });
+      if (existente) return res.status(400).send('Já existe uma Mostra usando esse link de inscrição.');
+    }
+
+    // Bug real encontrado ao testar esta migração (não é regressão daqui): o objeto de
+    // update sempre incluiu TODOS os campos, mesmo os que só fazem sentido pra tipo:'edicao'
+    // (numAvaliadoresPorProjeto etc) - quando ausentes do body (ex: editando uma Feira
+    // tipo:'classificacao'), o valor era `undefined` e o Mongoose falhava o cast ao tentar
+    // gravar. Antes isso não aparecia porque a rota respondia 'success' sem esperar o
+    // update terminar (erro só ia pro log) - ou seja, editar uma Feira de classificação
+    // NUNCA salvava de verdade. Filtra os campos ausentes antes de mandar pro update.
+    let camposFeira = {
+      nome: req.body.nome,
+      categorias: req.body.categorias,
+      textoCertificado: req.body.textoCertificado,
+      tipo: req.body.tipo,
+      categoriasEixos: req.body.categoriasEixos,
+      diasAvaliacao: req.body.diasAvaliacao,
+      numAvaliadoresPorProjeto: req.body.numAvaliadoresPorProjeto,
+      slug: req.body.slug,
+      prazoProjetos: req.body.prazoProjetos,
+      prazoAvaliadores: req.body.prazoAvaliadores
+    };
+    Object.keys(camposFeira).forEach((k) => { if (camposFeira[k] === undefined) delete camposFeira[k]; });
+    await feiraSchema.findOneAndUpdate({'_id': id}, camposFeira);
+    res.send('success');
+  } catch (error){
+    console.error('Erro ao editar feira', error);
+    res.status(500).send('Erro ao editar feira');
+  }
+});
+
+router.get('/mostraFeiras', miPermiso("3","2"), async (req, res) => {
+  try {
+    let usr = await feiraSchema.find();
+    res.send(usr);
+  } catch (error){
+    console.error('Erro ao mostrar feiras', error);
+  }
+});
+
+router.put('/removeFeira', miPermiso("3"), async (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    await feiraSchema.deleteOne({"_id": id});
+    res.send('success');
+  } catch (error){
+    console.error('Erro ao remover feira', error);
   }
 });
 
@@ -293,7 +275,7 @@ router.put('/removeFeira', miPermiso("3"), (req, res) => {
 // que cada projeto digitava em nomeEscola. Criada pelo admin já sai "aprovada"; criada
 // via solicitação pública (ver routes/index.js#solicitarEscola) sai "pendente" até o
 // admin revisar/corrigir e aprovar.
-router.post('/criarEscola', miPermiso("3"), (req, res) => {
+router.post('/criarEscola', miPermiso("3"), async (req, res) => {
   try {
     let newEscola = new escolaSchema({
       nome: req.body.nome,
@@ -305,23 +287,20 @@ router.post('/criarEscola', miPermiso("3"), (req, res) => {
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
     });
-    newEscola.save((err, data) => {
-      if (err) { console.error('Erro ao criar escola', err); return res.status(500).send('Erro ao criar escola'); }
-      res.send(data);
-    });
+    let data = await newEscola.save();
+    res.send(data);
   } catch (error){
-    console.log('criarEscola error--> ${error}');
+    console.error('Erro ao criar escola', error);
+    res.status(500).send('Erro ao criar escola');
   }
 });
 
-router.get('/mostraEscolas', miPermiso("3","2"), (req, res) => {
+router.get('/mostraEscolas', miPermiso("3","2"), async (req, res) => {
   try {
-    escolaSchema.find().sort({ nome: 1 }).exec((err, usr) => {
-      if (err) { console.error('Erro ao mostrar escolas', err); return; }
-      res.send(usr);
-    });
+    let usr = await escolaSchema.find().sort({ nome: 1 });
+    res.send(usr);
   } catch (error){
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao mostrar escolas', error);
   }
 });
 
@@ -351,11 +330,11 @@ function avisarDecisaoEscola(escola, aprovada) {
 
 // Aprova uma escola pendente - permite corrigir nome/cep/cidade/estado no mesmo passo
 // (a pessoa que solicitou pode ter digitado algo com erro/variação).
-router.put('/aprovarEscola', miPermiso("3"), (req, res) => {
+router.put('/aprovarEscola', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    escolaSchema.findByIdAndUpdate(id, {
+    let data = await escolaSchema.findByIdAndUpdate(id, {
       nome: req.body.nome,
       cep: req.body.cep,
       cidade: req.body.cidade,
@@ -364,79 +343,73 @@ router.put('/aprovarEscola', miPermiso("3"), (req, res) => {
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
-    }, { new: true }, (err, data) => {
-      if (err) { console.error('Erro ao aprovar escola', err); return res.status(500).send('Erro ao aprovar escola'); }
-      avisarDecisaoEscola(data, true);
-      res.send(data);
-    });
+    }, { new: true });
+    avisarDecisaoEscola(data, true);
+    res.send(data);
   } catch (error){
-    console.log('aprovarEscola error--> ${error}');
+    console.error('Erro ao aprovar escola', error);
+    res.status(500).send('Erro ao aprovar escola');
   }
 });
 
 // Rejeita uma escola pendente - diferente de removeEscola (que só se aplica a uma
 // escola JÁ aprovada e sem projeto vinculado), aqui é uma decisão sobre a
 // solicitação em si, com motivo obrigatório (vai no e-mail de aviso).
-router.put('/rejeitarEscola', miPermiso("3"), (req, res) => {
+router.put('/rejeitarEscola', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
     if (!req.body.motivo || !req.body.motivo.trim()) return res.status(400).send('Motivo é obrigatório');
-    escolaSchema.findByIdAndUpdate(id, {
+    let data = await escolaSchema.findByIdAndUpdate(id, {
       status: 'rejeitada',
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
-    }, { new: true }, (err, data) => {
-      if (err) { console.error('Erro ao rejeitar escola', err); return res.status(500).send('Erro ao rejeitar escola'); }
-      avisarDecisaoEscola(data, false);
-      res.send(data);
-    });
+    }, { new: true });
+    avisarDecisaoEscola(data, false);
+    res.send(data);
   } catch (error){
-    console.log('rejeitarEscola error--> ${error}');
+    console.error('Erro ao rejeitar escola', error);
+    res.status(500).send('Erro ao rejeitar escola');
   }
 });
 
-router.put('/editarEscola', miPermiso("3"), (req, res) => {
+router.put('/editarEscola', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    escolaSchema.findByIdAndUpdate(id, {
+    let data = await escolaSchema.findByIdAndUpdate(id, {
       nome: req.body.nome,
       cep: req.body.cep,
       cidade: req.body.cidade,
       estado: req.body.estado
-    }, { new: true }, (err, data) => {
-      if (err) { console.error('Erro ao editar escola', err); return res.status(500).send('Erro ao editar escola'); }
-      res.send(data);
-    });
+    }, { new: true });
+    res.send(data);
   } catch (error){
-    console.log('editarEscola error--> ${error}');
+    console.error('Erro ao editar escola', error);
+    res.status(500).send('Erro ao editar escola');
   }
 });
 
 // Recusa remover uma escola que ainda tem projeto vinculado - diferente de removeFeira,
 // aqui a integridade importa mais: um projeto sem escola visível quebraria os
 // relatórios/listas que dependem desse vínculo.
-router.put('/removeEscola', miPermiso("3"), (req, res) => {
+router.put('/removeEscola', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    projetoSchema.find({ escola: id }, 'numInscricao nomeProjeto', (err, projetos) => {
-      if (err) { console.error('Erro ao checar projetos da escola', err); return res.status(500).send('Erro ao checar projetos da escola'); }
-      if (projetos.length > 0) {
-        const LIMITE_LISTADOS = 10;
-        let nomes = projetos.slice(0, LIMITE_LISTADOS).map((p) => 'Nº ' + p.numInscricao + ' — ' + p.nomeProjeto).join('; ');
-        if (projetos.length > LIMITE_LISTADOS) nomes += '; e mais ' + (projetos.length - LIMITE_LISTADOS) + '.';
-        return res.status(409).send('Existem ' + projetos.length + ' projeto(s) vinculado(s) a essa escola - não é possível remover. ' + nomes);
-      }
-      escolaSchema.remove({"_id": id}, (err) => {
-        if (err) { console.error('Erro ao remover escola', err); return; }
-        res.send('success');
-      });
-    });
+    let projetos = await projetoSchema.find({ escola: id }, 'numInscricao nomeProjeto');
+    if (projetos.length > 0) {
+      const LIMITE_LISTADOS = 10;
+      let nomes = projetos.slice(0, LIMITE_LISTADOS).map((p) => 'Nº ' + p.numInscricao + ' — ' + p.nomeProjeto).join('; ');
+      if (projetos.length > LIMITE_LISTADOS) nomes += '; e mais ' + (projetos.length - LIMITE_LISTADOS) + '.';
+      return res.status(409).send('Existem ' + projetos.length + ' projeto(s) vinculado(s) a essa escola - não é possível remover. ' + nomes);
+    }
+    await escolaSchema.deleteOne({"_id": id});
+    res.send('success');
   } catch (error){
-    console.log('removeEscola error--> ${error}');
+    console.error('Erro ao remover escola', error);
+    res.status(500).send('Erro ao remover escola');
   }
 });
 
