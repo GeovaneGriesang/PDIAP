@@ -1,14 +1,9 @@
 'use strict';
 
-const mongoose = require('mongoose')
-,	Evento = require('../models/evento-schema');
-
-module.exports.createEvento = (newEvento, callback) => {
+module.exports.createEvento = async (newEvento) => {
 	try {
-		newEvento.save((err, data) => {
-			if (err) { console.error('Erro ao salvar salvar Schema preenchido na base do mongo', err); return; }
-		});
-	} catch (error) {
-		console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+		await newEvento.save();
+	} catch (err) {
+		console.error('Erro ao salvar Schema preenchido na base do mongo', err);
 	}
 };
