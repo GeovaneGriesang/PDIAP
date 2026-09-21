@@ -9,10 +9,10 @@ const Pessoa = require('../models/pessoa-schema');
 // o login dela sem mexer na senha - só o novo papel é criado por cima. O terceiro
 // argumento do callback (`criada`) diz se a Pessoa é nova (útil pra decidir se deve
 // avisar "sua senha inicial é o seu documento" ou "use sua senha de sempre").
-module.exports.findOrCreatePessoa = (documento, dadosIniciais, callback) => {
+module.exports.findOrCreatePessoa = async (documento, dadosIniciais, callback) => {
 	let doc = (documento || '').toString().replace(/\D+/g, '');
-	Pessoa.findOne({ documento: doc }, (err, pessoa) => {
-		if (err) return callback(err);
+	try {
+		let pessoa = await Pessoa.findOne({ documento: doc });
 		if (pessoa) return callback(null, pessoa, false);
 
 		let novaPessoa = new Pessoa({
@@ -23,15 +23,18 @@ module.exports.findOrCreatePessoa = (documento, dadosIniciais, callback) => {
 			nacionalidade: dadosIniciais.nacionalidade,
 			createdAt: Date.now()
 		});
-		novaPessoa.save((err, pessoaCriada) => {
-			if (err) return callback(err);
-			callback(null, pessoaCriada, true);
-		});
-	});
+		let pessoaCriada = await novaPessoa.save();
+		callback(null, pessoaCriada, true);
+	} catch (err) {
+		callback(err);
+	}
 };
 
 // Busca por e-mail - login é sempre pelo e-mail cadastrado (mesmo padrão que Avaliador/
 // Participante já usavam).
 module.exports.getLoginPessoa = (email, callback) => {
-	Pessoa.findOne({ email: email }, callback);
+	Pessoa.findOne({ email: email }).then(
+		(pessoa) => callback(null, pessoa),
+		(err) => callback(err)
+	);
 };

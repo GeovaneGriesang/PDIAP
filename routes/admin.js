@@ -1,15 +1,9 @@
 'use strict';
 
-const documentoSchema = require('../models/documento-schema');
-
 const express = require('express')
 , router = express.Router()
-, passport = require('passport')
-, LocalStrategy = require('passport-local').Strategy
 , Admin = require('../controllers/admin-controller')
-, Evento = require('../controllers/evento-controller')
 , Saberes = require('../controllers/saberes-controller')
-, session = require('express-session')
 , adminSchema = require('../models/admin-schema')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
@@ -19,8 +13,6 @@ const express = require('express')
 , emailHistoricoSchema = require('../models/email-historico-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
-, crypto = require('crypto')
-, bcrypt = require('bcryptjs')
 , nodemailer = require('nodemailer')
 , avaliadorSchema = require('../models/avaliador-schema')
 , AvaliadorController = require('../controllers/avaliador-controller')
