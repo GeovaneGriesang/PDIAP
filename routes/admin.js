@@ -803,17 +803,15 @@ router.get('/getOpcoes', (req, res) => {
 	});
 });
 
-router.get('/projetos', miPermiso("2","3"), (req, res) => {
+router.get('/projetos', miPermiso("2","3"), async (req, res) => {
   try {
     // Antes mandava o documento inteiro pro navegador, incluindo o hash da senha de
     // TODOS os 957 projetos — em toda tentativa de listar/avaliar/rankear projetos no
     // painel. Nenhuma tela do admin usa esse campo; só exclui.
-    projetoSchema.find({}, '-password', (err, usr) => {
-      if (err) { console.error('Erro em projetos', err); return; }
-      res.send(usr);
-    });
+    let usr = await projetoSchema.find({}, '-password');
+    res.send(usr);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro em projetos', error);
   }
 });
 
@@ -822,7 +820,7 @@ router.get('/projetos', miPermiso("2","3"), (req, res) => {
 // que está visível/filtrado no momento (ver public/admin/assets/js/controllers/projetosCtrl.js
 // #baixarZip), mas a garantia de segurança real (nunca vazar relatório de projeto não
 // aprovado) precisa estar aqui, não só confiar no que o cliente filtrou.
-router.get('/projetos/relatorios.zip', miPermiso("3"), (req, res) => {
+router.get('/projetos/relatorios.zip', miPermiso("3"), async (req, res) => {
   let filtro = { aprovado: true };
 
   if (req.query.ids) {
@@ -839,39 +837,43 @@ router.get('/projetos/relatorios.zip', miPermiso("3"), (req, res) => {
     }
   }
 
-  projetoSchema.find(filtro, 'numInscricao nomeProjeto', (err, projetos) => {
-    if (err) { console.error('Erro ao buscar projetos pro zip', err); return res.status(500).send('Erro ao gerar o zip.'); }
+  let projetos;
+  try {
+    projetos = await projetoSchema.find(filtro, 'numInscricao nomeProjeto');
+  } catch (err) {
+    console.error('Erro ao buscar projetos pro zip', err);
+    return res.status(500).send('Erro ao gerar o zip.');
+  }
 
-    let pastaRelatorios = path.join(__dirname, '..', 'public', 'relatorios');
-    let encontrados = projetos.filter((p) => fs.existsSync(path.join(pastaRelatorios, p.numInscricao + '.pdf')));
+  let pastaRelatorios = path.join(__dirname, '..', 'public', 'relatorios');
+  let encontrados = projetos.filter((p) => fs.existsSync(path.join(pastaRelatorios, p.numInscricao + '.pdf')));
 
-    if (encontrados.length === 0) {
-      return res.status(404).send('Nenhum relatório encontrado pros projetos selecionados.');
-    }
+  if (encontrados.length === 0) {
+    return res.status(404).send('Nenhum relatório encontrado pros projetos selecionados.');
+  }
 
-    let anoZip = req.query.ano || new Date().getFullYear();
-    res.attachment('projetos-aprovados-' + anoZip + '.zip');
+  let anoZip = req.query.ano || new Date().getFullYear();
+  res.attachment('projetos-aprovados-' + anoZip + '.zip');
 
-    let archive = archiver('zip');
-    archive.on('error', (err) => {
-      console.error('Erro ao gerar zip de relatórios', err);
-      if (!res.headersSent) res.status(500).send('Erro ao gerar o zip.');
-    });
-    archive.pipe(res);
-
-    encontrados.forEach((p) => {
-      // Sanitiza o nome do projeto pro nome do arquivo dentro do zip - troca só os
-      // caracteres realmente inválidos em nome de arquivo (path traversal, etc.) por "_",
-      // preservando acentos. Baseado em blocklist (não em \p{L}/\p{N} - o babel 6 usado
-      // neste projeto não suporta Unicode property escapes, viraria lixo em produção).
-      let nomeSanitizado = (p.nomeProjeto || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
-      archive.file(path.join(pastaRelatorios, p.numInscricao + '.pdf'), {
-        name: p.numInscricao + '_' + nomeSanitizado + '.pdf'
-      });
-    });
-
-    archive.finalize();
+  let archive = archiver('zip');
+  archive.on('error', (err) => {
+    console.error('Erro ao gerar zip de relatórios', err);
+    if (!res.headersSent) res.status(500).send('Erro ao gerar o zip.');
   });
+  archive.pipe(res);
+
+  encontrados.forEach((p) => {
+    // Sanitiza o nome do projeto pro nome do arquivo dentro do zip - troca só os
+    // caracteres realmente inválidos em nome de arquivo (path traversal, etc.) por "_",
+    // preservando acentos. Baseado em blocklist (não em \p{L}/\p{N} - o babel 6 usado
+    // neste projeto não suporta Unicode property escapes, viraria lixo em produção).
+    let nomeSanitizado = (p.nomeProjeto || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
+    archive.file(path.join(pastaRelatorios, p.numInscricao + '.pdf'), {
+      name: p.numInscricao + '_' + nomeSanitizado + '.pdf'
+    });
+  });
+
+  archive.finalize();
 });
 
 // Resolve os destinatários de um projeto para envio de e-mail em massa, conforme o
@@ -974,12 +976,10 @@ function _aplicaMascarasComCondicao(texto, dados) {
 // e-mail já foi confirmado no cliente (res.send({total}) já rodou antes de chamar isso), então
 // uma falha aqui só vira log, nunca deve derrubar o envio de verdade.
 function _registrarHistoricoEmail(dados) {
-  emailHistoricoSchema.create(dados, function(err) {
-    if (err) console.error('Erro ao gravar histórico de e-mail', err);
-  });
+  emailHistoricoSchema.create(dados).catch((err) => console.error('Erro ao gravar histórico de e-mail', err));
 }
 
-router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
+router.post('/enviarEmailProjetos', miPermiso("3"), async (req, res) => {
   try {
     var ids = req.body.idsProjetos;
     var destinatario = req.body.destinatario;
@@ -989,42 +989,45 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
 
-    projetoSchema.find({ _id: { $in: ids } }, '-password', (err, projetos) => {
-      if (err) { console.error('Erro ao buscar projetos para email em massa', err); return; }
+    let projetos = await projetoSchema.find({ _id: { $in: ids } }, '-password');
 
-      var vistos = {};
-      var destinatarios = [];
-      projetos.forEach(function(projeto) {
-        _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
-          var chave = d.email.toLowerCase();
-          if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
-        });
+    var vistos = {};
+    var destinatarios = [];
+    projetos.forEach(function(projeto) {
+      _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
+        var chave = d.email.toLowerCase();
+        if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
       });
+    });
 
-      res.send({ total: destinatarios.length });
-      _registrarHistoricoEmail({
-        ano: req.body.ano, origem: 'projetos', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
-        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
-      });
+    // A partir daqui é fire-and-forget de propósito: a resposta já confirma quantos
+    // destinatários serão notificados, e o envio de verdade (lento, um SMTP por vez pra
+    // não estourar o limite do Gmail) continua em segundo plano - erro de e-mail
+    // individual ou de histórico só vira log, não derruba a resposta já dada.
+    res.send({ total: destinatarios.length });
+    _registrarHistoricoEmail({
+      ano: req.body.ano, origem: 'projetos', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
+      usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+    });
 
-      var transport = nodemailer.createTransport({
-        host: 'smtp.gmail.com', port: 587,
-        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-      });
-      async.eachSeries(destinatarios, function(d, next) {
-        transport.sendMail({
-          from: 'MOVACI <va-movaci@ifsul.edu.br>',
-          to: d.email,
-          subject: _aplicaMascaras(assunto, d),
-          html: _aplicaMascaras(corpo, d)
-        }, function(err) {
-          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
-          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
-        });
+    var transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587,
+      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+    });
+    async.eachSeries(destinatarios, function(d, next) {
+      transport.sendMail({
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
+        to: d.email,
+        subject: _aplicaMascaras(assunto, d),
+        html: _aplicaMascaras(corpo, d)
+      }, function(err) {
+        if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+        setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
       });
     });
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao buscar projetos para email em massa', error);
+    if (!res.headersSent) res.status(500).send('Erro ao enviar e-mail em massa.');
   }
 });
 
@@ -1033,7 +1036,7 @@ router.post('/enviarEmailProjetos', miPermiso("3"), (req, res) => {
 // _resolveDestinatarios (aluno/orientador/etc), que já inclui colocacao/premiado/mencaoHonrosa/
 // classificado/feiraNome em camposProjeto. populate('feirasClassificadas') é o que permite
 // ¨feiraNome resolver o nome de verdade (sem isso seria só o ObjectId).
-router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
+router.post('/enviarEmailPremiados', miPermiso("3"), async (req, res) => {
   try {
     var ids = req.body.idsProjetos;
     var destinatario = req.body.destinatario;
@@ -1043,45 +1046,45 @@ router.post('/enviarEmailPremiados', miPermiso("3"), (req, res) => {
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
 
-    projetoSchema.find({
+    let projetos = await projetoSchema.find({
       _id: { $in: ids },
       $or: [{ premiacao: { $in: ['Premiado', 'Mencao_honrosa'] } }, { 'feirasClassificadas.0': { $exists: true } }]
-    }, '-password').populate('feirasClassificadas').exec((err, projetos) => {
-      if (err) { console.error('Erro ao buscar projetos premiados para email em massa', err); return; }
+    }, '-password').populate('feirasClassificadas');
 
-      var vistos = {};
-      var destinatarios = [];
-      projetos.forEach(function(projeto) {
-        _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
-          var chave = d.email.toLowerCase();
-          if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
-        });
+    var vistos = {};
+    var destinatarios = [];
+    projetos.forEach(function(projeto) {
+      _resolveDestinatarios(projeto, destinatario).forEach(function(d) {
+        var chave = d.email.toLowerCase();
+        if (!vistos[chave]) { vistos[chave] = true; destinatarios.push(d); }
       });
+    });
 
-      res.send({ total: destinatarios.length });
-      _registrarHistoricoEmail({
-        ano: req.body.ano, origem: 'premiados', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
-        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
-      });
+    // Fire-and-forget de propósito daqui em diante - ver comentário em /enviarEmailProjetos.
+    res.send({ total: destinatarios.length });
+    _registrarHistoricoEmail({
+      ano: req.body.ano, origem: 'premiados', destinatarioTipo: destinatario, assunto: assunto, corpo: corpo,
+      usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+    });
 
-      var transport = nodemailer.createTransport({
-        host: 'smtp.gmail.com', port: 587,
-        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-      });
-      async.eachSeries(destinatarios, function(d, next) {
-        transport.sendMail({
-          from: 'MOVACI <va-movaci@ifsul.edu.br>',
-          to: d.email,
-          subject: _aplicaMascarasComCondicao(assunto, d),
-          html: _aplicaMascarasComCondicao(corpo, d)
-        }, function(err) {
-          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
-          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
-        });
+    var transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587,
+      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+    });
+    async.eachSeries(destinatarios, function(d, next) {
+      transport.sendMail({
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
+        to: d.email,
+        subject: _aplicaMascarasComCondicao(assunto, d),
+        html: _aplicaMascarasComCondicao(corpo, d)
+      }, function(err) {
+        if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+        setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
       });
     });
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao buscar projetos premiados para email em massa', error);
+    if (!res.headersSent) res.status(500).send('Erro ao enviar e-mail em massa.');
   }
 });
 
@@ -1144,7 +1147,7 @@ router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
 
 // Mesmo espírito de /enviarEmailProjetos, mas pra avaliadores - schema mais simples (um
 // e-mail por avaliador, sem integrantes aninhados), então não precisa de destinatário/tipo.
-router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
+router.post('/enviarEmailAvaliadores', miPermiso("3"), async (req, res) => {
   try {
     var ids = req.body.idsAvaliadores;
     var assunto = req.body.assunto;
@@ -1153,52 +1156,52 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), (req, res) => {
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
 
-    avaliadorSchema.find({ _id: { $in: ids } }, (err, avaliadores) => {
-      if (err) { console.error('Erro ao buscar avaliadores para email em massa', err); return; }
+    let avaliadores = await avaliadorSchema.find({ _id: { $in: ids } });
 
-      var vistos = {};
-      var destinatarios = [];
-      avaliadores.forEach(function(avaliador) {
-        if (!avaliador.email) return;
-        var chave = avaliador.email.toLowerCase();
-        if (vistos[chave]) return;
-        vistos[chave] = true;
-        destinatarios.push({
-          nome: avaliador.nome, email: avaliador.email, categoria: avaliador.categoria,
-          eixo: avaliador.eixo, nivelAcademico: avaliador.nivelAcademico
-        });
+    var vistos = {};
+    var destinatarios = [];
+    avaliadores.forEach(function(avaliador) {
+      if (!avaliador.email) return;
+      var chave = avaliador.email.toLowerCase();
+      if (vistos[chave]) return;
+      vistos[chave] = true;
+      destinatarios.push({
+        nome: avaliador.nome, email: avaliador.email, categoria: avaliador.categoria,
+        eixo: avaliador.eixo, nivelAcademico: avaliador.nivelAcademico
       });
+    });
 
-      res.send({ total: destinatarios.length });
-      _registrarHistoricoEmail({
-        ano: req.body.ano, origem: 'avaliadores', assunto: assunto, corpo: corpo,
-        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
-      });
+    // Fire-and-forget de propósito daqui em diante - ver comentário em /enviarEmailProjetos.
+    res.send({ total: destinatarios.length });
+    _registrarHistoricoEmail({
+      ano: req.body.ano, origem: 'avaliadores', assunto: assunto, corpo: corpo,
+      usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+    });
 
-      var transport = nodemailer.createTransport({
-        host: 'smtp.gmail.com', port: 587,
-        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-      });
-      async.eachSeries(destinatarios, function(d, next) {
-        transport.sendMail({
-          from: 'MOVACI <va-movaci@ifsul.edu.br>',
-          to: d.email,
-          subject: _aplicaMascaras(assunto, d),
-          html: _aplicaMascaras(corpo, d)
-        }, function(err) {
-          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
-          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
-        });
+    var transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587,
+      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+    });
+    async.eachSeries(destinatarios, function(d, next) {
+      transport.sendMail({
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
+        to: d.email,
+        subject: _aplicaMascaras(assunto, d),
+        html: _aplicaMascaras(corpo, d)
+      }, function(err) {
+        if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+        setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
       });
     });
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao buscar avaliadores para email em massa', error);
+    if (!res.headersSent) res.status(500).send('Erro ao enviar e-mail em massa.');
   }
 });
 
 // Mesmo espírito de /enviarEmailAvaliadores - participante só entra na lista de destinatários
 // se tiver e-mail cadastrado (campo novo, opcional, muitos registros antigos não têm).
-router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
+router.post('/enviarEmailParticipantes', miPermiso("3"), async (req, res) => {
   try {
     var ids = req.body.idsParticipantes;
     var assunto = req.body.assunto;
@@ -1207,55 +1210,58 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), (req, res) => {
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
 
-    participanteSchema.find({ _id: { $in: ids } }, (err, participantes) => {
-      if (err) { console.error('Erro ao buscar participantes para email em massa', err); return; }
+    let participantes = await participanteSchema.find({ _id: { $in: ids } });
 
-      var vistos = {};
-      var destinatarios = [];
-      participantes.forEach(function(participante) {
-        if (!participante.email) return;
-        var chave = participante.email.toLowerCase();
-        if (vistos[chave]) return;
-        vistos[chave] = true;
-        destinatarios.push({ nome: participante.nome, email: participante.email });
-      });
+    var vistos = {};
+    var destinatarios = [];
+    participantes.forEach(function(participante) {
+      if (!participante.email) return;
+      var chave = participante.email.toLowerCase();
+      if (vistos[chave]) return;
+      vistos[chave] = true;
+      destinatarios.push({ nome: participante.nome, email: participante.email });
+    });
 
-      res.send({ total: destinatarios.length });
-      _registrarHistoricoEmail({
-        ano: req.body.ano, origem: 'participantes', assunto: assunto, corpo: corpo,
-        usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
-      });
+    // Fire-and-forget de propósito daqui em diante - ver comentário em /enviarEmailProjetos.
+    res.send({ total: destinatarios.length });
+    _registrarHistoricoEmail({
+      ano: req.body.ano, origem: 'participantes', assunto: assunto, corpo: corpo,
+      usuario: req.user.username, destinatarios: destinatarios.map(function(d) { return d.email; }), quantidade: destinatarios.length
+    });
 
-      var transport = nodemailer.createTransport({
-        host: 'smtp.gmail.com', port: 587,
-        auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-      });
-      async.eachSeries(destinatarios, function(d, next) {
-        transport.sendMail({
-          from: 'MOVACI <va-movaci@ifsul.edu.br>',
-          to: d.email,
-          subject: _aplicaMascaras(assunto, d),
-          html: _aplicaMascaras(corpo, d)
-        }, function(err) {
-          if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
-          setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
-        });
+    var transport = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587,
+      auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+    });
+    async.eachSeries(destinatarios, function(d, next) {
+      transport.sendMail({
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
+        to: d.email,
+        subject: _aplicaMascaras(assunto, d),
+        html: _aplicaMascaras(corpo, d)
+      }, function(err) {
+        if (err) { console.error('Erro ao enviar email em massa para ' + d.email, err); }
+        setTimeout(next, 300); // evita estourar limite de envio do Gmail SMTP
       });
     });
   } catch (error) {
-    console.log('findOne error--> ${error}');
+    console.error('Erro ao buscar participantes para email em massa', error);
+    if (!res.headersSent) res.status(500).send('Erro ao enviar e-mail em massa.');
   }
 });
 
 // Histórico de e-mails em massa (Projetos/Avaliadores/Premiados/Participantes), por ano - ver
 // menu "Histórico de E-mails" e _registrarHistoricoEmail acima, chamado nas 4 rotas de envio.
-router.get('/historicoEmails', miPermiso("3"), (req, res) => {
+router.get('/historicoEmails', miPermiso("3"), async (req, res) => {
   var ano = parseInt(req.query.ano, 10);
   if (!ano) return res.status(400).send('Ano inválido.');
-  emailHistoricoSchema.find({ ano: ano }).sort({ data: -1 }).exec((err, historico) => {
-    if (err) { console.error('Erro ao buscar histórico de e-mails', err); return res.status(500).send('Erro ao buscar histórico.'); }
+  try {
+    let historico = await emailHistoricoSchema.find({ ano: ano }).sort({ data: -1 });
     res.send(historico);
-  });
+  } catch (error) {
+    console.error('Erro ao buscar histórico de e-mails', error);
+    res.status(500).send('Erro ao buscar histórico.');
+  }
 });
 
 router.post('/avaliador', miPermiso("2","3"), async (req, res) => {
@@ -1280,34 +1286,33 @@ router.post('/saberes', miPermiso("2","3"), async (req, res) => {
 // aprovado. "aprovado" continua booleano (true pros dois tipos de aprovação) e
 // "tipoAprovacao" diz qual dos dois - ver models/projeto-schema.js.
 // projetosAprovados (lista antiga, sem tipo) ainda é aceita por compatibilidade.
-router.put('/upgreice', ensureAuthenticated, miPermiso("3"), (req, res) => {
+router.put('/upgreice', ensureAuthenticated, miPermiso("3"), async (req, res) => {
   try {
-  let aprovadosSemTipo = req.body.projetosAprovados || [];
-  let anais = req.body.projetosAnais || [];
-  let apresentacao = req.body.projetosApresentacao || [];
-  let reprovados = req.body.projetosReprovados || [];
+    let aprovadosSemTipo = req.body.projetosAprovados || [];
+    let anais = req.body.projetosAnais || [];
+    let apresentacao = req.body.projetosApresentacao || [];
+    let reprovados = req.body.projetosReprovados || [];
 
-  let marcar = (ids, update) => {
-    for (var i = 0; i < ids.length; i++) {
-      projetoSchema.findOneAndUpdate({"_id": ids[i]}, update, {new:true}, (err, doc) => {
-        if (err) { console.error('Erro', err); return; }
-      });
-    }
-  };
+    let marcar = async (ids, update) => {
+      for (let id of ids) {
+        await projetoSchema.findOneAndUpdate({"_id": id}, update, {new:true});
+      }
+    };
 
-  marcar(aprovadosSemTipo, {"$set": {"aprovado": true}});
-  marcar(anais, {"$set": {"aprovado": true, "tipoAprovacao": "anais"}});
-  marcar(apresentacao, {"$set": {"aprovado": true, "tipoAprovacao": "apresentacao"}});
-  // "$set: aprovado:false" (não "$unset") - com unset, reprovado ficava
-  // indistinguível de "ainda não avaliado" (ambos undefined): o aviso de reprovação
-  // pro participante (adminCtrl.js, projeto.aprovado === false) nunca disparava, e
-  // não tinha como filtrar reprovados nos relatórios. tipoAprovacao sai junto, senão
-  // sobraria um tipo de aprovação num projeto não aprovado.
-  marcar(reprovados, {"$set": {"aprovado": false}, "$unset": {"tipoAprovacao": true}});
+    await marcar(aprovadosSemTipo, {"$set": {"aprovado": true}});
+    await marcar(anais, {"$set": {"aprovado": true, "tipoAprovacao": "anais"}});
+    await marcar(apresentacao, {"$set": {"aprovado": true, "tipoAprovacao": "apresentacao"}});
+    // "$set: aprovado:false" (não "$unset") - com unset, reprovado ficava
+    // indistinguível de "ainda não avaliado" (ambos undefined): o aviso de reprovação
+    // pro participante (adminCtrl.js, projeto.aprovado === false) nunca disparava, e
+    // não tinha como filtrar reprovados nos relatórios. tipoAprovacao sai junto, senão
+    // sobraria um tipo de aprovação num projeto não aprovado.
+    await marcar(reprovados, {"$set": {"aprovado": false}, "$unset": {"tipoAprovacao": true}});
 
-res.send('success');
+    res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao aprovar/reprovar projetos', error);
+    res.status(500).send('Erro ao aprovar/reprovar projetos');
   }
 });
 
@@ -1331,7 +1336,7 @@ router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), async (r
 });
 
 
-router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
+router.put('/update', ensureAuthenticated, miPermiso("3"), async (req, res) => {
   try {
     if (req.body.cep !== undefined){
       req.body.cep = splita(req.body.cep);
@@ -1342,21 +1347,23 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), (req, res) => {
 
     console.log(newProject);
 
-    projetoSchema.update({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true,new: true}, (err,docs) => {
-      if (err) { console.error('Erro ao editar', err); return; }
-      res.status(200).json(docs);
-    });
+    // Mesmo bug/fix já corrigido no grupo 4 (routes/projetos.js): .update() nunca devolve
+    // o documento, mesmo com {new:true} - vira findOneAndUpdate(), que de fato devolve.
+    let docs = await projetoSchema.findOneAndUpdate({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, new: true});
+    res.status(200).json(docs);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao editar', error);
+    res.status(500).send('Erro ao editar');
   }
 });
 
-router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, res) => {
+router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (req, res) => {
   try {
     let myArray = req.body;
     if (!myArray.length) return res.status(400).send('Nenhum integrante enviado');
     let id = myArray[0].ID;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (!(await projetoSchema.findById(id, '_id'))) return res.status(404).send('Projeto não encontrado');
 
     for (let j = 0; j < myArray.length; j++) {
       let v = myArray[j];
@@ -1373,8 +1380,8 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
     // Antes a resposta de sucesso saía na hora, sem esperar essas gravações
     // terminarem (nem checar se deram erro) - então um orientador novo podia
     // falhar em silêncio no banco (ex: erro do Mongo) enquanto o admin via
-    // "Alteração realizada com sucesso!" na tela. Agora cada integrante vira
-    // uma Promise e só respondemos depois que TODAS terminam de verdade.
+    // "Alteração realizada com sucesso!" na tela. Agora espera todas terminarem de
+    // verdade antes de responder.
     let promessas = myArray.map(function (value) {
       if (value._id !== undefined) {
         if (!idValido(value._id)) return Promise.resolve();
@@ -1388,14 +1395,8 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
           telefone: splita(value.telefone),
           tamCamiseta: value.tamCamiseta
         });
-        return new Promise(function (resolve, reject) {
-          projetoSchema.findOneAndUpdate({"_id": id, "integrantes._id": value._id},
-          {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new: true},
-          (err, doc) => {
-            if (err) return reject(err);
-            resolve(doc);
-          });
-        });
+        return projetoSchema.findOneAndUpdate({"_id": id, "integrantes._id": value._id},
+          {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new: true});
       }
 
       let newIntegrante = ({
@@ -1407,65 +1408,54 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), (req, re
         telefone: splita(value.telefone),
         tamCamiseta: value.tamCamiseta
       });
-      return new Promise(function (resolve, reject) {
-        projetoSchema.findOne({"_id": id}, (err, usr) => {
-          if (err) return reject(err);
-          if (!usr) return reject(new Error('Projeto não encontrado'));
-          usr.integrantes.push(newIntegrante);
-          usr.updatedAt = Date.now();
-          usr.save((err, usr) => {
-            if (err) return reject(err);
-            resolve(usr);
-          });
-        });
-      });
+      // Bug real encontrado e corrigido ao testar o grupo 4 (routes/projetos.js), mesmo
+      // padrão aqui: usr.integrantes.push(...) + usr.save() gera um modificador $pushAll,
+      // removido pelo MongoDB desde a 3.6 - falhava sempre, silenciosamente. $push
+      // atômico via findOneAndUpdate resolve.
+      return projetoSchema.findOneAndUpdate({"_id": id},
+        {"$push": {"integrantes": newIntegrante}, "$set": {updatedAt: Date.now()}}, {new: true});
     });
 
-    Promise.all(promessas)
-    .then(() => res.status(200).json(myArray))
-    .catch((err) => {
-      console.error('Erro ao editar integrantes', err);
-      res.status(500).send('Falha ao salvar integrantes');
-    });
+    await Promise.all(promessas);
+    res.status(200).json(myArray);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao editar integrantes', error);
     res.status(500).send('Falha ao salvar integrantes');
   }
 });
 
-router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), (req, res) => {
+router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.integrantes_id;
     let ID = req.body.ID;
     if (!idValido(id) || !idValido(ID)) return res.status(400).send('ID inválido');
 
-    projetoSchema.findOne({"integrantes._id": id}, (err, usr) => {
-      if (err) { console.error('Erro ao remover integrante', err); return; }
-      usr.integrantes.id(id).remove()
-      usr.save((err, usr) => {
-        if (err) { console.error('Erro ao remover integrante', err); return; }
-      });
-    });
-
-    projetoSchema.update({_id:ID}, {$set: {updatedAt: Date.now()}}, {upsert:true,new: true}, (err,docs) => {
-      if (err) { console.error('Erro ao remover integrante', err); return; }
-      res.status(200).json(docs);
-    });
+    // Duas chamadas viraram uma só, atômica: a antiga usava usr.integrantes.id(id).remove()
+    // + usr.save() (API de subdocumento removida nas versões novas do Mongoose) e, em
+    // paralelo, um .update() separado só pra updatedAt que nunca devolvia o documento de
+    // verdade (mesmo bug já corrigido no grupo 4) - res.json(docs) sempre mandava
+    // {n,nModified,ok}, nunca o projeto. $pull via findOneAndUpdate resolve os dois de vez.
+    let docs = await projetoSchema.findOneAndUpdate(
+      { _id: ID },
+      { $pull: { integrantes: { _id: id } }, $set: { updatedAt: Date.now() } },
+      { new: true }
+    );
+    res.status(200).json(docs);
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao remover integrante', error);
+    res.status(500).send('Erro ao remover integrante');
   }
 });
 
-router.put('/removeProjeto', miPermiso("3"), (req, res) => {
+router.put('/removeProjeto', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    projetoSchema.remove({"_id": id}, (err) => {
-      if (err) { console.error('Erro ao remover projeto', err); return; }
-    });
+    await projetoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
-    console.log('findOne error--> ${error}'); // Alteração Lucas Ferreira
+    console.error('Erro ao remover projeto', error);
+    res.status(500).send('Erro ao remover projeto');
   }
 });
 
@@ -1482,8 +1472,7 @@ router.get('/camisetas', miPermiso("3"), (req, res) => {
   .fontSize(12)
 
   // saberesSchema.find({}).sort({"nome":1}).exec((err, usr) => {Fundamental II (6º ao 9º anos)
-  projetoSchema.find({"participa":true,"categoria":"Ensino Médio, Técnico e Superior"}).sort({"eixo":1, "nomeProjeto":1}).exec((err, usr) => {
-    if (err) { console.error(err); return; }
+  projetoSchema.find({"participa":true,"categoria":"Ensino Médio, Técnico e Superior"}).sort({"eixo":1, "nomeProjeto":1}).then((usr) => {
     let echu = "";
     let cont = 0;
     for (let user in usr) {
@@ -1541,7 +1530,7 @@ router.get('/camisetas', miPermiso("3"), (req, res) => {
       myDoc.moveDown(2)
     }
     myDoc.end();
-  });
+  }).catch((err) => console.error(err));
   res.sendStatus(200);
 });
 
@@ -1561,8 +1550,7 @@ router.post('/pdf2', miPermiso("3"), (req, res) => {
   .text("FUNDAMENTAL I (1° ao 5° ano)", {align: 'center'})
   .moveDown(1)
 
-  projetoSchema.find({"aprovado":true,"categoria":"Fundamental I (1º ao 5º anos)"}).sort({"eixo":1, "nomeProjeto":1}).exec((err, user) => {
-    if (err) { console.error(err); return; }
+  projetoSchema.find({"aprovado":true,"categoria":"Fundamental I (1º ao 5º anos)"}).sort({"eixo":1, "nomeProjeto":1}).then((user) => {
     // let echu = "";
 
     for (i in user) {
@@ -1609,7 +1597,7 @@ router.post('/pdf2', miPermiso("3"), (req, res) => {
     //   }
     // }
     myDoc.end();
-  });
+  }).catch((err) => console.error(err));
 
   res.sendStatus(200);
 });
