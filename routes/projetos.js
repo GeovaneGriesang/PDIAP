@@ -190,12 +190,12 @@ router.post('/confirma/:id/:situacao', async (req, res) => {
         // findOneAndUpdate(). res.send(docs.nomeProjeto) sempre mandou undefined. Corrigido
         // trocando pro método que de fato devolve o documento, que é claramente a intenção
         // original (usar {new:true} só faz sentido se for usar o documento retornado).
-        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':true, 'participa_updated':true}}, {upsert:true, new: true});
+        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':true, 'participa_updated':true}}, {upsert:true, returnDocument: 'after'});
         return res.send(docs.nomeProjeto);
       }
 
       if (req.params.situacao === '9877') { //------------------------------------------------------------------9877 cod não participa
-        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':false, 'participa_updated':true}}, {upsert:true, new: true});
+        let docs = await ProjetoSchema.findOneAndUpdate({'_id': req.params.id}, {$set:{'participa':false, 'participa_updated':true}}, {upsert:true, returnDocument: 'after'});
         return res.send(docs.nomeProjeto);
       }
     } else {
@@ -237,7 +237,7 @@ router.put('/update', async (req, res) => {
     // Mesmo bug/fix de POST /confirma: .update() não devolve documento mesmo com
     // {new:true} - virou findOneAndUpdate() pra res.json(docs) mandar o projeto de
     // verdade (antes sempre mandava só {n, nModified, ok}).
-    let docs = await ProjetoSchema.findOneAndUpdate({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, new: true});
+    let docs = await ProjetoSchema.findOneAndUpdate({_id:req.user.id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, returnDocument: 'after'});
     res.status(200).json(docs);
   } catch (err) {
     console.error(err);
@@ -288,7 +288,7 @@ router.put('/upgreice', async (req, res) => {
         tamCamiseta: value.tamCamiseta
       });
       ProjetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
-        {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new:true})
+        {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {returnDocument: 'after'})
         .catch((err) => console.error(err));
     } else {
       let newIntegrante = ({

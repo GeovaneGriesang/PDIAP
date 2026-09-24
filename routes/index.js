@@ -141,7 +141,7 @@ router.post('/emitirCertificado', (req, res) => {
   // A Promise nunca era resolvida (callback vazio): quem chamava essa função
   // nunca esperava a gravação terminar de verdade.
   async function inserirTokenAvaliador(cpf, id, tipo) {
-    return await avaliadorSchema.findOneAndUpdate({'_id':id},{$set:{'token': new mongoose.mongo.ObjectId()}}, [{new:true}]);
+    return await avaliadorSchema.findOneAndUpdate({'_id':id},{$set:{'token': new mongoose.mongo.ObjectId()}}, {returnDocument: 'after'});
   }
 
   async function pesquisaAvaliador(cpf) {
@@ -174,13 +174,13 @@ router.post('/emitirCertificado', (req, res) => {
   async function inserirToken(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return await ProjetoSchema.findOneAndUpdate({'integrantes':{$elemMatch:{'cpf':cpf,'_id':id}}},
-      {'$set': {'integrantes.$.certificados': obj}}, [{new:true}]);
+      {'$set': {'integrantes.$.certificados': obj}}, {returnDocument: 'after'});
   }
 
   async function inserirTokenEvento(cpf, id, tipo) {
     var obj = {"_id":new mongoose.mongo.ObjectId(),  "tipo":tipo};
     return await eventoSchema.findOneAndUpdate({'responsavel':{$elemMatch:{'cpf':cpf,'_id':id}}},
-      {'$set': {'responsavel.$.certificados': obj}}, [{new:true}]);
+      {'$set': {'responsavel.$.certificados': obj}}, {returnDocument: 'after'});
   }
 
   async function pesquisaPremiado(cpf) {
@@ -193,7 +193,7 @@ router.post('/emitirCertificado', (req, res) => {
 
   async function inserirTokenPremiado(cpf, id) {
     var newId = new mongoose.mongo.ObjectId()
-    return await ProjetoSchema.findOneAndUpdate({'_id':id}, {'$set': {'token': newId}}, [{new:true}]);
+    return await ProjetoSchema.findOneAndUpdate({'_id':id}, {'$set': {'token': newId}}, {returnDocument: 'after'});
   }
 
   const one = pesquisaProjetoAluno(cpf).then(usr => {
@@ -282,15 +282,15 @@ router.post('/emitirCertificado', (req, res) => {
     let gravacoes = [];
     if (usr[0].tokenSaberes === undefined && contador2) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenSaberes': newId}}, [{new:true}]));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenSaberes': newId}}, {returnDocument: 'after'}));
     }
     if (usr[0].tokenOficinas === undefined && contador1) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenOficinas': newId}}, [{new:true}]));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenOficinas': newId}}, {returnDocument: 'after'}));
     }
     if (usr[0].tokenPalestra === undefined && contador3) {
       let newId = new mongoose.mongo.ObjectId()
-      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenPalestra': newId}}, [{new:true}]));
+      gravacoes.push(participanteSchema.findOneAndUpdate({'cpf':cpf}, {'$set': {'tokenPalestra': newId}}, {returnDocument: 'after'}));
     }
     return Promise.all(gravacoes).then(() => pesquisaParticipante(cpf))
   })
@@ -1055,7 +1055,7 @@ router.post('/redefinir-senha', authLimiter, async (req, res) => {
 
   let doc;
   try {
-    doc = await ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {new: true});
+    doc = await ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {returnDocument: 'after'});
   } catch (err) {
     doc = null;
   }

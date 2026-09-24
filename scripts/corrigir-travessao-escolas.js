@@ -28,12 +28,12 @@ async function main() {
 	for (const escola of escolas) {
 		const nomeAntigo = escola.nome;
 		const nomeNovo = nomeAntigo.replace(/–/g, '-');
-		const countProjetos = await Projeto.count({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] });
+		const countProjetos = await Projeto.countDocuments({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] });
 		relatorio.push({ de: nomeAntigo, para: nomeNovo, projetos: countProjetos });
 		if (DRY_RUN) continue;
 		escola.nome = nomeNovo;
 		await escola.save();
-		await Projeto.update({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] }, { $set: { nomeEscola: nomeNovo } }, { multi: true });
+		await Projeto.updateMany({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] }, { $set: { nomeEscola: nomeNovo } });
 	}
 
 	const nomeArquivo = 'scripts/relatorio-corrigir-travessao-escolas' + (DRY_RUN ? '-dry-run' : '') + '.json';
@@ -44,9 +44,9 @@ async function main() {
 
 mongoose.connection.once('open', () => {
 	main()
-		.then(() => { mongoose.connection.close(() => process.exit(0)); })
+		.then(() => { mongoose.connection.close().then(() => process.exit(0)); })
 		.catch((err) => {
 			console.error(err);
-			mongoose.connection.close(() => process.exit(1));
+			mongoose.connection.close().then(() => process.exit(1));
 		});
 });

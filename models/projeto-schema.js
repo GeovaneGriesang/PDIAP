@@ -118,19 +118,16 @@ ProjetoSchema.methods.hasExpired = function(){
 // Gera numInscricao pra projetos novos - incremento atômico via $inc (mesma garantia contra
 // duplicidade em criações concorrentes que o mongoose-auto-increment já dava), reaproveitando
 // o documento contador existente em identitycounters (ver IdentityCounterSchema acima).
-ProjetoSchema.pre('save', async function(next) {
-	if (!this.isNew) return next();
-	try {
-		let counter = await IdentityCounter.findOneAndUpdate(
-			{ model: 'Projeto', field: 'numInscricao' },
-			{ $inc: { count: 1 } },
-			{ new: true, upsert: true }
-		);
-		this.numInscricao = counter.count;
-		next();
-	} catch (err) {
-		next(err);
-	}
+// Sem parâmetro next: o mongoose 9 deixa de passar next() pro middleware pre (já pronto pra ele) -
+// o async já sinaliza fim (resolve) ou erro (rejeita, abortando o save).
+ProjetoSchema.pre('save', async function() {
+	if (!this.isNew) return;
+	let counter = await IdentityCounter.findOneAndUpdate(
+		{ model: 'Projeto', field: 'numInscricao' },
+		{ $inc: { count: 1 } },
+		{ returnDocument: 'after', upsert: true }
+	);
+	this.numInscricao = counter.count;
 });
 
 const Projeto = module.exports = mongoose.model('Projeto', ProjetoSchema);

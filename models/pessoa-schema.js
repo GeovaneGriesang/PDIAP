@@ -37,14 +37,14 @@ PessoaSchema.methods.hasExpired = function(){
 	return Date.now() > this.resetPasswordCreatedDate;
 };
 
-PessoaSchema.pre('save', function(next) {
+// Sem parâmetro next: o mongoose 9 deixa de passar next() pro middleware pre (já pronto pra ele).
+PessoaSchema.pre('save', function() {
 	if (!this.token || this.token === "" || this.token === undefined) {
 		this.token = new mongoose.Types.ObjectId().valueOf();
 	}
 	if (!this.createdAt) {
 		this.createdAt = Date.now();
 	}
-	next();
 });
 
 const Pessoa = module.exports = mongoose.model('Pessoa', PessoaSchema);

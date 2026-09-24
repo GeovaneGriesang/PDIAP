@@ -8,5 +8,5 @@ mongoose.connection.once('open', async () => {
 	const projetos = await Projeto.find({ nomeEscola: 'IFSul' });
 	console.log('Encontrados: ' + projetos.length);
 	projetos.forEach((p) => console.log(JSON.stringify(p, null, 2)));
-	mongoose.connection.close(() => process.exit(0));
+	mongoose.connection.close().then(() => process.exit(0));
 });

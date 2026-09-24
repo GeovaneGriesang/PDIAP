@@ -11,5 +11,5 @@ mongoose.connection.once('open', async () => {
 		console.log('Nº ' + p.numInscricao + ' (' + new Date(p.createdAt).getFullYear() + ') - integrantes: ' + p.integrantes.length);
 		p.integrantes.forEach((i) => console.log('  - ' + i.tipo + ': ' + i.nome + ' | email: "' + i.email + '"'));
 	});
-	mongoose.connection.close(() => process.exit(0));
+	mongoose.connection.close().then(() => process.exit(0));
 });

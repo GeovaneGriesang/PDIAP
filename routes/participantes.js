@@ -162,7 +162,7 @@ router.get('/dashboard/meus-certificados', ensureParticipante, async (req, res) 
     if (temPalestra && !req.user.tokenPalestra) campos.tokenPalestra = new mongoose.Types.ObjectId();
     let participante = Object.keys(campos).length === 0
       ? req.user
-      : await ParticipanteSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true });
+      : await ParticipanteSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { returnDocument: 'after' });
 
     let ano = new Date(participante.createdAt).getFullYear();
     let resposta = { oficina: null, saberes: null, palestra: null };

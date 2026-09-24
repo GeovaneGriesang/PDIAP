@@ -71,12 +71,12 @@ AvaliadorSchema.methods.hasExpired = function(){
  * Middleware 'pre-save': Garante que todo avaliador possua um token único antes de ser gravado.
  * Isso evita o erro 'undefined' nos certificados e automatiza a manutenção do banco.
  */
-AvaliadorSchema.pre('save', function(next) {
+// Sem parâmetro next: o mongoose 9 deixa de passar next() pro middleware pre (já pronto pra ele).
+AvaliadorSchema.pre('save', function() {
   if (!this.token || this.token === "" || this.token === undefined) {
     // Gera um novo identificador único caso não exista
     this.token = new mongoose.Types.ObjectId().valueOf();
   }
-  next();
 });
 
 const Avaliador = module.exports = mongoose.model('Avaliador', AvaliadorSchema);
