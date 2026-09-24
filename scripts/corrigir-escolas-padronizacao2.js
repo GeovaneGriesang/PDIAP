@@ -77,13 +77,13 @@ function semIdNulo(proj) {
 async function renomearCidadeNova() {
 	const escola = await Escola.findOne({ nome: 'Escola Municipal de Ensino Fundamental Cidade Nova' });
 	if (!escola) return;
-	const countProjetos = await Projeto.count({ $or: [{ escola: escola._id }, { nomeEscola: escola.nome }] });
+	const countProjetos = await Projeto.countDocuments({ $or: [{ escola: escola._id }, { nomeEscola: escola.nome }] });
 	relatorio.renomeadas.push({ de: escola.nome, para: 'EMEF Cidade Nova', projetos: countProjetos });
 	if (DRY_RUN) return;
 	const nomeAntigo = escola.nome;
 	escola.nome = 'EMEF Cidade Nova';
 	await escola.save();
-	await Projeto.update({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] }, { $set: { nomeEscola: escola.nome } }, { multi: true });
+	await Projeto.updateMany({ $or: [{ escola: escola._id }, { nomeEscola: nomeAntigo }] }, { $set: { nomeEscola: escola.nome } });
 }
 
 async function resolverIfsulGenericoPorCidade() {
@@ -104,7 +104,7 @@ async function resolverIfsulGenericoPorCidade() {
 		const alvo = proj.cidade && escolaPorCidade[proj.cidade];
 		if (alvo) {
 			relatorio.ifsulResolvidoPorCidade.push({ numInscricao: proj.numInscricao, ano: new Date(proj.createdAt).getFullYear(), cidade: proj.cidade, nomeEscolaOriginal: proj.nomeEscola, para: alvo.nome });
-			if (!DRY_RUN) await Projeto.update({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
+			if (!DRY_RUN) await Projeto.updateOne({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
 		} else {
 			relatorio.ifsulSemCidadeCorrespondente.push({ numInscricao: proj.numInscricao, ano: new Date(proj.createdAt).getFullYear(), cidade: proj.cidade, nomeEscolaOriginal: proj.nomeEscola });
 			if (!DRY_RUN) {
@@ -112,7 +112,7 @@ async function resolverIfsulGenericoPorCidade() {
 					escolaGenericaCanonica = new Escola({ nome: NOME_GENERICO_CANONICO, status: 'aprovada', origem: 'migracao' });
 					await escolaGenericaCanonica.save();
 				}
-				await Projeto.update({ _id: proj._id }, { $set: { escola: escolaGenericaCanonica._id, nomeEscola: NOME_GENERICO_CANONICO } });
+				await Projeto.updateOne({ _id: proj._id }, { $set: { escola: escolaGenericaCanonica._id, nomeEscola: NOME_GENERICO_CANONICO } });
 			}
 		}
 	}
@@ -129,7 +129,7 @@ async function vincularCooperativa() {
 	}, 'numInscricao nomeEscola createdAt')).filter(semIdNulo);
 	for (const proj of projetos) {
 		relatorio.cooperativaVinculada.push({ numInscricao: proj.numInscricao, ano: new Date(proj.createdAt).getFullYear(), nomeEscolaOriginal: proj.nomeEscola });
-		if (!DRY_RUN) await Projeto.update({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
+		if (!DRY_RUN) await Projeto.updateOne({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
 	}
 }
 
@@ -151,7 +151,7 @@ async function vincularEmefMariaAlmerinda() {
 				escola = new Escola({ nome: NOME, cidade: proj.cidade, estado: proj.estado, status: 'aprovada', origem: 'migracao' });
 				await escola.save();
 			}
-			await Projeto.update({ _id: proj._id }, { $set: { escola: escola._id, nomeEscola: escola.nome } });
+			await Projeto.updateOne({ _id: proj._id }, { $set: { escola: escola._id, nomeEscola: escola.nome } });
 		}
 	}
 }
@@ -191,9 +191,9 @@ async function main() {
 
 mongoose.connection.once('open', () => {
 	main()
-		.then(() => { mongoose.connection.close(() => process.exit(0)); })
+		.then(() => { mongoose.connection.close().then(() => process.exit(0)); })
 		.catch((err) => {
 			console.error(err);
-			mongoose.connection.close(() => process.exit(1));
+			mongoose.connection.close().then(() => process.exit(1));
 		});
 });

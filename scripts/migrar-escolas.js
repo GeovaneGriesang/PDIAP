@@ -232,10 +232,10 @@ mongoose.connection.once('open', function() {
 	migrar()
 		.then(function() {
 			console.log('\nMigração concluída.');
-			mongoose.connection.close(function() { process.exit(0); });
+			mongoose.connection.close().then(function() { process.exit(0); });
 		})
 		.catch(function(err) {
 			console.error('Erro na migração:', err);
-			mongoose.connection.close(function() { process.exit(1); });
+			mongoose.connection.close().then(function() { process.exit(1); });
 		});
 });

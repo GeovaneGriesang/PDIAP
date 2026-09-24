@@ -181,10 +181,10 @@ mongoose.connection.once('open', function() {
 	mesclar()
 		.then(function() {
 			console.log('\nMesclagem concluída.');
-			mongoose.connection.close(function() { process.exit(0); });
+			mongoose.connection.close().then(function() { process.exit(0); });
 		})
 		.catch(function(err) {
 			console.error('Erro na mesclagem:', err);
-			mongoose.connection.close(function() { process.exit(1); });
+			mongoose.connection.close().then(function() { process.exit(1); });
 		});
 });

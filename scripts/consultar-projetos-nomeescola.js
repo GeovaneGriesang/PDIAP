@@ -25,9 +25,9 @@ async function main() {
 
 mongoose.connection.once('open', () => {
 	main()
-		.then(() => { mongoose.connection.close(() => process.exit(0)); })
+		.then(() => { mongoose.connection.close().then(() => process.exit(0)); })
 		.catch((err) => {
 			console.error(err);
-			mongoose.connection.close(() => process.exit(1));
+			mongoose.connection.close().then(() => process.exit(1));
 		});
 });

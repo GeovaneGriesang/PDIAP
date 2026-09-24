@@ -307,10 +307,10 @@ mongoose.connection.once('open', function() {
 	importar()
 		.then(function() {
 			console.log('\nImportação concluída.');
-			mongoose.connection.close(function() { process.exit(0); });
+			mongoose.connection.close().then(function() { process.exit(0); });
 		})
 		.catch(function(err) {
 			console.error('Erro na importação:', err);
-			mongoose.connection.close(function() { process.exit(1); });
+			mongoose.connection.close().then(function() { process.exit(1); });
 		});
 });

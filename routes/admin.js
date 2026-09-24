@@ -335,7 +335,7 @@ router.put('/aprovarEscola', miPermiso("3"), async (req, res) => {
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
-    }, { new: true });
+    }, { returnDocument: 'after' });
     avisarDecisaoEscola(data, true);
     res.send(data);
   } catch (error){
@@ -357,7 +357,7 @@ router.put('/rejeitarEscola', miPermiso("3"), async (req, res) => {
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
       aprovadaPor: req.user.username
-    }, { new: true });
+    }, { returnDocument: 'after' });
     avisarDecisaoEscola(data, false);
     res.send(data);
   } catch (error){
@@ -375,7 +375,7 @@ router.put('/editarEscola', miPermiso("3"), async (req, res) => {
       cep: req.body.cep,
       cidade: req.body.cidade,
       estado: req.body.estado
-    }, { new: true });
+    }, { returnDocument: 'after' });
     res.send(data);
   } catch (error){
     console.error('Erro ao editar escola', error);
@@ -452,7 +452,7 @@ router.put('/atualizaAvaliador', miPermiso("3"), async (req, res) => {
       "telefone": splita(req.body.telefone),
       "curriculo": req.body.curriculo,
       "disponibilidade": Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : []
-    }}, {new:true});
+    }}, {returnDocument: 'after'});
     res.send('success');
   } catch (error) {
     console.error('Erro ao atualizar avaliador', error);
@@ -642,7 +642,7 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
     let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
     if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
-    await participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {new:true});
+    await participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {returnDocument: 'after'});
 
     if (req.body.eventos !== undefined) {
       let myArray = req.body.eventos;
@@ -654,7 +654,7 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
           ,data: value.data
         });
 
-        await participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {new:true});
+        await participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {returnDocument: 'after'});
       }
     }
     res.send('success');
@@ -711,10 +711,10 @@ router.put('/setPresencaProjetos', miPermiso("3"), async (req, res) => {
     let myArray1 = req.body.integrantesAusentes;
 
     for (let id_integ of myArray0) {
-      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$set": {"integrantes.$.presenca": true}}, {new:true});
+      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$set": {"integrantes.$.presenca": true}}, {returnDocument: 'after'});
     }
     for (let id_integ of myArray1) {
-      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$unset": {"integrantes.$.presenca": true}}, {new:true});
+      await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$unset": {"integrantes.$.presenca": true}}, {returnDocument: 'after'});
     }
     res.send('success');
   } catch (error) {
@@ -728,16 +728,16 @@ router.put('/setPremiadoProjetos', miPermiso("3"), async (req, res) => {
     let premiacao = req.body;
     if (premiacao.premiacao === 'Premiado') {
       if (premiacao.colocacao === undefined) { premiacao.colocacao = null; }
-      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{returnDocument: 'after'});
     } else if (premiacao.premiacao === 'Mencao_honrosa') {
-      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":null,"feirasClassificadas":premiacao.feirasClassificadas}},{returnDocument: 'after'});
     } else if (premiacao.premiacao === '') {
       await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$unset:{"premiacao":"","colocacao":"","feirasClassificadas":"", "token":""}});
     } else {
       // Projeto sem Premiação/Menção Honrosa marcada (premiacao.premiacao vazio/undefined) ainda
       // pode ter sido classificado pra uma ou mais feiras - esses dois conceitos são independentes
       // (ver details.premiacao.html), então salva a classificação mesmo sem prêmio.
-      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"feirasClassificadas":premiacao.feirasClassificadas}},{new:true});
+      await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"feirasClassificadas":premiacao.feirasClassificadas}},{returnDocument: 'after'});
     }
     res.send('success');
   } catch (error) {
@@ -761,7 +761,7 @@ router.post('/edit', miPermiso("3"), async (req, res) => {
       botoes: req.body[0].botoes,
       destaques: req.body[0].destaques
     };
-    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'solicitacao_escola':obj.solicitacao_escola,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, [{new:true}]);
+    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'dias':obj.dias,'mes':obj.mes,'ano':obj.ano,'edicao':obj.edicao,'text':obj.text,'saberes_docentes':obj.saberes_docentes,'solicitacao_escola':obj.solicitacao_escola,'prazoProjetos':obj.prazoProjetos,'prazoAvaliadores':obj.prazoAvaliadores,'botoes':obj.botoes,'destaques':obj.destaques}}, {returnDocument: 'after'});
     res.send('success');
   } catch (error) {
     console.error('Erro ao editar', error);
@@ -780,7 +780,7 @@ router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
 	try {
     let obj = req.body;
     console.log("OBJ:"+JSON.stringify(obj));
-    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {new:true});
+    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {returnDocument: 'after'});
     res.send('success');
   } catch (error) {
     console.error('Erro ao editar', error);
@@ -1287,7 +1287,7 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), async (req, res) =>
 
     let marcar = async (ids, update) => {
       for (let id of ids) {
-        await projetoSchema.findOneAndUpdate({"_id": id}, update, {new:true});
+        await projetoSchema.findOneAndUpdate({"_id": id}, update, {returnDocument: 'after'});
       }
     };
 
@@ -1314,11 +1314,11 @@ router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), async (r
     let myArray1 = req.body.avaliadoresNMarcados;
 
     for (let id_doc of myArray0) {
-      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$set": {"avaliacao": true}}, {new:true});
+      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$set": {"avaliacao": true}}, {returnDocument: 'after'});
     }
 
     for (let id_doc of myArray1) {
-      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$unset": {"avaliacao": true}}, {new:true});
+      await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$unset": {"avaliacao": true}}, {returnDocument: 'after'});
     }
     res.send('success');
   } catch (error) {
@@ -1341,7 +1341,7 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), async (req, res) => {
 
     // Mesmo bug/fix já corrigido no grupo 4 (routes/projetos.js): .update() nunca devolve
     // o documento, mesmo com {new:true} - vira findOneAndUpdate(), que de fato devolve.
-    let docs = await projetoSchema.findOneAndUpdate({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, new: true});
+    let docs = await projetoSchema.findOneAndUpdate({'_id':id}, {$set:newProject, updatedAt: Date.now()}, {upsert:true, returnDocument: 'after'});
     res.status(200).json(docs);
   } catch (error) {
     console.error('Erro ao editar', error);
@@ -1388,7 +1388,7 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
           tamCamiseta: value.tamCamiseta
         });
         return projetoSchema.findOneAndUpdate({"_id": id, "integrantes._id": value._id},
-          {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {new: true});
+          {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {returnDocument: 'after'});
       }
 
       let newIntegrante = ({
@@ -1405,7 +1405,7 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
       // removido pelo MongoDB desde a 3.6 - falhava sempre, silenciosamente. $push
       // atômico via findOneAndUpdate resolve.
       return projetoSchema.findOneAndUpdate({"_id": id},
-        {"$push": {"integrantes": newIntegrante}, "$set": {updatedAt: Date.now()}}, {new: true});
+        {"$push": {"integrantes": newIntegrante}, "$set": {updatedAt: Date.now()}}, {returnDocument: 'after'});
     });
 
     await Promise.all(promessas);
@@ -1430,7 +1430,7 @@ router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), async (req
     let docs = await projetoSchema.findOneAndUpdate(
       { _id: ID },
       { $pull: { integrantes: { _id: id } }, $set: { updatedAt: Date.now() } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     res.status(200).json(docs);
   } catch (error) {

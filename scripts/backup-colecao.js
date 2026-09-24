@@ -28,9 +28,9 @@ mongoose.connection.once('open', function() {
 		const outPath = path.join(__dirname, `backup-${nomeModelo}-${timestamp}.json`);
 		fs.writeFileSync(outPath, JSON.stringify(docs, null, 2));
 		console.log(`Backup de ${docs.length} documento(s) salvo em ${outPath}`);
-		mongoose.connection.close(function() { process.exit(0); });
+		mongoose.connection.close().then(function() { process.exit(0); });
 	}).catch(function(err) {
 		console.error('Erro no backup:', err);
-		mongoose.connection.close(function() { process.exit(1); });
+		mongoose.connection.close().then(function() { process.exit(1); });
 	});
 });

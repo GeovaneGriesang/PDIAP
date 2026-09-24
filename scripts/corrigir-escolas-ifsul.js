@@ -65,12 +65,12 @@ async function renomear() {
 	for (const { de, para } of RENOMEAR) {
 		const escola = await Escola.findOne({ nome: de });
 		if (!escola) continue;
-		const countProjetos = await Projeto.count({ $or: [{ escola: escola._id }, { nomeEscola: de }] });
+		const countProjetos = await Projeto.countDocuments({ $or: [{ escola: escola._id }, { nomeEscola: de }] });
 		relatorio.renomeadas.push({ de: de, para: para, projetos: countProjetos });
 		if (DRY_RUN) continue;
 		escola.nome = para;
 		await escola.save();
-		await Projeto.update({ $or: [{ escola: escola._id }, { nomeEscola: de }] }, { $set: { nomeEscola: para } }, { multi: true });
+		await Projeto.updateMany({ $or: [{ escola: escola._id }, { nomeEscola: de }] }, { $set: { nomeEscola: para } });
 	}
 }
 
@@ -104,7 +104,7 @@ async function resolverGenericos() {
 			const alvo = resolverParaProjeto(proj);
 			if (alvo) {
 				relatorio.projetosResolvidosPorCidade.push({ numInscricao: proj.numInscricao, cidade: proj.cidade, de: nomeGenerico, para: alvo.nome });
-				if (!DRY_RUN) await Projeto.update({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
+				if (!DRY_RUN) await Projeto.updateOne({ _id: proj._id }, { $set: { escola: alvo._id, nomeEscola: alvo.nome } });
 			} else {
 				// Sem câmpus correspondente pra cidade dele - fica no bucket genérico único.
 				if (nomeGenerico !== NOME_GENERICO_CANONICO) {
@@ -114,7 +114,7 @@ async function resolverGenericos() {
 							escolaGenericaCanonica = new Escola({ nome: NOME_GENERICO_CANONICO, status: 'aprovada', origem: 'migracao' });
 							await escolaGenericaCanonica.save();
 						}
-						await Projeto.update({ _id: proj._id }, { $set: { escola: escolaGenericaCanonica._id, nomeEscola: NOME_GENERICO_CANONICO } });
+						await Projeto.updateOne({ _id: proj._id }, { $set: { escola: escolaGenericaCanonica._id, nomeEscola: NOME_GENERICO_CANONICO } });
 					}
 				}
 				// já está no genérico canônico - não precisa fazer nada.
@@ -124,9 +124,9 @@ async function resolverGenericos() {
 		// Depois de mover todo mundo, o nome genérico não-canônico não deve mais existir
 		// como escola selecionável (não é uma escola de verdade).
 		if (nomeGenerico !== NOME_GENERICO_CANONICO) {
-			const restantes = await Projeto.count({ $or: [{ escola: escolaGenerica._id }, { nomeEscola: nomeGenerico }] });
+			const restantes = await Projeto.countDocuments({ $or: [{ escola: escolaGenerica._id }, { nomeEscola: nomeGenerico }] });
 			relatorio.escolasGenericasRemovidas.push({ nome: nomeGenerico, projetosRestantes: restantes });
-			if (!DRY_RUN && restantes === 0) await Escola.remove({ _id: escolaGenerica._id });
+			if (!DRY_RUN && restantes === 0) await Escola.deleteOne({ _id: escolaGenerica._id });
 		}
 	}
 }
@@ -147,9 +147,9 @@ async function main() {
 
 mongoose.connection.once('open', () => {
 	main()
-		.then(() => { mongoose.connection.close(() => process.exit(0)); })
+		.then(() => { mongoose.connection.close().then(() => process.exit(0)); })
 		.catch((err) => {
 			console.error(err);
-			mongoose.connection.close(() => process.exit(1));
+			mongoose.connection.close().then(() => process.exit(1));
 		});
 });

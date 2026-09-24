@@ -270,7 +270,7 @@ router.put('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
     curriculo: req.body.curriculo
   };
   try {
-    await AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { new: true });
+    await AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { returnDocument: 'after' });
     res.send('success');
   } catch (err) {
     console.error('Erro ao atualizar dados do avaliador', err);

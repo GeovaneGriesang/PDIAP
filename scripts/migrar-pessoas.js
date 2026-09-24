@@ -129,10 +129,10 @@ mongoose.connection.once('open', () => {
 	migrar()
 		.then(() => {
 			console.log('\nMigração concluída.');
-			mongoose.connection.close(() => process.exit(0));
+			mongoose.connection.close().then(() => process.exit(0));
 		})
 		.catch((err) => {
 			console.error('Erro na migração:', err);
-			mongoose.connection.close(() => process.exit(1));
+			mongoose.connection.close().then(() => process.exit(1));
 		});
 });
