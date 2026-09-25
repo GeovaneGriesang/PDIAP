@@ -8,7 +8,7 @@ const express = require('express')
 , session = require('express-session')
 , SaberesSchema = require('../models/saberes-schema')
 , nodemailer = require('nodemailer')
-, EmailTemplate = require('email-templates').EmailTemplate
+, EmailTemplate = require('../utils/emailTemplate').EmailTemplate
 , path = require('path');
 
 function splita(arg){
