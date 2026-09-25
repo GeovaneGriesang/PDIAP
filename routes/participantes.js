@@ -2,7 +2,7 @@
 
 const express = require('express')
 , nodemailer = require('nodemailer')
-, EmailTemplate = require('email-templates').EmailTemplate
+, EmailTemplate = require('../utils/emailTemplate').EmailTemplate
 , path = require('path')
 , router = express.Router()
 , crypto = require('crypto')
