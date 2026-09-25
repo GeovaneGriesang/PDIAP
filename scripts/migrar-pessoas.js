@@ -32,6 +32,16 @@ function normalizarDocumento(cpf) {
 	return (cpf || '').toString().replace(/\D+/g, '');
 }
 
+// Fonte das credenciais do grupo: prioriza quem já escolheu senha própria
+// (senhaDefinida:true - é o registro que a pessoa de fato usou pra logar),
+// senão o mais recente por createdAt.
+function escolherFonte(registros) {
+	return registros.slice().sort((a, b) => {
+		if (!!a.senhaDefinida !== !!b.senhaDefinida) return a.senhaDefinida ? -1 : 1;
+		return (b.createdAt || 0) - (a.createdAt || 0);
+	})[0];
+}
+
 async function migrar() {
 	const avaliadores = await Avaliador.find({});
 	const participantes = await Participante.find({});
@@ -45,7 +55,7 @@ async function migrar() {
 		grupos.get(documento).push(registro);
 	}
 
-	let pessoasCriadas = 0, pessoasReaproveitadas = 0, papeisLinkados = 0, papeisJaLinkados = 0;
+	let pessoasCriadas = 0, pessoasReaproveitadas = 0, credenciaisAdotadas = 0, papeisLinkados = 0, papeisJaLinkados = 0;
 	const divergencias = [];
 	const semDocumento = avaliadores.length + participantes.length - [...grupos.values()].reduce((n, g) => n + g.length, 0);
 
@@ -65,16 +75,11 @@ async function migrar() {
 		}
 
 		const jaLinkado = registros.find((r) => r.pessoa);
-		let pessoa = jaLinkado ? await Pessoa.findById(jaLinkado.pessoa) : await Pessoa.findOne({ documento });
+		let pessoa = jaLinkado ? await Pessoa.findById(jaLinkado.pessoa) : null;
+		if (!pessoa) pessoa = await Pessoa.findOne({ documento });
 
 		if (!pessoa) {
-			// Fonte dos dados iniciais: prioriza quem já escolheu senha própria
-			// (senhaDefinida:true - é o registro que a pessoa de fato usou pra logar),
-			// senão o mais recente por createdAt.
-			const fonte = registros.slice().sort((a, b) => {
-				if (!!a.senhaDefinida !== !!b.senhaDefinida) return a.senhaDefinida ? -1 : 1;
-				return (b.createdAt || 0) - (a.createdAt || 0);
-			})[0];
+			const fonte = escolherFonte(registros);
 
 			if (DRY_RUN) {
 				console.log(`[dry-run] criaria Pessoa documento=${documento} nome="${fonte.nome}" email="${fonte.email}" (fonte: ${fonte.constructor.modelName} ${fonte._id})`);
@@ -96,6 +101,25 @@ async function migrar() {
 			pessoasCriadas++;
 		} else {
 			pessoasReaproveitadas++;
+			// Pessoa que já existia mas sem senha própria (ex: criada numa rodada anterior
+			// que não chegou a copiar credenciais): adota a senha do melhor registro do
+			// grupo, senão quem definiu senha própria perderia ela ao ser vinculado e
+			// voltaria a entrar só com o documento. Nunca sobrescreve senha já definida.
+			if (!pessoa.senhaDefinida) {
+				const fonte = escolherFonte(registros);
+				if (fonte.senhaDefinida && fonte.password) {
+					if (DRY_RUN) {
+						console.log(`[dry-run] Pessoa documento=${documento} adotaria a senha de ${fonte.constructor.modelName} ${fonte._id}`);
+					} else {
+						pessoa.password = fonte.password;
+						pessoa.senhaDefinida = true;
+						pessoa.resetPasswordToken = fonte.resetPasswordToken;
+						pessoa.resetPasswordCreatedDate = fonte.resetPasswordCreatedDate;
+						await pessoa.save();
+					}
+					credenciaisAdotadas++;
+				}
+			}
 		}
 
 		for (const registro of registros) {
@@ -113,6 +137,7 @@ async function migrar() {
 	console.log('\n--- Resumo da migração' + (DRY_RUN ? ' (dry-run, nada foi gravado)' : '') + ' ---');
 	console.log('Pessoas criadas:', pessoasCriadas);
 	console.log('Pessoas já existentes reaproveitadas:', pessoasReaproveitadas);
+	console.log('  dessas, adotaram a senha de um papel:', credenciaisAdotadas);
 	console.log('Papéis linkados agora:', papeisLinkados);
 	console.log('Papéis que já estavam linkados (pulados):', papeisJaLinkados);
 	console.log('Registros sem documento (não migrados):', semDocumento);
