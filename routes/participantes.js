@@ -9,6 +9,7 @@ const express = require('express')
 , bcrypt = require('bcryptjs')
 , mongoose = require('mongoose')
 , Participante = require('../controllers/participante-controller')
+, loginBootstrap = require('../utils/loginBootstrap')
 , ParticipanteSchema = require('../models/participante-schema');
 
 // Garante que quem está autenticado é mesmo um Participante (não Projeto/Admin/Avaliador) -
@@ -21,12 +22,18 @@ function ensureParticipante(req, res, next) {
   res.sendStatus(403);
 }
 
-router.get('/dashboard/loggedin', ensureParticipante, (req, res) => {
-  res.send({
-    nome: req.user.nome,
-    email: req.user.email,
-    senhaDefinida: !!req.user.senhaDefinida
-  });
+router.get('/dashboard/loggedin', ensureParticipante, async (req, res) => {
+  try {
+    let credencial = await loginBootstrap.carregarCredencial(req.user);
+    res.send({
+      nome: req.user.nome,
+      email: req.user.email,
+      senhaDefinida: !!credencial.senhaDefinida
+    });
+  } catch (err) {
+    console.error('Erro ao carregar dados do participante logado', err);
+    res.status(500).send('error');
+  }
 });
 
 // Troca de senha - funciona tanto pro primeiro acesso (senhaDefinida false, não exige
@@ -43,17 +50,20 @@ router.post('/dashboard/trocar-senha', ensureParticipante, async (req, res) => {
     let participante = await ParticipanteSchema.findById(req.user._id);
     if (!participante) return res.status(404).send('Participante não encontrado.');
 
-    if (participante.senhaDefinida) {
+    // Senha mora na Pessoa vinculada (compartilhada entre papéis) ou, sem vínculo, no
+    // próprio participante - ver utils/loginBootstrap.js#carregarCredencial.
+    let credencial = await loginBootstrap.carregarCredencial(participante);
+    if (credencial.senhaDefinida) {
       if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
-      let isMatch = await bcrypt.compare(req.body.senhaAtual, participante.password);
+      let isMatch = await bcrypt.compare(req.body.senhaAtual, credencial.password);
       if (!isMatch) return res.status(400).send('Senha atual incorreta.');
     }
 
     let salt = await bcrypt.genSalt(10);
     let hash = await bcrypt.hash(novaSenha, salt);
-    participante.password = hash;
-    participante.senhaDefinida = true;
-    await participante.save();
+    credencial.password = hash;
+    credencial.senhaDefinida = true;
+    await credencial.save();
     res.send('success');
   } catch (err) {
     console.error('Erro ao trocar senha de participante', err);
@@ -66,19 +76,22 @@ router.post('/dashboard/trocar-senha', ensureParticipante, async (req, res) => {
 router.post('/dashboard/redefinir-senha', async (req, res) => {
   let email = req.body.email;
   let participante;
+  let token = crypto.randomBytes(20).toString('hex');
   try {
     participante = await ParticipanteSchema.findOne({ email: email });
+    if (!participante) return res.status(404).send('E-mail não encontrado.');
+
+    // Token vai pra Pessoa vinculada (o link redefine a senha única dela) ou, sem vínculo,
+    // pro próprio participante.
+    let credencial = await loginBootstrap.carregarCredencial(participante);
+    await credencial.constructor.updateOne(
+      { _id: credencial._id },
+      { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
+    );
   } catch (err) {
     console.error('Erro ao redefinir senha de participante', err);
-    return;
+    return res.status(500).send('error');
   }
-  if (!participante) return res.status(404).send('E-mail não encontrado.');
-
-  let token = crypto.randomBytes(20).toString('hex');
-  ParticipanteSchema.findOneAndUpdate(
-    { email: email },
-    { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
-  ).catch((err) => console.error(err));
 
   res.send(email);
 
@@ -105,20 +118,29 @@ router.post('/dashboard/redefinir-senha', async (req, res) => {
 
 router.post('/dashboard/nova-senha/:token', async (req, res) => {
   try {
-    let participante = await ParticipanteSchema.findOne({ resetPasswordToken: req.params.token });
-    if (!participante) return res.send('erro2');
-    if (participante.hasExpired()) return res.send('erro3');
+    // Token na Pessoa (fluxo novo) ou no participante (emitido antes do login único / sem vínculo).
+    let dono = await loginBootstrap.encontrarPorTokenReset(ParticipanteSchema, req.params.token);
+    if (!dono) return res.send('erro2');
+    if (dono.hasExpired()) return res.send('erro3');
     if (!Participante.senhaForte(req.body.password)) {
       return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
     }
 
+    // A senha nova vai pra quem guarda a senha (a Pessoa, se o participante estiver
+    // vinculado - mesmo que o token legado tenha sido gravado no participante).
+    let credencial = await loginBootstrap.carregarCredencial(dono);
     let salt = await bcrypt.genSalt(10);
     let hash = await bcrypt.hash(req.body.password, salt);
-    participante.password = hash;
-    participante.senhaDefinida = true;
-    participante.resetPasswordToken = undefined;
-    participante.resetPasswordCreatedDate = undefined;
-    await participante.save();
+    credencial.password = hash;
+    credencial.senhaDefinida = true;
+    credencial.resetPasswordToken = undefined;
+    credencial.resetPasswordCreatedDate = undefined;
+    await credencial.save();
+    if (credencial !== dono) {
+      dono.resetPasswordToken = undefined;
+      dono.resetPasswordCreatedDate = undefined;
+      await dono.save();
+    }
     res.send('Senha alterada');
   } catch (err) {
     console.error('Erro ao definir nova senha de participante', err);

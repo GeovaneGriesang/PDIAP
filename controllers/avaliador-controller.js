@@ -1,8 +1,8 @@
 'use strict';
 
-const bcrypt = require('bcryptjs')
-,	Avaliador = require('../models/avaliador-schema')
-,	documentoValidator = require('../utils/documentoValidator');
+const Avaliador = require('../models/avaliador-schema')
+,	documentoValidator = require('../utils/documentoValidator')
+,	loginBootstrap = require('../utils/loginBootstrap');
 
 module.exports.createAvaliador = async (newAvaliador) => {
 	try {
@@ -30,22 +30,18 @@ module.exports.getLoginAvaliador = (email, user) => {
 	);
 };
 
-// Se o avaliador já definiu senha própria, compara normalmente (bcrypt). Se ainda não
-// (senhaDefinida falsy - inclui registros antigos, que nunca tiveram esse campo), aceita
-// como "senha" o próprio documento de identificação (campo cpf, só dígitos) - primeiro
-// acesso. Quem chama essa função decide, com base em avaliador.senhaDefinida, se deve
-// obrigar a troca de senha em seguida.
-module.exports.compareLoginOuBootstrap = (candidatePassword, avaliador, callback) => {
-	if (avaliador.senhaDefinida && avaliador.password) {
-		bcrypt.compare(candidatePassword, avaliador.password, (err, isMatch) => {
-			if (err) { console.error('Erro ao realizar login de avaliador', err); return callback(err); }
-			callback(null, isMatch);
-		});
-		return;
+// Compara a senha digitada contra quem guarda a senha deste avaliador (a Pessoa vinculada
+// ou, sem vínculo, o próprio registro - ver utils/loginBootstrap.js). Quem chama decide,
+// com base em senhaDefinida da mesma credencial, se deve obrigar a troca de senha.
+module.exports.compareLoginOuBootstrap = async (candidatePassword, avaliador, callback) => {
+	let credencial;
+	try {
+		credencial = await loginBootstrap.carregarCredencial(avaliador);
+	} catch (err) {
+		console.error('Erro ao realizar login de avaliador', err);
+		return callback(err);
 	}
-	let documento = (avaliador.cpf || '').replace(/\D+/g, '');
-	let tentativa = (candidatePassword || '').replace(/\D+/g, '');
-	callback(null, documento.length > 0 && documento === tentativa);
+	loginBootstrap.compareLoginOuBootstrap(candidatePassword, credencial, callback);
 };
 
 // Formata a lista de combinações categoria+eixo de um avaliador pro texto de certificado/
@@ -55,12 +51,4 @@ module.exports.formatarCategoriasEixos = (lista) => {
 	return (lista || []).map((ce) => ce.categoria + ' - ' + ce.eixo).join('; ');
 };
 
-// Senha forte: 8 a 12 caracteres, exigindo maiúscula, minúscula, número e símbolo.
-module.exports.senhaForte = (senha) => {
-	if (typeof senha !== 'string' || senha.length < 8 || senha.length > 12) return false;
-	if (!/[A-Z]/.test(senha)) return false;
-	if (!/[a-z]/.test(senha)) return false;
-	if (!/[0-9]/.test(senha)) return false;
-	if (!/[^A-Za-z0-9]/.test(senha)) return false;
-	return true;
-};
+module.exports.senhaForte = loginBootstrap.senhaForte;

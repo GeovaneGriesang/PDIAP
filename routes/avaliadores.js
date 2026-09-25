@@ -8,6 +8,8 @@ const express = require('express')
 , passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy
 , Avaliador = require('../controllers/avaliador-controller')
+, loginBootstrap = require('../utils/loginBootstrap')
+, pessoaController = require('../controllers/pessoa-controller')
 , session = require('express-session')
 , crypto = require('crypto')
 , bcrypt = require('bcryptjs')
@@ -104,6 +106,15 @@ router.post('/registro', async (req, res) => {
 		feiraId: feiraId
 	});
 
+	// Login único: vincula à Pessoa do mesmo documento (ver controllers/pessoa-controller.js#vincularPessoa)
+	newAvaliador.pessoa = await pessoaController.vincularPessoa({
+		cpf: newAvaliador.cpf,
+		nome: newAvaliador.nome,
+		email: newAvaliador.email,
+		telefone: newAvaliador.telefone,
+		nacionalidade: newAvaliador.nacionalidade
+	});
+
 	Avaliador.createAvaliador(newAvaliador);
 
 	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos (routes/index.js).
@@ -145,13 +156,19 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
 
 // DASHBOARD DO AVALIADOR (login próprio) ===================================
 
-router.get('/dashboard/loggedin', ensureAvaliador, (req, res) => {
-  res.send({
-    nome: req.user.nome,
-    email: req.user.email,
-    senhaDefinida: !!req.user.senhaDefinida,
-    avaliacao: !!req.user.avaliacao
-  });
+router.get('/dashboard/loggedin', ensureAvaliador, async (req, res) => {
+  try {
+    let credencial = await loginBootstrap.carregarCredencial(req.user);
+    res.send({
+      nome: req.user.nome,
+      email: req.user.email,
+      senhaDefinida: !!credencial.senhaDefinida,
+      avaliacao: !!req.user.avaliacao
+    });
+  } catch (err) {
+    console.error('Erro ao carregar dados do avaliador logado', err);
+    res.status(500).send('error');
+  }
 });
 
 // Troca de senha - funciona tanto pro primeiro acesso (senhaDefinida false, não exige
@@ -167,17 +184,20 @@ router.post('/dashboard/trocar-senha', ensureAvaliador, async (req, res) => {
     let avaliador = await AvaliadorSchema.findById(req.user._id);
     if (!avaliador) return res.status(404).send('Avaliador não encontrado.');
 
-    if (avaliador.senhaDefinida) {
+    // Senha mora na Pessoa vinculada (compartilhada entre papéis) ou, sem vínculo, no
+    // próprio avaliador - ver utils/loginBootstrap.js#carregarCredencial.
+    let credencial = await loginBootstrap.carregarCredencial(avaliador);
+    if (credencial.senhaDefinida) {
       if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
-      let isMatch = await bcrypt.compare(req.body.senhaAtual, avaliador.password);
+      let isMatch = await bcrypt.compare(req.body.senhaAtual, credencial.password);
       if (!isMatch) return res.status(400).send('Senha atual incorreta.');
     }
 
     let salt = await bcrypt.genSalt(10);
     let hash = await bcrypt.hash(novaSenha, salt);
-    avaliador.password = hash;
-    avaliador.senhaDefinida = true;
-    await avaliador.save();
+    credencial.password = hash;
+    credencial.senhaDefinida = true;
+    await credencial.save();
     res.send('success');
   } catch (err) {
     console.error('Erro ao trocar senha de avaliador', err);
@@ -190,19 +210,22 @@ router.post('/dashboard/trocar-senha', ensureAvaliador, async (req, res) => {
 router.post('/dashboard/redefinir-senha', async (req, res) => {
   let email = req.body.email;
   let avaliador;
+  let token = crypto.randomBytes(20).toString('hex');
   try {
     avaliador = await AvaliadorSchema.findOne({ email: email });
+    if (!avaliador) return res.status(404).send('E-mail não encontrado.');
+
+    // Token vai pra Pessoa vinculada (o link redefine a senha única dela) ou, sem vínculo,
+    // pro próprio avaliador.
+    let credencial = await loginBootstrap.carregarCredencial(avaliador);
+    await credencial.constructor.updateOne(
+      { _id: credencial._id },
+      { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
+    );
   } catch (err) {
     console.error('Erro ao redefinir senha de avaliador', err);
-    return;
+    return res.status(500).send('error');
   }
-  if (!avaliador) return res.status(404).send('E-mail não encontrado.');
-
-  let token = crypto.randomBytes(20).toString('hex');
-  AvaliadorSchema.findOneAndUpdate(
-    { email: email },
-    { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
-  ).catch((err) => console.error(err));
 
   res.send(email);
 
@@ -229,20 +252,29 @@ router.post('/dashboard/redefinir-senha', async (req, res) => {
 
 router.post('/dashboard/nova-senha/:token', async (req, res) => {
   try {
-    let avaliador = await AvaliadorSchema.findOne({ resetPasswordToken: req.params.token });
-    if (!avaliador) return res.send('erro2');
-    if (avaliador.hasExpired()) return res.send('erro3');
+    // Token na Pessoa (fluxo novo) ou no avaliador (emitido antes do login único / sem vínculo).
+    let dono = await loginBootstrap.encontrarPorTokenReset(AvaliadorSchema, req.params.token);
+    if (!dono) return res.send('erro2');
+    if (dono.hasExpired()) return res.send('erro3');
     if (!Avaliador.senhaForte(req.body.password)) {
       return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
     }
 
+    // A senha nova vai pra quem guarda a senha (a Pessoa, se o avaliador estiver vinculado -
+    // mesmo que o token legado tenha sido gravado no avaliador).
+    let credencial = await loginBootstrap.carregarCredencial(dono);
     let salt = await bcrypt.genSalt(10);
     let hash = await bcrypt.hash(req.body.password, salt);
-    avaliador.password = hash;
-    avaliador.senhaDefinida = true;
-    avaliador.resetPasswordToken = undefined;
-    avaliador.resetPasswordCreatedDate = undefined;
-    await avaliador.save();
+    credencial.password = hash;
+    credencial.senhaDefinida = true;
+    credencial.resetPasswordToken = undefined;
+    credencial.resetPasswordCreatedDate = undefined;
+    await credencial.save();
+    if (credencial !== dono) {
+      dono.resetPasswordToken = undefined;
+      dono.resetPasswordCreatedDate = undefined;
+      await dono.save();
+    }
     res.send('Senha alterada');
   } catch (err) {
     console.error('Erro ao definir nova senha de avaliador', err);

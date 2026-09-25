@@ -7,6 +7,7 @@ const express = require('express')
 , Projeto = require('../controllers/projeto-controller')
 , Avaliador = require('../controllers/avaliador-controller')
 , Participante = require('../controllers/participante-controller')
+, loginBootstrap = require('../utils/loginBootstrap')
 , ProjetoSchema = require('../models/projeto-schema')
 , CadastroMostraSchema = require('../models/cMostra-schema')
 , CadastroDocumentoSchema = require('../models/documento-schema')
@@ -1018,12 +1019,19 @@ passport.deserializeUser(async function(id, done){
   }
 });
 
-router.post('/login', authLimiter, passport.authenticate('unico'), (req, res) => {
+router.post('/login', authLimiter, passport.authenticate('unico'), async (req, res) => {
   // res.send(req.session);
-  if (req.user.constructor.modelName === 'Avaliador') {
-    res.send({redirect: req.user.senhaDefinida ? '/avaliadores/dashboard' : '/avaliadores/dashboard/trocar-senha'});
-  } else if (req.user.constructor.modelName === 'Participante') {
-    res.send({redirect: req.user.senhaDefinida ? '/participantes/dashboard' : '/participantes/dashboard/trocar-senha'});
+  // Avaliador/Participante: quem guarda a senha (e o "primeiro acesso") é a Pessoa vinculada,
+  // ou o próprio registro se não houver vínculo - ver utils/loginBootstrap.js#carregarCredencial.
+  if (req.user.constructor.modelName === 'Avaliador' || req.user.constructor.modelName === 'Participante') {
+    let base = req.user.constructor.modelName === 'Avaliador' ? '/avaliadores' : '/participantes';
+    try {
+      let credencial = await loginBootstrap.carregarCredencial(req.user);
+      res.send({redirect: credencial.senhaDefinida ? base + '/dashboard' : base + '/dashboard/trocar-senha'});
+    } catch (err) {
+      console.error('Erro ao decidir redirecionamento do login', err);
+      res.status(500).send('error');
+    }
   } else if (req.user.permissao === "1") {
     // res.redirect('/projetos/');
     res.send({redirect:'/projetos'});

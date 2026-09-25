@@ -25,7 +25,8 @@ const express = require('express')
 , path = require('path')
 , archiver = require('archiver')
 , async = require('async')
-, documentoValidator = require('../utils/documentoValidator');
+, documentoValidator = require('../utils/documentoValidator')
+, pessoaController = require('../controllers/pessoa-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -483,6 +484,13 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
       ,cpf: splita(req.body.cpf)
       ,email: req.body.email
       ,createdAt: createdAt
+    });
+
+    // Login único: vincula à Pessoa do mesmo documento (ver controllers/pessoa-controller.js#vincularPessoa)
+    newParticipante.pessoa = await pessoaController.vincularPessoa({
+      cpf: newParticipante.cpf,
+      nome: newParticipante.nome,
+      email: newParticipante.email
     });
 
     if (req.body.eventos !== undefined) {
