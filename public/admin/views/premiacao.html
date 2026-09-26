@@ -72,9 +72,9 @@
       </md-select>
     </div>
     <div style="width:220px;">
-      <md-select data-ng-model="$root.mostraId" placeholder="Ano" style="width:100%!important;font-size:17px;">
+      <md-select data-ng-change="recarregar()" data-ng-model="$root.mostraId" placeholder="Ano" style="width:100%!important;font-size:17px;">
             <md-optgroup label="Ano:">
-              <md-option ng-value="m._id" data-ng-selected="true" data-ng-repeat="m in mostras track by m._id" data-ng-click="recarregar()">{{m.ano}} - {{m.nome}}</md-option>
+              <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
             </md-optgroup>
           </md-select>
     </div>
