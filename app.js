@@ -40,7 +40,13 @@ app.use(logger('dev'));
 // CSP desabilitado: o front-end (EJS/Angular legado) depende fortemente de
 // estilos/scripts inline e recursos de CDNs externas, que uma CSP padrão bloquearia.
 // Mantém os demais cabeçalhos de segurança do helmet (X-Frame-Options, nosniff, HSTS, etc.).
-app.use(helmet({ contentSecurityPolicy: false }));
+// Referrer-Policy: o padrão do helmet ("no-referrer") faz o navegador não mandar Referer nenhum,
+// e os tiles do OpenStreetMap (mapa do câmpus) respondem "No referer sent. Access denied" nesse
+// caso. Mandar só a origem em requisições externas basta e vaza pouco.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
 // Express 4.16+ já embute o mesmo body-parser standalone que era usado antes (express.json()
 // é baseado direto em bodyParser.json()) - troca sem mudar comportamento, um pacote a menos.
 app.use(express.json({limit : '10mb' }));
