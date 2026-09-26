@@ -12,6 +12,7 @@
 // Uso:
 //   node scripts/migrar-pessoas.js --dry-run   (só imprime o que faria, não grava nada)
 //   node scripts/migrar-pessoas.js             (roda de verdade)
+//   --sem-divergentes: não une grupos de mesmo documento com e-mails diferentes (ver abaixo)
 //
 // Antes de rodar em produção: back-up (mongodump) primeiro - é a primeira migração desta
 // frente que toca credencial de login existente.
@@ -27,6 +28,10 @@ const Participante = require('../models/participante-schema');
 const Pessoa = require('../models/pessoa-schema');
 
 const DRY_RUN = process.argv.includes('--dry-run');
+// Deixa de fora (sem criar Pessoa nem vincular) os grupos de mesmo documento com e-mails
+// diferentes entre os registros: unir esses grupos faz qualquer um dos e-mails poder redefinir
+// a senha compartilhada, então só vale unir depois de revisar o relatório de divergências.
+const SEM_DIVERGENTES = process.argv.includes('--sem-divergentes');
 
 function normalizarDocumento(cpf) {
 	return (cpf || '').toString().replace(/\D+/g, '');
@@ -55,7 +60,7 @@ async function migrar() {
 		grupos.get(documento).push(registro);
 	}
 
-	let pessoasCriadas = 0, pessoasReaproveitadas = 0, credenciaisAdotadas = 0, papeisLinkados = 0, papeisJaLinkados = 0;
+	let pessoasCriadas = 0, pessoasReaproveitadas = 0, credenciaisAdotadas = 0, papeisLinkados = 0, papeisJaLinkados = 0, gruposPulados = 0;
 	const divergencias = [];
 	const semDocumento = avaliadores.length + participantes.length - [...grupos.values()].reduce((n, g) => n + g.length, 0);
 
@@ -73,6 +78,7 @@ async function migrar() {
 				registros: registros.map((r) => ({ tipo: r.constructor.modelName, id: r._id.toString(), nome: r.nome, email: r.email }))
 			});
 		}
+		if (SEM_DIVERGENTES && emails.size > 1) { gruposPulados++; continue; }
 
 		const jaLinkado = registros.find((r) => r.pessoa);
 		let pessoa = jaLinkado ? await Pessoa.findById(jaLinkado.pessoa) : null;
@@ -142,6 +148,7 @@ async function migrar() {
 	console.log('Papéis que já estavam linkados (pulados):', papeisJaLinkados);
 	console.log('Registros sem documento (não migrados):', semDocumento);
 	console.log('Grupos com nome/email divergente:', divergencias.length);
+	if (SEM_DIVERGENTES) console.log('Grupos com e-mails diferentes deixados de fora (--sem-divergentes):', gruposPulados);
 
 	if (divergencias.length) {
 		const relatorioPath = path.join(__dirname, `relatorio-divergencias-pessoas${DRY_RUN ? '-dry-run' : ''}.json`);
