@@ -64,6 +64,18 @@
 			return $http(request);
 		};
 
+		// Login único (ver controllers/pessoa-controller.js#vincularPessoa): detecta se o
+		// documento já é de uma Pessoa cadastrada, pra pré-preencher o formulário em vez de
+		// pedir tudo de novo.
+		let _verificarPessoa = function(documento, email) {
+			const request = {
+				url: '/pessoas/verificar',
+				method: 'POST',
+				data: { documento: documento, email: email }
+			}
+			return $http(request);
+		};
+
 		 let _postLogin = function(username,password) {
 		 	const request = {
 		 		url: '/login',
@@ -292,6 +304,7 @@
 			saveProjeto: _saveProjeto,
 			saveSaberesDocentes: _saveSaberesDocentes,
 			saveAvaliador: _saveAvaliador,
+			verificarPessoa: _verificarPessoa,
 			getEdicoesInscricao: _getEdicoesInscricao,
 			postLogin: _postLogin,
 			getProjeto: _getProjeto,

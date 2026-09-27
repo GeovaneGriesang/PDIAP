@@ -37,6 +37,32 @@
 			return checagem.valido;
 		};
 
+		// Login único (ver controllers/pessoa-controller.js#vincularPessoa): se documento +
+		// e-mail já baterem com uma Pessoa cadastrada, pergunta antes de preencher nome,
+		// telefone e nacionalidade automaticamente - a mesma regra de segurança que decide
+		// se o cadastro novo reaproveita a Pessoa (CPF sozinho não é suficiente, tem que
+		// bater o e-mail também).
+		$scope.verificarPessoaExistente = function() {
+			var checagem = documentoValidatorService.validarDocumento($scope.avaliadores.cpf);
+			if (!checagem.valido || !$scope.avaliadores.email) return;
+			projetosAPI.verificarPessoa($scope.avaliadores.cpf, $scope.avaliadores.email)
+			.success(function(data) {
+				if (!data.encontrado) return;
+				var confirm = $mdDialog.confirm()
+					.title('Encontramos seu cadastro')
+					.textContent('Já existe um cadastro com este documento e e-mail. Preencher automaticamente com os dados salvos (nome, telefone e nacionalidade)?')
+					.ariaLabel('Preencher automaticamente com os dados salvos?')
+					.ok('Sim, preencher')
+					.cancel('Não, manter o que digitei');
+				$mdDialog.show(confirm).then(function() {
+					$scope.avaliadores.nome = data.nome || $scope.avaliadores.nome;
+					$scope.avaliadores.telefone = data.telefone || $scope.avaliadores.telefone;
+					$scope.avaliadores.nacionalidade = data.nacionalidade || $scope.avaliadores.nacionalidade;
+				}, function() {});
+			})
+			.error(function(status) { console.log(status); });
+		};
+
 		$scope.carregarEdits = function(){
 			projetosAPI.getEdits().success(function(edits){				
 				if(edits[0].cadastro_avaliadores == false){

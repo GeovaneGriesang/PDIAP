@@ -265,6 +265,22 @@
         })
         // ======================================================================
 
+        // Login único (ver routes/index.js#/conta): recuperação de senha que não
+        // diferencia Avaliador de Participante - substitui os dois links separados que
+        // existiam antes na tela de login. Sem resolve de loggedin de propósito, mesmo
+        // motivo dos estados acima. ===========================================
+        .state('contaEsqueciSenha', {
+          url: '/conta/esqueci-senha',
+          templateUrl: '/views/conta-esqueci-senha.html',
+          controller: 'contaSenhaCtrl',
+        })
+        .state('contaNovaSenha', {
+          url: '/conta/nova-senha/:token',
+          templateUrl: '/views/conta-nova-senha.html',
+          controller: 'contaSenhaCtrl',
+        })
+        // ======================================================================
+
         // Dashboard do participante (login próprio) - mesmo padrão do avaliador acima,
         // sem tela de "dados" (participante não tem campo próprio pra editar). =========
         .state('participanteDashboard', {

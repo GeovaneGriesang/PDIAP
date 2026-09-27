@@ -15,6 +15,7 @@ const express = require('express')
 , bcrypt = require('bcryptjs')
 , ProjetoSchema = require('../models/projeto-schema')
 , AvaliadorSchema = require('../models/avaliador-schema')
+, ParticipanteSchema = require('../models/participante-schema')
 , feiraSchema = require('../models/feira-schema');
 
 function splita(arg){
@@ -171,11 +172,15 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
 router.get('/dashboard/loggedin', ensureAvaliador, async (req, res) => {
   try {
     let credencial = await loginBootstrap.carregarCredencial(req.user);
+    // Login único: esta mesma Pessoa também pode ser Participante - ver
+    // routes/index.js#/dashboard/trocar-papel.
+    let outroPapel = req.user.pessoa && await ParticipanteSchema.exists({ pessoa: req.user.pessoa });
     res.send({
       nome: req.user.nome,
       email: req.user.email,
       senhaDefinida: !!credencial.senhaDefinida,
-      avaliacao: !!req.user.avaliacao
+      avaliacao: !!req.user.avaliacao,
+      outroPapel: !!outroPapel
     });
   } catch (err) {
     console.error('Erro ao carregar dados do avaliador logado', err);
