@@ -31,6 +31,22 @@ module.exports.getOpcoesAtuais = (callback) => {
 	);
 }
 
+// Mostra atual configurada no singleton admin2 (tela Editar > Mostra atual). Devolve o _id só
+// se a Feira ainda existe e é uma edição (Mostra apagada => null, e quem chama cai no padrão).
+module.exports.getMostraAtualId = async () => {
+	let admin = await Admin.findOne({ username: 'admin2' }, 'mostraAtual -_id');
+	if (!admin || !admin.mostraAtual) return null;
+	let feira = await Feira.findOne({ _id: admin.mostraAtual, tipo: 'edicao' }, '_id');
+	return feira ? feira._id : null;
+}
+
+// id null limpa a Mostra atual. Devolve false se o singleton admin2 não existe.
+module.exports.setMostraAtualId = async (id) => {
+	let alteracao = id ? { $set: { mostraAtual: id } } : { $unset: { mostraAtual: '' } };
+	let r = await Admin.updateOne({ username: 'admin2' }, alteracao);
+	return r.matchedCount > 0;
+}
+
 // Lista as Mostras (Feira tipo:'edicao') com o status de inscrição (aberta/prorrogada/
 // encerrada) de projetos e avaliadores calculado a partir do prazo PRÓPRIO de cada uma -
 // usada pela home pública e pelos formulários de inscrição (Fase 2, ver memória

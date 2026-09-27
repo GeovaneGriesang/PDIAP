@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('feirasCtrl', function($scope, $mdDialog, $mdToast, adminAPI) {
+	.controller('feirasCtrl', function($scope, $rootScope, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -11,8 +11,10 @@
 		};
 
 		$scope.feiras = [];
-		$scope.ano = new Date().getFullYear();
 		$scope.year = CadastraAno();
+		// Abre no ano da Mostra em uso ($rootScope.ano - a Mostra atual, ou a escolhida num
+		// filtro de outra tela); fora da lista de anos, cai no ano do calendário.
+		$scope.ano = $scope.year.indexOf($rootScope.ano) !== -1 ? $rootScope.ano : new Date().getFullYear();
 
 		// Máscaras disponíveis pro texto de certificado de classificação (ver
 		// homeCtrl.js#emitirCertificado1, tipo 'Feira'). Só se aplica a tipo:'classificacao'.

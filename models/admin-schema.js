@@ -90,6 +90,9 @@ const AdminSchema = new Schema({
 	destaques: [{
 		texto: { type: String }
 	}],
+	// Mostra (Feira tipo:'edicao') marcada como "atual" em Editar > Mostra atual - vira o padrão
+	// de todos os seletores de Mostra do painel. Ausente = cai na Mostra de maior ano.
+	mostraAtual: { type: Schema.Types.ObjectId, ref: 'Feira' },
 	opcoes: opcoesSchema
 }, { collection: 'adminCollection' });
 

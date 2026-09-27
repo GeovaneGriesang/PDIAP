@@ -64,6 +64,14 @@
 			return $http(request);
 		}
 
+		// Mostra atual (Editar > Mostra atual): { mostraId } (null = nenhuma marcada). id null desmarca.
+		let _getMostraAtual = function() {
+			return $http({ url: '/admin/mostraAtual', method: 'GET' });
+		};
+		let _putMostraAtual = function(id) {
+			return $http({ url: '/admin/mostraAtual', method: 'PUT', data: { id: id } });
+		};
+
 		// Só monta a URL - o download em si é feito via navegação direta (window.open),
 		// não XHR, então não passa por $http (GET é isento de CSRF e leva o cookie de
 		// sessão automaticamente por ser mesma origem).
@@ -544,10 +552,25 @@
 			var deferred = $q.defer();
 			_getFeiras().then(function(response) {
 				var mostras = (response.data || []).filter(function(f) { return f.tipo === 'edicao'; })
-					.sort(function(a, b) { return b.ano - a.ano; });
+					// Mesmo ano: a cadastrada por último primeiro (ex: "XI MOVACI" antes de "X MOVACI").
+					.sort(function(a, b) { return (b.ano - a.ano) || (String(a._id) < String(b._id) ? 1 : -1); });
 				deferred.resolve({ data: mostras, status: response.status });
 			}, deferred.reject);
 			return comSuccessError(deferred.promise);
+		};
+
+		// Telas cujos dados pertencem a um ANO (documentos, certificados) e não a uma Mostra:
+		// cada ano aparece uma vez só, mesmo com duas Mostras no mesmo ano (valores repetidos num
+		// md-select dão erro no Angular Material), com os nomes das Mostras no rótulo. Mais
+		// recente primeiro.
+		let _anosDasMostras = function(mostras) {
+			var porAno = {};
+			(mostras || []).forEach(function(m) {
+				(porAno[m.ano] = porAno[m.ano] || []).push(m.nome);
+			});
+			return Object.keys(porAno).map(Number).sort(function(a, b) { return b - a; }).map(function(ano) {
+				return { ano: ano, nomes: porAno[ano].join(' / ') };
+			});
 		};
 
 		let _getEstados = function() {
@@ -709,6 +732,9 @@
 			getDiasAvaliacao: _getDiasAvaliacao,
 			getNumAvaliadores: _getNumAvaliadores,
 			getMostras: _getMostras,
+			anosDasMostras: _anosDasMostras,
+			getMostraAtual: _getMostraAtual,
+			putMostraAtual: _putMostraAtual,
 			pertenceAMostra: _pertenceAMostra,
 			getEstados: _getEstados,
 			putProjeto: _putProjeto,

@@ -11,7 +11,7 @@
 	// um só com uma flag de modo.
 	angular
 	.module('PDIAPa')
-	.controller('mostraCtrl', function($scope, $window, $mdDialog, $mdToast, adminAPI) {
+	.controller('mostraCtrl', function($scope, $rootScope, $window, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -19,8 +19,10 @@
 		};
 
 		$scope.feiras = [];
-		$scope.ano = new Date().getFullYear();
 		$scope.year = CadastraAno();
+		// Abre no ano da Mostra em uso ($rootScope.ano - a Mostra atual, ou a escolhida num
+		// filtro de outra tela); fora da lista de anos, cai no ano do calendário.
+		$scope.ano = $scope.year.indexOf($rootScope.ano) !== -1 ? $rootScope.ano : new Date().getFullYear();
 		$scope.TURNOS_DISPONIVEIS = ['Manhã', 'Tarde', 'Noite'];
 
 		// Base da URL pra mostrar o link de inscrição completo (ver Fase 2, memória

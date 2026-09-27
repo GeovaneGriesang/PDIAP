@@ -13,24 +13,25 @@
 		$scope.CPFparticipantes = [];
 		$scope.CPFsaberes = [];
 
-		// $scope.mostraId nunca tinha um valor inicial próprio aqui, dependia só do que o
-		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
-		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
-		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
-		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
-		// Material com ng-repeat dentro de md-select) - por isso só define a Mostra e
-		// carrega as listas depois que a resposta chegar.
+		// A Mostra selecionada é compartilhada com as demais telas do admin ($rootScope.mostraId,
+		// padrão = Mostra atual - ver definirMostraPadrao em routes/ui-routes.js): trocar aqui
+		// vale nas outras telas e vice-versa.
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular Material com
+		// ng-repeat dentro de md-select) - guarda o valor persistido ANTES e só carrega as
+		// listas depois de reaplicá-lo.
 		//
-		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como
-		// valor DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no
-		// mesmo ano (ver memória project-mostra-ano-nao-unico). mostraEventos/mostraSaberes
-		// continuam filtrando por ano puro (Evento/Saberes não têm feiraId ainda);
-		// mostraParticipantes usa pertenceAMostra porque Participante já tem feiraId.
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como valor
+		// DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico). mostraEventos/mostraParticipantes usam
+		// pertenceAMostra (Evento e Participante têm feiraId; sem ele cai no ano); mostraSaberes
+		// continua filtrando por ano puro (Saberes não tem feiraId).
 		$scope.mostras = [];
 
+		let mostraIdPersistido = $rootScope.mostraId;
 		let resolverMostraSelecionada = function() {
-			$scope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $scope.mostraId; })[0];
-			$scope.ano = $scope.mostraSelecionada ? $scope.mostraSelecionada.ano : $scope.ano;
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
 		};
 
 		let formatCPF = function(cpf) {
@@ -52,8 +53,7 @@
 			adminAPI.getEventos()
 			.success(function(eventos) {
 				angular.forEach(eventos, function (value, key) {
-					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						let evento = ({
 							tipo: value.tipo,
 							titulo: value.titulo,
@@ -95,7 +95,7 @@
 			.success(function(participantes) {
 				// $rootScope.participantes = [];
 				angular.forEach(participantes, function (value, key) {
-					if(adminAPI.pertenceAMostra(value, $scope.mostraSelecionada)){
+					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(value._id);
 						if (index === -1) {
 							value.cpf = formatCPF(value.cpf);
@@ -114,7 +114,7 @@
 			.success(function(saberes) {
 				angular.forEach(saberes, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(ano == $rootScope.ano){
 						let CPFvalido = true;
 						let CPFverify = formatCPF(value.cpf);
 						for (var i = 0; i < $scope.CPFparticipantes.length; i++) {
@@ -145,7 +145,8 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$scope.mostraId = $scope.mostraId || (mostras.length ? mostras[0]._id : null);
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
 				resolverMostraSelecionada();
 				mostraEventos();
 				getCPFparticipantes();
@@ -154,7 +155,7 @@
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$scope.ano = $scope.ano || new Date().getFullYear();
+			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			mostraEventos();
 			getCPFparticipantes();
 			mostraParticipantes();
@@ -178,7 +179,8 @@
 		$scope.cadastrarParticipante = function(participante) {
 			// Cadastra o participante no ano selecionado no filtro do cabeçalho, em vez de
 			// sempre no ano atual (permite inserir participantes de anos anteriores).
-			participante.ano = $scope.ano;
+			participante.ano = $rootScope.ano;
+			participante.feiraId = $rootScope.mostraId;
 			adminAPI.postParticipante(participante)
 			.success(function(data) {
 				$scope.toast('Participante cadastrado com sucesso!','success-toast');

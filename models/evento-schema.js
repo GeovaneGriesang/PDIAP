@@ -21,6 +21,9 @@ const EventoSchema = new Schema({
 	,responsavel: [responsavelSchema]
 	,data: {type: String}
 	,createdAt: {type: Date}
+	// Mostra (Feira tipo:'edicao') a que o evento pertence. Eventos antigos não têm - nesse caso
+	// a tela cai no ano de createdAt (ver adminAPI.pertenceAMostra).
+	,feiraId: {type: Schema.Types.ObjectId, ref: 'Feira'}
 }, { collection: 'eventos2016' });//Os documentos não possuem token
 
 const Evento = module.exports = mongoose.model('Evento', EventoSchema);

@@ -27,6 +27,25 @@
 			return deferred.promise;
 		};
 
+		// Mostra atual (Editar > Mostra atual no admin) vira $rootScope.mostraAtual (a Feira
+		// tipo:'edicao' inteira) - Ranking e Avaliação passam a usar o ano/_id dela em vez do
+		// ano do calendário (ver avaliacaoAPI.anoDaMostra). Qualquer falha (sem Mostra atual
+		// configurada, sem permissão, erro de rede) deixa null e vale o ano do calendário, como
+		// sempre valeu - nunca trava a tela.
+		let carregarMostraAtual = function($q, $rootScope, $http, loggedin) {
+			var deferred = $q.defer();
+			$rootScope.mostraAtual = null;
+			$http.get('/admin/mostraAtual').then(function(resposta) {
+				var id = resposta.data && resposta.data.mostraId;
+				if (!id) return deferred.resolve();
+				$http.get('/admin/mostraFeiras').then(function(feiras) {
+					$rootScope.mostraAtual = (feiras.data || []).filter(function(f) { return f._id === id && f.tipo === 'edicao'; })[0] || null;
+					deferred.resolve();
+				}, function() { deferred.resolve(); });
+			}, function() { deferred.resolve(); });
+			return deferred.promise;
+		};
+
 		$stateProvider
 		/* .state('admin', {
 		 	url: "/admin/avaliacao",
@@ -46,7 +65,8 @@
 				}
 			},
 			resolve: {
-				loggedin: checkLoggedin
+				loggedin: checkLoggedin,
+				mostraAtual: carregarMostraAtual
 			}
 		})
 		.state('ranking', {
@@ -63,7 +83,8 @@
 				'mencaoHonrosa@ranking': { templateUrl: '/admin/avaliacao/views/list-mencao-honrosa.html' }
 			},
 			resolve: {
-				loggedin: checkLoggedin
+				loggedin: checkLoggedin,
+				mostraAtual: carregarMostraAtual
 			}
 		})
 		.state('404', {

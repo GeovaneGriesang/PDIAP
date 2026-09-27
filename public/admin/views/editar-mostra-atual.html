@@ -1,0 +1,52 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Editar | Mostra atual</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+      </div>
+      </md-toolbar>
+    </md-toolbar>
+
+      <md-content>
+          <div layout="column" layout-align="center center" style="background:rgba(128,128,128,0.07);padding:30px;">
+            <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
+                <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Mostra atual</span>
+            </h3>
+            <p style="max-width:600px;text-align:center;margin:25px 0 15px 0;">
+              A Mostra marcada abre como padrão em todas as telas do painel e no Ranking/Avaliação.
+              Só uma pode ficar marcada. Sem nenhuma marcada, vale a Mostra de maior ano.
+              Trocar a Mostra no filtro de uma tela continua valendo nas demais telas, até recarregar a página.
+            </p>
+            <form name="mostraAtualForm" novalidate class="eventos-form">
+                <div layout="column">
+                    <md-checkbox aria-label="Mostra atual" data-ng-repeat="m in mostras track by m._id" data-ng-model="m.marcada" data-ng-change="marcar(m)">{{m.ano}} - {{m.nome}}</md-checkbox>
+                    <p data-ng-if="carregou && mostras.length === 0">NENHUMA MOSTRA CADASTRADA</p>
+                </div>
+
+                <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
+                    <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!carregou || salvando" data-ng-click="salvar()">
+                        <md-icon md-svg-icon="check" ng-style="{width:'20px', height:'20px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"> </md-icon>
+                        <span style="vertical-align:middle;">Salvar</span>
+                    </md-button>
+                </div>
+                <span us-spinner>
+                    <div layout="row" layout-sm="column" layout-align="space-around">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+                    </div>
+                </span>
+            </form>
+          </div>
+      </md-content>
+</section>
+</div>

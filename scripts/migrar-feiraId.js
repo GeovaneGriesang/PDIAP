@@ -2,7 +2,7 @@
 
 // Migração pra frente "seleção de Mostra por edição, não por ano" (ver memória
 // project-mostra-ano-nao-unico). Preenche `feiraId` (ref pra Feira tipo:'edicao') em
-// Projeto/Avaliador/Participante existentes, a partir do ano calculado de `createdAt` -
+// Projeto/Avaliador/Participante/Evento existentes, a partir do ano calculado de `createdAt` -
 // mesma regra que o sistema já usa hoje pra decidir "de qual ano é este registro".
 //
 // Só grava quando existir exatamente UMA Feira tipo:'edicao' pro ano do registro (caso
@@ -28,6 +28,7 @@ require('../configs/db-config'); // side effect: abre a conexão padrão (mongoo
 const Projeto = require('../models/projeto-schema');
 const Avaliador = require('../models/avaliador-schema');
 const Participante = require('../models/participante-schema');
+const Evento = require('../models/evento-schema');
 const Feira = require('../models/feira-schema');
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -78,6 +79,7 @@ async function migrar() {
 	await migrarModelo(Projeto, 'Projeto', edicoesPorAno, divergencias, resumo);
 	await migrarModelo(Avaliador, 'Avaliador', edicoesPorAno, divergencias, resumo);
 	await migrarModelo(Participante, 'Participante', edicoesPorAno, divergencias, resumo);
+	await migrarModelo(Evento, 'Evento', edicoesPorAno, divergencias, resumo);
 
 	console.log('\n--- Resumo da migração' + (DRY_RUN ? ' (dry-run, nada foi gravado)' : '') + ' ---');
 	console.log('Registros migrados (feiraId preenchido):', resumo.migrados);

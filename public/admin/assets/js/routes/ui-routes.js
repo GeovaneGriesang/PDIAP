@@ -35,25 +35,38 @@
 
 		// Ao entrar no admin (login novo / F5), $rootScope.mostraId começa sempre vazio - em
 		// vez de cair no ano corrente do calendário (que pode nem ter Mostra cadastrada
-		// ainda, ou não ser mais a edição "ativa"), define como padrão a Mostra mais recente
-		// cadastrada (getMostras() já vem ordenada desc por ano - ver adminAPIService.js).
+		// ainda, ou não ser mais a edição "ativa"), define como padrão a Mostra ATUAL
+		// (Editar > Mostra atual, $rootScope.mostraAtualId) ou, se nenhuma estiver marcada
+		// (ou a marcada foi apagada), a mais recente cadastrada (getMostras() já vem ordenada
+		// desc por ano - ver adminAPIService.js).
 		// $rootScope.mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano
 		// fica só como valor derivado/exibição, porque pode haver mais de uma Mostra no mesmo
 		// ano (ver memória project-mostra-ano-nao-unico) e só o _id distingue entre elas.
+		// Uma Mostra já escolhida manualmente (mostraId ainda válido em memória) é mantida - é o
+		// que faz a escolha de um filtro valer nas outras telas, mesmo se o state "master" for
+		// reentrado (ex: voltando do state "confirmando").
 		// Depende de "loggedin" pra só rodar depois que a sessão for confirmada (a rota que
 		// getMostras() usa exige autenticação). Como resolve do state pai "master", roda uma
 		// vez só por carregamento de página - navegar entre as telas do admin depois disso
 		// não reseta uma Mostra escolhida manualmente.
 		let definirMostraPadrao = function($q, $rootScope, adminAPI, loggedin) {
 			var deferred = $q.defer();
-			adminAPI.getMostras()
-			.success(function(mostras) {
-				var mostra = mostras.length ? mostras[0] : null;
+			var aplicar = function(mostras, atualId) {
+				var porId = function(id) { return id ? mostras.filter(function(m) { return m._id === id; })[0] : undefined; };
+				var mostra = porId($rootScope.mostraId) || porId(atualId) || (mostras.length ? mostras[0] : null);
+				$rootScope.mostraAtualId = porId(atualId) ? atualId : null;
 				$rootScope.mostraId = mostra ? mostra._id : null;
 				$rootScope.ano = mostra ? mostra.ano : new Date().getFullYear();
 				deferred.resolve();
+			};
+			adminAPI.getMostras()
+			.success(function(mostras) {
+				adminAPI.getMostraAtual()
+				.success(function(resposta) { aplicar(mostras, resposta && resposta.mostraId); })
+				.error(function() { aplicar(mostras, null); });
 			})
 			.error(function() {
+				$rootScope.mostraAtualId = null;
 				$rootScope.mostraId = null;
 				$rootScope.ano = new Date().getFullYear();
 				deferred.resolve();
@@ -178,6 +191,11 @@
 			url: "/editar-opcoes-projetos",
 			templateUrl:'admin/views/editar-opcoes-projetos.html',
 			controller: 'opcoesProjetosCtrl'
+		})
+		.state('master.editar-mostra-atual', {
+			url: "/editar-mostra-atual",
+			templateUrl:'admin/views/editar-mostra-atual.html',
+			controller: 'mostraAtualCtrl'
 		})
 		.state('master.editar-projetos', {
 			url: "/editar-projetos",

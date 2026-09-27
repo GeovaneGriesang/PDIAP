@@ -3,50 +3,53 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliadoresCtrl', function($scope, $window, $location, $timeout, $mdDialog, $filter, adminAPI, documentoValidatorService, relatorioPdfService) {
+	.controller('avaliadoresCtrl', function($scope, $rootScope, $window, $location, $timeout, $mdDialog, $filter, adminAPI, documentoValidatorService, relatorioPdfService) {
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
 		$scope.avaliador = { categoriasEixos: [], disponibilidade: [] };
 
-		// $scope.mostraId nunca tinha um valor inicial próprio aqui, dependia só do que o
-		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
-		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
-		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
-		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
-		// Material com ng-repeat dentro de md-select) - por isso só define a Mostra e
-		// carrega a lista depois que a resposta chegar.
+		// A Mostra selecionada é compartilhada com as demais telas do admin ($rootScope.mostraId,
+		// padrão = Mostra atual - ver definirMostraPadrao em routes/ui-routes.js): trocar aqui
+		// vale nas outras telas e vice-versa.
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular Material com
+		// ng-repeat dentro de md-select) - guarda o valor persistido ANTES e só carrega a lista
+		// depois de reaplicá-lo.
 		//
-		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como
-		// valor DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no
-		// mesmo ano (ver memória project-mostra-ano-nao-unico) e só o _id distingue entre
-		// elas. registrarAvaliador continua gravando avaliador.ano = $scope.ano (não muda
-		// - ainda é um número válido, só que agora derivado da Mostra em vez de ser a
-		// própria chave do seletor).
+		// mostraId (o _id da Feira) é a chave de seleção de verdade - ano fica só como valor
+		// DERIVADO da Mostra selecionada, porque pode haver mais de uma Mostra no mesmo ano (ver
+		// memória project-mostra-ano-nao-unico) e só o _id distingue entre elas.
+		// registrarAvaliador grava avaliador.feiraId = $rootScope.mostraId (e ano = $rootScope.ano).
 		$scope.mostras = [];
 
+		let mostraIdPersistido = $rootScope.mostraId;
 		let resolverMostraSelecionada = function() {
-			$scope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $scope.mostraId; })[0];
-			$scope.ano = $scope.mostraSelecionada ? $scope.mostraSelecionada.ano : $scope.ano;
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
 		};
 
+		// Categorias/eixos e dias de avaliação do formulário de cadastro são os da Mostra
+		// selecionada (ano dela), não mais sempre os do ano do calendário.
 		$scope.listaCategorias = [];
-		adminAPI.getCategoriasEixos(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaCategorias = data.categorias;
-		})
-		.error(function(status) {
-			console.log(status);
-		});
-
 		$scope.listaDias = [];
-		adminAPI.getDiasAvaliacao(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaDias = data.dias;
-		})
-		.error(function(status) {
-			console.log(status);
-		});
+		let carregarOpcoesDaMostra = function() {
+			var ano = $rootScope.ano || new Date().getFullYear();
+			adminAPI.getCategoriasEixos(ano)
+			.success(function(data) {
+				$scope.listaCategorias = data.categorias;
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+			adminAPI.getDiasAvaliacao(ano)
+			.success(function(data) {
+				$scope.listaDias = data.dias;
+			})
+			.error(function(status) {
+				console.log(status);
+			});
+		};
 
 		// Valida o documento contra QUALQUER nacionalidade suportada, não só a
 		// selecionada no form (ver documentoValidatorService).
@@ -59,9 +62,11 @@
 		};
 
 		$scope.registrarAvaliador = function(avaliador) {
-			// Cadastra o avaliador no ano selecionado no filtro do cabeçalho, em vez de
-			// sempre no ano atual (permite inserir avaliadores de anos anteriores).
-			avaliador.ano = $scope.ano;
+			// Cadastra o avaliador na Mostra selecionada no filtro do cabeçalho (feiraId, com o
+			// ano dela em createdAt), em vez de sempre no ano atual (permite inserir avaliadores
+			// de Mostras anteriores e distingue duas Mostras no mesmo ano).
+			avaliador.ano = $rootScope.ano;
+			avaliador.feiraId = $rootScope.mostraId;
 			adminAPI.saveAvaliador(avaliador)
 			.success(function(data, status) {
 				if (data === 'success') {
@@ -143,7 +148,7 @@
 					if (index === -1) {
 						if(value.avaliacao === true) $scope.count++;
 						var ano = new Date(value.createdAt).getFullYear();
-						if(adminAPI.pertenceAMostra(value, $scope.mostraSelecionada)){
+						if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 							var cpf = formatCPF(value.cpf);
 							/*var avaliacao = false;
 							if(value.avaliacao !== undefined) avaliacao = value.avaliacao;*/
@@ -181,19 +186,23 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$scope.mostraId = $scope.mostraId || (mostras.length ? mostras[0]._id : null);
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
 				resolverMostraSelecionada();
+				carregarOpcoesDaMostra();
 				mostraAvaliadores();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$scope.ano = $scope.ano || new Date().getFullYear();
+			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
+			carregarOpcoesDaMostra();
 			mostraAvaliadores();
 		});
 
 		$scope.recarregar = function(){
 			resolverMostraSelecionada();
+			carregarOpcoesDaMostra();
 			$scope.avaliadores = [];
 			$scope.count = 0;
 			$scope.idAvaliadoresMarcados = [];
@@ -207,7 +216,7 @@
 		$scope.imprimirPDF = function() {
 			var lista = $filter('orderBy')($filter('filter')($scope.avaliadores, $scope.filtroAvaliador), $scope.ordenacao);
 			relatorioPdfService.tabela({
-				titulo: 'Avaliadores - ' + $scope.ano,
+				titulo: 'Avaliadores - ' + $rootScope.ano,
 				subtitulo: lista.length + ' avaliador(es)',
 				orientacao: 'landscape',
 				colunas: [
@@ -226,7 +235,7 @@
 						ava.avaliacao ? 'Sim' : 'Não'
 					];
 				}),
-				arquivo: $scope.ano + '_Avaliadores'
+				arquivo: $rootScope.ano + '_Avaliadores'
 			});
 		};
 

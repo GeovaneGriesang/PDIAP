@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('eventosCtrl', function($scope, $timeout, $mdDialog, $mdToast, adminAPI) {
+	.controller('eventosCtrl', function($scope, $rootScope, $timeout, $mdDialog, $mdToast, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -21,14 +21,21 @@
 		// Salvar - ver editarEvento/cancelarEdicao/cadastrarEvento).
 		$scope.editando = null;
 
-		// $scope.ano nunca tinha um valor inicial próprio aqui, dependia só do que o
-		// <md-select> acabasse selecionando - agora cai explicitamente na Mostra mais
-		// recente por padrão (mostras já vem ordenada desc por ano). O <md-select>+
-		// ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
-		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular
-		// Material com ng-repeat dentro de md-select) - por isso só define o ano e carrega
-		// a lista depois que a resposta chegar.
+		// A Mostra selecionada é compartilhada com as demais telas do admin ($rootScope.mostraId,
+		// padrão = Mostra atual - ver definirMostraPadrao em routes/ui-routes.js). O evento
+		// pertence a uma Mostra (feiraId), não só a um ano: duas Mostras no mesmo ano (ex: X e XI
+		// MOVACI) não misturam eventos. Evento antigo, sem feiraId, cai no ano (pertenceAMostra).
+		// O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+		// <md-option> e reescreve o ng-model no processo (bug conhecido do Angular Material com
+		// ng-repeat dentro de md-select) - guarda o valor persistido ANTES e só carrega a lista
+		// depois de reaplicá-lo.
 		$scope.mostras = [];
+
+		let mostraIdPersistido = $rootScope.mostraId;
+		let resolverMostraSelecionada = function() {
+			$rootScope.mostraSelecionada = ($scope.mostras || []).filter(function(m) { return m._id === $rootScope.mostraId; })[0];
+			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
+		};
 
 		$scope.addResponsavel = function() {
 			$scope.count++;
@@ -57,7 +64,7 @@
 					//dateFormat = value.data;
 
 					var ano = new Date(value.createdAt).getFullYear();
-					if(ano == $scope.ano){
+					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						let evento = ({
 							_id: value._id,
 							tipo: value.tipo,
@@ -94,17 +101,20 @@
 		.success(function(mostras) {
 			$scope.mostras = mostras;
 			$timeout(function() {
-				$scope.ano = $scope.ano || (mostras.length ? mostras[0].ano : new Date().getFullYear());
+				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
+				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
+				resolverMostraSelecionada();
 				mostraEventos();
 			});
 		})
 		.error(function(status) {
 			console.log('Error: '+status);
-			$scope.ano = $scope.ano || new Date().getFullYear();
+			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			mostraEventos();
 		});
 
 		$scope.recarregar = function(){
+			resolverMostraSelecionada();
 			$scope.eventos = [];
 			$scope.dynamicFields = [{nome:'nome1', cpf:'cpf1'}];
 
@@ -142,7 +152,9 @@
 					tipo: evento.tipo,
 					cargaHoraria: hh+":"+mm,
 					data: dia+"/"+mes+"/"+ano,
-					responsavel: responsavel
+					responsavel: responsavel,
+					// Evento antigo (sem Mostra) passa a pertencer à Mostra em que está sendo editado.
+					feiraId: $rootScope.mostraId
 				});
 				adminAPI.putAtualizaEvento(evtAtualizado)
 				.success(function(data) {
@@ -157,9 +169,10 @@
 				return;
 			}
 
-			// Cadastra o evento no ano selecionado no filtro do cabeçalho, em vez de sempre
-			// no ano atual (permite inserir eventos de anos anteriores).
-			let createdAt = $scope.ano ? new Date(new Date().setFullYear($scope.ano)) : Date.now();
+			// Cadastra o evento na Mostra selecionada no filtro do cabeçalho (feiraId), com o ano
+			// dela em createdAt, em vez de sempre no ano atual (permite inserir eventos de
+			// Mostras anteriores).
+			let createdAt = $rootScope.ano ? new Date(new Date().setFullYear($rootScope.ano)) : Date.now();
 
 			let evt = ({
 				titulo: evento.titulo,
@@ -167,7 +180,8 @@
 				cargaHoraria: hh+":"+mm,
 				data: dia+"/"+mes+"/"+ano,
 				responsavel: responsavel,
-				createdAt: createdAt
+				createdAt: createdAt,
+				feiraId: $rootScope.mostraId
 			});
 
 			adminAPI.postEvento(evt)
