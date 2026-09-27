@@ -1453,6 +1453,13 @@ router.all('/nova-senha/*', function(req, res, next) {
   res.render('layout.ejs');
 });
 
+// Recuperação de senha unificada (ver POST /conta/esqueci-senha e /conta/nova-senha acima,
+// e ui-routes.js#contaEsqueciSenha/contaNovaSenha) - mesmo cuidado das listas de avaliador/
+// participante acima: são GET, então não colidem com os POST das rotas de API de mesmo nome.
+router.get(['/conta/esqueci-senha', '/conta/nova-senha/:token'], function(req, res, next) {
+  res.render('layout.ejs');
+});
+
 router.get('/certificados', function(req, res, next) {
   res.render('layout.ejs');
 });
