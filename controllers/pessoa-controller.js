@@ -36,6 +36,7 @@ function mesmoEmail(a, b) {
 	let x = (a || '').trim().toLowerCase(), y = (b || '').trim().toLowerCase();
 	return x.length > 0 && x === y;
 }
+module.exports.mesmoEmail = mesmoEmail;
 
 // Decide a qual Pessoa um papel NOVO (Avaliador/Participante) deve ser vinculado, pelo
 // documento. Devolve o _id da Pessoa ou undefined (papel fica sem vínculo, com senha própria

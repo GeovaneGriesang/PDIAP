@@ -3,10 +3,22 @@
 
 	angular
 	.module('PDIAP')
-	.controller('avaliadorDashboardCtrl', function($scope, $rootScope, $window, $http, $mdToast, avaliadorAPI, projetosAPI) {
+	.controller('avaliadorDashboardCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, avaliadorAPI, projetosAPI, contaAPI) {
 
 		$scope.avaliador = $rootScope.avaliadorLogado || {};
 		$scope.certificados = [];
+
+		// Login único: esta mesma Pessoa também pode ser Participante (ver
+		// routes/index.js#/dashboard/trocar-papel) - troca sem pedir senha de novo.
+		$scope.trocarPainel = function() {
+			contaAPI.trocarPapel()
+			.success(function() {
+				$state.go('participanteDashboard');
+			})
+			.error(function(status) {
+				console.log('Error: ' + status);
+			});
+		};
 
 		// Se por algum motivo chegou aqui sem ter definido senha ainda (ex: voltou pelo
 		// histórico do navegador), manda pra tela obrigatória em vez de mostrar o dashboard.

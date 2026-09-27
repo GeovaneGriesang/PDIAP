@@ -13,6 +13,7 @@ const express = require('express')
 , CadastroDocumentoSchema = require('../models/documento-schema')
 , avaliadorSchema = require('../models/avaliador-schema')
 , participanteSchema = require('../models/participante-schema')
+, pessoaSchema = require('../models/pessoa-schema')
 , eventoSchema = require('../models/evento-schema')
 , feiraSchema = require('../models/feira-schema')
 , escolaSchema = require('../models/escola-schema')
@@ -936,40 +937,17 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
       Projeto.getLoginAdmin(username, (err, user) => {
         if (err) { console.error(err); return; }
         if(!user){
-          console.log('Usuário não é admin. Tentando avaliador.');
-          Avaliador.getLoginAvaliador(username, (err, avaliador) => {
+          // Login único (ver utils/loginBootstrap.js#autenticarPapel): Avaliador e
+          // Participante resolvem pela mesma Pessoa - uma só senha, sem diferenciar papel.
+          console.log('Usuário não é admin. Tentando avaliador/participante (login único por Pessoa).');
+          loginBootstrap.autenticarPapel(username, password, (err, papel) => {
             if (err) { console.error(err); return; }
-            if (!avaliador) {
-              console.log('Usuário não é avaliador. Tentando participante.');
-              Participante.getLoginParticipante(username, (err, participante) => {
-                if (err) { console.error(err); return; }
-                if (!participante) {
-                  console.log('Usuário não é participante. Usuário desconhecido');
-                  return done(null, false, {message: 'Unknown User'});
-                }
-                Participante.compareLoginOuBootstrap(password, participante, (err, isMatch) => {
-                  if (err) { console.error(err); return; }
-                  if (isMatch) {
-                    console.log("Participante conectado");
-                    return done(null, participante);
-                  } else {
-                    console.log("Erro ao conectar como participante");
-                    return done(null, false, {message: 'Invalid password'});
-                  }
-                });
-              });
-              return;
+            if (!papel) {
+              console.log('Usuário não é avaliador nem participante. Usuário desconhecido');
+              return done(null, false, {message: 'Unknown User'});
             }
-            Avaliador.compareLoginOuBootstrap(password, avaliador, (err, isMatch) => {
-              if (err) { console.error(err); return; }
-              if (isMatch) {
-                console.log("Avaliador conectado");
-                return done(null, avaliador);
-              } else {
-                console.log("Erro ao conectar como avaliador");
-                return done(null, false, {message: 'Invalid password'});
-              }
-            });
+            console.log(papel.constructor.modelName + ' conectado');
+            return done(null, papel);
           });
           return;
         }
@@ -1040,6 +1018,114 @@ router.post('/login', authLimiter, passport.authenticate('unico'), async (req, r
     res.send({redirect:'/master'});
   }
   //res.cookie('userid', user.id, { maxAge: 2592000000 });  // Expires in one month
+});
+
+// Troca de painel sem logar de novo: a mesma Pessoa pode ser Avaliador e Participante ao
+// mesmo tempo (ver utils/loginBootstrap.js#autenticarPapel, que prioriza Avaliador no
+// login) - esta rota troca a sessão pro outro papel, se existir, sem pedir senha.
+router.get('/dashboard/trocar-papel', ensureAuthenticated, async (req, res) => {
+  let modelName = req.user.constructor.modelName;
+  if (modelName !== 'Avaliador' && modelName !== 'Participante') return res.status(400).send('Este login não tem outro papel pra trocar.');
+  if (!req.user.pessoa) return res.status(400).send('Esta conta não tem outro papel vinculado.');
+
+  try {
+    let Outro = modelName === 'Avaliador' ? participanteSchema : avaliadorSchema;
+    let outro = await Outro.findOne({ pessoa: req.user.pessoa }).sort({ createdAt: -1 });
+    if (!outro) return res.status(404).send('Você não tem esse outro papel.');
+    req.login(outro, (err) => {
+      if (err) { console.error('Erro ao trocar de papel', err); return res.status(500).send('error'); }
+      res.send({ papel: outro.constructor.modelName === 'Avaliador' ? 'avaliador' : 'participante' });
+    });
+  } catch (err) {
+    console.error('Erro ao trocar de papel', err);
+    res.status(500).send('error');
+  }
+});
+
+// Recuperação de senha unificada pra Avaliador/Participante (ver models/pessoa-schema.js) -
+// substitui os dois links separados que existiam antes na tela de login. Mesmo padrão de
+// token/e-mail já usado em routes/avaliadores.js e routes/participantes.js, só que num
+// lugar só, que não precisa saber de antemão qual papel a pessoa tem.
+router.post('/conta/esqueci-senha', authLimiter, async (req, res) => {
+  let email = req.body.email;
+  let token = crypto.randomBytes(20).toString('hex');
+  let nome;
+  try {
+    let pessoa = await pessoaSchema.findOne({ email: email });
+    if (pessoa) {
+      nome = pessoa.nome;
+      await pessoa.constructor.updateOne(
+        { _id: pessoa._id },
+        { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
+      );
+    } else {
+      // Conta legada sem vínculo (ou e-mail divergente): tenta Avaliador, depois Participante.
+      let avaliador = await avaliadorSchema.findOne({ email: email });
+      let participante = avaliador ? null : await participanteSchema.findOne({ email: email });
+      let registro = avaliador || participante;
+      if (!registro) return res.status(404).send('E-mail não encontrado.');
+      nome = registro.nome;
+      let credencial = await loginBootstrap.carregarCredencial(registro);
+      await credencial.constructor.updateOne(
+        { _id: credencial._id },
+        { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
+      );
+    }
+  } catch (err) {
+    console.error('Erro ao redefinir senha (login único)', err);
+    return res.status(500).send('error');
+  }
+
+  res.send(email);
+
+  var templatesDir = path.resolve(__dirname, '..', 'templates');
+  var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-conta'));
+  const transport = nodemailer.createTransport({
+    host: 'smtp.gmail.com', port: 587,
+    auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+  });
+  var locals = { email: email, nome: nome, url: "http://www.movaci.com.br/conta/nova-senha/" + token };
+  template.render(locals, function (err, results) {
+    if (err) { console.error(err); return; }
+    transport.sendMail({
+      from: 'MOVACI <va-movaci@ifsul.edu.br>',
+      to: email,
+      subject: 'MOVACI - Redefinição de senha',
+      html: results.html,
+      text: results.text
+    }, function (err) {
+      if (err) { console.error(err); return; }
+    });
+  });
+});
+
+router.post('/conta/nova-senha/:token', async (req, res) => {
+  try {
+    let dono = await loginBootstrap.encontrarPorTokenResetUnico(req.params.token);
+    if (!dono) return res.send('erro2');
+    if (dono.hasExpired()) return res.send('erro3');
+    if (!loginBootstrap.senhaForte(req.body.password)) {
+      return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
+    }
+
+    let credencial = await loginBootstrap.carregarCredencial(dono);
+    let salt = await bcrypt.genSalt(10);
+    let hash = await bcrypt.hash(req.body.password, salt);
+    credencial.password = hash;
+    credencial.senhaDefinida = true;
+    credencial.resetPasswordToken = undefined;
+    credencial.resetPasswordCreatedDate = undefined;
+    await credencial.save();
+    if (credencial !== dono) {
+      dono.resetPasswordToken = undefined;
+      dono.resetPasswordCreatedDate = undefined;
+      await dono.save();
+    }
+    res.send('Senha alterada');
+  } catch (err) {
+    console.error('Erro ao definir nova senha (login único)', err);
+    return res.send('erro');
+  }
 });
 
 router.post('/logout', (req, res) => {

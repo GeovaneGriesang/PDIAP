@@ -10,7 +10,8 @@ const express = require('express')
 , mongoose = require('mongoose')
 , Participante = require('../controllers/participante-controller')
 , loginBootstrap = require('../utils/loginBootstrap')
-, ParticipanteSchema = require('../models/participante-schema');
+, ParticipanteSchema = require('../models/participante-schema')
+, AvaliadorSchema = require('../models/avaliador-schema');
 
 // Garante que quem está autenticado é mesmo um Participante (não Projeto/Admin/Avaliador) -
 // login único acontece em routes/index.js (strategy 'unico'), aqui só protege as rotas do
@@ -25,10 +26,14 @@ function ensureParticipante(req, res, next) {
 router.get('/dashboard/loggedin', ensureParticipante, async (req, res) => {
   try {
     let credencial = await loginBootstrap.carregarCredencial(req.user);
+    // Login único: esta mesma Pessoa também pode ser Avaliador(a) - ver
+    // routes/index.js#/dashboard/trocar-papel.
+    let outroPapel = req.user.pessoa && await AvaliadorSchema.exists({ pessoa: req.user.pessoa });
     res.send({
       nome: req.user.nome,
       email: req.user.email,
-      senhaDefinida: !!credencial.senhaDefinida
+      senhaDefinida: !!credencial.senhaDefinida,
+      outroPapel: !!outroPapel
     });
   } catch (err) {
     console.error('Erro ao carregar dados do participante logado', err);

@@ -64,7 +64,8 @@
       <div flex="5" hide-xs></div>
       <md-input-container class="md-block" flex-gt-xs>
         <label>E-mail</label>
-        <input type="email" name="email" data-ng-model="avaliadores.email" required data-ng-pattern="/^.+@.+\..+$/" />
+        <input type="email" name="email" data-ng-model="avaliadores.email" required data-ng-pattern="/^.+@.+\..+$/"
+               data-ng-model-options="{debounce:500}" data-ng-change="verificarPessoaExistente()" />
         <div class="md-errors-spacer">
           <div data-ng-show="avaliadoresForm.email.$dirty">
             <div class="message-error" data-ng-show="avaliadoresForm.email.$error.required">Obrigatório.</div>
@@ -128,7 +129,8 @@
         <label>Doc. identificação (CPF ou cédula)</label>
         <input type="text" name="cpf" data-ng-model="avaliadores.cpf" required minlength="5" maxlength="20"
                cpf-mask="avaliadores.nacionalidade === 'brasileiro'"
-               data-ng-change="validarDocumento(avaliadores.cpf)" />
+               data-ng-model-options="{debounce:500}"
+               data-ng-change="validarDocumento(avaliadores.cpf); verificarPessoaExistente()" />
         <div class="md-errors-spacer">
           <div data-ng-show="avaliadoresForm.cpf.$dirty">
             <div class="message-error" data-ng-show="avaliadoresForm.cpf.$error.required">Obrigatório.</div>
