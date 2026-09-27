@@ -143,7 +143,7 @@
 		}
 
 		let carregarProjetos = function() {
-			var anoAtual = new Date(Date.now()).getFullYear();
+			var anoAtual = avaliacaoAPI.anoDaMostra();
 
 			// Zera os acumuladores antes de recarregar - carregarProjetos() agora é chamado
 			// de novo depois de confirmarPremiados() (pra atualizar os totais na tela), e sem
@@ -167,8 +167,7 @@
 				avaliacaoAPI.getTodosProjetos()
 				.success(function(projetos) {
 					angular.forEach(projetos, function (value, key) {
-						var ano = new Date(value.createdAt).getFullYear();
-						if (ano !== anoAtual) return;
+						if (!avaliacaoAPI.pertenceAMostraAtual(value)) return;
 						if (value.aprovado !== true) return;
 
 						// Snapshot ANTES de construirObjExibicao, que pode zerar
@@ -250,8 +249,7 @@
 					$scope.numAvaliadoresRange = [0, 1];
 					avaliacaoAPI.getFeiras()
 					.success(function(feiras) {
-						var ano_atual = new Date(Date.now()).getFullYear();
-						var edicao = feiras.filter(function(f) { return f.tipo === 'edicao' && f.ano == ano_atual; })[0];
+						var edicao = avaliacaoAPI.edicaoDaMostra(feiras);
 						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
 						var range = [];
 						for (var i = 0; i < n; i++) range.push(i);
@@ -316,7 +314,7 @@
 					$scope.premiacao.feirasSelecionadas = {};
 					avaliacaoAPI.getFeiras().success(function(feiras) {
 						angular.forEach(feiras, function(feira) {
-							if (feira.tipo !== 'edicao' && feira.ano === new Date(Date.now()).getFullYear() && feira.categorias.indexOf(projeto.categoria) !== -1) {
+							if (feira.tipo !== 'edicao' && feira.ano === avaliacaoAPI.anoDaMostra() && feira.categorias.indexOf(projeto.categoria) !== -1) {
 								$scope.feirasDisponiveis.push(feira);
 								if (projeto.feirasClassificadas && projeto.feirasClassificadas.indexOf(feira._id) !== -1) {
 									$scope.premiacao.feirasSelecionadas[feira._id] = true;
@@ -366,7 +364,7 @@
 		// Quantos projetos por eixo contam como "Premiado" ao confirmar - gravado por ano
 		// (ver GET /admin/configPremiacao), começa em 3 até o usuário mudar e confirmar.
 		$scope.numPremiadosPorEixo = 3;
-		avaliacaoAPI.getConfigPremiacao(new Date(Date.now()).getFullYear())
+		avaliacaoAPI.getConfigPremiacao(avaliacaoAPI.anoDaMostra())
 			.success(function(data) { $scope.numPremiadosPorEixo = data.numPremiadosPorEixo; })
 			.error(function(status) { console.log(status); });
 
@@ -654,10 +652,10 @@
 			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
 			relatorioPdfService.tabelas({
 				titulo: 'Ranking - 1º, 2º e 3º colocados',
-				subtitulo: 'MOVACI ' + new Date().getFullYear(),
+				subtitulo: 'MOVACI ' + avaliacaoAPI.anoDaMostra(),
 				orientacao: 'landscape',
 				secoes: secoes,
-				arquivo: new Date().getFullYear() + '_Ranking_Colocacao'
+				arquivo: avaliacaoAPI.anoDaMostra() + '_Ranking_Colocacao'
 			});
 		};
 
@@ -690,10 +688,10 @@
 			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
 			relatorioPdfService.tabelas({
 				titulo: 'Ranking - Destaques',
-				subtitulo: 'MOVACI ' + new Date().getFullYear(),
+				subtitulo: 'MOVACI ' + avaliacaoAPI.anoDaMostra(),
 				orientacao: 'landscape',
 				secoes: secoes,
-				arquivo: new Date().getFullYear() + '_Ranking_Destaques'
+				arquivo: avaliacaoAPI.anoDaMostra() + '_Ranking_Destaques'
 			});
 		};
 
@@ -730,7 +728,7 @@
 				.cancel('Cancelar');
 			$mdDialog.show(confirm).then(function() {
 				avaliacaoAPI.postConfirmarPremiados({
-					ano: new Date(Date.now()).getFullYear(),
+					ano: avaliacaoAPI.anoDaMostra(),
 					numPremiadosPorEixo: $scope.numPremiadosPorEixo,
 					premiados: premiados
 				})

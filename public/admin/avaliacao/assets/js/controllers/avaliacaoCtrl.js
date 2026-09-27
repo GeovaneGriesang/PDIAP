@@ -13,9 +13,7 @@
 			avaliacaoAPI.getTodosProjetos()
 			.success(function(projetos) {
 				angular.forEach(projetos, function (value, key) {
-					var ano = new Date(value.createdAt);
-					var ano_atual = new Date(Date.now());					
-					if (value.aprovado === true && ano.getFullYear() == ano_atual.getFullYear()) {
+					if (value.aprovado === true && avaliacaoAPI.pertenceAMostraAtual(value)) {
 						if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
 							var avaliacao = value.avaliacao;
 							var avaliado = true;
@@ -67,8 +65,7 @@
 					$scope.indiceDesempate = 2;
 					avaliacaoAPI.getFeiras()
 					.success(function(feiras) {
-						var ano_atual = new Date(Date.now()).getFullYear();
-						var edicao = feiras.filter(function(f) { return f.tipo === 'edicao' && f.ano == ano_atual; })[0];
+						var edicao = avaliacaoAPI.edicaoDaMostra(feiras);
 						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
 						var range = [];
 						for (var i = 0; i < n; i++) range.push(i);

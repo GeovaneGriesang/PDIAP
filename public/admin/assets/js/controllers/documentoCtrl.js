@@ -3,10 +3,11 @@
     'use strict';
     angular
     .module('PDIAPa')
-    .controller('documentoCtrl', function($scope, $timeout, $mdDialog, adminAPI) {
+    .controller('documentoCtrl', function($scope, $rootScope, $timeout, $mdDialog, adminAPI) {
 
         // Declaração e inicialização segura das scopes
         $scope.mostras = [];
+        $scope.anosMostras = [];
         $scope.titulo_documento = "";
         $scope.ano = new Date().getFullYear();
         // Filtro por ano da lista abaixo - independente do "ano" do formulário de cadastro
@@ -16,12 +17,17 @@
         // O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona,
         // religa cada <md-option> e reescreve o ng-model no processo (bug conhecido do
         // Angular Material com ng-repeat dentro de md-select) - por isso só define o ano
-        // padrão (a Mostra mais recente) depois que a lista chegar e terminar de religar.
+        // padrão depois que a lista chegar e terminar de religar: o ano da Mostra em uso
+        // ($rootScope.ano - a Mostra atual, ou a que foi escolhida num filtro de outra tela),
+        // ou o da mais recente se esse ano não tiver Mostra. Documento pertence a um ANO, então
+        // o seletor lista cada ano uma vez (anosMostras), não uma opção por Mostra.
         adminAPI.getMostras()
         .success(function(mostras) {
             $scope.mostras = mostras;
+            $scope.anosMostras = adminAPI.anosDasMostras(mostras);
             $timeout(function() {
-                var anoPadrao = mostras.length ? mostras[0].ano : new Date().getFullYear();
+                var existe = $scope.anosMostras.some(function(a) { return a.ano === $rootScope.ano; });
+                var anoPadrao = existe ? $rootScope.ano : ($scope.anosMostras.length ? $scope.anosMostras[0].ano : new Date().getFullYear());
                 $scope.ano = anoPadrao;
                 $scope.filtroAno = anoPadrao;
             });

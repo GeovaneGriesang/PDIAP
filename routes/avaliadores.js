@@ -75,8 +75,20 @@ router.post('/registro', async (req, res) => {
 	// vem do slug do link de inscrição usado (/avaliadores/inscricao/:slug), resolvido pro _id
 	// da Feira correspondente. Sem slug (link antigo, tela do admin, ou nenhuma edição com
 	// slug ainda), feiraId fica undefined - mesmo comportamento de antes da Fase 2.
+	// Cadastro pela tela do admin manda a Mostra selecionada no filtro (feiraId) - só vale em
+	// sessão de admin (permissao "3"), senão qualquer um poderia anexar um cadastro a uma
+	// Mostra qualquer. Mostra inválida => 400.
 	let feiraId;
-	if (req.body.slug) {
+	if (req.body.feiraId && req.isAuthenticated() && req.user.permissao === "3") {
+		try {
+			let feira = idValido(req.body.feiraId) ? await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id') : null;
+			if (!feira) return res.status(400).send('Mostra inválida');
+			feiraId = feira._id;
+		} catch (err) {
+			console.error('Erro ao resolver a Mostra do cadastro', err);
+			return res.status(500).send('error');
+		}
+	} else if (req.body.slug) {
 		try {
 			let feira = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug });
 			feiraId = feira ? feira._id : undefined;

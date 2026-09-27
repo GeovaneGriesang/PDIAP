@@ -87,12 +87,22 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
   try {
     let myArray = req.body.responsavel;
 
+    // Mostra a que o evento pertence (duas Mostras no mesmo ano não se distinguem só pelo ano).
+    let feiraId;
+    if (req.body.feiraId) {
+      if (!idValido(req.body.feiraId) || !(await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id'))) {
+        return res.status(400).send('Mostra inválida');
+      }
+      feiraId = req.body.feiraId;
+    }
+
     let newEvento = new eventoSchema({
       tipo: req.body.tipo
       ,titulo: req.body.titulo
       ,cargaHoraria: req.body.cargaHoraria
       ,data: req.body.data
       ,createdAt: req.body.createdAt
+      ,feiraId: feiraId
     });
 
     myArray.forEach(function (value, i) {
@@ -108,6 +118,7 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
     res.send('success');
   } catch (error){
     console.error('Erro ao criar um evento', error);
+    res.status(500).send('Erro ao criar evento');
   }
 });
 
@@ -156,6 +167,14 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
       }
       return { nome: r.nome, cpf: cpfLimpo };
     });
+
+    // Evento antigo (sem Mostra) é vinculado à Mostra em que está sendo editado.
+    if (req.body.feiraId) {
+      if (!idValido(req.body.feiraId) || !(await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id'))) {
+        return res.status(400).send('Mostra inválida');
+      }
+      evt.feiraId = req.body.feiraId;
+    }
 
     evt.tipo = req.body.tipo;
     evt.titulo = req.body.titulo;
@@ -479,11 +498,21 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
     let anoValido = !isNaN(anoInformado) && anoInformado >= 2016 && anoInformado <= new Date().getFullYear();
     let createdAt = anoValido ? new Date(new Date().setFullYear(anoInformado)) : Date.now();
 
+    // Mostra selecionada no filtro da tela (duas Mostras no mesmo ano não se distinguem só pelo ano).
+    let feiraId;
+    if (req.body.feiraId) {
+      if (!idValido(req.body.feiraId) || !(await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id'))) {
+        return res.status(400).send('Mostra inválida');
+      }
+      feiraId = req.body.feiraId;
+    }
+
     let newParticipante = new participanteSchema({
       nome: req.body.nome
       ,cpf: splita(req.body.cpf)
       ,email: req.body.email
       ,createdAt: createdAt
+      ,feiraId: feiraId
     });
 
     // Login único: vincula à Pessoa do mesmo documento (ver controllers/pessoa-controller.js#vincularPessoa)
@@ -803,6 +832,34 @@ router.get('/getOpcoes', (req, res) => {
 	});
 });
 
+// Mostra atual (Editar > Mostra atual): padrão de todos os seletores de Mostra do painel e do
+// Ranking/Avaliação. Só uma pode estar marcada; id null desmarca (volta a valer a de maior ano).
+router.get('/mostraAtual', miPermiso("3","2"), async (req, res) => {
+  try {
+    res.send({ mostraId: await Admin.getMostraAtualId() });
+  } catch (error) {
+    console.error('Erro ao ler a Mostra atual', error);
+    res.status(500).send('Erro ao ler a Mostra atual');
+  }
+});
+
+router.put('/mostraAtual', miPermiso("3"), async (req, res) => {
+  try {
+    let id = req.body.id;
+    if (id) {
+      if (!idValido(id)) return res.status(400).send('ID inválido');
+      let mostra = await feiraSchema.findOne({ _id: id, tipo: 'edicao' }, '_id');
+      if (!mostra) return res.status(400).send('Mostra não encontrada');
+    }
+    let gravou = await Admin.setMostraAtualId(id || null);
+    if (!gravou) return res.status(500).send('Configuração do site não encontrada');
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao gravar a Mostra atual', error);
+    res.status(500).send('Erro ao gravar a Mostra atual');
+  }
+});
+
 router.get('/projetos', miPermiso("2","3"), async (req, res) => {
   try {
     // Antes mandava o documento inteiro pro navegador, incluindo o hash da senha de
@@ -1094,9 +1151,14 @@ router.post('/enviarEmailPremiados', miPermiso("3"), async (req, res) => {
 // (edições antigas, ou a edição ainda nem foi criada em Mostra), assume 3.
 router.get('/configPremiacao', miPermiso("3","2"), async (req, res) => {
   var ano = parseInt(req.query.ano, 10);
-  if (!ano) return res.status(400).send('Ano inválido.');
+  // mostraId (opcional) distingue duas Mostras no mesmo ano; sem ele vale o ano, como sempre.
+  var mostraId = req.query.mostraId;
+  if (mostraId && !idValido(mostraId)) return res.status(400).send('ID inválido.');
+  if (!ano && !mostraId) return res.status(400).send('Ano inválido.');
   try {
-    let doc = await feiraSchema.findOne({ tipo: 'edicao', ano: ano });
+    let doc = mostraId
+      ? await feiraSchema.findOne({ _id: mostraId, tipo: 'edicao' })
+      : await feiraSchema.findOne({ tipo: 'edicao', ano: ano });
     res.send({ numPremiadosPorEixo: (doc && doc.numPremiadosPorEixo) || 3 });
   } catch (error) {
     console.error('Erro ao buscar configuração de premiação', error);
@@ -1114,6 +1176,15 @@ router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
     var ano = parseInt(req.body.ano, 10);
     var numPremiadosPorEixo = parseInt(req.body.numPremiadosPorEixo, 10);
     var premiados = req.body.premiados;
+    // mostraId (opcional, Mostra atual): distingue duas Mostras no mesmo ano e o ano passa a vir
+    // da própria Mostra. Sem ele vale o ano enviado, como sempre.
+    var mostra = null;
+    if (req.body.mostraId) {
+      if (!idValido(req.body.mostraId)) return res.status(400).send('ID inválido.');
+      mostra = await feiraSchema.findOne({ _id: req.body.mostraId, tipo: 'edicao' });
+      if (!mostra) return res.status(400).send('Mostra não encontrada.');
+      ano = mostra.ano;
+    }
     if (!ano) return res.status(400).send('Ano inválido.');
     if (!numPremiadosPorEixo || numPremiadosPorEixo < 1) return res.status(400).send('Quantidade de premiados por eixo inválida.');
     if (!Array.isArray(premiados) || premiados.length === 0) return res.status(400).send('Nenhum projeto pra confirmar.');
@@ -1123,9 +1194,12 @@ router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
 
     var idsNovos = premiados.map(function(p) { return p.id; });
     var filtroAno = { createdAt: { $gte: new Date(ano, 0, 1), $lt: new Date(ano + 1, 0, 1) } };
+    // Com Mostra: projeto dela (feiraId) ou, sem feiraId (legado), do ano dela - mesma regra de
+    // pertenceAMostra no cliente. Um projeto de OUTRA Mostra do mesmo ano não é desmarcado.
+    var filtroDaMostra = mostra ? { $or: [{ feiraId: mostra._id }, Object.assign({ feiraId: null }, filtroAno)] } : filtroAno;
 
     await projetoSchema.updateMany(
-      Object.assign({ premiacao: 'Premiado', _id: { $nin: idsNovos } }, filtroAno),
+      Object.assign({ premiacao: 'Premiado', _id: { $nin: idsNovos } }, filtroDaMostra),
       { $unset: { premiacao: '', colocacao: '' } }
     );
 
@@ -1133,11 +1207,15 @@ router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
       await projetoSchema.findByIdAndUpdate(p.id, { premiacao: 'Premiado', colocacao: p.colocacao });
     }
 
-    await feiraSchema.findOneAndUpdate(
-      { tipo: 'edicao', ano: ano },
-      { $set: { numPremiadosPorEixo: numPremiadosPorEixo }, $setOnInsert: { tipo: 'edicao', ano: ano, createdAt: new Date() } },
-      { upsert: true }
-    );
+    if (mostra) {
+      await feiraSchema.updateOne({ _id: mostra._id }, { $set: { numPremiadosPorEixo: numPremiadosPorEixo } });
+    } else {
+      await feiraSchema.findOneAndUpdate(
+        { tipo: 'edicao', ano: ano },
+        { $set: { numPremiadosPorEixo: numPremiadosPorEixo }, $setOnInsert: { tipo: 'edicao', ano: ano, createdAt: new Date() } },
+        { upsert: true }
+      );
+    }
     res.send({ marcados: premiados.length });
   } catch (error) {
     console.error('Erro ao confirmar premiados', error);

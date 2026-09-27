@@ -2,10 +2,12 @@
     'use strict';
     angular
     .module('PDIAPa')
-    .controller('cadastromostraCtrl', function($scope, $timeout, adminAPI) {
+    .controller('cadastromostraCtrl', function($scope, $rootScope, $timeout, adminAPI) {
 
       $scope.certificados = [];
       $scope.mostras = [];
+      // Certificado pertence a um ANO: o seletor lista cada ano uma vez (ver adminAPI.anosDasMostras).
+      $scope.anosMostras = [];
 
       // O ano padrão (a Mostra mais recente) só pode ser definido depois que TANTO a
       // lista de Mostras quanto os certificados já cadastrados chegarem (são 2 chamadas
@@ -16,13 +18,16 @@
       var definirAnoPadrao = function() {
         if (!mostrasProntas || !certificadosProntos) return;
         $timeout(function() {
-          $scope.ano = $scope.mostras.length ? $scope.mostras[0].ano : new Date().getFullYear();
+          // Padrão = ano da Mostra em uso ($rootScope.ano: a Mostra atual, ou a escolhida num
+          // filtro de outra tela); se esse ano não tem Mostra, o da mais recente.
+          var existe = $scope.anosMostras.some(function(a) { return a.ano === $rootScope.ano; });
+          $scope.ano = existe ? $rootScope.ano : ($scope.anosMostras.length ? $scope.anosMostras[0].ano : new Date().getFullYear());
           $scope.carregaDado($scope.ano);
         });
       };
 
       adminAPI.getMostras()
-      .success(function(mostras) { $scope.mostras = mostras; mostrasProntas = true; definirAnoPadrao(); })
+      .success(function(mostras) { $scope.mostras = mostras; $scope.anosMostras = adminAPI.anosDasMostras(mostras); mostrasProntas = true; definirAnoPadrao(); })
       .error(function(status) { console.log('Error: '+status); mostrasProntas = true; definirAnoPadrao(); });
 
       //algumas scopes para recuperar os dados
