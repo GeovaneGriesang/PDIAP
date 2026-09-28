@@ -11,15 +11,15 @@
 			
 
 			projetosAPI.postLogin(username,password)
-			.success(function(projeto) { // authentication OK
+			.then(function(response) { // authentication OK
+				var projeto = response.data;
 				$rootScope.logado = true;
 				$scope.message = 'Sucesso';
 				$scope.erro = false;
 				// localStorage.setItem('token','TOKEN_TESTE');
 				$mdDialog.hide();
 				$window.location.href = projeto.redirect;
-			})
-			.error(function() { // authentication failed
+			}, function() { // authentication failed
 				$rootScope.logado = false;
 				$scope.message = 'Os dados estão incorretos.';
 				$scope.erro = true;
@@ -29,7 +29,8 @@
 		let enviarEmail = function(username) {
 			// console.log(username)
 			projetosAPI.postRedefinir(username)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				console.log(data);
 				$scope.email = data;
 				console.log('loginCtrl'+$scope.email);
@@ -46,13 +47,12 @@
 					);
 				};
 				showAlert();
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Oxe...')
-					.textContent('Houve algum erro ao enviar o email. Tente mais tarde ou então, entre em contato conosco. '+status.error)
+					.textContent('Houve algum erro ao enviar o email. Tente mais tarde ou então, entre em contato conosco. '+response.data.error)
 					.targetEvent(ev)
 					.theme('error')
 					.ok('Continuar')

@@ -8,11 +8,10 @@
 		$scope.avaliador = {};
 
 		avaliadorAPI.getDados()
-		.success(function(avaliador) {
-			$scope.avaliador = avaliador;
-		})
-		.error(function(status) {
-			console.log('Error: ' + status);
+		.then(function(response) {
+			$scope.avaliador = response.data;
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		$scope.toast = function(message, tema) {
@@ -31,10 +30,9 @@
 				curriculo: avaliador.curriculo
 			};
 			avaliadorAPI.putDados(dados)
-			.success(function() {
+			.then(function() {
 				$scope.toast('Dados atualizados com sucesso!', 'success-toast');
-			})
-			.error(function(status) {
+			}, function() {
 				$scope.toast('Falha ao salvar.', 'failed-toast');
 			});
 		};

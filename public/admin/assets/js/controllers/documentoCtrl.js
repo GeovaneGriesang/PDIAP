@@ -22,7 +22,8 @@
         // ou o da mais recente se esse ano não tiver Mostra. Documento pertence a um ANO, então
         // o seletor lista cada ano uma vez (anosMostras), não uma opção por Mostra.
         adminAPI.getMostras()
-        .success(function(mostras) {
+        .then(function(response) {
+            var mostras = response.data;
             $scope.mostras = mostras;
             $scope.anosMostras = adminAPI.anosDasMostras(mostras);
             $timeout(function() {
@@ -31,8 +32,7 @@
                 $scope.ano = anoPadrao;
                 $scope.filtroAno = anoPadrao;
             });
-        })
-        .error(function(status) { console.log('Error: '+status); });
+        }, function(response) { console.log('Error: '+response.data); });
         $scope.Exibe_documento = false;
         $scope.documentos = [];
         $scope.spinnerActive = false; // Controle do carregamento
@@ -41,15 +41,15 @@
         $scope.carregarDocumentos = function() {
             $scope.spinnerActive = true;
             adminAPI.getDocumentos()
-            .success(function(documentos){
+            .then(function(response){
+                var documentos = response.data;
                 if(documentos && documentos.length > 0){
                     // Clonamos o array sem criar vínculos pesados de escopo no Angular
                     $scope.documentos = angular.copy(documentos);
                 }
                 $scope.spinnerActive = false;
-            })
-            .error(function(err) {
-                console.error("Erro ao buscar documentos:", err);
+            }, function(response) {
+                console.error("Erro ao buscar documentos:", response.data);
                 $scope.spinnerActive = false;
             });
         };
@@ -84,11 +84,10 @@
                 };
 
                 adminAPI.postDocumento(pacote)
-                .success(function(_){
+                .then(function(){
                     $scope.spinnerActive = false;
                     window.location.reload();
-                })
-                .error(function() {
+                }, function() {
                     $scope.spinnerActive = false;
                     if (typeof $scope.toast === 'function') { $scope.toast('Erro ao cadastrar.', 'failed-toast'); }
                 });
@@ -107,9 +106,11 @@
             
             $mdDialog.show(confirm).then(function() {
                 adminAPI.removeDocumento(id)
-                .success(function() {
+                .then(function() {
                     if (typeof $scope.toast === 'function') { $scope.toast('Documento removido!', 'success-toast'); }
                     window.location.reload();
+                }, function(response) {
+                    console.error("Erro ao remover documento:", response.data);
                 });
             });
         };

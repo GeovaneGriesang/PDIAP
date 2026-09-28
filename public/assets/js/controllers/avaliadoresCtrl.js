@@ -15,15 +15,15 @@
 		$scope.edicoesParaEscolher = null;
 		$scope.carregarEdicoes = function() {
 			if ($scope.mostraSlug) return;
-			projetosAPI.getEdicoesInscricao().success(function(edicoes) {
+			projetosAPI.getEdicoesInscricao().then(function(response) {
+				var edicoes = response.data;
 				var abertas = (edicoes || []).filter(function(e) { return e.avaliadores && e.avaliadores.aberto && e.slug; });
 				if (abertas.length === 1) {
 					$scope.mostraSlug = abertas[0].slug;
 				} else if (abertas.length > 1) {
 					$scope.edicoesParaEscolher = abertas;
 				}
-			})
-			.error(function(status) { console.log(status); });
+			}, function(response) { console.log(response.data); });
 		};
 		$scope.carregarEdicoes();
 
@@ -46,7 +46,8 @@
 			var checagem = documentoValidatorService.validarDocumento($scope.avaliadores.cpf);
 			if (!checagem.valido || !$scope.avaliadores.email) return;
 			projetosAPI.verificarPessoa($scope.avaliadores.cpf, $scope.avaliadores.email)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				if (!data.encontrado) return;
 				var confirm = $mdDialog.confirm()
 					.title('Encontramos seu cadastro')
@@ -59,12 +60,12 @@
 					$scope.avaliadores.telefone = data.telefone || $scope.avaliadores.telefone;
 					$scope.avaliadores.nacionalidade = data.nacionalidade || $scope.avaliadores.nacionalidade;
 				}, function() {});
-			})
-			.error(function(status) { console.log(status); });
+			}, function(response) { console.log(response.data); });
 		};
 
 		$scope.carregarEdits = function(){
-			projetosAPI.getEdits().success(function(edits){				
+			projetosAPI.getEdits().then(function(response){
+				var edits = response.data;
 				if(edits[0].cadastro_avaliadores == false){
 					$scope.cadastro_avaliadores = false;
 					/*let showConfirmDialog = function(ev) {
@@ -81,33 +82,30 @@
 						}, function() {});
 					};
 					showConfirmDialog();*/
-				}	
-			})
-			.error(function(status) {
-				console.log(status);
+				}
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
-		$scope.carregarEdits();		
+		$scope.carregarEdits();
 
 		$scope.avaliadores = $scope.avaliadores || {};
 		$scope.avaliadores.categoriasEixos = [];
 		$scope.avaliadores.disponibilidade = [];
 
 		projetosAPI.getCategoriasEixos(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaCategorias = data.categorias;
-		})
-		.error(function(status) {
-			console.log(status);
+		.then(function(response) {
+			$scope.listaCategorias = response.data.categorias;
+		}, function(response) {
+			console.log(response.data);
 		});
 
 		$scope.listaDias = [];
 		projetosAPI.getDiasAvaliacao(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaDias = data.dias;
-		})
-		.error(function(status) {
-			console.log(status);
+		.then(function(response) {
+			$scope.listaDias = response.data.dias;
+		}, function(response) {
+			console.log(response.data);
 		});
 
 		$scope.registrarAvaliador = function(avaliador) {
@@ -135,7 +133,8 @@
 				slug: $scope.mostraSlug
 			});
 			projetosAPI.saveAvaliador(pacote)
-			.success(function(data, status) {
+			.then(function(response) {
+				var data = response.data;
 				if (data === 'success') {
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.confirm()
@@ -168,8 +167,7 @@
 					};
 					showConfirmDialog();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
@@ -185,7 +183,7 @@
 					});
 				};
 				showConfirmDialog();
-				console.log(status);
+				console.log(response.data);
 			});
 		};
 

@@ -10,7 +10,7 @@
 			const password = $scope.user.password;
 
 			adminAPI.postLoginAdmin(username,password)
-			.success(function(data) { // authentication OK
+			.then(function(response) { // authentication OK
 				$rootScope.logado = true;
 				$scope.message = 'Sucesso';
 				$scope.erro = false;
@@ -21,8 +21,7 @@
 				} else {
 					$window.location.href="http://www.movaci.com.br/admin/home";
 				}
-			})
-			.error(function() { // authentication failed
+			}, function() { // authentication failed
 				$rootScope.logado = false;
 				$scope.message = 'Os dados estão incorretos.';
 				$scope.erro = true;

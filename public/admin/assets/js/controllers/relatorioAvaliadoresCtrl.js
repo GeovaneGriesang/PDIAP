@@ -33,8 +33,8 @@
 		let carregar = function() {
 			$scope.avaliadores = [];
 			adminAPI.getAvaliadores()
-			.success(function(dados) {
-				angular.forEach(dados, function(value) {
+			.then(function(response) {
+				angular.forEach(response.data, function(value) {
 					if (!adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) return;
 					$scope.avaliadores.push({
 						nome: value.nome,
@@ -45,14 +45,14 @@
 						avaliacao: value.avaliacao === true
 					});
 				});
-			})
-			.error(function(status) {
-				console.log('Erro ao carregar avaliadores: ' + status);
+			}, function(response) {
+				console.log('Erro ao carregar avaliadores: ' + response.data);
 			});
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -60,9 +60,8 @@
 				resolverMostraSelecionada();
 				carregar();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregar();
 		});

@@ -33,15 +33,14 @@
 		let mostraFeiras = function() {
 			$scope.feiras = [];
 			adminAPI.getFeiras()
-			.success(function(feiras) {
-				angular.forEach(feiras, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if (value.ano == $scope.ano && value.tipo !== 'edicao') {
 						$scope.feiras.push(value);
 					}
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		}
 		$scope.mostraFeiras = mostraFeiras();
@@ -80,14 +79,13 @@
 			}
 
 			pedido
-			.success(function(data) {
+			.then(function(response) {
 				$scope.toast(feira._id ? 'Feira atualizada com sucesso!' : 'Feira cadastrada com sucesso!', 'success-toast');
 				mostraFeiras();
 				resetForm();
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.toast('Falha.','failed-toast');
-				console.log("Error: "+status);
+				console.log("Error: "+response.data);
 			});
 		};
 
@@ -116,16 +114,15 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.removeFeira(id)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Feira removida com sucesso!','success-toast');
 					var index = $scope.feiras.map(function(f) { return f._id; }).indexOf(id);
 					if (index !== -1) {
 						$scope.feiras.splice(index, 1);
 					}
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 			}, function() {});
 		};

@@ -27,8 +27,8 @@
 
 		$scope.carregarProjetos = function() {
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if (value.aprovado === true) {
 						relatorio.countAprovados++;
 						if (value.participa === true) {
@@ -84,26 +84,25 @@
 				console.log("nao: "+relatorio.countParticipaNao);
 				console.log("sim: "+relatorio.countParticipaSim);
 				console.log("pendente: "+relatorio.countPendente);
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
 		$scope.carregarSaberes = function() {
 			adminAPI.getTodosSaberes()
-			.success(function(saberes) {
-				$scope.saberes = saberes;
+			.then(function(response) {
+				$scope.saberes = response.data;
 				// console.log(saberes);
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
 		$scope.carregarAvaliadores = function() {
 			adminAPI.getTodosAvaliadores()
-			.success(function(avaliadores) {
+			.then(function(response) {
+				var avaliadores = response.data;
 				// angular.forEach(projetos, function (value, key) {
 				// 	let obj = ({
 				// 		_id: value._id.$oid,
@@ -117,9 +116,8 @@
 				// 	$scope.projetos.push(obj);
 				// });
 				$scope.avaliadores = avaliadores;
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 

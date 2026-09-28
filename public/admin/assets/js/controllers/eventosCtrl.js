@@ -49,8 +49,8 @@
 
 		let mostraEventos = function() {
 			adminAPI.getEventos()
-			.success(function(eventos) {
-				angular.forEach(eventos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					let responsaveis = "";
 					let dateFormat = "";
 					angular.forEach(value.responsavel, function (value, key) {
@@ -92,13 +92,13 @@
 						}
 					}
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		}
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -106,9 +106,8 @@
 				resolverMostraSelecionada();
 				mostraEventos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			mostraEventos();
 		});
@@ -157,14 +156,13 @@
 					feiraId: $rootScope.mostraId
 				});
 				adminAPI.putAtualizaEvento(evtAtualizado)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Evento atualizado com sucesso!','success-toast');
 					mostraEventos();
 					resetForm();
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 				return;
 			}
@@ -185,14 +183,13 @@
 			});
 
 			adminAPI.postEvento(evt)
-			.success(function(data) {
+			.then(function(response) {
 				$scope.toast('Evento cadastrado com sucesso!','success-toast');
 				mostraEventos();
 				resetForm();
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.toast('Falha.','failed-toast');
-				console.log("Error: "+status);
+				console.log("Error: "+response.data);
 			});
 		};
 
@@ -238,16 +235,15 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.putRemoveEvento(id)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Evento removido com sucesso!','success-toast');
 					var index = $scope.eventos.map(function(e) { return e._id; }).indexOf(id);
 					if (index !== -1) {
 						$scope.eventos.splice(index, 1);
 					}
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 			}, function() {});
 		};

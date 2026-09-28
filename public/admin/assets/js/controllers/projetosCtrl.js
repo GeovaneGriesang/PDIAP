@@ -55,8 +55,8 @@
 		$scope.hosp = [];
 		let carregarProjetos = function() {
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js) pra
@@ -108,9 +108,8 @@
 					}	
 					
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarProjetos = carregarProjetos;
@@ -282,7 +281,7 @@
 					}
 					$scope.setPresenca = function() {
 						adminAPI.putPresencaProjetos($scope.idIntegrantesPresentes,$scope.idIntegrantesAusentes)
-						.success(function(data, status) {
+						.then(function(response) {
 							$scope.toast('Presença cadastrada com sucesso!','success-toast');
 							var count = 0;
 							if ($scope.idIntegrantesPresentes.length !== 0) {
@@ -317,10 +316,9 @@
 							$mdDialog.hide();
 							$scope.idIntegrantesPresentes = [];
 							$scope.idIntegrantesAusentes = [];
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.','failed-toast');
-							console.log('Error: '+status);
+							console.log('Error: '+response.data);
 						});
 					}
 					$scope.toast = function(message,tema) {
@@ -353,8 +351,8 @@
 					// de Premiação/Menção Honrosa (details.premiacao.html).
 					$scope.feirasDisponiveis = [];
 					$scope.premiacao.feirasSelecionadas = {};
-					adminAPI.getFeiras().success(function(feiras) {
-						angular.forEach(feiras, function (feira) {
+					adminAPI.getFeiras().then(function(response) {
+						angular.forEach(response.data, function (feira) {
 							if (feira.ano == $rootScope.ano && feira.categorias.indexOf(projeto.categoria) !== -1) {
 								$scope.feirasDisponiveis.push(feira);
 								if (projeto.feirasClassificadas && projeto.feirasClassificadas.indexOf(feira._id) !== -1) {
@@ -362,19 +360,21 @@
 								}
 							}
 						});
+					}, function(response) {
+						console.log('Error: '+response.data);
 					});
 
 					$scope.setPremiado = function() {
 						$scope.premiacao.feirasClassificadas = Object.keys($scope.premiacao.feirasSelecionadas).filter(function(id) {
 							return $scope.premiacao.feirasSelecionadas[id];
 						});
-						adminAPI.putPremiadoProjetos($scope.premiacao).success(function(data, status) {
+						adminAPI.putPremiadoProjetos($scope.premiacao).then(function(response) {
 							$scope.toast('Projeto premiado com sucesso!','success-toast');
 
 							setTimeout($rootScope.recarregar, 750);
-						}).error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.','failed-toast');
-							console.log('Error: '+status);
+							console.log('Error: '+response.data);
 						});
 					};
 					$scope.toast = function(message,tema) {
@@ -398,7 +398,7 @@
 
 		$scope.update = function() {
 			adminAPI.putSetAprovados($scope.idProjetosAnais, $scope.idProjetosApresentacao, $scope.idProjetosReprovados)
-			.success(function(data, status) {
+			.then(function(response) {
 				$scope.toast('Projeto(s) atualizado(s) com sucesso!','success-toast');
 
 				// Reflete na lista em memória o que acabou de ser gravado, sem recarregar
@@ -418,10 +418,9 @@
 				$scope.idProjetosAnais = [];
 				$scope.idProjetosApresentacao = [];
 				$scope.idProjetosReprovados = [];
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.toast('Falha ao salvar.','failed-toast');
-				console.log('Error: '+status);
+				console.log('Error: '+response.data);
 			});
 		}
 
@@ -450,7 +449,8 @@
 		}
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) {
@@ -461,9 +461,8 @@
 				resolverMostraSelecionada();
 				carregarProjetos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			carregarProjetos();
 		});
 

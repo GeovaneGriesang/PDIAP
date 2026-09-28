@@ -67,8 +67,8 @@
 			$scope.naoAprovado = [];
 			var avaliados = [];
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function(value) {
+			.then(function(response) {
+				angular.forEach(response.data, function(value) {
 					if (!adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) return;
 					var temNota = value.avaliacao !== undefined && value.avaliacao.length > 0;
 					if (!temNota) return;
@@ -96,12 +96,12 @@
 					}
 				});
 				$scope.empatados = detectarEmpatados(avaliados);
-			})
-			.error(function(status) { console.log(status); });
+			}, function(response) { console.log(response.data); });
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -109,9 +109,8 @@
 				resolverMostraSelecionada();
 				carregarProjetos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregarProjetos();
 		});
@@ -146,14 +145,13 @@
 					};
 					$scope.setPresenca = function() {
 						adminAPI.putPresencaProjetos($scope.idIntegrantesPresentes, $scope.idIntegrantesAusentes)
-						.success(function() {
+						.then(function() {
 							$scope.toast('Presença cadastrada com sucesso!', 'success-toast');
 							$mdDialog.hide();
 							carregarProjetos();
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.', 'failed-toast');
-							console.log('Error: ' + status);
+							console.log('Error: ' + response.data);
 						});
 					};
 					$scope.toast = function(message, tema) {
@@ -180,14 +178,13 @@
 					$scope.habilitaDesempate = function() { $scope.desempate = !$scope.desempate; };
 					$scope.addNotas = function(id, notas) {
 						adminAPI.putAvaliacao(id, notas)
-						.success(function() {
+						.then(function() {
 							$scope.toast('Avaliação realizada com sucesso!', 'success-toast');
 							$mdDialog.hide();
 							carregarProjetos();
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.', 'failed-toast');
-							console.log('Error: ' + status);
+							console.log('Error: ' + response.data);
 						});
 					};
 					// Mesmo mecanismo de avaliacaoInserirCtrl.js - remove uma nota lançada
@@ -242,16 +239,15 @@
 		};
 		$scope.salvarSituacoes = function() {
 			adminAPI.putSetAprovados($scope.idProjetosAnais, $scope.idProjetosApresentacao, $scope.idProjetosReprovados)
-			.success(function() {
+			.then(function() {
 				$scope.toast('Projeto(s) atualizado(s) com sucesso!', 'success-toast');
 				$scope.idProjetosAnais = [];
 				$scope.idProjetosApresentacao = [];
 				$scope.idProjetosReprovados = [];
 				carregarProjetos();
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.toast('Falha ao salvar.', 'failed-toast');
-				console.log('Error: ' + status);
+				console.log('Error: ' + response.data);
 			});
 		};
 	});

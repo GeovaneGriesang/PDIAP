@@ -14,9 +14,9 @@
 			var deferred = $q.defer(); // Inicializa nova promissa
 			$rootScope.logado = false;
 
-			$http.get('/admin/loggedin').success(function(projetos, status) {
-				console.log(status);
-				if (status !== 403) { // Authenticated
+			$http.get('/admin/loggedin').then(function(response) {
+				console.log(response.status);
+				if (response.status !== 403) { // Authenticated
 					$rootScope.logado = true;
 					deferred.resolve();
 				} else { // Not Authenticated
@@ -24,8 +24,7 @@
 					$window.location.href="http://movaci.com.br";
 					deferred.reject();
 				}
-			})
-			.error(function(status) { // Not Authenticated
+			}, function() { // Not Authenticated
 				$rootScope.logado = false;
 				$window.location.href="http://movaci.com.br";
 				deferred.reject();
@@ -60,12 +59,11 @@
 				deferred.resolve();
 			};
 			adminAPI.getMostras()
-			.success(function(mostras) {
+			.then(function(response) {
+				var mostras = response.data;
 				adminAPI.getMostraAtual()
-				.success(function(resposta) { aplicar(mostras, resposta && resposta.mostraId); })
-				.error(function() { aplicar(mostras, null); });
-			})
-			.error(function() {
+				.then(function(response) { aplicar(mostras, response.data && response.data.mostraId); }, function() { aplicar(mostras, null); });
+			}, function() {
 				$rootScope.mostraAtualId = null;
 				$rootScope.mostraId = null;
 				$rootScope.ano = new Date().getFullYear();

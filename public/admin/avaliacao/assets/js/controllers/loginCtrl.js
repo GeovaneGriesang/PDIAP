@@ -10,15 +10,14 @@
 			const password = $scope.user.password;
 
 			avaliacaoAPI.postLoginAvaliador(username,password)
-			.success(function(data) { // authentication OK
-				let id = data._id;
+			.then(function(response) { // authentication OK
+				let id = response.data._id;
 				$rootScope.logado = true;
 				$scope.message = 'Sucesso';
 				$scope.erro = false;
 				$mdDialog.hide();
 				$window.location.href="http://www.movaci.com.br/avaliacao/2016/"+id;
-			})
-			.error(function() { // authentication failed
+			}, function() { // authentication failed
 				$rootScope.logado = false;
 				$scope.message = 'Os dados estão incorretos.';
 				$scope.erro = true;

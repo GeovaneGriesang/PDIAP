@@ -14,11 +14,10 @@
 		$scope.opcoes = {};
 
 		$scope.carregarOpcoes = function(){
-			projetosAPI.getOpcoes().success(function(op){
-				$scope.opcoes = op;
-			})
-			.error(function(status) {
-				console.log(status);
+			projetosAPI.getOpcoes().then(function(response){
+				$scope.opcoes = response.data;
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarOpcoes();
@@ -28,14 +27,13 @@
 				projeto.palavraChave = $scope.palavraChave;
 			}
 			projetosAPI.putProjeto(projeto)
-			.success(function(projeto){
+			.then(function(response){
 				$scope.alterado = true;
 				$scope.toast('Alteração realizada com sucesso!','success-toast');
 				$scope.carregarProjeto();
-			})
-			.error(function(status){
-				console.log('update error: '+status);
-				$scope.toast(status || 'Falha na alteração','failed-toast');
+			}, function(response){
+				console.log('update error: '+response.data);
+				$scope.toast(response.data || 'Falha na alteração','failed-toast');
 			});
 		};
 
@@ -45,13 +43,12 @@
 
 		let updateIntegrante = function(pacote) {
 			projetosAPI.putIntegrante(pacote)
-			.success(function(data, status){
-				console.log(status);
+			.then(function(response){
+				console.log(response.status);
 				$scope.alterado = true;
 				$scope.toast('Alteração realizada com sucesso!','success-toast');
-			})
-			.error(function(status){
-				console.log('update error: '+status);
+			}, function(response){
+				console.log('update error: '+response.data);
 				$scope.toast('Falha na alteração','failed-toast');
 			});
 		};
@@ -154,11 +151,10 @@
 				hospedagem: $scope.projeto5.hospedagem
 			});
 			projetosAPI.putProjeto(hosp)
-			.success(function(data){
+			.then(function(response){
 				 $scope.carregarProjeto();
-			})
-			.error(function(status){
-				console.log('update error: '+status);
+			}, function(response){
+				console.log('update error: '+response.data);
 				$scope.toast('Falha na alteração','failed-toast');
 			});
 
@@ -181,7 +177,8 @@
 
 		let getIntegrantes = function() {
 			projetosAPI.getProjeto()
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				var x = 0;
 				var y = 0;
 				$scope.orientadores = [];
@@ -282,7 +279,9 @@
 				for (var i = 0; i < $scope.alunos.length; i++) {
 					addAlunoUpdate();
 				}
-			
+
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		}
 		getIntegrantes();
@@ -317,14 +316,16 @@
 			$scope.orientadores = [];
 			$scope.alunos = [];
 			projetosAPI.getProjeto()
-			.success(function(data) {
-				angular.forEach(data.integrantes, function (value, key){
+			.then(function(response) {
+				angular.forEach(response.data.integrantes, function (value, key){
 					if (value.tipo === 'Orientador') {
 						$scope.orientadores.push(value);
 					} else if (value.tipo === 'Aluno') {
 						$scope.alunos.push(value);
 					}
 				});
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 
@@ -423,21 +424,20 @@
 							integrantes_id: $scope.projeto3[idIntegrante]
 						});
 						projetosAPI.removeIntegrante(id)
-						.success(function(data) {
+						.then(function(response) {
 							$scope.dynamicFields11.splice(index, 1);
 							$scope.count11--;
 							console.log($scope.count11);
 							if ($scope.count11 !== 2) {
 								$scope.btnAdd11 = true;
 							}
-							
+
 							$scope.carregarProjeto();
 							getIntegrantes();
 							setTimeout($scope.refresh, 750);
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
-						})
-						.error(function(status){
-							console.log(status);
+						}, function(response){
+							console.log(response.data);
 							$scope.toast('Falha na alteração','failed-toast');
 						});
 					});
@@ -472,7 +472,7 @@
 							integrantes_id: $scope.projeto4[idIntegrante]
 						});
 						projetosAPI.removeIntegrante(id)
-						.success(function(data) {
+						.then(function(response) {
 							$scope.dynamicFields22.splice(index, 1);
 							$scope.count22--;
 							if ($scope.count22 !== 3) {
@@ -484,10 +484,9 @@
 								hospedagem: $scope.projeto5.hospedagem
 							});
 							projetosAPI.putProjeto(hosp)
-							.success(function(data){
-							})
-							.error(function(status){
-								console.log('update error: '+status);
+							.then(function(response){
+							}, function(response){
+								console.log('update error: '+response.data);
 								$scope.toast('Falha na alteração','failed-toast');
 							});
 
@@ -509,9 +508,8 @@
 							getIntegrantes();
 							setTimeout($scope.refresh, 750);
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
-						})
-						.error(function(status){
-							console.log(status);
+						}, function(response){
+							console.log(response.data);
 							$scope.toast('Falha na alteração','failed-toast');
 						});
 					});

@@ -8,7 +8,8 @@
 		$scope.saberes_docentes = true;
 		
 		$scope.carregarEdits = function(){
-			projetosAPI.getEdits().success(function(edits){
+			projetosAPI.getEdits().then(function(response){
+				var edits = response.data;
 				if(edits[0].saberes_docentes == false){
 					$scope.saberes_docentes = false;
 					let showConfirmDialog = function(ev) {
@@ -25,10 +26,9 @@
 						}, function() {});
 					};
 					showConfirmDialog();
-				}	
-			})
-			.error(function(status) {
-				console.log(status);
+				}
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarEdits();
@@ -37,8 +37,8 @@
 		$scope.escolas = [];
 
 		projetosAPI.getEscolasSaberes()
-		.success(function(data) {
-			angular.forEach(data, function (value) {
+		.then(function(response) {
+			angular.forEach(response.data, function (value) {
 				if (value.escola !== undefined) {
 					let escolaIdem = false;
 					for (var i in $scope.escolas) {
@@ -52,11 +52,14 @@
 					}
 				}
 			});
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		$scope.registrarSaberes = function(saberes) {
 			projetosAPI.saveSaberesDocentes(saberes)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				if (data === 'success') {
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.confirm()
@@ -89,8 +92,7 @@
 					};
 					showConfirmDialog();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
@@ -106,7 +108,7 @@
 					});
 				};
 				showConfirmDialog();
-				console.log(status);
+				console.log(response.data);
 			});
 			console.log(saberes);
 		};

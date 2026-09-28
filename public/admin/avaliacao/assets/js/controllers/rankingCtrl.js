@@ -159,14 +159,14 @@
 			// value.feirasClassificadas abaixo). tipo:'edicao' é a própria edição do
 			// MOVACI/PDIAP reaproveitando essa coleção (ver models/feira-schema.js), não uma
 			// feira de classificação de verdade - fica de fora.
-			avaliacaoAPI.getFeiras().success(function(feiras) {
-				$rootScope.feirasComProjetos = feiras
+			avaliacaoAPI.getFeiras().then(function(response) {
+				$rootScope.feirasComProjetos = response.data
 					.filter(function(f) { return f.tipo !== 'edicao' && f.ano === anoAtual; })
 					.map(function(f) { return {feira: f, projetos: []}; });
 
 				avaliacaoAPI.getTodosProjetos()
-				.success(function(projetos) {
-					angular.forEach(projetos, function (value, key) {
+				.then(function(response) {
+					angular.forEach(response.data, function (value, key) {
 						if (!avaliacaoAPI.pertenceAMostraAtual(value)) return;
 						if (value.aprovado !== true) return;
 
@@ -229,13 +229,11 @@
 						}
 					});
 					$scope.reordenar();
-				})
-				.error(function(status) {
-					console.log(status);
+				}, function(response) {
+					console.log(response.data);
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarProjetos = carregarProjetos;
@@ -248,15 +246,14 @@
 					// numAvaliadoresPorProjeto) - esta tela só lista o ano corrente.
 					$scope.numAvaliadoresRange = [0, 1];
 					avaliacaoAPI.getFeiras()
-					.success(function(feiras) {
-						var edicao = avaliacaoAPI.edicaoDaMostra(feiras);
+					.then(function(response) {
+						var edicao = avaliacaoAPI.edicaoDaMostra(response.data);
 						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
 						var range = [];
 						for (var i = 0; i < n; i++) range.push(i);
 						$scope.numAvaliadoresRange = range;
-					})
-					.error(function(status) {
-						console.log('Error: '+status);
+					}, function(response) {
+						console.log('Error: '+response.data);
 					});
 					// $scope.desempate = false;
 					// $scope.habilitaDesempate = function() {
@@ -312,8 +309,8 @@
 					$scope.premiacao = { _id: projeto._id };
 					$scope.feirasDisponiveis = [];
 					$scope.premiacao.feirasSelecionadas = {};
-					avaliacaoAPI.getFeiras().success(function(feiras) {
-						angular.forEach(feiras, function(feira) {
+					avaliacaoAPI.getFeiras().then(function(response) {
+						angular.forEach(response.data, function(feira) {
 							if (feira.tipo !== 'edicao' && feira.ano === avaliacaoAPI.anoDaMostra() && feira.categorias.indexOf(projeto.categoria) !== -1) {
 								$scope.feirasDisponiveis.push(feira);
 								if (projeto.feirasClassificadas && projeto.feirasClassificadas.indexOf(feira._id) !== -1) {
@@ -321,18 +318,20 @@
 								}
 							}
 						});
+					}, function(response) {
+						console.log('Error: ' + response.data);
 					});
 
 					$scope.setPremiado = function() {
 						$scope.premiacao.feirasClassificadas = Object.keys($scope.premiacao.feirasSelecionadas).filter(function(id) {
 							return $scope.premiacao.feirasSelecionadas[id];
 						});
-						avaliacaoAPI.putPremiadoProjetos($scope.premiacao).success(function() {
+						avaliacaoAPI.putPremiadoProjetos($scope.premiacao).then(function() {
 							$scope.toast('Projeto premiado com sucesso!', 'success-toast');
 							$mdDialog.hide();
 							setTimeout(carregarProjetos, 750);
-						}).error(function(status) {
-							$scope.toast('Falha ao salvar. ' + status, 'failed-toast');
+						}, function(response) {
+							$scope.toast('Falha ao salvar. ' + response.data, 'failed-toast');
 						});
 					};
 					$scope.toast = function(message, tema) {
@@ -365,8 +364,7 @@
 		// (ver GET /admin/configPremiacao), começa em 3 até o usuário mudar e confirmar.
 		$scope.numPremiadosPorEixo = 3;
 		avaliacaoAPI.getConfigPremiacao(avaliacaoAPI.anoDaMostra())
-			.success(function(data) { $scope.numPremiadosPorEixo = data.numPremiadosPorEixo; })
-			.error(function(status) { console.log(status); });
+			.then(function(response) { $scope.numPremiadosPorEixo = response.data.numPremiadosPorEixo; }, function(response) { console.log(response.data); });
 
 		$scope.reordenar = function(){
 			$rootScope.ori_eixo1_1 = $filter('orderBy')($rootScope.eixo1_1,'-total',false);
@@ -732,20 +730,19 @@
 					numPremiadosPorEixo: $scope.numPremiadosPorEixo,
 					premiados: premiados
 				})
-				.success(function(data) {
+				.then(function(response) {
 					$mdDialog.show($mdDialog.alert()
 						.title('Premiados confirmados')
-						.textContent(data.marcados + ' projeto(s) marcado(s) como Premiado.')
+						.textContent(response.data.marcados + ' projeto(s) marcado(s) como Premiado.')
 						.ok('Entendi')
 						.targetEvent(ev));
 					// Recarrega do servidor pra os totais de premiados (painel do topo e de
 					// cada categoria) refletirem o resultado de imediato, sem precisar dar F5.
 					carregarProjetos();
-				})
-				.error(function(status) {
+				}, function(response) {
 					$mdDialog.show($mdDialog.alert()
 						.title('Falha ao confirmar')
-						.textContent('Não foi possível confirmar os premiados. ' + status)
+						.textContent('Não foi possível confirmar os premiados. ' + response.data)
 						.ok('Entendi')
 						.targetEvent(ev));
 				});

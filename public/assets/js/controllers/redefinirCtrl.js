@@ -19,8 +19,8 @@
 			function novaSenha($scope, projetosAPI) {
 				$scope.redefinirSenha = function(password) {
 					projetosAPI.postNewPassword(password, $stateParams.token)
-					.success(function(data) {
-						if (data === 'Senha alterada') {
+					.then(function(response) {
+						if (response.data === 'Senha alterada') {
 							let showAlert1 = function(ev) {
 								$mdDialog.show(
 									$mdDialog.alert()
@@ -49,9 +49,8 @@
 							};
 							showConfirmDialog();
 						}
-					})
-					.error(function(status) {
-						console.log(status);
+					}, function(response) {
+						console.log(response.data);
 						let showConfirmDialog = function(ev) {
 							var confirm = $mdDialog.confirm()
 							.title('Ops...')

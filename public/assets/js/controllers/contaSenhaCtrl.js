@@ -18,10 +18,9 @@
 		$scope.pedirRecuperacao = function() {
 			$scope.mensagemErro = '';
 			contaAPI.redefinirSenha($scope.senha.email)
-			.success(function() {
+			.then(function() {
 				$scope.enviado = true;
-			})
-			.error(function() {
+			}, function() {
 				$scope.mensagemErro = 'Não encontramos esse e-mail cadastrado.';
 			});
 		};
@@ -29,15 +28,14 @@
 		$scope.salvar = function() {
 			$scope.mensagemErro = '';
 			contaAPI.novaSenhaComToken($stateParams.token, $scope.senha.nova)
-			.success(function(data) {
-				if (data === 'Senha alterada') {
+			.then(function(response) {
+				if (response.data === 'Senha alterada') {
 					$scope.senhaAlterada = true;
 				} else {
 					$scope.mensagemErro = 'Esse link não é mais válido. Peça uma nova recuperação de senha.';
 				}
-			})
-			.error(function(status) {
-				$scope.mensagemErro = typeof status === 'string' ? status : 'Não foi possível trocar a senha.';
+			}, function(response) {
+				$scope.mensagemErro = typeof response.data === 'string' ? response.data : 'Não foi possível trocar a senha.';
 			});
 		};
 	});

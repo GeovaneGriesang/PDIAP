@@ -17,11 +17,10 @@
 		$scope.cidades = [];
 
 		adminAPI.getEstados()
-		.success(function(data) {
-			$scope.listaEstados = data.estados;
-		})
-		.error(function(status) {
-			console.log('Erro estados: '+status);
+		.then(function(response) {
+			$scope.listaEstados = response.data.estados;
+		}, function(response) {
+			console.log('Erro estados: '+response.data);
 		});
 
 		$scope.selectCidades = function(cid) {
@@ -42,25 +41,23 @@
 
 		$scope.mostraEscolas = function() {
 			adminAPI.getEscolas()
-			.success(function(escolas) {
-				separarPorStatus(escolas);
-			})
-			.error(function(status) {
-				console.log('Erro ao mostrar escolas: '+status);
+			.then(function(response) {
+				separarPorStatus(response.data);
+			}, function(response) {
+				console.log('Erro ao mostrar escolas: '+response.data);
 			});
 		};
 		$scope.mostraEscolas();
 
 		$scope.cadastrarEscola = function(escola) {
 			adminAPI.postEscola(escola)
-			.success(function() {
+			.then(function() {
 				$scope.toast('Escola cadastrada com sucesso!','success-toast');
 				$scope.mostraEscolas();
 				resetForm();
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.toast('Falha.','failed-toast');
-				console.log('Erro: '+status);
+				console.log('Erro: '+response.data);
 			});
 		};
 
@@ -82,9 +79,11 @@
 							}
 						});
 					};
-					adminAPI.getEstados().success(function(data) {
-						$scope.listaEstados = data.estados;
+					adminAPI.getEstados().then(function(response) {
+						$scope.listaEstados = response.data.estados;
 						$scope.selectCidades($scope.escola.estado);
+					}, function(response) {
+						console.log('Erro estados: '+response.data);
 					});
 					$scope.confirmar = function() {
 						$mdDialog.hide($scope.escola);
@@ -100,13 +99,12 @@
 			}).then(function(escolaEditada) {
 				var chamada = modo === 'aprovar' ? adminAPI.aprovarEscola(escolaEditada) : adminAPI.editarEscola(escolaEditada);
 				chamada
-				.success(function() {
+				.then(function() {
 					$scope.toast(modo === 'aprovar' ? 'Escola aprovada!' : 'Escola atualizada!', 'success-toast');
 					$scope.mostraEscolas();
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log('Erro: '+status);
+					console.log('Erro: '+response.data);
 				});
 			}, function() {});
 		}
@@ -145,13 +143,12 @@
 				clickOutsideToClose: false
 			}).then(function(motivo) {
 				adminAPI.rejeitarEscola(escolaOriginal._id, motivo)
-				.success(function() {
+				.then(function() {
 					$scope.toast('Solicitação rejeitada.','success-toast');
 					$scope.mostraEscolas();
-				})
-				.error(function(status) {
-					$scope.toast(status || 'Falha.','failed-toast');
-					console.log('Erro: '+status);
+				}, function(response) {
+					$scope.toast(response.data || 'Falha.','failed-toast');
+					console.log('Erro: '+response.data);
 				});
 			}, function() {});
 		};
@@ -165,13 +162,12 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.removeEscola(id)
-				.success(function() {
+				.then(function() {
 					$scope.toast('Escola removida com sucesso!','success-toast');
 					$scope.mostraEscolas();
-				})
-				.error(function(status) {
-					$scope.toast(status || 'Falha.','failed-toast');
-					console.log('Erro: '+status);
+				}, function(response) {
+					$scope.toast(response.data || 'Falha.','failed-toast');
+					console.log('Erro: '+response.data);
 				});
 			}, function() {});
 		};

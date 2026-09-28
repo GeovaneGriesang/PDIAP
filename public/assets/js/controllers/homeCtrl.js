@@ -5,13 +5,14 @@
 	.module('PDIAP')
 	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, $interval, projetosAPI) {
 
-		projetosAPI.getDocumentos().success(function(documentos){
+		projetosAPI.getDocumentos().then(function(response){
+			var documentos = response.data;
 			$scope.documentos = documentos;
 
 			$scope.ExibeDocumentos = documentos.length > 0;
-		}
-
-		)
+		}, function(response) {
+			console.log('Error: ' + response.data);
+		});
 
 		// Carrossel da galeria "Edições Anteriores" (imagens injetadas pelo servidor,
 		// ver views/layout2.ejs e routes/index.js).
@@ -38,11 +39,10 @@
 		$scope.edits = [];
 
 		$scope.carregarEdits = function(){
-			projetosAPI.getEdits().success(function(edits){
-				$scope.edits = edits;
-			})
-			.error(function(status) {
-				console.log(status);
+			projetosAPI.getEdits().then(function(response){
+				$scope.edits = response.data;
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarEdits();
@@ -54,11 +54,10 @@
 		// texto de prazo - permite duas Mostras em paralelo com prazos diferentes.
 		$scope.edicoes = [];
 		$scope.carregarEdicoes = function(){
-			projetosAPI.getEdicoesInscricao().success(function(edicoes){
-				$scope.edicoes = edicoes || [];
-			})
-			.error(function(status) {
-				console.log(status);
+			projetosAPI.getEdicoesInscricao().then(function(response){
+				$scope.edicoes = response.data || [];
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarEdicoes();
@@ -129,7 +128,8 @@
 
 		let buscarCPF = function(cpf) {
 			projetosAPI.postCertificado(cpf)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				countCertificados = 0;
 				avaliador = [];
 				participante = undefined;
@@ -282,11 +282,17 @@
 					}
 					//Antes de passar para a criação do certificado puxa os dados das mostras e das feiras cadastradas
 					projetosAPI.getMostra()
-					.success(function(dadosMostra){
+					.then(function(mostraResponse){
+						var dadosMostra = mostraResponse.data;
 						projetosAPI.getFeiras()
-						.success(function(dadosFeiras){
+						.then(function(feirasResponse){
+							var dadosFeiras = feirasResponse.data;
 							visualizarCertificados(dadosMostra,dadosFeiras,avaliador,participante,orientador,aluno,semanaAcademica,saberesDocentes,oficina,presenca_oficina,premiados,mencao_honrosa,classificacoesFeira,presenca_saberes,countCertificados,palestra,presenca_palestra);
+						}, function(response) {
+							console.log('Error: ' + response.data);
 						});
+					}, function(response) {
+						console.log('Error: ' + response.data);
 					});
 				} else {
 					let showAlert = function(ev) {
@@ -301,8 +307,7 @@
 					};
 					showAlert();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Oxe...')

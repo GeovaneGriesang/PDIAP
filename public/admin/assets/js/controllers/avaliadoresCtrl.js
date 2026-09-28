@@ -35,18 +35,16 @@
 		let carregarOpcoesDaMostra = function() {
 			var ano = $rootScope.ano || new Date().getFullYear();
 			adminAPI.getCategoriasEixos(ano)
-			.success(function(data) {
-				$scope.listaCategorias = data.categorias;
-			})
-			.error(function(status) {
-				console.log(status);
+			.then(function(response) {
+				$scope.listaCategorias = response.data.categorias;
+			}, function(response) {
+				console.log(response.data);
 			});
 			adminAPI.getDiasAvaliacao(ano)
-			.success(function(data) {
-				$scope.listaDias = data.dias;
-			})
-			.error(function(status) {
-				console.log(status);
+			.then(function(response) {
+				$scope.listaDias = response.data.dias;
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
@@ -67,7 +65,8 @@
 			avaliador.ano = $rootScope.ano;
 			avaliador.feiraId = $rootScope.mostraId;
 			adminAPI.saveAvaliador(avaliador)
-			.success(function(data, status) {
+			.then(function(response) {
+				var data = response.data;
 				if (data === 'success') {
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.confirm()
@@ -94,8 +93,7 @@
 					};
 					showConfirmDialog();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
@@ -107,7 +105,7 @@
 					$mdDialog.show(confirm);
 				};
 				showConfirmDialog();
-				console.log(status);
+				console.log(response.data);
 			});
 		};
 
@@ -141,8 +139,8 @@
 
 		let mostraAvaliadores = function() {
 			adminAPI.getAvaliadores()
-			.success(function(avaliadores){
-				angular.forEach(avaliadores, function (value, key) {
+			.then(function(response){
+				angular.forEach(response.data, function (value, key) {
 					var index = $scope.avaliadores.map(function(a) { return a._id; }).indexOf(value._id);
 					if (index === -1) {
 						if(value.avaliacao === true) $scope.count++;
@@ -176,13 +174,13 @@
 					}
 				});
 				marcarDuplicados();
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		};
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -191,9 +189,8 @@
 				carregarOpcoesDaMostra();
 				mostraAvaliadores();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			carregarOpcoesDaMostra();
 			mostraAvaliadores();
@@ -270,7 +267,7 @@
 
 		$scope.update = function() {		
 			adminAPI.putSetAvaliadores($scope.idAvaliadoresMarcados,$scope.idAvaliadoresNMarcados)
-			.success(function(data, status) {
+			.then(function(response) {
 				$scope.toast('Avaliador(es) atualizado(s) com sucesso!','success-toast');
 				var count = 0;
 				if ($scope.idAvaliadoresMarcados.length !== 0) {
@@ -294,9 +291,8 @@
 								count++;
 							});
 				}
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
 		}
 
@@ -309,17 +305,16 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.putRemoveAvaliador(id)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Avaliador removido com sucesso!','success-toast');
 					var index = $scope.avaliadores.map(function(e) { return e._id; }).indexOf(id);
 					if (index !== -1) {
 						if($scope.avaliadores[index].avaliacao === true) $scope.count--;
 						$scope.avaliadores.splice(index, 1);
 					}
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 			}, function() {});
 		};
@@ -388,18 +383,17 @@
 							disponibilidade: avaliador.disponibilidade
 						});
 						adminAPI.putAtualizaAvaliador(pacote)
-						.success(function(data) {
-							if (data === 'success') {
+						.then(function(response) {
+							if (response.data === 'success') {
 								$scope.toast('Avaliador atualizado com sucesso!', 'success-toast');
 								$mdDialog.hide();
 								recarregar();
 							} else {
 								$scope.toast('Falha ao atualizar. Verifique o documento informado.', 'failed-toast');
 							}
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha ao atualizar. Verifique o documento informado.', 'failed-toast');
-							console.log('Error: ' + status);
+							console.log('Error: ' + response.data);
 						});
 					};
 					$scope.hide = function() {

@@ -18,15 +18,15 @@
 		$scope.edicoesParaEscolher = null;
 		$scope.carregarEdicoes = function() {
 			if ($scope.mostraSlug) return;
-			projetosAPI.getEdicoesInscricao().success(function(edicoes) {
+			projetosAPI.getEdicoesInscricao().then(function(response) {
+				var edicoes = response.data;
 				var abertas = (edicoes || []).filter(function(e) { return e.projetos && e.projetos.aberto && e.slug; });
 				if (abertas.length === 1) {
 					$scope.mostraSlug = abertas[0].slug;
 				} else if (abertas.length > 1) {
 					$scope.edicoesParaEscolher = abertas;
 				}
-			})
-			.error(function(status) { console.log(status); });
+			}, function(response) { console.log(response.data); });
 		};
 		$scope.carregarEdicoes();
 
@@ -41,7 +41,8 @@
 
 		// Busca configurações de liberação da página de cadastro.
 		$scope.carregarEdits = function(){
-			projetosAPI.getEdits().success(function(edits){
+			projetosAPI.getEdits().then(function(response){
+				var edits = response.data;
 				if(edits[0].cadastro_projetos == false){
 					/*$scope.cadastro_projetos = false;				
 					let showConfirmDialog = function(ev) {
@@ -58,10 +59,9 @@
 						}, function() {});
 					};
 					showConfirmDialog();*/
-				}	
-			})
-			.error(function(status) {
-				console.log(status);
+				}
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarEdits();
@@ -80,7 +80,8 @@
 			projeto.palavraChave = $scope.palavrasChave;
 			projeto.slug = $scope.mostraSlug;
 			projetosAPI.saveProjeto(projeto)
-			.success(function(data, status) {
+			.then(function(response) {
+				var data = response.data, status = response.status;
 				if (status === 202) {
 					$scope.usernameDuplicado = true;
 					$scope.projetoForm.username.$setValidity('duplicado',false);
@@ -119,15 +120,13 @@
 					};
 					showConfirmDialog();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.registro = false;
-				console.log(status);
-				// "status" aqui é o corpo da resposta (peculiaridade do .error() do
-				// AngularJS) - quando o servidor manda um motivo específico (ex:
-				// "Telefone inválido."), mostra ele; só cai no texto genérico se vier
-				// vazio ou for o "error" cru sem detalhe nenhum.
-				var motivo = (status && status !== 'error') ? status : null;
+				console.log(response.data);
+				// response.data é o corpo da resposta - quando o servidor manda um motivo
+				// específico (ex: "Telefone inválido."), mostra ele; só cai no texto
+				// genérico se vier vazio ou for o "error" cru sem detalhe nenhum.
+				var motivo = (response.data && response.data !== 'error') ? response.data : null;
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
@@ -293,19 +292,17 @@
 		};
 
 		projetosAPI.getCategoriasEixos(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaCategorias = data.categorias;
-		})
-		.error(function(status) {
-			console.log(status);
+		.then(function(response) {
+			$scope.listaCategorias = response.data.categorias;
+		}, function(response) {
+			console.log(response.data);
 		});
 
 		projetosAPI.getEstados()
-		.success(function(data) {
-			$scope.listaEstados = data.estados;
-		})
-		.error(function(status) {
-			console.log(status);
+		.then(function(response) {
+			$scope.listaEstados = response.data.estados;
+		}, function(response) {
+			console.log(response.data);
 		});
 
 		// Atualiza a lista de eixos conforme a categoria selecionada.
@@ -405,23 +402,24 @@
 		// getUsersEscolas() só serve pra checagem de username duplicado aqui agora - a
 		// lista de escolas (pra seleção) vem da coleção Escola (getEscolas, abaixo).
 		projetosAPI.getUsersEscolas()
-		.success(function(data) {
-			angular.forEach(data, function (value) {
+		.then(function(response) {
+			angular.forEach(response.data, function (value) {
 				if (value.username !== undefined) {
 					$scope.usernames.push(value.username);
 				}
 			});
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		// Lista de escolas aprovadas, pra seleção no cadastro de projeto (antes era
 		// texto livre com sugestão - agora só dá pra escolher da lista, ver
 		// md-require-match em inscricao.html).
 		projetosAPI.getEscolas()
-		.success(function(data) {
-			$scope.escolas = data;
-		})
-		.error(function(status) {
-			console.log('Erro ao carregar escolas: '+status);
+		.then(function(response) {
+			$scope.escolas = response.data;
+		}, function(response) {
+			console.log('Erro ao carregar escolas: '+response.data);
 		});
 
 		// Escola não encontrada na lista: abre um diálogo pedindo os mesmos dados do
@@ -443,8 +441,10 @@
 							}
 						});
 					};
-					projetosAPI.getEstados().success(function(data) {
-						$scope.listaEstados = data.estados;
+					projetosAPI.getEstados().then(function(response) {
+						$scope.listaEstados = response.data.estados;
+					}, function(response) {
+						console.log('Erro ao carregar estados: ' + response.data);
 					});
 					$scope.confirmar = function() {
 						$mdDialog.hide($scope.escola);
@@ -460,14 +460,14 @@
 			}).then(function(escolaSolicitada) {
 				escolaSolicitada.origem = 'inline_inscricao';
 				projetosAPI.solicitarEscola(escolaSolicitada)
-				.success(function(escolaCriada) {
+				.then(function(response) {
+					var escolaCriada = response.data;
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscola($scope.projeto, escolaCriada);
 					atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
-				})
-				.error(function(status) {
-					console.log('Erro ao solicitar escola: '+status);
+				}, function(response) {
+					console.log('Erro ao solicitar escola: '+response.data);
 				});
 			}, function() {});
 		};
@@ -549,8 +549,10 @@
 							}
 						});
 					};
-					projetosAPI.getEstados().success(function(data) {
-						$scope.listaEstados = data.estados;
+					projetosAPI.getEstados().then(function(response) {
+						$scope.listaEstados = response.data.estados;
+					}, function(response) {
+						console.log('Erro ao carregar estados: ' + response.data);
 					});
 					$scope.confirmar = function() {
 						$mdDialog.hide($scope.escola);
@@ -566,14 +568,14 @@
 			}).then(function(escolaSolicitada) {
 				escolaSolicitada.origem = 'inline_inscricao';
 				projetosAPI.solicitarEscola(escolaSolicitada)
-				.success(function(escolaCriada) {
+				.then(function(response) {
+					var escolaCriada = response.data;
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto2.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscola($scope.projeto2, escolaCriada);
 					atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
-				})
-				.error(function(status) {
-					console.log('Erro ao solicitar escola: '+status);
+				}, function(response) {
+					console.log('Erro ao solicitar escola: '+response.data);
 				});
 			}, function() {});
 		};

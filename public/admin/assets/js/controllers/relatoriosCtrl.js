@@ -499,8 +499,8 @@
 			var qtdCancelados = novaAgregacao('Cancelados e Pendentes');
 
 			adminAPI.getTodosProjetos($rootScope.ano)
-			.success(function(projetos) {
-				angular.forEach(projetos, function(proj) {
+			.then(function(response) {
+				angular.forEach(response.data, function(proj) {
 					if (!adminAPI.pertenceAMostra(proj, $rootScope.mostraSelecionada)) return;
 
 					var aprovado = proj.aprovado === true;
@@ -527,9 +527,8 @@
 
 				$scope.relatorio = relatorio;
 				$scope.abas = [qtdGeral, qtdAprovados, qtdNaoReprovados, qtdCancelados];
-			})
-			.error(function(status) {
-				console.log('Erro ao carregar relatórios: ' + status);
+			}, function(response) {
+				console.log('Erro ao carregar relatórios: ' + response.data);
 			});
 		};
 
@@ -1095,7 +1094,8 @@
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -1103,9 +1103,8 @@
 				resolverMostraSelecionada();
 				$scope.carregarRelatorios();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			$scope.carregarRelatorios();
 		});
