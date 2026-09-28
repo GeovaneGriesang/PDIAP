@@ -14,8 +14,8 @@
 			var deferred = $q.defer(); // Inicializa nova promissa
 			$rootScope.logado = false;
 
-			$http.get('/admin/loggedin').success(function(projetos) {
-				if (projetos !== '0') { // Authenticated
+			$http.get('/admin/loggedin').then(function(response) {
+				if (response.data !== '0') { // Authenticated
 					$rootScope.logado = true;
 					deferred.resolve();
 				} else { // Not Authenticated
@@ -23,6 +23,10 @@
 					$window.location.href="http://www.movaci.com.br/avaliacao/2016";
 					deferred.reject();
 				}
+			}, function() {
+				$rootScope.logado = false;
+				$window.location.href="http://www.movaci.com.br/avaliacao/2016";
+				deferred.reject();
 			});
 			return deferred.promise;
 		};

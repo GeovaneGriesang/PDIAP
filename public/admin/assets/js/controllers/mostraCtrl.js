@@ -44,15 +44,14 @@
 		let mostraFeiras = function() {
 			$scope.feiras = [];
 			adminAPI.getFeiras()
-			.success(function(feiras) {
-				angular.forEach(feiras, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if (value.ano == $scope.ano && value.tipo === 'edicao') {
 						$scope.feiras.push(value);
 					}
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		}
 		$scope.mostraFeiras = mostraFeiras();
@@ -104,8 +103,8 @@
 		// admin clicar Salvar.
 		$scope.copiarDeEdicaoAnterior = function(ev) {
 			adminAPI.getFeiras()
-			.success(function(feiras) {
-				var edicoes = feiras.filter(function(f) { return f.tipo === 'edicao' && f.categoriasEixos && f.categoriasEixos.length; })
+			.then(function(response) {
+				var edicoes = response.data.filter(function(f) { return f.tipo === 'edicao' && f.categoriasEixos && f.categoriasEixos.length; })
 					.sort(function(a, b) { return b.ano - a.ano; });
 				if (!edicoes.length) {
 					$scope.toast('Nenhuma edição anterior com categorias/eixos cadastrados ainda.', 'failed-toast');
@@ -124,9 +123,8 @@
 				}).then(function(edicaoEscolhida) {
 					$scope.feira.categoriasEixos = angular.copy(edicaoEscolhida.categoriasEixos);
 				}, function() {});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		};
 
@@ -154,16 +152,15 @@
 			}
 
 			pedido
-			.success(function(data) {
+			.then(function(response) {
 				$scope.toast(feira._id ? 'Mostra atualizada com sucesso!' : 'Mostra cadastrada com sucesso!', 'success-toast');
 				mostraFeiras();
 				resetForm();
-			})
-			.error(function(data) {
+			}, function(response) {
 				// Mostra o motivo de verdade quando o servidor manda um (ex: link de
 				// inscrição duplicado) - só cai no genérico se vier vazio.
-				$scope.toast(data || 'Falha.','failed-toast');
-				console.log("Error: "+data);
+				$scope.toast(response.data || 'Falha.','failed-toast');
+				console.log("Error: "+response.data);
 			});
 		};
 
@@ -195,16 +192,15 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.removeFeira(id)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Mostra removida com sucesso!','success-toast');
 					var index = $scope.feiras.map(function(f) { return f._id; }).indexOf(id);
 					if (index !== -1) {
 						$scope.feiras.splice(index, 1);
 					}
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 			}, function() {});
 		};

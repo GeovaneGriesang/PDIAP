@@ -20,8 +20,8 @@
 
         $http
           .get('/projetos/loggedin')
-          .success(function (projeto, status) {
-            if (status !== 403) {
+          .then(function (response) {
+            if (response.status !== 403) {
               // Authenticated
               $rootScope.logado = true;
               deferred.resolve();
@@ -31,9 +31,7 @@
               $window.location.href = 'http://movaci.com.br';
               deferred.reject();
             }
-          })
-
-          .error(function (status) {
+          }, function (response) {
             // Not Authenticated
             $rootScope.logado = false;
             $window.location.href = 'http://movaci.com.br';
@@ -50,17 +48,16 @@
 
         $http
           .get('/avaliadores/dashboard/loggedin')
-          .success(function (avaliador, status) {
-            if (status !== 403) {
+          .then(function (response) {
+            if (response.status !== 403) {
               $rootScope.logadoAvaliador = true;
-              $rootScope.avaliadorLogado = avaliador;
+              $rootScope.avaliadorLogado = response.data;
               deferred.resolve();
             } else {
               $window.location.href = 'http://movaci.com.br';
               deferred.reject();
             }
-          })
-          .error(function (status) {
+          }, function (response) {
             $window.location.href = 'http://movaci.com.br';
             deferred.reject();
           });
@@ -75,17 +72,16 @@
 
         $http
           .get('/participantes/dashboard/loggedin')
-          .success(function (participante, status) {
-            if (status !== 403) {
+          .then(function (response) {
+            if (response.status !== 403) {
               $rootScope.logadoParticipante = true;
-              $rootScope.participanteLogado = participante;
+              $rootScope.participanteLogado = response.data;
               deferred.resolve();
             } else {
               $window.location.href = 'http://movaci.com.br';
               deferred.reject();
             }
-          })
-          .error(function (status) {
+          }, function (response) {
             $window.location.href = 'http://movaci.com.br';
             deferred.reject();
           });

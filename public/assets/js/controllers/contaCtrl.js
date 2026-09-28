@@ -8,12 +8,14 @@
 		$scope.usernames = [];
 
 		projetosAPI.getUsersEscolas()
-		.success(function(data) {
-			angular.forEach(data, function (value) {
+		.then(function(response) {
+			angular.forEach(response.data, function (value) {
 				if (value.username !== undefined) {
 					$scope.usernames.push(value.username);
 				}
 			});
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		$scope.verificaUsername = function(username) {
@@ -34,7 +36,8 @@
 				username: $scope.conta.username
 			});
 			projetosAPI.postRedefinir(pacote)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				$scope.email = data;
 				console.log('EMAIL ENVIADO');
 				console.log('contaCtrl'+$scope.email);
@@ -51,9 +54,8 @@
 					);
 				};
 				showAlert();
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 				// console.log('EMAIL NÃO FOI ENVIADO AF TIO');
 				let showConfirmDialog4 = function(ev) {
 					var confirm = $mdDialog.confirm()

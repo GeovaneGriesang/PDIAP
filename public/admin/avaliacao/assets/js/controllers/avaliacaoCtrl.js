@@ -11,8 +11,8 @@
 		let carregarProjetos = function() {
 			$rootScope.projetos = [];
 			avaliacaoAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if (value.aprovado === true && avaliacaoAPI.pertenceAMostraAtual(value)) {
 						if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
 							var avaliacao = value.avaliacao;
@@ -34,9 +34,8 @@
 						$rootScope.projetos.push(obj);
 					}
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarProjetos = carregarProjetos;
@@ -64,21 +63,20 @@
 					$scope.numAvaliadoresRange = [0, 1];
 					$scope.indiceDesempate = 2;
 					avaliacaoAPI.getFeiras()
-					.success(function(feiras) {
-						var edicao = avaliacaoAPI.edicaoDaMostra(feiras);
+					.then(function(response) {
+						var edicao = avaliacaoAPI.edicaoDaMostra(response.data);
 						var n = (edicao && edicao.numAvaliadoresPorProjeto) || 2;
 						var range = [];
 						for (var i = 0; i < n; i++) range.push(i);
 						$scope.numAvaliadoresRange = range;
 						$scope.indiceDesempate = n;
-					})
-					.error(function(status) {
-						console.log('Error: '+status);
+					}, function(response) {
+						console.log('Error: '+response.data);
 					});
 					$scope.addNotas = function(id,notas) {
 						console.log(notas);
 						avaliacaoAPI.putAvaliacao(id,notas)
-						.success(function(data, status) {
+						.then(function(response) {
 							$scope.toast('Avaliação realizada com sucesso!','success-toast');
 							var cont = 0, cont1 = 0;
 							angular.forEach($rootScope.projetos, function (value, key) {
@@ -88,10 +86,9 @@
 									$rootScope.projetos[cont1-1].avaliado = true;
 								}
 							});
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.','failed-toast');
-							console.log('Error: '+status);
+							console.log('Error: '+response.data);
 						});
 					}
 					$scope.toast = function(message,tema) {

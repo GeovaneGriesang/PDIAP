@@ -17,11 +17,10 @@
 		$scope.erro = false;
 
 		projetosAPI.getEstados()
-		.success(function(data) {
-			$scope.listaEstados = data.estados;
-		})
-		.error(function(status) {
-			console.log('Erro estados: '+status);
+		.then(function(response) {
+			$scope.listaEstados = response.data.estados;
+		}, function(response) {
+			console.log('Erro estados: '+response.data);
 		});
 
 		$scope.selectCidades = function(cid) {
@@ -37,12 +36,11 @@
 			$scope.erro = false;
 			escola.origem = 'formulario_publico';
 			projetosAPI.solicitarEscola(escola)
-			.success(function() {
+			.then(function() {
 				$scope.enviado = true;
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.erro = true;
-				console.log('Erro ao solicitar escola: '+status);
+				console.log('Erro ao solicitar escola: '+response.data);
 			});
 		};
 	});

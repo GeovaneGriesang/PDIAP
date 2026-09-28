@@ -12,11 +12,10 @@
 		// routes/index.js#/dashboard/trocar-papel) - troca sem pedir senha de novo.
 		$scope.trocarPainel = function() {
 			contaAPI.trocarPapel()
-			.success(function() {
+			.then(function() {
 				$state.go('participanteDashboard');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 
@@ -28,11 +27,10 @@
 		}
 
 		avaliadorAPI.getCertificados()
-		.success(function(certificados) {
-			$scope.certificados = certificados;
-		})
-		.error(function(status) {
-			console.log('Error: ' + status);
+		.then(function(response) {
+			$scope.certificados = response.data;
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -42,7 +40,8 @@
 		// logado, sem precisar pedir CPF de novo).
 		$scope.baixarCertificado = function(cert) {
 			projetosAPI.getMostra()
-			.success(function(dadosMostra) {
+			.then(function(response) {
+				var dadosMostra = response.data;
 				var ano = new Date(cert.createdAt).getFullYear();
 				var dadosCertificado = null;
 				for (var i = 0; i < dadosMostra.length; i++) {
@@ -76,9 +75,8 @@
 					}]
 				};
 				pdfMake.createPdf(docDefinition).download('Certificado_Avaliador_MOVACI_' + ano + '.pdf');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 

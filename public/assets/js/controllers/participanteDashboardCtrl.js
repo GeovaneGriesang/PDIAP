@@ -12,11 +12,10 @@
 		// routes/index.js#/dashboard/trocar-papel) - troca sem pedir senha de novo.
 		$scope.trocarPainel = function() {
 			contaAPI.trocarPapel()
-			.success(function() {
+			.then(function() {
 				$state.go('avaliadorDashboard');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 
@@ -28,11 +27,10 @@
 		}
 
 		participanteAPI.getCertificados()
-		.success(function(certificados) {
-			$scope.certificados = certificados;
-		})
-		.error(function(status) {
-			console.log('Error: ' + status);
+		.then(function(response) {
+			$scope.certificados = response.data;
+		}, function(response) {
+			console.log('Error: ' + response.data);
 		});
 
 		var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -49,7 +47,8 @@
 		$scope.baixarCertificadoOficina = function() {
 			var cert = $scope.certificados.oficina;
 			projetosAPI.getMostra()
-			.success(function(dadosMostra) {
+			.then(function(response) {
+				var dadosMostra = response.data;
 				var dadosCertificado = encontrarDadosCertificado(dadosMostra, cert.ano);
 				if (!dadosCertificado) {
 					$scope.toast('Certificado do ano ' + cert.ano + ' ainda não foi cadastrado.', 'failed-toast');
@@ -80,9 +79,8 @@
 					}]
 				};
 				pdfMake.createPdf(docDefinition).download('Certificado_Oficinas_MOVACI_' + cert.ano + '.pdf');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 
@@ -91,7 +89,8 @@
 		$scope.baixarCertificadoPalestra = function() {
 			var cert = $scope.certificados.palestra;
 			projetosAPI.getMostra()
-			.success(function(dadosMostra) {
+			.then(function(response) {
+				var dadosMostra = response.data;
 				var dadosCertificado = encontrarDadosCertificado(dadosMostra, cert.ano);
 				if (!dadosCertificado) {
 					$scope.toast('Certificado do ano ' + cert.ano + ' ainda não foi cadastrado.', 'failed-toast');
@@ -118,9 +117,8 @@
 					}]
 				};
 				pdfMake.createPdf(docDefinition).download('Certificado_Palestra_MOVACI_' + cert.ano + '.pdf');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 
@@ -129,7 +127,8 @@
 		$scope.baixarCertificadoSaberes = function() {
 			var cert = $scope.certificados.saberes;
 			projetosAPI.getMostra()
-			.success(function(dadosMostra) {
+			.then(function(response) {
+				var dadosMostra = response.data;
 				var dadosCertificado = encontrarDadosCertificado(dadosMostra, cert.ano);
 				if (!dadosCertificado) {
 					$scope.toast('Certificado do ano ' + cert.ano + ' ainda não foi cadastrado.', 'failed-toast');
@@ -164,9 +163,8 @@
 					}
 				};
 				pdfMake.createPdf(docDefinition).download('Certificado_SaberesDocentes_MOVACI_' + cert.ano + '.pdf');
-			})
-			.error(function(status) {
-				console.log('Error: ' + status);
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 

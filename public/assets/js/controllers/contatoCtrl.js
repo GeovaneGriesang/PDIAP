@@ -7,7 +7,8 @@
 
 		$scope.enviarContato = function(contato) {
 			projetosAPI.postContato(contato)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				console.log(data);
 				if (data === 'success') {
 					let showAlert2 = function(ev) {
@@ -38,8 +39,7 @@
 					};
 					showAlert2();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				let showAlert2 = function(ev) {
 					$mdDialog.show(
 						$mdDialog.alert()
@@ -52,7 +52,7 @@
 					);
 				};
 				showAlert2();
-				console.log(status);
+				console.log(response.data);
 			});
 		};
 

@@ -9,7 +9,8 @@
 		$scope.edits = [];			
 
 		$scope.carregarEdits = function(){
-			adminAPI.getEdits().success(function(edits){
+			adminAPI.getEdits().then(function(response){
+				var edits = response.data;
 				if (!edits[0].prazoProjetos) edits[0].prazoProjetos = {};
 				if (!edits[0].prazoAvaliadores) edits[0].prazoAvaliadores = {};
 				['prazoProjetos','prazoAvaliadores'].forEach(function(campo) {
@@ -19,9 +20,8 @@
 				if (!edits[0].botoes) edits[0].botoes = [];
 				if (!edits[0].destaques) edits[0].destaques = [];
 				$scope.edits = edits;
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
 		$scope.carregarEdits();
@@ -32,13 +32,12 @@
 		$scope.removeDestaque = function(idx) { $scope.edits[0].destaques.splice(idx, 1); };
 
 	 	$scope.atualizarEdit = function(edit){
-			adminAPI.postEdit(edit).success(function() {
+			adminAPI.postEdit(edit).then(function() {
 				$scope.toast('Alterações realizadas com sucesso!','success-toast');
 				$scope.carregarEdits();
 				resetForm();
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
 		}
 			

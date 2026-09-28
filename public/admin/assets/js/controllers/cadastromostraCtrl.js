@@ -27,8 +27,8 @@
       };
 
       adminAPI.getMostras()
-      .success(function(mostras) { $scope.mostras = mostras; $scope.anosMostras = adminAPI.anosDasMostras(mostras); mostrasProntas = true; definirAnoPadrao(); })
-      .error(function(status) { console.log('Error: '+status); mostrasProntas = true; definirAnoPadrao(); });
+      .then(function(response) { $scope.mostras = response.data; $scope.anosMostras = adminAPI.anosDasMostras(response.data); mostrasProntas = true; definirAnoPadrao(); },
+        function(response) { console.log('Error: '+response.data); mostrasProntas = true; definirAnoPadrao(); });
 
       //algumas scopes para recuperar os dados
 
@@ -171,11 +171,15 @@
         return false;
       };
 
-      adminAPI.getCertificado().success(function(certificados){
-        $scope.certificados = certificados;
+      adminAPI.getCertificado().then(function(response){
+        $scope.certificados = response.data;
         // Carrega automaticamente o certificado do ano padrão ao entrar na página, se já
         // existir um cadastrado - antes só carregava quando o usuário reselecionava o ano
         // manualmente no filtro (ng-change não dispara sozinho no primeiro carregamento).
+        certificadosProntos = true;
+        definirAnoPadrao();
+      }, function(response) {
+        console.log('Error: '+response.data);
         certificadosProntos = true;
         definirAnoPadrao();
       });
@@ -234,8 +238,10 @@
 
           //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
           adminAPI.postCertificado(dados)
-          .success(function(){
+          .then(function(){
             alert('Sucesso!!');
+          }, function(response) {
+            console.log('Error: '+response.data);
           });
         };
 

@@ -8,16 +8,15 @@
 		$scope.verif = 'pending';
 
 		adminAPI.postConfirmacao($stateParams.idProjeto, $stateParams.situacao)
-		.success(function(data) {
+		.then(function(response) {
 			if ($stateParams.situacao === '2456') {
 				$scope.verif = 'sim';
 			} else if ($stateParams.situacao === '9877') {
 				$scope.verif = 'não';
 			}
-		})
-		.error(function(status) {
+		}, function(response) {
 			$scope.verif = 'erro';
-			console.log("Error: "+status);
+			console.log("Error: "+response.data);
 		});
 
 	});

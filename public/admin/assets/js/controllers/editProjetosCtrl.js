@@ -23,11 +23,10 @@
 		// nem aparece: não faz sentido cobrar/mostrar um campo que a edição não usa.
 		$scope.opcoes = {};
 		$scope.carregarOpcoes = function() {
-			adminAPI.getOpcoes().success(function(op) {
-				$scope.opcoes = op;
-			})
-			.error(function(status) {
-				console.log(status);
+			adminAPI.getOpcoes().then(function(response) {
+				$scope.opcoes = response.data;
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarOpcoes();
@@ -236,8 +235,8 @@
 
 		$scope.carregarProjetos = function() {
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						// Achata integrantes em strings de busca (mesmo padrão de admin2Ctrl.js e
 						// projetosCtrl.js) pra permitir filtrar por orientador/aluno.
@@ -253,13 +252,13 @@
 						$rootScope.projetos.push(value);
 					}
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -267,9 +266,8 @@
 				resolverMostraSelecionada();
 				$scope.carregarProjetos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			$scope.carregarProjetos();
 		});
@@ -485,17 +483,15 @@
 			}
 
 			adminAPI.putProjeto(payload)
-			.success(function() { finalizar(); })
-			.error(function(status) {
-				console.log('update error: '+status);
+			.then(function() { finalizar(); }, function(response) {
+				console.log('update error: '+response.data);
 				falhou = true;
 				finalizar();
 			});
 
 			adminAPI.putIntegrante(integrantes)
-			.success(function() { finalizar(); })
-			.error(function(status) {
-				console.log('update integrantes error: '+status);
+			.then(function() { finalizar(); }, function(response) {
+				console.log('update integrantes error: '+response.data);
 				falhou = true;
 				finalizar();
 			});
@@ -745,18 +741,17 @@
 							ID: $scope.projeto._id
 						});
 						adminAPI.removeIntegrante(id)
-						.success(function(data) {
+						.then(function(response) {
 							$scope.dynamicFields11.splice(index, 1);
 							$scope.count11--;
 							console.log($scope.count11);
 							if ($scope.count11 !== 2) {
 								$scope.btnAdd11 = true;
 							}
-							
+
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
-						})
-						.error(function(status){
-							console.log(status);
+						}, function(response){
+							console.log(response.data);
 							$scope.toast('Falha na alteração','failed-toast');
 						});
 					});
@@ -792,7 +787,7 @@
 							ID: $scope.projeto._id
 						});
 						adminAPI.removeIntegrante(id)
-						.success(function(data) {
+						.then(function(response) {
 							$scope.dynamicFields22.splice(index, 1);
 							$scope.count22--;
 							if ($scope.count22 !== 3) {
@@ -804,10 +799,9 @@
 								hospedagem: $scope.projeto5.hospedagem
 							});
 							adminAPI.putProjeto(hosp)
-							.success(function(data){
-							})
-							.error(function(status){
-								console.log('update error: '+status);
+							.then(function(response){
+							}, function(response){
+								console.log('update error: '+response.data);
 								$scope.toast('Falha na alteração','failed-toast');
 							});
 
@@ -826,9 +820,8 @@
 							showAlert();
 
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
-						})
-						.error(function(status){
-							console.log(status);
+						}, function(response){
+							console.log(response.data);
 							$scope.toast('Falha na alteração','failed-toast');
 						});
 					});
@@ -876,16 +869,15 @@
 			.cancel('Não');
 			$mdDialog.show(confirm).then(function() {
 				adminAPI.putRemoveProjeto(id)
-				.success(function(data) {
+				.then(function(response) {
 					$scope.toast('Projeto removido com sucesso!','success-toast');
 					var index = $scope.projetos.map(function(e) { return e._id; }).indexOf(id);
 					if (index !== -1) {
 						$scope.projetos.splice(index, 1);
 					}
-				})
-				.error(function(status) {
+				}, function(response) {
 					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+status);
+					console.log("Error: "+response.data);
 				});
 			}, function() {});
 		};

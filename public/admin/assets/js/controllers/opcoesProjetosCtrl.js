@@ -8,22 +8,20 @@
 		$scope.opcoes = {};
 
 		$scope.carregarOpcoes = function(){
-			adminAPI.getOpcoes().success(function(op){
-				$scope.opcoes = op;
-			})
-			.error(function(status) {
-				console.log(status);
+			adminAPI.getOpcoes().then(function(response){
+				$scope.opcoes = response.data;
+			}, function(response) {
+				console.log(response.data);
 			});
 		}
-		$scope.carregarOpcoes();		
+		$scope.carregarOpcoes();
 
 	 	$scope.atualizarOpcoes = function(opcoes){
-			adminAPI.postOpcoes(opcoes).success(function() {
+			adminAPI.postOpcoes(opcoes).then(function() {
 				$scope.toast('Alterações realizadas com sucesso!','success-toast');
 				$scope.carregarOpcoes();
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
 		}
 

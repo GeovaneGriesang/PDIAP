@@ -117,16 +117,15 @@ function _avaliarCondicaoPorDados(dados) {
 		// envio de verdade resolve isso no servidor, já com populate de feirasClassificadas).
 		var nomesFeiras = {};
 		adminAPI.getFeiras()
-		.success(function(feiras) {
-			angular.forEach(feiras, function(f) { nomesFeiras[f._id] = f.nome; });
-		})
-		.error(function(status) { console.log(status); });
+		.then(function(response) {
+			angular.forEach(response.data, function(f) { nomesFeiras[f._id] = f.nome; });
+		}, function(response) { console.log(response.data); });
 
 		let carregarProjetos = function() {
 			$scope.projetos = [];
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function(value) {
+			.then(function(response) {
+				angular.forEach(response.data, function(value) {
 					var classificado = !!(value.feirasClassificadas && value.feirasClassificadas.length > 0);
 					var emDestaque = value.premiacao === 'Premiado' || value.premiacao === 'Mencao_honrosa' || classificado;
 					if (adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada) && emDestaque) {
@@ -148,14 +147,14 @@ function _avaliarCondicaoPorDados(dados) {
 						});
 					}
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -163,9 +162,8 @@ function _avaliarCondicaoPorDados(dados) {
 				resolverMostraSelecionada();
 				carregarProjetos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregarProjetos();
 		});
@@ -318,11 +316,10 @@ function _avaliarCondicaoPorDados(dados) {
 					corpo: $scope.corpo,
 					ano: $rootScope.ano
 				})
-				.success(function(data) {
-					$scope.toast('E-mail sendo enviado para ' + data.total + ' destinatário(s)!', 'success-toast');
-				})
-				.error(function(status) {
-					$scope.toast('Falha ao enviar. ' + status, 'failed-toast');
+				.then(function(response) {
+					$scope.toast('E-mail sendo enviado para ' + response.data.total + ' destinatário(s)!', 'success-toast');
+				}, function(response) {
+					$scope.toast('Falha ao enviar. ' + response.data, 'failed-toast');
 				});
 			}, function() {});
 		};

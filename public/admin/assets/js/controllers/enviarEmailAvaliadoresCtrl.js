@@ -26,8 +26,8 @@
 		let carregarAvaliadores = function() {
 			$scope.avaliadores = [];
 			adminAPI.getAvaliadores()
-			.success(function(avaliadores) {
-				angular.forEach(avaliadores, function(value) {
+			.then(function(response) {
+				angular.forEach(response.data, function(value) {
 					if (adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) {
 						$scope.avaliadores.push({
 							_id: value._id,
@@ -38,14 +38,14 @@
 						});
 					}
 				});
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -53,9 +53,8 @@
 				resolverMostraSelecionada();
 				carregarAvaliadores();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregarAvaliadores();
 		});
@@ -132,11 +131,10 @@
 					corpo: $scope.corpo,
 					ano: $rootScope.ano
 				})
-				.success(function(data) {
-					$scope.toast('E-mail sendo enviado para ' + data.total + ' destinatário(s)!', 'success-toast');
-				})
-				.error(function(status) {
-					$scope.toast('Falha ao enviar. ' + status, 'failed-toast');
+				.then(function(response) {
+					$scope.toast('E-mail sendo enviado para ' + response.data.total + ' destinatário(s)!', 'success-toast');
+				}, function(response) {
+					$scope.toast('Falha ao enviar. ' + response.data, 'failed-toast');
 				});
 			}, function() {});
 		};

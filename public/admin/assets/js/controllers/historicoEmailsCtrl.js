@@ -36,16 +36,16 @@
 		let carregarHistorico = function() {
 			$scope.historico = [];
 			adminAPI.getHistoricoEmails($rootScope.ano)
-			.success(function(historico) {
-				$scope.historico = historico;
-			})
-			.error(function(status) {
-				console.log(status);
+			.then(function(response) {
+				$scope.historico = response.data;
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -53,9 +53,8 @@
 				resolverMostraSelecionada();
 				carregarHistorico();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregarHistorico();
 		});

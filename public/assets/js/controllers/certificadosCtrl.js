@@ -22,7 +22,8 @@
 
 		$scope.consultarCertificado = function(token) {
 			projetosAPI.postConferirCertificado(token)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				$scope.texto = '';
 				if (data[0].tipo === 'Avaliador') {
 					$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+"</br><b>Ano:</b> "+data[0].ano;
@@ -99,9 +100,8 @@
 				} else if(data[0].tipo === 'Mencao_honrosa'){					
 					$scope.texto = '<b>Projeto:</b> '+data[0].projeto.nomeProjeto+'</br><b>Tipo:</b> Menção Honrosa</br><b>Categoria:</b> '+data[0].projeto.categoria+'</br><b>Eixo:</b> '+data[0].projeto.eixo+'</br><b>Ano:</b> '+data[0].projeto.ano;
 				}
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
 		}
 

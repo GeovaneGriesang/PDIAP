@@ -51,8 +51,8 @@
 
 		let mostraEventos = function() {
 			adminAPI.getEventos()
-			.success(function(eventos) {
-				angular.forEach(eventos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						let evento = ({
 							tipo: value.tipo,
@@ -71,30 +71,28 @@
 					}
 					
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		};
 		let getCPFparticipantes = function() {
 			adminAPI.getCPFparticipantes()
-			.success(function(cpfs) {
+			.then(function(response) {
 				$scope.CPFparticipantes = [];
-				angular.forEach(cpfs, function (value, key) {
+				angular.forEach(response.data, function (value, key) {
 					$scope.CPFparticipantes.push(formatCPF(value.cpf));
 				});
 				// console.log($scope.CPFparticipantes);
 				mostraSaberes();
-			})
-			.error(function(status) {
-				console.log('Error: '+JSON.stringify(status));
+			}, function(response) {
+				console.log('Error: '+JSON.stringify(response.data));
 			});
 		};
 		let mostraParticipantes = function() {
 			adminAPI.getParticipantes()
-			.success(function(participantes) {
+			.then(function(response) {
 				// $rootScope.participantes = [];
-				angular.forEach(participantes, function (value, key) {
+				angular.forEach(response.data, function (value, key) {
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(value._id);
 						if (index === -1) {
@@ -102,17 +100,16 @@
 							$rootScope.participantes.push(value);
 						}
 					}
-					
+
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		};
 		let mostraSaberes = function() {
 			adminAPI.getTodosSaberes()
-			.success(function(saberes) {
-				angular.forEach(saberes, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					var ano = new Date(value.createdAt).getFullYear();
 					if(ano == $rootScope.ano){
 						let CPFvalido = true;
@@ -135,14 +132,14 @@
 					}
 					
 				});
-			})
-			.error(function(status) {
-				console.log("Error: "+status);
+			}, function(response) {
+				console.log("Error: "+response.data);
 			});
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -152,9 +149,8 @@
 				getCPFparticipantes();
 				mostraParticipantes();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			mostraEventos();
 			getCPFparticipantes();
@@ -182,13 +178,12 @@
 			participante.ano = $rootScope.ano;
 			participante.feiraId = $rootScope.mostraId;
 			adminAPI.postParticipante(participante)
-			.success(function(data) {
+			.then(function(response) {
 				$scope.toast('Participante cadastrado com sucesso!','success-toast');
 				mostraParticipantes();
 				resetForm();
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
 		};
 
@@ -254,7 +249,7 @@
 								eventos: eventos
 							});
 							adminAPI.postParticipante(pacote)
-							.success(function(data) {
+							.then(function(response) {
 								$scope.toast('Participante atualizado com sucesso!','success-toast');
 								// var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(participante._id);
 								// if (index !== -1) {
@@ -266,9 +261,8 @@
 								$rootScope.participantes = [];
 								getCPFparticipantes();
 								mostraParticipantes();
-							})
-							.error(function(status) {
-								console.log('Error: '+status);
+							}, function(response) {
+								console.log('Error: '+response.data);
 							});
 						} else {
 							let pacote = ({
@@ -280,7 +274,7 @@
 							});
 							// console.log(pacote);
 							adminAPI.putAtualizaParticipante(pacote)
-							.success(function(data) {
+							.then(function(response) {
 								$scope.toast('Participante atualizado com sucesso!','success-toast');
 								// var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(participante._id);
 								// if (index !== -1) {
@@ -317,9 +311,8 @@
 								// 	eventos: eventos
 								// });
 								$mdDialog.hide();
-							})
-							.error(function(status) {
-								console.log('Error: '+status);
+							}, function(response) {
+								console.log('Error: '+response.data);
 							});
 						}
 					};
@@ -332,17 +325,16 @@
 						.cancel('Não');
 						$mdDialog.show(confirm).then(function() {
 							adminAPI.putRemoveParticipante(id)
-							.success(function(data) {
+							.then(function(response) {
 								$mdDialog.hide();
 								$scope.toast('Participante removido com sucesso!','success-toast');
 								var index = $rootScope.participantes.map(function(e) { return e._id; }).indexOf(id);
 								if (index !== -1) {
 									$rootScope.participantes.splice(index, 1);
 								}
-							})
-							.error(function(status) {
+							}, function(response) {
 								$scope.toast('Falha.','failed-toast');
-								console.log("Error: "+status);
+								console.log("Error: "+response.data);
 							});
 						}, function() {});
 					};

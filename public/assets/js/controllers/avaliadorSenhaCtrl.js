@@ -24,10 +24,9 @@
 		$scope.pedirRecuperacao = function() {
 			$scope.mensagemErro = '';
 			avaliadorAPI.redefinirSenha($scope.senha.email)
-			.success(function() {
+			.then(function() {
 				$scope.enviado = true;
-			})
-			.error(function(status) {
+			}, function() {
 				$scope.mensagemErro = 'Não encontramos esse e-mail cadastrado.';
 			});
 		};
@@ -37,25 +36,23 @@
 
 			if ($scope.modoToken) {
 				avaliadorAPI.novaSenhaComToken($stateParams.token, $scope.senha.nova)
-				.success(function(data) {
-					if (data === 'Senha alterada') {
+				.then(function(response) {
+					if (response.data === 'Senha alterada') {
 						$window.location.href = '/avaliadores/dashboard';
 					} else {
 						$scope.mensagemErro = 'Esse link não é mais válido. Peça uma nova recuperação de senha.';
 					}
-				})
-				.error(function(status) {
-					$scope.mensagemErro = typeof status === 'string' ? status : 'Não foi possível trocar a senha.';
+				}, function(response) {
+					$scope.mensagemErro = typeof response.data === 'string' ? response.data : 'Não foi possível trocar a senha.';
 				});
 				return;
 			}
 
 			avaliadorAPI.trocarSenha($scope.senha.atual, $scope.senha.nova)
-			.success(function() {
+			.then(function() {
 				$window.location.href = '/avaliadores/dashboard';
-			})
-			.error(function(status) {
-				$scope.mensagemErro = typeof status === 'string' ? status : 'Não foi possível trocar a senha.';
+			}, function(response) {
+				$scope.mensagemErro = typeof response.data === 'string' ? response.data : 'Não foi possível trocar a senha.';
 			});
 		};
 	});

@@ -33,14 +33,13 @@
 		};
 
 		$scope.carregarOpcoes = function(callback){
-			projetosAPI.getOpcoes().success(function(op){
-				$scope.opcoes = op || {};
+			projetosAPI.getOpcoes().then(function(response){
+				$scope.opcoes = response.data || {};
 				if (callback) {
 					callback();
 				}
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarOpcoes();
@@ -115,7 +114,8 @@
 
 		let carregarProjeto = function() {
 			projetosAPI.getProjeto()
-			.success(function(projeto) {
+			.then(function(response) {
+				var projeto = response.data;
 				$scope.nomeDoProjeto = projeto.nomeProjeto;
 				$scope.projeto = projeto;
 				//console.log(projeto);
@@ -213,6 +213,8 @@
 				$scope.carregarOpcoes(function() {
 					construirMenu();
 				});
+			}, function(response) {
+				console.log('Error: ' + response.data);
 			});
 		};
 		$scope.carregarProjeto = carregarProjeto;

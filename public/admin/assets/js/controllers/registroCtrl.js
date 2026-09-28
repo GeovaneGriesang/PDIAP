@@ -18,11 +18,10 @@
 		// escolas), então filtra só as aprovadas aqui, mesmo critério da rota pública
 		// getEscolasInfo usada na inscrição.
 		adminAPI.getEscolas()
-		.success(function(data) {
-			$scope.escolas = (data || []).filter(function(e) { return e.status === 'aprovada'; });
-		})
-		.error(function(status) {
-			console.log('Erro ao carregar escolas: '+status);
+		.then(function(response) {
+			$scope.escolas = (response.data || []).filter(function(e) { return e.status === 'aprovada'; });
+		}, function(response) {
+			console.log('Erro ao carregar escolas: '+response.data);
 		});
 
 		function preencherEnderecoDaEscolaInstituicao(escola) {
@@ -70,8 +69,10 @@
 							}
 						});
 					};
-					adminAPI.getEstados().success(function(data) {
-						$scope.listaEstados = data.estados;
+					adminAPI.getEstados().then(function(response) {
+						$scope.listaEstados = response.data.estados;
+					}, function(response) {
+						console.log('Erro ao carregar estados: '+response.data);
 					});
 					$scope.confirmar = function() {
 						$mdDialog.hide($scope.escola);
@@ -87,14 +88,14 @@
 			}).then(function(escolaSolicitada) {
 				escolaSolicitada.origem = 'inline_inscricao';
 				adminAPI.solicitarEscola(escolaSolicitada)
-				.success(function(escolaCriada) {
+				.then(function(response) {
+					var escolaCriada = response.data;
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto2.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscolaInstituicao(escolaCriada);
 					atualizarValidadeEscolaInstituicao();
-				})
-				.error(function(status) {
-					console.log('Erro ao solicitar escola: '+status);
+				}, function(response) {
+					console.log('Erro ao solicitar escola: '+response.data);
 				});
 			}, function() {});
 		};
@@ -102,7 +103,8 @@
 		$scope.registrarProjeto = function(projeto) {
 			projeto.palavraChave = $scope.palavrasChave;
 			adminAPI.saveProjeto(projeto)
-			.success(function(projeto, status) {
+			.then(function(response) {
+				var projeto = response.data, status = response.status;
 				if (status === 202) {
 					$scope.usernameDuplicado = true;
 					$scope.projetoForm.username.$setValidity('duplicado',false);
@@ -140,10 +142,9 @@
 					};
 					showConfirmDialog();
 				}
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.registro = false;
-				console.log(status);
+				console.log(response.data);
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
@@ -185,19 +186,17 @@
 		};
 
 		adminAPI.getCategoriasEixos(new Date().getFullYear())
-		.success(function(data) {
-			$scope.listaCategorias = data.categorias;
-		})
-		.error(function(status) {
-			console.log("Erro categorias:"+status);
+		.then(function(response) {
+			$scope.listaCategorias = response.data.categorias;
+		}, function(response) {
+			console.log("Erro categorias:"+response.data);
 		});
 
 		adminAPI.getEstados()
-		.success(function(data) {
-			$scope.listaEstados = data.estados;
-		})
-		.error(function(status) {
-			console.log("Erro estados:"+status);
+		.then(function(response) {
+			$scope.listaEstados = response.data.estados;
+		}, function(response) {
+			console.log("Erro estados:"+response.data);
 		});
 		
 				

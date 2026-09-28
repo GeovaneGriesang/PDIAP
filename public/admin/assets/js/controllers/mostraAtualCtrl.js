@@ -17,20 +17,20 @@
 		// A Mostra atual gravada no servidor é a fonte da verdade (o $rootScope pode estar
 		// defasado se outra aba alterou); só depois de ela chegar a tela libera o Salvar.
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			adminAPI.getMostraAtual()
-			.success(function(resposta) {
+			.then(function(response) {
+				var resposta = response.data;
 				var atualId = resposta && resposta.mostraId;
 				mostras.forEach(function(m) { m.marcada = m._id === atualId; });
 				$scope.mostras = mostras;
 				$scope.carregou = true;
-			})
-			.error(function(status) {
-				console.log('Error: '+status);
+			}, function(response) {
+				console.log('Error: '+response.data);
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 		});
 
 		// Só uma Mostra pode ficar marcada: marcar uma desmarca as outras (desmarcar a marcada
@@ -44,7 +44,7 @@
 			var id = marcadaId();
 			$scope.salvando = true;
 			adminAPI.putMostraAtual(id)
-			.success(function() {
+			.then(function() {
 				$scope.salvando = false;
 				$rootScope.mostraAtualId = id;
 				// A Mostra atual passa a ser a selecionada nos filtros das demais telas; sem
@@ -55,10 +55,9 @@
 					$rootScope.ano = mostra.ano;
 				}
 				$scope.toast('Mostra atual salva com sucesso!','success-toast');
-			})
-			.error(function(status) {
+			}, function(response) {
 				$scope.salvando = false;
-				console.log('Error: '+status);
+				console.log('Error: '+response.data);
 				$scope.toast('Não foi possível salvar a Mostra atual.','failed-toast');
 			});
 		};

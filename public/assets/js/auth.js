@@ -34,14 +34,15 @@
 		};
 
 	})
-	.controller('loginCtrl', function($scope, $rootScope, $window, $location, $mdDialog, authAPI) {
+	.controller('loginCtrl', function($scope, $rootScope, $window, $location, $mdDialog, authAPI, projetosAPI) {
 
 		$scope.login = function() {
 			const username = $scope.user.username;
 			const password = $scope.user.password;
 
 			authAPI.postLogin(username,password)
-			.success(function(projeto) { // authentication OK
+			.then(function(response) { // authentication OK
+				var projeto = response.data;
 				$rootScope.logado = true;
 				$scope.message = 'Sucesso';
 				$scope.erro = false;
@@ -49,8 +50,7 @@
 				$mdDialog.hide();
 				// console.log(projeto);
 				$window.location.href = projeto.redirect;
-			})
-			.error(function() { // authentication failed
+			}, function() { // authentication failed
 				$rootScope.logado = false;
 				$scope.message = 'Os dados estão incorretos.';
 				$scope.erro = true;
@@ -59,7 +59,8 @@
 
 		let enviarEmail = function(username) {
 			projetosAPI.postRedef1inir(username)
-			.success(function(data) {
+			.then(function(response) {
+				var data = response.data;
 				$scope.email = data;
 				// console.log(data);
 				console.log('authjs'+ $scope.email);
@@ -76,9 +77,8 @@
 					);
 				};
 				showAlert();
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.status);
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Oxe...')

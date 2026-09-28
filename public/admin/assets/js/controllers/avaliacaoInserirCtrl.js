@@ -35,8 +35,8 @@
 			$scope.projetos = [];
 			var resumo = { total: 0, aprovados: 0, anais: 0, apresentacao: 0, naoAprovados: 0 };
 			adminAPI.getTodosProjetos()
-			.success(function(projetos) {
-				angular.forEach(projetos, function (value, key) {
+			.then(function(response) {
+				angular.forEach(response.data, function (value, key) {
 					if (!adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)) return;
 					resumo.total++;
 					if (value.aprovado === true) {
@@ -61,9 +61,8 @@
 					}
 				});
 				$scope.resumo = resumo;
-			})
-			.error(function(status) {
-				console.log(status);
+			}, function(response) {
+				console.log(response.data);
 			});
 		};
 		$scope.carregarProjetos = carregarProjetos;
@@ -88,26 +87,24 @@
 					$scope.numAvaliadoresRange = [0, 1];
 					$scope.indiceDesempate = 2;
 					adminAPI.getNumAvaliadores($rootScope.mostraId)
-					.success(function(data) {
-						var n = data.n;
+					.then(function(response) {
+						var n = response.data.n;
 						var range = [];
 						for (var i = 0; i < n; i++) range.push(i);
 						$scope.numAvaliadoresRange = range;
 						$scope.indiceDesempate = n;
-					})
-					.error(function(status) {
-						console.log('Error: '+status);
+					}, function(response) {
+						console.log('Error: '+response.data);
 					});
 					$scope.addNotas = function(id,notas) {
 						adminAPI.putAvaliacao(id,notas)
-						.success(function(data, status) {
+						.then(function(response) {
 							$scope.toast('Avaliação realizada com sucesso!','success-toast');
 							$mdDialog.hide();
 							carregarProjetos();
-						})
-						.error(function(status) {
+						}, function(response) {
 							$scope.toast('Falha.','failed-toast');
-							console.log('Error: '+status);
+							console.log('Error: '+response.data);
 						});
 					};
 					// Uma nota lançada errada não podia mais virar "sem nota" (só dava pra
@@ -154,7 +151,8 @@
 		};
 
 		adminAPI.getMostras()
-		.success(function(mostras) {
+		.then(function(response) {
+			var mostras = response.data;
 			$scope.mostras = mostras;
 			$timeout(function() {
 				if (mostraIdPersistido) $rootScope.mostraId = mostraIdPersistido;
@@ -162,9 +160,8 @@
 				resolverMostraSelecionada();
 				carregarProjetos();
 			});
-		})
-		.error(function(status) {
-			console.log('Error: '+status);
+		}, function(response) {
+			console.log('Error: '+response.data);
 			resolverMostraSelecionada();
 			carregarProjetos();
 		});
