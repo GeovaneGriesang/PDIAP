@@ -1,24 +1,42 @@
-This repository is used only for Angular Material v1.x library deployments and localized installs using `npm` and `bower`. The actual component source-code for this library is in the
-[main Angular Material repository](https://github.com/angular/material).
+# AngularJS Material
 
-> Please file issues and pull requests against that `angular/material` repository only. Do not file issues here on the deployment repository.
+**[Support for legacy AngularJS ended on January 1st, 2022](https://goo.gle/angularjs-end-of-life).
+[See `@angular/core` for the actively supported Angular](https://npmjs.com/@angular/core).**
+
+See the following, related, actively supported Angular packages:
+- [`@angular/material`](https://www.npmjs.com/package/@angular/material)
+- [`@angular/cdk`](https://www.npmjs.com/package/@angular/cdk)
+
+This repository was used to publish the AngularJS Material v1.x library and localized installs
+using `npm`. You can find the component source-code for this library in the
+[AngularJS Material repository](https://github.com/angular/material). This package and related repositories
+have reached End-of-Life.
+
+AngularJS Material is an implementation of Google's
+[Material Design Specification (2014-2017)](https://material.io/archive/guidelines/material-design/)
+for [AngularJS](https://angularjs.org) (v1.x) developers.
+
+For an implementation of the [Material Design Specification (2018+)](https://material.io/design/),
+please see the [Angular Material](https://material.angular.io/) project which is built for
+[Angular](https://angular.io) (v2+) developers.
 
 ## Layouts and SCSS
 
 Included in this repository are the:
 
-* **[SCSS files](https://github.com/angular/bower-material/tree/master/modules/scss)** which are used to build the *.css files
-* **[Layout files](https://github.com/angular/bower-material/tree/master/modules/layouts)** which are used with the Angular Material (Flexbox) Layout API. 
+* **[SCSS files](https://github.com/angular/bower-material/tree/master/modules/scss)** which are
+used to build the *.css files
+* **[Layout files](https://github.com/angular/bower-material/tree/master/modules/layouts)** which
+are used with the AngularJS Material (Flexbox) Layout API. 
 
-> Note these are already included in the `angular-material.css` files. These copies are for direct developer access and contain IE flexbox fixes; as needed.
+> Note these are already included in the `angular-material.css` files. These copies are for direct
+developer access and contain IE flexbox fixes; as needed.
 
-## Installing Angular Material
+## Installing AngularJS Material
 
-You can install this package locally either with `npm`, `jspm`, or `bower` (deprecated). 
+You can install this package locally with `npm`. 
 
-> Please note that Angular Material requires **Angular 1.3.x** or higher. 
-
-### npm
+**Please note**: AngularJS Material requires **AngularJS 1.7.2** to **AngularJS 1.8.x**.
 
 ```shell
 # To install latest formal release 
@@ -36,158 +54,87 @@ npm install http://github.com/angular/bower-material#master --save
 #      "angular-material": "git+ssh://git@github.com/angular/bower-material.git#master"
 
 
-# To install a v1.1.0-rc2 version 
-npm install http://github.com/angular/bower-material/tarball/v1.1.0-rc2 --save
+# To install the v1.2.1 version 
+npm install http://github.com/angular/bower-material/tarball/v1.2.1 --save
 
 # To view all installed package 
-npm list;
+npm list
 ```
 
-### jspm
+## Using the AngularJS Material Library
 
-```shell
-# To install latest formal release
-jspm install angular-material
-
-# To install from HEAD of master
-jspm install angular-material=github:angular/bower-material@master
-
-# To view all installed package versions
-jspm inspect
-```
-
-Now you can use `require('angular-material')` when installing with **npm** or **jspm**, or when using Browserify or Webpack.
-
-### bower
-
-```shell
-# To get the latest stable version, use bower from the command line.
-bower install angular-material
-
-# To get the most recent, last committed-to-master version use:
-bower install 'angular-material#master'
-
-# To save the bower settings for future use:
-bower install angular-material --save
-
-# Later, you can use easily update with:
-bower update
-```
-
-## Using the Angular Material Library
-
-Now that you have installed the Angular libraries, simply include the scripts and 
-stylesheet in your main HTML file, in the order shown in the example below. Note that npm 
-will install the files under `/node_modules/angular-material/` and bower will install them 
-under `/bower_components/angular-material/`.
-
-### npm
+You have installed the AngularJS library, next include the scripts and 
+stylesheet in your main HTML file, in the order shown in the example below. Note that NPM 
+will install the files under `/node_modules/angular-material/`.
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
 </head>
-	<body ng-app="YourApp">
+  <body ng-app="YourApp">
+  <div ng-controller="YourController">
 
-	<div ng-controller="YourController">
+  </div>
 
-	</div>
-
-	<script src="/node_modules/angular/angular.js"></script>
-	<script src="/node_modules/angular-aria/angular-aria.js"></script>
-	<script src="/node_modules/angular-animate/angular-animate.js"></script>
-	<script src="/node_modules/angular-material/angular-material.js"></script>
-	<script>
-
-		// Include app dependency on ngMaterial
-
-		angular.module( 'YourApp', [ 'ngMaterial' ] )
-			.controller("YourController", YourController );
-
-	</script>
-
-</body>
-</html>
-```
-
-### bower
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
-</head>
-	<body ng-app="YourApp">
-
-	<div ng-controller="YourController">
-
-	</div>
-
-	<script src="/bower_components/angular/angular.js"></script>
-	<script src="/bower_components/angular-aria/angular-aria.js"></script>
-	<script src="/bower_components/angular-animate/angular-animate.js"></script>
-	<script src="/bower_components/angular-material/angular-material.js"></script>
-	<script>
-
-		// Include app dependency on ngMaterial
-
-		angular.module( 'YourApp', [ 'ngMaterial' ] )
-			.controller("YourController", YourController );
-
-	</script>
-
+  <script src="/node_modules/angular/angular.js"></script>
+  <script src="/node_modules/angular-aria/angular-aria.js"></script>
+  <script src="/node_modules/angular-animate/angular-animate.js"></script>
+  <script src="/node_modules/angular-messages/angular-messages.js"></script>
+  <script src="/node_modules/angular-material/angular-material.js"></script>
+  <script>
+    // Include app dependency on ngMaterial
+    angular.module('YourApp', ['ngMaterial', 'ngMessages'])
+      .controller("YourController", YourController);
+  </script>
 </body>
 </html>
 ```
 
 ## Using the CDN
 
-CDN versions of Angular Material are now available at 
-[Google Hosted Libraries](https://developers.google.com/speed/libraries/devguide#angularmaterial). 
-
 With the Google CDN, you will not need to download local copies of the distribution files.
-Instead simply reference the CDN urls to easily use those remote library files. 
-This is especially useful when using online tools such as CodePen, Plunkr, or jsFiddle.
+Instead, reference the CDN URLs to use those remote library files. 
+This is especially useful when using online tools such as CodePen, Plunker, or jsFiddle.
 
 ```html
-  <head>
+<head>
+    <!-- Angular Material CSS now available via Google CDN; version 1.2.1 used here -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.2.1/angular-material.min.css">
+</head>
+<body>
 
-    <!-- Angular Material CSS now available via Google CDN; version 0.9.4 used here -->
-    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.css">
-
-  </head>
-  <body>
-  
     <!-- Angular Material Dependencies -->
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-messages.min.js"></script>
     
-    <!-- Angular Material Javascript now available via Google CDN; version 0.9.4 used here -->
-    <script src="//ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.js"></script>
-    
-  </body>
+    <!-- Angular Material Javascript now available via Google CDN; version 1.2.1 used here -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.2.1/angular-material.min.js"></script>
+</body>
 ```
 
-> Note that the above sample references the 0.9.4 CDN release. Your version will change 
+> Note that the above sample references the 1.2.1 CDN release. Your version will change 
 based on the latest stable release version.
 
 ## Unit Testing with Angular Material
 
 <br/>
-If you are using Angular Material and will be using Jasmine to test your own custom application code, you will need to also load two (2) Angular mock files:
+If you are using AngularJS Material and will be using Jasmine to test your custom application
+code, you will need to also load two (2) AngularJS mock files:
 
-*  Angular Mocks - **angular-mocks.js** from `/node_modules/angular-mocks/angular-mocks.js`
-*  Angular Material Mocks - **angular-material-mocks.js** from `/node_modules/angular-material/angular-material-mocks.js`
+*  AngularJS mocks
+    * **angular-mocks.js** from `/node_modules/angular-mocks/angular-mocks.js`
+*  AngularJS Material mocks
+    * **angular-material-mocks.js** from `/node_modules/angular-material/angular-material-mocks.js`
 
 <br/>
 
-Shown below is a karma-configuration file (`karma.conf.js`) sample that may be a useful template for your own testing purposes:<br/><br/>
+Shown below is a karma-configuration file (`karma.conf.js`) sample that may be a useful template for
+your testing purposes:<br/><br/>
 
 ```js
 module.exports = function(config) {
@@ -201,6 +148,7 @@ module.exports = function(config) {
     'node_modules/angular/angular.js',
     'node_modules/angular-animate/angular-animate.js',
     'node_modules/angular-aria/angular-aria.js',
+    'node_modules/angular-messages/angular-messages.js',
     'node_modules/angular-material/angular-material.js',
     
     'node_modules/angular-mocks/angular-mocks.js',
@@ -208,7 +156,6 @@ module.exports = function(config) {
   ];
 
   config.set({
-
     basePath: __dirname + '/..',
     frameworks: ['jasmine'],
     
@@ -220,10 +167,7 @@ module.exports = function(config) {
 
     autoWatch: false,
     singleRun: true,
-    browsers: ['PhantomJS,Chrome']
-
+    browsers: ['Chrome']
   });
-
 };
 ```
-
