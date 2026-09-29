@@ -113,7 +113,14 @@ async function migrarParticipantes(grupos, seminarioPorGrupo, divergencias, resu
 	const participantes = await Participante.find({ 'eventos.tipo': TIPO_ANTIGO });
 
 	for (const participante of participantes) {
-		const chave = chaveDoGrupo(participante.feiraId, participante.createdAt);
+		// Tenta achar o grupo pelo feiraId do participante primeiro (mais preciso quando os dois
+		// lados têm - relevante pra dado futuro, criado depois desta migração); se não achar
+		// (ou o participante não tiver feiraId), cai pro ano de createdAt. Achado real: hoje
+		// (dado legado) é comum o Participante já ter feiraId (preenchido pela migração de
+		// edições anterior) enquanto o Evento correspondente ainda não tem - sem esse fallback,
+		// NENHUMA ligação seria feita nesse caso, mesmo quando o ano bate perfeitamente.
+		let chave = participante.feiraId ? chaveDoGrupo(participante.feiraId, undefined) : null;
+		if (!chave || !grupos.has(chave)) chave = chaveDoGrupo(undefined, participante.createdAt);
 		const grupo = chave ? grupos.get(chave) : undefined;
 		const seminario = chave ? seminarioPorGrupo.get(chave) : undefined;
 
