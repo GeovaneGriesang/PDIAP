@@ -63,7 +63,7 @@
             <md-input-container class="md-block selectCustom1" flex-gt-xs>
               <label>Tipo</label>
               <md-select name="tipo" data-ng-model="evento.tipo" required>
-                <md-option value="Seminário Saberes Docentes">Seminário Saberes Docentes</md-option>
+                <md-option value="Seminário">Seminário</md-option>
                 <md-option value="Semana Acadêmica">Semana Acadêmica</md-option>
                 <md-option value="Oficina">Oficina</md-option>
                 <md-option value="Palestra">Palestra</md-option>
@@ -75,6 +75,20 @@
               </div>
             </md-input-container>
             <div flex="5" hide-xs></div>
+            <md-input-container class="md-block selectCustom1" flex-gt-xs data-ng-if="evento.tipo === 'Seminário'">
+              <label>Seminário</label>
+              <md-select name="seminario" data-ng-model="evento.seminarioId" required data-ng-change="onSeminarioChange()">
+                <md-option data-ng-repeat="s in seminarios track by s._id" ng-value="s._id">{{s.nome}}</md-option>
+                <md-option value="__novo__">+ Criar novo Seminário</md-option>
+              </md-select>
+              <div class="md-errors-spacer">
+                <div data-ng-if="eventosForm.seminario.$touched">
+                  <div class="message-error" data-ng-if="eventosForm.seminario.$error.required">Selecione ou crie um Seminário.</div>
+                </div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-xs="row">
             <md-input-container class="md-block" flex>
               <input type="date" name="data" data-ng-model="evento.data" required/>
               <div class="md-errors-spacer">
@@ -149,7 +163,7 @@
         </h3>
         <div layout="row" style="justify-content:center;padding:20px 0;">
           <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#3f51b5;border-radius:50%;margin-right:8px;"></div>Semana Acadêmica</div>
-          <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Seminário Saberes Docentes</div>
+          <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#9c27b0;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Seminário</div>
           <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#4caf50;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Oficina</div>
           <div layout style="align-items:center;"><div style="width:15px;height:15px;background:#2E8B57;border-radius:50%;margin-right:8px;margin-left:15px;"></div>Palestra</div>
         </div>
@@ -164,7 +178,7 @@
         <div layout flex="5" layout-align="center center" style="align-self:center;">
           <div style="width:15px;height:15px;border-radius:50%;"
           data-ng-class="{azul:evt.tipo == 'Semana Acadêmica',
-          roxo:evt.tipo == 'Seminário Saberes Docentes',
+          roxo:evt.tipo == 'Seminário',
           green1:evt.tipo == 'Oficina',
           green2:evt.tipo == 'Palestra'}">
         </div>

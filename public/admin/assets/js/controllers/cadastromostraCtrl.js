@@ -105,7 +105,8 @@
         docentes: [
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Descrição da participação'},
-          {chave:'cargaHoraria', desc:'Carga horária'}
+          {chave:'cargaHoraria', desc:'Carga horária'},
+          {chave:'percentual', desc:'Percentual de frequência (número, sem símbolo %)'}
         ],
         ppalestra: [
           {chave:'nome', desc:'Nome do participante'},

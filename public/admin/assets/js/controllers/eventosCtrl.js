@@ -11,6 +11,7 @@
 		};
 
 		$scope.eventos = [];
+		$scope.seminarios = [];
 		$scope.dynamicFields = [{nome:'nome1', cpf:'cpf1'}];
 
 		$scope.btnAdd = true;
@@ -96,6 +97,20 @@
 				console.log("Error: "+response.data);
 			});
 		}
+
+		// Seminários da Mostra selecionada, pro segundo <md-select> que aparece quando
+		// tipo === 'Seminário' (ver models/seminario-schema.js).
+		let mostraSeminarios = function() {
+			adminAPI.getSeminarios()
+			.then(function(response) {
+				$scope.seminarios = (response.data || []).filter(function(s) {
+					return adminAPI.pertenceAMostra(s, $rootScope.mostraSelecionada);
+				});
+			}, function(response) {
+				console.log("Error: "+response.data);
+			});
+		};
+
 		adminAPI.getMostras()
 		.then(function(response) {
 			var mostras = response.data;
@@ -105,12 +120,39 @@
 				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
 				resolverMostraSelecionada();
 				mostraEventos();
+				mostraSeminarios();
 			});
 		}, function(response) {
 			console.log('Error: '+response.data);
 			$rootScope.ano = $rootScope.ano || new Date().getFullYear();
 			mostraEventos();
+			mostraSeminarios();
 		});
+
+		// Chamado quando o admin escolhe "+ Criar novo Seminário" no segundo <md-select> - pede
+		// o nome via prompt (sem template novo) e cria na Mostra selecionada.
+		$scope.onSeminarioChange = function() {
+			if ($scope.evento.seminarioId !== '__novo__') return;
+			$mdDialog.prompt()
+				.title('Novo Seminário')
+				.placeholder('Nome do Seminário (ex: Saberes Docentes)')
+				.ariaLabel('Nome do Seminário')
+				.ok('Criar')
+				.cancel('Cancelar')
+				.show()
+				.then(function(nome) {
+					adminAPI.postSeminario({ nome: nome, feiraId: $rootScope.mostraId })
+					.then(function(response) {
+						$scope.seminarios.push(response.data);
+						$scope.evento.seminarioId = response.data._id;
+					}, function(response) {
+						$scope.evento.seminarioId = undefined;
+						$scope.toast(response.data,'failed-toast');
+					});
+				}, function() {
+					$scope.evento.seminarioId = undefined;
+				});
+		};
 
 		$scope.recarregar = function(){
 			resolverMostraSelecionada();
@@ -122,6 +164,7 @@
 			$scope.editando = null;
 
 			mostraEventos();
+			mostraSeminarios();
 		}
 
 		$scope.cadastrarEvento = function(evento) {
@@ -153,7 +196,8 @@
 					data: dia+"/"+mes+"/"+ano,
 					responsavel: responsavel,
 					// Evento antigo (sem Mostra) passa a pertencer à Mostra em que está sendo editado.
-					feiraId: $rootScope.mostraId
+					feiraId: $rootScope.mostraId,
+					seminarioId: evento.seminarioId
 				});
 				adminAPI.putAtualizaEvento(evtAtualizado)
 				.then(function(response) {
@@ -179,7 +223,8 @@
 				data: dia+"/"+mes+"/"+ano,
 				responsavel: responsavel,
 				createdAt: createdAt,
-				feiraId: $rootScope.mostraId
+				feiraId: $rootScope.mostraId,
+				seminarioId: evento.seminarioId
 			});
 
 			adminAPI.postEvento(evt)
@@ -211,7 +256,8 @@
 				tipo: raw.tipo,
 				data: dataObj,
 				cargaHoraria: horaObj,
-				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf }; })
+				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf }; }),
+				seminarioId: raw.seminarioId
 			};
 			$scope.dynamicFields = raw.responsavel.map(function(r, i) { return { nome: 'nome'+(i+1), cpf: 'cpf'+(i+1) }; });
 			$scope.count = raw.responsavel.length;
