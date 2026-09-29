@@ -14,6 +14,11 @@ const SeminarioSchema = new Schema({
 	// models/evento-schema.js#feiraId. Seminário migrado de um ano sem Mostra própria
 	// cadastrada fica sem feiraId e cai no ano de createdAt (ver adminAPI.pertenceAMostra).
 	,feiraId: {type: Schema.Types.ObjectId, ref: 'Feira'}
+	// Só preenchido quando NÃO há feiraId (Seminário migrado de dado antigo, agrupado por ano -
+	// ver scripts/migrar-seminario-saberes-docentes.js). Sem isso, dois anos diferentes sem
+	// feiraId (ex: 2016 e 2018) ficariam indistinguíveis na hora de achar/criar o Seminario
+	// certo, fundindo os dois num só.
+	,ano: {type: Number}
 	,createdAt: {type: Date, default: Date.now}
 }, { collection: 'seminarios' });
 
