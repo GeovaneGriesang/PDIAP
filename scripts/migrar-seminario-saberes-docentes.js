@@ -76,7 +76,12 @@ async function migrarEventos(divergencias, resumo) {
 	const seminarioPorGrupo = new Map();
 
 	for (const [chave, grupo] of grupos) {
-		let seminario = await Seminario.findOne({ nome: 'Saberes Docentes', feiraId: grupo.feiraId || { $exists: false } });
+		// Query de busca precisa distinguir por ano quando não há feiraId - sem isso, dois
+		// grupos diferentes sem feiraId (ex: ano:2016 e ano:2018) bateriam na MESMA busca
+		// (feiraId inexistente nos dois) e o segundo grupo reaproveitaria por engano o
+		// Seminario do primeiro, fundindo anos diferentes num só (achado testando em produção).
+		let buscaSeminario = grupo.feiraId ? { nome: 'Saberes Docentes', feiraId: grupo.feiraId } : { nome: 'Saberes Docentes', feiraId: { $exists: false }, ano: grupo.ano };
+		let seminario = await Seminario.findOne(buscaSeminario);
 		if (!seminario) {
 			if (DRY_RUN) {
 				console.log(`[dry-run] criaria Seminario "Saberes Docentes" pro grupo ${chave} (${grupo.eventos.length} eventos)`);
@@ -85,6 +90,7 @@ async function migrarEventos(divergencias, resumo) {
 				seminario = await Seminario.create({
 					nome: 'Saberes Docentes',
 					feiraId: grupo.feiraId,
+					ano: grupo.feiraId ? undefined : grupo.ano,
 					// Sem feiraId, precisa de createdAt no ano certo pra adminAPI.pertenceAMostra
 					// continuar funcionando (mesmo truque já usado em eventosCtrl.js#cadastrarEvento).
 					createdAt: grupo.ano ? new Date(new Date().setFullYear(grupo.ano)) : new Date()
