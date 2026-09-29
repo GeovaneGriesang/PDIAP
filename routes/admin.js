@@ -7,6 +7,7 @@ const express = require('express')
 , adminSchema = require('../models/admin-schema')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
+, seminarioSchema = require('../models/seminario-schema')
 , feiraSchema = require('../models/feira-schema')
 , escolaSchema = require('../models/escola-schema')
 , participanteSchema = require('../models/participante-schema')
@@ -96,6 +97,16 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
       feiraId = req.body.feiraId;
     }
 
+    // Tipo 'Seminário' sempre precisa de um Seminario válido (ver models/seminario-schema.js) -
+    // é o que permite agrupar palestras e calcular percentual de frequência.
+    let seminarioId;
+    if (req.body.tipo === 'Seminário') {
+      if (!idValido(req.body.seminarioId) || !(await seminarioSchema.findOne({ _id: req.body.seminarioId }, '_id'))) {
+        return res.status(400).send('Seminário inválido');
+      }
+      seminarioId = req.body.seminarioId;
+    }
+
     let newEvento = new eventoSchema({
       tipo: req.body.tipo
       ,titulo: req.body.titulo
@@ -103,6 +114,7 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
       ,data: req.body.data
       ,createdAt: req.body.createdAt
       ,feiraId: feiraId
+      ,seminarioId: seminarioId
     });
 
     myArray.forEach(function (value, i) {
@@ -176,6 +188,17 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
       evt.feiraId = req.body.feiraId;
     }
 
+    // Tipo 'Seminário' sempre precisa de um Seminario válido; evento que deixa de ser
+    // 'Seminário' perde o vínculo (não faz sentido pros outros 3 tipos).
+    if (req.body.tipo === 'Seminário') {
+      if (!idValido(req.body.seminarioId) || !(await seminarioSchema.findOne({ _id: req.body.seminarioId }, '_id'))) {
+        return res.status(400).send('Seminário inválido');
+      }
+      evt.seminarioId = req.body.seminarioId;
+    } else {
+      evt.seminarioId = undefined;
+    }
+
     evt.tipo = req.body.tipo;
     evt.titulo = req.body.titulo;
     evt.cargaHoraria = req.body.cargaHoraria;
@@ -187,6 +210,46 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
   } catch (error){
     console.error('Erro ao atualizar evento', error);
     res.status(500).send('Falha ao atualizar evento');
+  }
+});
+
+// Um Seminário agrupa palestras (Evento tipo:'Seminário', ver seminarioId) sob um nome comum
+// (ex: "Saberes Docentes") - permite calcular percentual de frequência (frequentadas / total de
+// palestras do mesmo Seminário, ver utils/certificadoSeminario.js). Sem tela de CRUD própria -
+// criado inline a partir do formulário de Evento (ver public/admin/assets/js/controllers/
+// eventosCtrl.js).
+router.post('/criarSeminario', miPermiso("3"), async (req, res) => {
+  try {
+    let nome = (req.body.nome || '').trim();
+    if (!nome) return res.status(400).send('Informe um nome pro Seminário.');
+
+    let feiraId;
+    if (req.body.feiraId) {
+      if (!idValido(req.body.feiraId) || !(await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id'))) {
+        return res.status(400).send('Mostra inválida');
+      }
+      feiraId = req.body.feiraId;
+    }
+
+    // Bloqueia duplicata (mesmo nome na mesma Mostra) - dois Seminários "Saberes Docentes" na
+    // mesma Mostra dividiriam o denominador do percentual sem que ninguém percebesse.
+    let existente = await seminarioSchema.findOne({ nome: nome, feiraId: feiraId || { $exists: false } });
+    if (existente) return res.status(400).send('Já existe um Seminário com esse nome nesta Mostra.');
+
+    let novoSeminario = await seminarioSchema.create({ nome: nome, feiraId: feiraId });
+    res.status(200).json(novoSeminario);
+  } catch (error){
+    console.error('Erro ao criar seminário', error);
+    res.status(500).send('Erro ao criar seminário');
+  }
+});
+
+router.get('/mostraSeminarios', miPermiso("3","2"), async (req, res) => {
+  try {
+    let usr = await seminarioSchema.find();
+    res.send(usr);
+  } catch (error){
+    console.error('Erro ao mostrar seminários', error);
   }
 });
 
@@ -530,6 +593,8 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
           ,titulo: value.titulo
           ,cargaHoraria: value.cargaHoraria
           ,data: value.data
+          ,eventoId: idValido(value.eventoId) ? value.eventoId : undefined
+          ,seminarioId: idValido(value.seminarioId) ? value.seminarioId : undefined
         });
         newParticipante.eventos.push(newEvento);
       });
@@ -689,6 +754,8 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
           ,titulo: value.titulo
           ,cargaHoraria: value.cargaHoraria
           ,data: value.data
+          ,eventoId: idValido(value.eventoId) ? value.eventoId : undefined
+          ,seminarioId: idValido(value.seminarioId) ? value.seminarioId : undefined
         });
 
         await participanteSchema.findOneAndUpdate({"_id": id},{"$push": {"eventos": newEvento}}, {returnDocument: 'after'});

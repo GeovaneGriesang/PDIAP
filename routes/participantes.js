@@ -10,6 +10,7 @@ const express = require('express')
 , mongoose = require('mongoose')
 , Participante = require('../controllers/participante-controller')
 , loginBootstrap = require('../utils/loginBootstrap')
+, certificadoSeminario = require('../utils/certificadoSeminario')
 , ParticipanteSchema = require('../models/participante-schema')
 , AvaliadorSchema = require('../models/avaliador-schema');
 
@@ -179,7 +180,7 @@ function somaHora(horaInicio, horaSomada) {
 router.get('/dashboard/meus-certificados', ensureParticipante, async (req, res) => {
   let eventos = req.user.eventos || [];
   let temOficina = eventos.some((e) => e.tipo === 'Oficina');
-  let temSaberes = eventos.some((e) => e.tipo === 'Seminário Saberes Docentes');
+  let temSaberes = eventos.some((e) => e.tipo === 'Seminário');
   let temPalestra = eventos.some((e) => e.tipo === 'Palestra');
 
   try {
@@ -219,14 +220,11 @@ router.get('/dashboard/meus-certificados', ensureParticipante, async (req, res) 
     }
 
     if (temSaberes) {
-      let eventosTexto = '';
-      let cargaHoraria = '0:00';
-      eventos.forEach((e) => {
-        if (e.tipo !== 'Seminário Saberes Docentes') return;
-        eventosTexto += e.titulo + ': ' + e.cargaHoraria + ' hora (s).\n';
-        cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
-      });
-      resposta.saberes = { nome: participante.nome, token: participante.tokenSaberes, eventos: eventosTexto, cargaHoraria: cargaHoraria, ano: ano };
+      let agregado = await certificadoSeminario.agregarSeminario(eventos);
+      resposta.saberes = Object.assign(
+        { nome: participante.nome, token: participante.tokenSaberes, ano: ano },
+        agregado
+      );
     }
 
     res.send(resposta);

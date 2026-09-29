@@ -3,22 +3,9 @@
 
 	angular
 	.module('PDIAP')
-	.controller('certificadosCtrl', function($scope, projetosAPI) {
+	.controller('certificadosCtrl', function($scope, projetosAPI, certificadoSeminarioService) {
 
-		var somaHora = function(horaInicio, horaSomada) {
-			let horaIni = horaInicio.split(':');
-			let horaSom = horaSomada.split(':');
-			let horasTotal = parseInt(horaIni[0], 10) + parseInt(horaSom[0], 10);
-			let minutosTotal = parseInt(horaIni[1], 10) + parseInt(horaSom[1], 10);
-			if(minutosTotal === 60){
-				minutosTotal -= 60;
-				horasTotal += 1;
-			}
-			if (minutosTotal.toString().length === 1) {
-				minutosTotal = '0'+minutosTotal;
-			}
-			return horasTotal + ":" + minutosTotal;
-		};
+		var somaHora = certificadoSeminarioService.somaHora;
 
 		$scope.consultarCertificado = function(token) {
 			projetosAPI.postConferirCertificado(token)
@@ -31,8 +18,6 @@
 				else if (data[0].tipo === 'Participante') {
 					let evts1 = '';
 					let ch1 = '0:00';
-					let ch2 = '0:00';
-					let evts2 = '';
 					let evts3 = '';
 					let ch3 = '0:00';
 					angular.forEach(data[0].eventos, function (value, key){
@@ -43,15 +28,6 @@
 								evts1 = evts1+', '+value.titulo;
 							}
 							ch1 = somaHora(value.cargaHoraria,ch1);
-						} else if (data[0].tokenSaberes === token && value.tipo === "Seminário Saberes Docentes") {
-							if (evts2 === '') {
-								evts2 = value.titulo;
-								// eventos = value.titulo+': '+value.cargaHoraria+' hora (s).\n';
-							} else {
-								evts2 = evts2+', '+value.titulo;
-								// eventos = eventos + value.titulo+': '+value.cargaHoraria+' hora (s).\n';
-							}
-							ch2 = somaHora(value.cargaHoraria,ch2);
 						} else if (data[0].tokenPalestra === token && value.tipo === "Palestra") {
 							if (evts3 === '') {
 								evts3 = value.titulo;
@@ -61,11 +37,14 @@
 							ch3 = somaHora(value.cargaHoraria,ch3);
 						}
 					});
+					let agregadoSeminario = data[0].tokenSaberes === token
+						? certificadoSeminarioService.agregarEventos(data[0].eventos)
+						: { titulos: [], cargaHoraria: '0:00' };
 					if (evts1 !== '') {
 						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Oficina(s):</b> '+evts1+'</br><b>Carga Horária total:</b> '+ch1+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
 					}
-					if (evts2 !== '') {
-						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Evento(s):</b> '+evts2+'</br><b>Carga Horária total:</b> '+ch2+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
+					if (agregadoSeminario.titulos.length) {
+						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Evento(s):</b> '+agregadoSeminario.titulos.join(', ')+'</br><b>Carga Horária total:</b> '+agregadoSeminario.cargaHoraria+' hora(s)'+'</br><b>Percentual de frequência:</b> '+data[0].percentualSeminario+'%'+'</br><b>Ano:</b> '+data[0].ano;
 					}
 					if (evts3 !== '') {
 						$scope.texto = '<b>Nome:</b> '+data[0].nome+'</br><b>Tipo:</b> '+data[0].tipo+'</br><b>CPF:</b> '+data[0].cpf+'</br><b>Palestra(s):</b> '+evts3+'</br><b>Carga Horária total:</b> '+ch3+' hora(s)'+'</br><b>Ano:</b> '+data[0].ano;
@@ -81,7 +60,7 @@
 					if (data[0].evento.tipo === 'Oficina') {
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Oficineiro</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
 					}
-					else if (data[0].evento.tipo === 'Seminário Saberes Docentes') {
+					else if (data[0].evento.tipo === 'Seminário') {
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Conferencista</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;
 					} else if(data[0].evento.tipo === 'Semana Acadêmica') {
 						$scope.texto = '<b>Nome:</b> '+data[0].evento.responsavel+'</br><b>Tipo:</b> Responsável Semana Acadêmica</br><b>CPF:</b> '+data[0].evento.cpf+'</br><b>Evento:</b> '+data[0].evento.titulo+'</br><b>Carga Horária:</b> '+data[0].evento.cargaHoraria+'</br><b>Ano:</b> '+data[0].evento.ano;

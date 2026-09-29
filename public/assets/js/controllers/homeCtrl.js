@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAP')
-	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, $interval, projetosAPI) {
+	.controller('homeCtrl', function($scope, $rootScope, $location, $mdDialog, $interval, projetosAPI, certificadoSeminarioService) {
 
 		projetosAPI.getDocumentos().then(function(response){
 			var documentos = response.data;
@@ -158,9 +158,6 @@
 					if (i !== -1) {
 						let evts1 = '';
 						let ch1 = '0:00';
-						// let evts2 = '';
-						let ch2 = '0:00';
-						let eventos = '';
 						let evts3 = '';
 						let ch3 = '0:00';
 						let datas3 = '';
@@ -172,15 +169,6 @@
 									evts1 = evts1+', '+value.titulo;
 								}
 								ch1 = somaHora(value.cargaHoraria,ch1);
-							} else if (value.tipo === "Seminário Saberes Docentes") {
-								if (eventos === '') {
-									// evts2 = value.titulo;
-									eventos = value.titulo+': '+value.cargaHoraria+' hora (s).\n';
-								} else {
-									// evts2 = evts2+', '+value.titulo;
-									eventos = eventos + value.titulo+': '+value.cargaHoraria+' hora (s).\n';
-								}
-								ch2 = somaHora(value.cargaHoraria,ch2);
 							} else if (value.tipo === "Palestra") {
 								// datas3 acompanha evts3 posição a posição (mesmo separador ", "),
 								// pra manter as duas listas alinhadas mesmo quando algum vínculo
@@ -206,13 +194,15 @@
 								ano: data[i].ano
 							};
 						}
-						if (eventos !== '') {
+						let agregadoSeminario = certificadoSeminarioService.agregarEventos(data[i].eventos);
+						if (agregadoSeminario.titulos.length) {
 							countCertificados++;
 							presenca_saberes = {
 								nome: data[i].nome,
 								token: data[i].tokenSaberes,
-								cargaHoraria: ch2,
-								eventos: eventos,
+								cargaHoraria: agregadoSeminario.cargaHoraria,
+								eventos: agregadoSeminario.textoVerso,
+								percentual: data[i].percentualSeminario,
 								ano: data[i].ano
 							};
 						}
@@ -250,7 +240,7 @@
 							countCertificados++;
 							if (value.tipo === "Semana Acadêmica") {
 								semanaAcademica.push(value);
-							} else if (value.tipo === "Seminário Saberes Docentes") {
+							} else if (value.tipo === "Seminário") {
 								saberesDocentes.push(value);
 							} else if (value.tipo === "Oficina") {
 								oficina.push(value);

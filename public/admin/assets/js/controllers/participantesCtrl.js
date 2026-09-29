@@ -55,13 +55,15 @@
 				angular.forEach(response.data, function (value, key) {
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
 						let evento = ({
+							_id: value._id,
 							tipo: value.tipo,
 							titulo: value.titulo,
-							cargaHoraria: value.cargaHoraria
+							cargaHoraria: value.cargaHoraria,
+							seminarioId: value.seminarioId
 						});
 						if (value.tipo === 'Semana Acadêmica') {
 							$scope.eventos1.push(evento);
-						} else if (value.tipo === 'Seminário Saberes Docentes') {
+						} else if (value.tipo === 'Seminário') {
 							$scope.eventos2.push(evento);
 						} else if (value.tipo === 'Oficina') {
 							$scope.eventos3.push(evento);
@@ -203,24 +205,32 @@
 					$scope.eventos2 = eventos2;
 					$scope.eventos3 = eventos3;
 					$scope.eventos4 = eventos4;
+					// Casa por eventoId (_id do Evento original) quando existir - ligação de
+					// verdade, sem ambiguidade. Sem eventoId (dado anterior à migração pra
+					// Seminário genérico, ainda não ligado com certeza), cai no casamento por
+					// título de sempre, senão o primeiro admin a abrir um participante ainda não
+					// migrado veria os checkboxes vazios mesmo ele tendo eventos.
+					var bate = function(evt, value) {
+						return value.eventoId ? evt._id === value.eventoId : evt.titulo === value.titulo;
+					};
 					angular.forEach(participante.eventos, function (value, key) {
 						for (var x in $scope.eventos1) {
-							if ($scope.eventos1[x].titulo === value.titulo) {
+							if (bate($scope.eventos1[x], value)) {
 								$scope.eventos1[x].selected = true;
 							}
 						}
 						for (var y in $scope.eventos2) {
-							if ($scope.eventos2[y].titulo === value.titulo) {
+							if (bate($scope.eventos2[y], value)) {
 								$scope.eventos2[y].selected = true;
 							}
 						}
 						for (var z in $scope.eventos3) {
-							if ($scope.eventos3[z].titulo === value.titulo) {
+							if (bate($scope.eventos3[z], value)) {
 								$scope.eventos3[z].selected = true;
 							}
 						}
 						for (var w in $scope.eventos4) {
-							if ($scope.eventos4[w].titulo === value.titulo) {
+							if (bate($scope.eventos4[w], value)) {
 								$scope.eventos4[w].selected = true;
 							}
 						}

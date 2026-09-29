@@ -28,7 +28,8 @@ const express = require('express')
 , EmailTemplate = require('../utils/emailTemplate').EmailTemplate
 , rateLimit = require('express-rate-limit')
 , { body, validationResult } = require('express-validator')
-, documentoValidator = require('../utils/documentoValidator');
+, documentoValidator = require('../utils/documentoValidator')
+, certificadoSeminario = require('../utils/certificadoSeminario');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -273,7 +274,7 @@ router.post('/emitirCertificado', (req, res) => {
         if (usr[0].eventos[i].tipo === 'Oficina') {
           contador1 = true;
         }
-        else if (usr[0].eventos[i].tipo === 'Seminário Saberes Docentes') {
+        else if (usr[0].eventos[i].tipo === 'Seminário') {
           contador2 = true;
         }
         else if (usr[0].eventos[i].tipo === 'Palestra') {
@@ -296,9 +297,10 @@ router.post('/emitirCertificado', (req, res) => {
     }
     return Promise.all(gravacoes).then(() => pesquisaParticipante(cpf))
   })
-  .then(usr => {
+  .then(async usr => {
     // let array = []
     var ano = new Date(usr[0].createdAt).getFullYear();
+    let agregado = await certificadoSeminario.agregarSeminario(usr[0].eventos);
     let participante = {
       tipo: "Participante",
       nome: usr[0].nome,
@@ -306,6 +308,7 @@ router.post('/emitirCertificado', (req, res) => {
       tokenOficinas: usr[0].tokenOficinas,
       tokenPalestra: usr[0].tokenPalestra,
       eventos: usr[0].eventos,
+      percentualSeminario: agregado ? agregado.percentual : undefined,
       ano: ano
     }
     // array.push(participante)
@@ -596,14 +599,16 @@ router.post('/conferirCertificado', (req, res) => {
   })
   .catch(err => console.log("Não encontrou nada nos avaliadores. " + err.message))
 
-  const three = pesquisaParticipanteSaberes(id).then(usr => {
+  const three = pesquisaParticipanteSaberes(id).then(async usr => {
    var ano = new Date(usr[0].createdAt).getFullYear();
+   var agregado = await certificadoSeminario.agregarSeminario(usr[0].eventos);
    var obj = {
      tipo: "Participante",
      nome: usr[0].nome,
      cpf: usr[0].cpf,
      eventos: usr[0].eventos,
      tokenSaberes: usr[0].tokenSaberes,
+     percentualSeminario: agregado ? agregado.percentual : undefined,
      ano: ano
    };
    return obj;

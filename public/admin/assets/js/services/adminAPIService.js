@@ -304,6 +304,23 @@
 			return $http(request);
 		};
 
+		let _postSeminario = function(seminario) {
+			const request = {
+				url: '/admin/criarSeminario',
+				method: 'POST',
+				data: seminario
+			}
+			return $http(request);
+		};
+
+		let _getSeminarios = function() {
+			const request = {
+				url: '/admin/mostraSeminarios',
+				method: 'GET'
+			}
+			return $http(request);
+		};
+
 		let _putEditarFeira = function(feira) {
 			const request = {
 				url: '/admin/editarFeira',
@@ -709,6 +726,8 @@
 			getHistoricoEmails: _getHistoricoEmails,
 			removeFeira: _removeFeira,
 			editarFeira: _putEditarFeira,
+			postSeminario: _postSeminario,
+			getSeminarios: _getSeminarios,
 			postEscola: _postEscola,
 			getEscolas: _getEscolas,
 			solicitarEscola: _solicitarEscola,

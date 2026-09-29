@@ -11,7 +11,16 @@ const eventoSchema = new Schema({
 	// evento no momento em que o participante é vinculado a ele (ver
 	// admin.js#criarParticipante/atualizaParticipante). Precisa disso pra máscara ¨data
 	// no certificado de presença (ver homeCtrl.js#buscarCPF).
-	data: {type: String}
+	data: {type: String},
+	// _id do Evento original (ver models/evento-schema.js) - undefined em vínculos criados
+	// antes desta mudança (ou não casados com certeza pela migração, ver
+	// scripts/migrar-seminario-saberes-docentes.js). Sem isso não tem como saber A QUAL
+	// Seminario este item pertence pra calcular o percentual de frequência.
+	eventoId: {type: Schema.Types.ObjectId, ref: 'Evento'},
+	// Cópia do seminarioId do Evento no momento do vínculo (só relevante quando tipo ===
+	// 'Seminário') - denormalizado de propósito: remover o Evento catálogo depois não pode
+	// invalidar retroativamente o cálculo de quem já tem esse vínculo gravado.
+	seminarioId: {type: Schema.Types.ObjectId, ref: 'Seminario'}
 });
 
 const ParticipantelSchema = new Schema({
