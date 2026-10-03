@@ -38,6 +38,36 @@
 			$rootScope.ano = $rootScope.mostraSelecionada ? $rootScope.mostraSelecionada.ano : $rootScope.ano;
 		};
 
+		// Um evento pode ter vários dias (consecutivos ou não). Guardado no banco como texto único
+		// "dd/mm/yyyy, dd/mm/yyyy" (campo `data`), pra certificados e cópias nos participantes
+		// continuarem funcionando sem mudança - aqui no formulário é uma lista de Date.
+		$scope.evento = { datas: [null] };
+
+		$scope.addDia = function() {
+			$scope.evento.datas.push(null);
+		};
+
+		$scope.removeDia = function(index) {
+			$scope.evento.datas.splice(index, 1);
+		};
+
+		let formataData = function(d) {
+			let dia = ('0' + d.getDate()).slice(-2);
+			let mes = ('0' + (d.getMonth() + 1)).slice(-2);
+			return dia + '/' + mes + '/' + d.getFullYear();
+		};
+
+		// Ordena cronologicamente e descarta dias repetidos.
+		let formataDatas = function(datas) {
+			let vistos = {};
+			return (datas || [])
+				.filter(function(d) { return d instanceof Date && !isNaN(d); })
+				.sort(function(a, b) { return a - b; })
+				.map(formataData)
+				.filter(function(s) { return vistos[s] ? false : (vistos[s] = true); })
+				.join(', ');
+		};
+
 		$scope.addResponsavel = function() {
 			$scope.count++;
 			$scope.dynamicFields.push({nome:'nome'+$scope.count, cpf:'cpf'+$scope.count});
@@ -61,8 +91,8 @@
 							responsaveis = value.nome;
 						}
 					});
-					dateFormat = value.data.slice(0,-5);
-					//dateFormat = value.data;
+						// Tira o ano de cada dia (dd/mm/yyyy -> dd/mm); evento antigo tem um dia só.
+						dateFormat = (value.data || '').split(', ').map(function(s) { return s.slice(0,-5); }).join(', ');
 
 					var ano = new Date(value.createdAt).getFullYear();
 					if(adminAPI.pertenceAMostra(value, $rootScope.mostraSelecionada)){
@@ -174,13 +204,7 @@
 			if (mm.toString().length == 1)
 			mm = "0"+mm;
 
-			let dia = evento.data.getDate();
-			if (dia.toString().length == 1)
-			dia = "0"+dia;
-			let mes = evento.data.getMonth()+1;
-			if (mes.toString().length == 1)
-			mes = "0"+mes;
-			let ano = evento.data.getFullYear();
+			let dataTexto = formataDatas(evento.datas);
 
 			var responsavel = [];
 			for (var i in evento.responsavel) {
@@ -193,7 +217,7 @@
 					titulo: evento.titulo,
 					tipo: evento.tipo,
 					cargaHoraria: hh+":"+mm,
-					data: dia+"/"+mes+"/"+ano,
+					data: dataTexto,
 					responsavel: responsavel,
 					// Evento antigo (sem Mostra) passa a pertencer à Mostra em que está sendo editado.
 					feiraId: $rootScope.mostraId,
@@ -220,7 +244,7 @@
 				titulo: evento.titulo,
 				tipo: evento.tipo,
 				cargaHoraria: hh+":"+mm,
-				data: dia+"/"+mes+"/"+ano,
+				data: dataTexto,
 				responsavel: responsavel,
 				createdAt: createdAt,
 				feiraId: $rootScope.mostraId,
@@ -245,8 +269,10 @@
 		$scope.editarEvento = function(evento) {
 			var raw = evento.raw;
 
-			var partesData = raw.data.split('/');
-			var dataObj = new Date(Number(partesData[2]), Number(partesData[1]) - 1, Number(partesData[0]));
+			var datasObj = raw.data.split(', ').map(function(s) {
+				var partesData = s.split('/');
+				return new Date(Number(partesData[2]), Number(partesData[1]) - 1, Number(partesData[0]));
+			});
 
 			var partesHora = raw.cargaHoraria.split(':');
 			var horaObj = new Date(1970, 0, 1, Number(partesHora[0]), Number(partesHora[1]));
@@ -254,7 +280,7 @@
 			$scope.evento = {
 				titulo: raw.titulo,
 				tipo: raw.tipo,
-				data: dataObj,
+				datas: datasObj,
 				cargaHoraria: horaObj,
 				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf }; }),
 				seminarioId: raw.seminarioId
@@ -314,7 +340,7 @@
 		};
 
 		let resetForm = function() {
-			delete $scope.evento;
+			$scope.evento = { datas: [null] };
 			$scope.eventosForm.$setPristine();
 			$scope.eventosForm.$setUntouched();
 			$scope.btnAdd = true;

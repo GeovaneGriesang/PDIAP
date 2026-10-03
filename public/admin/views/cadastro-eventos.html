@@ -88,15 +88,27 @@
               </div>
             </md-input-container>
           </div>
-          <div layout-gt-xs="row">
+          <!-- Um evento pode ocorrer em vários dias, consecutivos ou não: uma data por linha. -->
+          <div layout="row" layout-align="start center" data-ng-repeat="d in evento.datas track by $index" ng-form="diaForm">
             <md-input-container class="md-block" flex>
-              <input type="date" name="data" data-ng-model="evento.data" required/>
+              <label>Dia {{$index+1}}</label>
+              <input type="date" name="data" data-ng-model="evento.datas[$index]" required/>
               <div class="md-errors-spacer">
-                <div data-ng-show="eventosForm.data.$dirty">
-                  <div class="message-error" data-ng-show="eventosForm.data.$error.required">Obrigatório.</div>
+                <div data-ng-show="diaForm.data.$dirty">
+                  <div class="message-error" data-ng-show="diaForm.data.$error.required">Obrigatório.</div>
                 </div>
               </div>
             </md-input-container>
+            <md-button data-ng-if="evento.datas.length > 1" class="md-icon-button md-warn" aria-label="Remover dia" data-ng-click="removeDia($index)">
+              <md-tooltip md-direction="right">Remover dia</md-tooltip>
+              <md-icon md-svg-src="close"></md-icon>
+            </md-button>
+          </div>
+          <div layout="row" layout-align="start center" style="margin-bottom:10px;">
+            <md-button class="md-raised" aria-label="Adicionar dia" data-ng-click="addDia()">
+              <md-icon md-svg-src="plus" style="display:flex;"></md-icon>
+              <span style="vertical-align:middle;">Adicionar outro dia</span>
+            </md-button>
           </div>
 
           <div layout="row" style="margin-top:15px;">
