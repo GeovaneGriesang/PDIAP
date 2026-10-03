@@ -79,32 +79,34 @@
         saberes: [
           {chave:'responsavel', desc:'Nome do responsável/conferencista'},
           {chave:'titulo', desc:'Título da apresentação'},
-          {chave:'data', desc:'Data do evento'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         poficinas: [
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Nome da(s) oficina(s)'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'cargaHoraria', desc:'Carga horária total'}
         ],
         roficinas: [
           {chave:'responsavel', desc:'Nome do responsável pela oficina'},
           {chave:'titulo', desc:'Título da oficina'},
-          {chave:'data', desc:'Data do evento'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         academica: [
           {chave:'responsavel', desc:'Nome do responsável/conferencista'},
           {chave:'titulo', desc:'Título da apresentação'},
-          {chave:'data', desc:'Data do evento'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ],
         docentes: [
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Descrição da participação'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'},
           {chave:'percentual', desc:'Percentual de frequência (número, sem símbolo %)'}
         ],
@@ -112,14 +114,14 @@
           {chave:'nome', desc:'Nome do participante'},
           {chave:'eventos', desc:'Nome da(s) palestra(s)'},
           {chave:'titulo', desc:'Nome da(s) palestra(s)'},
-          {chave:'data', desc:'Data do evento'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária total'}
         ],
         rpalestra: [
           {chave:'responsavel', desc:'Nome do(a) palestrante'},
           {chave:'titulo', desc:'Título da palestra'},
-          {chave:'data', desc:'Data do evento'},
+          {chave:'data', desc:'Data(s) do evento'},
           {chave:'tipo', desc:'Tipo do evento'},
           {chave:'cargaHoraria', desc:'Carga horária'}
         ]
