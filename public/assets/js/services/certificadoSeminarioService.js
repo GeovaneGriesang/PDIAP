@@ -22,6 +22,19 @@
 			return horasTotal + ':' + minutosTotal;
 		}
 
+		// Junta datas de evento ("dd/mm/yyyy" ou "dd/mm/yyyy, dd/mm/yyyy" - evento de vários dias)
+		// num texto só pro certificado (máscara ¨data): sem repetição, em ordem cronológica,
+		// "a, b e c". Espelha utils/certificadoSeminario.js#juntaDatas (servidor).
+		function juntaDatas(datas) {
+			var lista = [].concat(datas || []).join(', ').split(',')
+				.map(function(s) { return s.trim(); }).filter(function(s) { return s !== ''; });
+			var unicas = lista.filter(function(s, i) { return lista.indexOf(s) === i; });
+			var chave = function(s) { return s.split('/').reverse().join(''); };
+			unicas.sort(function(a, b) { return chave(a) < chave(b) ? -1 : chave(a) > chave(b) ? 1 : 0; });
+			if (unicas.length <= 1) return unicas.join('');
+			return unicas.slice(0, -1).join(', ') + ' e ' + unicas[unicas.length - 1];
+		}
+
 		// Filtra as entradas tipo:'Seminário' de um array de eventos de Participante e devolve o
 		// texto pro verso do certificado (multi-linha) + carga horária total. Substitui a lógica
 		// antes triplicada em homeCtrl.js#buscarCPF e certificadosCtrl.js#consultarCertificado -
@@ -30,15 +43,16 @@
 		// palestras do Seminário, dado que a página pública não tem.
 		function agregarEventos(eventosParticipante) {
 			var doTipo = (eventosParticipante || []).filter(function(e) { return e.tipo === 'Seminário'; });
-			var cargaHoraria = '0:00', textoVerso = '', titulos = [];
+			var cargaHoraria = '0:00', textoVerso = '', titulos = [], datas = [];
 			doTipo.forEach(function(e) {
+				datas.push(e.data || '');
 				textoVerso += e.titulo + ': ' + e.cargaHoraria + ' hora (s).\n';
 				titulos.push(e.titulo);
 				cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
 			});
-			return { textoVerso: textoVerso, cargaHoraria: cargaHoraria, titulos: titulos };
+			return { textoVerso: textoVerso, cargaHoraria: cargaHoraria, titulos: titulos, data: juntaDatas(datas) };
 		}
 
-		return { agregarEventos: agregarEventos, somaHora: somaHora };
+		return { agregarEventos: agregarEventos, somaHora: somaHora, juntaDatas: juntaDatas };
 	});
 })();

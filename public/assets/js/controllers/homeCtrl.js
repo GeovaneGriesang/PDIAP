@@ -160,7 +160,8 @@
 						let ch1 = '0:00';
 						let evts3 = '';
 						let ch3 = '0:00';
-						let datas3 = '';
+						let datas1 = [];
+						let datas3 = [];
 						angular.forEach(data[i].eventos, function (value, key){
 							if (value.tipo === "Oficina") {
 								if (evts1 === '') {
@@ -168,19 +169,14 @@
 								} else {
 									evts1 = evts1+', '+value.titulo;
 								}
+								datas1.push(value.data || '');
 								ch1 = somaHora(value.cargaHoraria,ch1);
 							} else if (value.tipo === "Palestra") {
-								// datas3 acompanha evts3 posição a posição (mesmo separador ", "),
-								// pra manter as duas listas alinhadas mesmo quando algum vínculo
-								// antigo de participante-evento não tem data salva (value.data
-								// undefined vira string vazia naquela posição, não pula a posição).
-								if (evts3 === '') {
-									evts3 = value.titulo;
-									datas3 = value.data || '';
-								} else {
-									evts3 = evts3+', '+value.titulo;
-									datas3 = datas3+', '+(value.data || '');
-								}
+								// Datas juntas sem repetição e em ordem (juntaDatas) - evento de vários
+								// dias traz "dd/mm/yyyy, dd/mm/yyyy" em value.data; vínculo antigo sem
+								// data salva não entra.
+								evts3 = evts3 === '' ? value.titulo : evts3+', '+value.titulo;
+								datas3.push(value.data || '');
 								ch3 = somaHora(value.cargaHoraria,ch3);
 							}
 						});
@@ -190,6 +186,7 @@
 								nome: data[i].nome,
 								token: data[i].tokenOficinas,
 								eventos: evts1,
+								data: certificadoSeminarioService.juntaDatas(datas1),
 								cargaHoraria: ch1,
 								ano: data[i].ano
 							};
@@ -202,6 +199,7 @@
 								token: data[i].tokenSaberes,
 								cargaHoraria: agregadoSeminario.cargaHoraria,
 								eventos: agregadoSeminario.textoVerso,
+								data: agregadoSeminario.data,
 								percentual: data[i].percentualSeminario,
 								ano: data[i].ano
 							};
@@ -213,7 +211,7 @@
 								token: data[i].tokenPalestra,
 								eventos: evts3,
 								titulo: evts3,
-								data: datas3,
+								data: certificadoSeminarioService.juntaDatas(datas3),
 								tipo: "Palestra",
 								cargaHoraria: ch3,
 								ano: data[i].ano

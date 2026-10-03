@@ -339,7 +339,7 @@ router.post('/emitirCertificado', (req, res) => {
         	  responsavel: usr[i].responsavel[0].nome,
         	  tipo: usr[i].tipo,
         	  titulo: usr[i].titulo,
-        	  data: usr[i].data,
+        	  data: certificadoSeminario.juntaDatas(usr[i].data),
         	  cargaHoraria: usr[i].cargaHoraria,
         	  token: usr[i].responsavel[0].certificados[0]._id,
         	  tokentipo: usr[i].responsavel[0].certificados[0].tipo,

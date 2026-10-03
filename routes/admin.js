@@ -206,6 +206,16 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
     evt.responsavel = responsaveisNovos;
 
     let doc = await evt.save();
+
+    // O participante guarda uma CÓPIA da data no vínculo (ver models/participante-schema.js) -
+    // sem isso, mudar os dias do evento aqui deixaria o certificado de quem já estava vinculado
+    // (máscara ¨data) com as datas antigas. Só alcança vínculos com eventoId gravado.
+    await participanteSchema.updateMany(
+      { 'eventos.eventoId': evt._id },
+      { $set: { 'eventos.$[e].data': evt.data } },
+      { arrayFilters: [{ 'e.eventoId': evt._id }] }
+    );
+
     res.status(200).json(doc);
   } catch (error){
     console.error('Erro ao atualizar evento', error);

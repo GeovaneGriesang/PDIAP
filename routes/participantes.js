@@ -197,26 +197,28 @@ router.get('/dashboard/meus-certificados', ensureParticipante, async (req, res) 
 
     if (temOficina) {
       let titulos = '';
+      let datas = [];
       let cargaHoraria = '0:00';
       eventos.forEach((e) => {
         if (e.tipo !== 'Oficina') return;
         titulos = titulos === '' ? e.titulo : titulos + ', ' + e.titulo;
+        datas.push(e.data || '');
         cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
       });
-      resposta.oficina = { nome: participante.nome, token: participante.tokenOficinas, eventos: titulos, cargaHoraria: cargaHoraria, ano: ano };
+      resposta.oficina = { nome: participante.nome, token: participante.tokenOficinas, eventos: titulos, data: certificadoSeminario.juntaDatas(datas), cargaHoraria: cargaHoraria, ano: ano };
     }
 
     if (temPalestra) {
       let titulos = '';
-      let datas = '';
+      let datas = [];
       let cargaHoraria = '0:00';
       eventos.forEach((e) => {
         if (e.tipo !== 'Palestra') return;
         titulos = titulos === '' ? e.titulo : titulos + ', ' + e.titulo;
-        datas = datas === '' ? (e.data || '') : datas + ', ' + (e.data || '');
+        datas.push(e.data || '');
         cargaHoraria = somaHora(e.cargaHoraria, cargaHoraria);
       });
-      resposta.palestra = { nome: participante.nome, token: participante.tokenPalestra, eventos: titulos, titulo: titulos, data: datas, tipo: 'Palestra', cargaHoraria: cargaHoraria, ano: ano };
+      resposta.palestra = { nome: participante.nome, token: participante.tokenPalestra, eventos: titulos, titulo: titulos, data: certificadoSeminario.juntaDatas(datas), tipo: 'Palestra', cargaHoraria: cargaHoraria, ano: ano };
     }
 
     if (temSaberes) {

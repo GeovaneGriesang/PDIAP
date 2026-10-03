@@ -20,6 +20,20 @@ function somaHora(horaInicio, horaSomada) {
 	return horasTotal + ':' + minutosTotal;
 }
 
+// Junta datas de evento ("dd/mm/yyyy" ou "dd/mm/yyyy, dd/mm/yyyy" - evento de vários dias, ver
+// public/admin/assets/js/controllers/eventosCtrl.js) num texto só pro certificado (máscara
+// ¨data): sem repetição, em ordem cronológica, "a, b e c". Aceita string ou array de strings.
+// Espelhada em public/assets/js/services/certificadoSeminarioService.js (navegador).
+function juntaDatas(datas) {
+	let lista = [].concat(datas || []).join(', ').split(',')
+		.map((s) => s.trim()).filter((s) => s !== '');
+	let unicas = lista.filter((s, i) => lista.indexOf(s) === i);
+	let chave = (s) => s.split('/').reverse().join('');
+	unicas.sort((a, b) => (chave(a) < chave(b) ? -1 : chave(a) > chave(b) ? 1 : 0));
+	if (unicas.length <= 1) return unicas.join('');
+	return unicas.slice(0, -1).join(', ') + ' e ' + unicas[unicas.length - 1];
+}
+
 // Agrega os eventos tipo:'Seminário' de UM participante: soma de carga horária, texto pro verso
 // do certificado e percentual de frequência (frequentadas / total cadastrado pro MESMO
 // Seminario). Participante/evento sem seminarioId gravado (dado anterior à migração e não
@@ -44,7 +58,7 @@ async function agregarSeminario(eventosParticipante) {
 		if (total > 0) percentual = Math.min(100, Math.round((doTipo.length / total) * 100));
 	}
 
-	return { cargaHoraria, eventos: eventosTexto, percentual };
+	return { cargaHoraria, eventos: eventosTexto, percentual, data: juntaDatas(doTipo.map((e) => e.data)) };
 }
 
-module.exports = { somaHora, agregarSeminario };
+module.exports = { somaHora, juntaDatas, agregarSeminario };
