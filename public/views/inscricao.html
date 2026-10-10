@@ -268,7 +268,7 @@
 							<div flex="5" hide-xs hide-sm></div>
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>E-mail</label>
-								<input type="email" name="{{item1.email}}" data-ng-model="projeto[item1.email]" required
+								<input type="email" name="{{item1.email}}" data-ng-model="projeto[item1.email]" required data-ng-blur="verificarIntegrante(projeto, item1)"
 									data-ng-pattern="/^.+@.+\..+$/" />
 								<div class="md-errors-spacer">
 									<div data-ng-show="projetoForm.{{item1.email}}.$dirty">
@@ -291,15 +291,16 @@
 									<md-option value="paraguaio">Paraguaio(a)</md-option>
 									<md-option value="uruguaio">Uruguaio(a)</md-option>
 									<md-option value="venezuelano">Venezuelano(a)</md-option>
+									<md-option value="outro">Outra nacionalidade</md-option>
 								</md-select>
 							</md-input-container>
 
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
-								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]"
+								<input type="text" name="{{item1.cpf}}" data-ng-model="projeto[item1.cpf]" data-ng-blur="verificarIntegrante(projeto, item1)"
 									cpf-mask="projeto[item1.nacionalidade] === 'brasileiro'"
 									data-ng-change="validarDocumento(projeto[item1.cpf], $index, 'orientador')"
-									placeholder="Digite apenas números">
+									placeholder="CPF, cédula ou passaporte">
 						</md-input-container>
 						<div flex="5" hide-xs hide-sm></div>
 						<md-input-container class="md-block" flex-gt-sm>
@@ -378,7 +379,7 @@
 							<div flex="5" hide-xs hide-sm></div>
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>E-mail</label>
-								<input type="email" name="{{item2.email}}" data-ng-model="projeto[item2.email]" required
+								<input type="email" name="{{item2.email}}" data-ng-model="projeto[item2.email]" required data-ng-blur="verificarIntegrante(projeto, item2)"
 									data-ng-pattern="/^.+@.+\..+$/" />
 								<div class="md-errors-spacer">
 									<div data-ng-show="projetoForm.{{item2.email}}.$dirty">
@@ -401,15 +402,16 @@
 									<md-option value="paraguaio">Paraguaio(a)</md-option>
 									<md-option value="uruguaio">Uruguaio(a)</md-option>
 									<md-option value="venezuelano">Venezuelano(a)</md-option>
+									<md-option value="outro">Outra nacionalidade</md-option>
 								</md-select>
 							</md-input-container>
 
 							<md-input-container class="md-block" flex-gt-sm>
 								<label>Documento de identificação</label>
-								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]"
+								<input type="text" name="{{item2.cpf}}" data-ng-model="projeto[item2.cpf]" data-ng-blur="verificarIntegrante(projeto, item2)"
 									cpf-mask="projeto[item2.nacionalidade] === 'brasileiro'"
 									data-ng-change="validarDocumento(projeto[item2.cpf], $index, 'aluno')"
-									placeholder="Digite apenas números">
+									placeholder="CPF, cédula ou passaporte">
 							</md-input-container>
 						<div layout-gt-sm="row">
 							<div flex="5" hide-xs hide-sm></div>

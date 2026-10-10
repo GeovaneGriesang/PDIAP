@@ -29,6 +29,10 @@ const IntegranteSchema = new Schema({
 	cpf: {type: String},
 	telefone: {type: String},
 	tamCamiseta: {type: String},
+	// Pessoa do cadastro único (models/pessoa-schema.js) - nome/cpf/email acima continuam
+	// sendo gravados (certificados e relatórios leem direto deles). Vazio quando o documento
+	// já pertence a uma Pessoa com outro e-mail (ver pessoaController.vincularPessoa).
+	pessoa: {type: Schema.Types.ObjectId, ref: 'Pessoa'},
 	presenca: {type: Boolean},
 	certificados: certificadoSchema
 });

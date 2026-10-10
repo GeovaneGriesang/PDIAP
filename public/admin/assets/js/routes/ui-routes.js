@@ -165,6 +165,11 @@
 			templateUrl: 'admin/views/historico-emails.html',
 			controller: 'historicoEmailsCtrl'
 		})
+		.state('master.pessoas', {
+			url: "/pessoas",
+			templateUrl: 'admin/views/pessoas.html',
+			controller: 'pessoasCtrl'
+		})
 		.state('master.inconsistencias', {
 			url: "/inconsistencias",
 			templateUrl: 'admin/views/inconsistencias.html',

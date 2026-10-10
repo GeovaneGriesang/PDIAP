@@ -73,6 +73,28 @@
 			$scope.dynamicFields.push({nome:'nome'+$scope.count, cpf:'cpf'+$scope.count});
 		};
 
+		// Responsável é uma Pessoa do cadastro único: ao sair do campo de documento, procura no
+		// cadastro e, se achar, preenche nome/e-mail (bloqueados - edição de pessoa não é aqui).
+		// Se não achar, nome e e-mail são digitados e a Pessoa é criada ao salvar.
+		$scope.buscarResponsavel = function(index) {
+			var r = $scope.evento.responsavel && $scope.evento.responsavel[index];
+			if (!r || !r.cpf) return;
+			var doc = r.cpf;
+			adminAPI.buscarPessoa(doc)
+			.then(function(response) {
+				if (r.cpf !== doc) return;
+				if (response.data.encontrado) {
+					r.nome = response.data.nome;
+					r.email = response.data.email;
+					r.cadastrada = true;
+				} else {
+					r.cadastrada = false;
+				}
+			}, function(response) {
+				console.log("Error: "+response.data);
+			});
+		};
+
 		$scope.removeResponsavel = function(index) {
 			$scope.dynamicFields.splice(index, 1);
 			$scope.count--;
@@ -199,6 +221,14 @@
 
 		$scope.cadastrarEvento = function(evento) {
 
+			// "+ Criar novo Seminário" ainda selecionado = o Seminário nunca chegou a ser criado
+			// (diálogo cancelado/fechado); o servidor recusaria com "Seminário inválido".
+			if (evento.tipo === 'Seminário' && (!evento.seminarioId || evento.seminarioId === '__novo__')) {
+				evento.seminarioId = undefined;
+				$scope.toast('Selecione um Seminário existente ou crie um novo antes de salvar.','failed-toast');
+				return;
+			}
+
 			let hh = evento.cargaHoraria.getHours();
 			let mm = evento.cargaHoraria.getMinutes();
 			if (mm.toString().length == 1)
@@ -208,7 +238,8 @@
 
 			var responsavel = [];
 			for (var i in evento.responsavel) {
-				responsavel.push(evento.responsavel[i]);
+				var r = evento.responsavel[i];
+				responsavel.push({ nome: r.nome, cpf: r.cpf, email: r.email });
 			}
 
 			if ($scope.editando) {
@@ -229,7 +260,7 @@
 					mostraEventos();
 					resetForm();
 				}, function(response) {
-					$scope.toast('Falha.','failed-toast');
+					$scope.toast(response.data || 'Falha.','failed-toast');
 					console.log("Error: "+response.data);
 				});
 				return;
@@ -257,7 +288,7 @@
 				mostraEventos();
 				resetForm();
 			}, function(response) {
-				$scope.toast('Falha.','failed-toast');
+				$scope.toast(response.data || 'Falha.','failed-toast');
 				console.log("Error: "+response.data);
 			});
 		};
@@ -282,12 +313,14 @@
 				tipo: raw.tipo,
 				datas: datasObj,
 				cargaHoraria: horaObj,
-				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf }; }),
+				responsavel: raw.responsavel.map(function(r) { return { nome: r.nome, cpf: r.cpf, cadastrada: !!r.pessoa }; }),
 				seminarioId: raw.seminarioId
 			};
 			$scope.dynamicFields = raw.responsavel.map(function(r, i) { return { nome: 'nome'+(i+1), cpf: 'cpf'+(i+1) }; });
 			$scope.count = raw.responsavel.length;
 			$scope.editando = evento._id;
+				// Preenche e-mail (e marca "cadastrada") consultando o cadastro único.
+				raw.responsavel.forEach(function(r, i) { $scope.buscarResponsavel(i); });
 
 			// A janela pode estar rolada até a lista, lá embaixo - volta pro topo, onde
 			// está o formulário que acabou de ser preenchido pra edição.

@@ -12,9 +12,10 @@ module.exports.createAvaliador = async (newAvaliador) => {
 	}
 };
 
-// Valida o documento de um avaliador contra QUALQUER nacionalidade suportada (não
-// só a selecionada no form - ver utils/documentoValidator.js).
-module.exports.validarDocumento = documentoValidator.validarDocumento;
+// Valida o documento de um avaliador de QUALQUER país (pode ter letras, ex: passaporte;
+// só CPF tem dígito verificador conferido) - devolve também o documento normalizado
+// (ver utils/documentoValidator.js#validarDocumentoQualquerPais).
+module.exports.validarDocumento = documentoValidator.validarDocumentoQualquerPais;
 module.exports.validarTelefone = documentoValidator.validarTelefone;
 
 // LOGIN DO AVALIADOR (dashboard próprio)

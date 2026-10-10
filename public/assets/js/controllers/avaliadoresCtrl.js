@@ -30,7 +30,7 @@
 		// Valida o documento contra QUALQUER nacionalidade suportada, não só a
 		// selecionada no form (ver documentoValidatorService).
 		$scope.validarDocumento = function(valor) {
-			var checagem = documentoValidatorService.validarDocumento(valor);
+			var checagem = documentoValidatorService.validarDocumentoQualquerPais(valor);
 			if ($scope.avaliadoresForm && $scope.avaliadoresForm.cpf) {
 				$scope.avaliadoresForm.cpf.$setValidity('documento', checagem.valido);
 			}
@@ -43,7 +43,7 @@
 		// se o cadastro novo reaproveita a Pessoa (CPF sozinho não é suficiente, tem que
 		// bater o e-mail também).
 		$scope.verificarPessoaExistente = function() {
-			var checagem = documentoValidatorService.validarDocumento($scope.avaliadores.cpf);
+			var checagem = documentoValidatorService.validarDocumentoQualquerPais($scope.avaliadores.cpf);
 			if (!checagem.valido || !$scope.avaliadores.email) return;
 			projetosAPI.verificarPessoa($scope.avaliadores.cpf, $scope.avaliadores.email)
 			.then(function(response) {

@@ -15,7 +15,8 @@ const express = require('express')
 , formidable = require('formidable')
 , fs = require('fs')
 , async = require('async')
-, documentoValidator = require('../utils/documentoValidator');
+, documentoValidator = require('../utils/documentoValidator')
+, pessoaController = require('../controllers/pessoa-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated())
@@ -262,8 +263,11 @@ router.put('/upgreice', async (req, res) => {
   for (let j = 0; j < myArray.length; j++) {
     let v = myArray[j];
     if (v.cpf !== undefined) {
-      let checagemDoc = documentoValidator.validarDocumento(v.cpf);
+      let checagemDoc = documentoValidator.validarDocumentoQualquerPais(v.cpf);
       if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+      v.cpf = checagemDoc.normalizado;
+      // Liga o integrante à Pessoa do cadastro único (ver pessoaController.vincularPessoa).
+      v.pessoa = await pessoaController.vincularPessoa({ cpf: v.cpf, nome: v.nome, email: v.email, telefone: v.telefone, nacionalidade: v.nacionalidade });
     }
     if (v.telefone !== undefined) {
       let checagemTelefone = documentoValidator.validarTelefone(v.telefone);
@@ -285,7 +289,8 @@ router.put('/upgreice', async (req, res) => {
         nacionalidade: value.nacionalidade,
         cpf: splita(value.cpf),
         telefone: splita(value.telefone),
-        tamCamiseta: value.tamCamiseta
+        tamCamiseta: value.tamCamiseta,
+        pessoa: value.pessoa
       });
       ProjetoSchema.findOneAndUpdate({"_id": id,"integrantes._id": id_subdoc},
         {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {returnDocument: 'after'})
@@ -298,7 +303,8 @@ router.put('/upgreice', async (req, res) => {
         nacionalidade: value.nacionalidade,
         cpf: splita(value.cpf),
         telefone: splita(value.telefone),
-        tamCamiseta: value.tamCamiseta
+        tamCamiseta: value.tamCamiseta,
+        pessoa: value.pessoa
       });
 
       // Bug real encontrado e corrigido ao testar esta migração (impacto grave: era

@@ -11,6 +11,9 @@ const certificadoSchema = new Schema({
 const responsavelSchema = new Schema({
 	 nome: {type: String}
 	,cpf: {type: String}
+	// Pessoa do cadastro único (models/pessoa-schema.js). nome/cpf acima são cópia - os
+	// certificados já emitidos e a busca por responsavel.cpf continuam funcionando sem mudança.
+	,pessoa: {type: Schema.Types.ObjectId, ref: 'Pessoa'}
 	, certificados: [certificadoSchema]
 });
 

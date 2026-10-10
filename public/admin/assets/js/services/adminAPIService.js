@@ -313,6 +313,23 @@
 			return $http(request);
 		};
 
+		let _buscarPessoa = function(documento) {
+			const request = {
+				url: '/admin/pessoas/buscar',
+				method: 'GET',
+				params: { documento: documento }
+			}
+			return $http(request);
+		};
+
+		let _pesquisarPessoas = function(q) {
+			return $http({ url: '/admin/pessoas/pesquisar', method: 'GET', params: { q: q } });
+		};
+
+		let _getPerfisPessoa = function(documento) {
+			return $http({ url: '/admin/pessoas/perfis', method: 'GET', params: { documento: documento } });
+		};
+
 		let _getSeminarios = function() {
 			const request = {
 				url: '/admin/mostraSeminarios',
@@ -728,6 +745,9 @@
 			editarFeira: _putEditarFeira,
 			postSeminario: _postSeminario,
 			getSeminarios: _getSeminarios,
+			buscarPessoa: _buscarPessoa,
+			pesquisarPessoas: _pesquisarPessoas,
+			getPerfisPessoa: _getPerfisPessoa,
 			postEscola: _postEscola,
 			getEscolas: _getEscolas,
 			solicitarEscola: _solicitarEscola,

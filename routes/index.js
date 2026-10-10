@@ -29,6 +29,7 @@ const express = require('express')
 , rateLimit = require('express-rate-limit')
 , { body, validationResult } = require('express-validator')
 , documentoValidator = require('../utils/documentoValidator')
+, pessoaController = require('../controllers/pessoa-controller')
 , certificadoSeminario = require('../utils/certificadoSeminario');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
@@ -115,7 +116,14 @@ router.get('/getOpcoes', (req, res) => {
 
 
 router.post('/emitirCertificado', (req, res) => {
-  let cpf = splita(req.body.cpf)
+  // Documento com letras (estrangeiro, ex: passaporte) é gravado normalizado em maiúsculo nos
+  // cadastros novos, mas registros antigos podem ter outra caixa: casa sem diferenciar
+  // maiúscula/minúscula (todas as consultas abaixo aceitam RegExp no lugar da string).
+  // Só letras/números entram no padrão, então não há o que escapar. Documento só com
+  // números continua sendo comparado como string, igual a antes.
+  let cpfDigitado = splita(req.body.cpf) || ''
+  let cpfNormalizado = documentoValidator.normalizarDocumento(cpfDigitado)
+  let cpf = /[A-Za-z]/.test(cpfNormalizado) ? new RegExp('^' + cpfNormalizado + '$', 'i') : cpfDigitado
   let array = []
 
   async function pesquisaProjetoAluno(cpf) {
@@ -771,7 +779,7 @@ router.post('/registro', testaUsername2,
       integrantesParaValidar.push({ cpf: req.body.cpfAluno3, telefone: req.body.telefoneAluno3 });
     }
     for (let j = 0; j < integrantesParaValidar.length; j++) {
-      let checagemDoc = documentoValidator.validarDocumento(integrantesParaValidar[j].cpf);
+      let checagemDoc = documentoValidator.validarDocumentoQualquerPais(integrantesParaValidar[j].cpf);
       if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
       let checagemTelefone = documentoValidator.validarTelefone(integrantesParaValidar[j].telefone);
       if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
@@ -782,7 +790,7 @@ router.post('/registro', testaUsername2,
       nome: req.body.nomeOrientador1,
       email: req.body.emailOrientador1,
       nacionalidade: req.body.nacionalidadeOrientador1,
-      cpf: splita(req.body.cpfOrientador1),
+      cpf: documentoValidator.normalizarDocumento(req.body.cpfOrientador1),
       telefone: documentoValidator.normalizarTelefone(req.body.telefoneOrientador1),
       tamCamiseta: req.body.tamCamisetaOrientador1
     });
@@ -792,7 +800,7 @@ router.post('/registro', testaUsername2,
       nome: req.body.nomeOrientador2,
       email: req.body.emailOrientador2,
       nacionalidade: req.body.nacionalidadeOrientador2,
-      cpf: splita(req.body.cpfOrientador2),
+      cpf: documentoValidator.normalizarDocumento(req.body.cpfOrientador2),
       telefone: documentoValidator.normalizarTelefone(req.body.telefoneOrientador2),
       tamCamiseta: req.body.tamCamisetaOrientador2
     });
@@ -802,7 +810,7 @@ router.post('/registro', testaUsername2,
       nome: req.body.nomeAluno1,
       email: req.body.emailAluno1,
       nacionalidade: req.body.nacionalidadeAluno1,
-      cpf: splita(req.body.cpfAluno1),
+      cpf: documentoValidator.normalizarDocumento(req.body.cpfAluno1),
       telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno1),
       tamCamiseta: req.body.tamCamisetaAluno1
     });
@@ -812,7 +820,7 @@ router.post('/registro', testaUsername2,
       nome: req.body.nomeAluno2,
       email: req.body.emailAluno2,
       nacionalidade: req.body.nacionalidadeAluno2,
-      cpf: splita(req.body.cpfAluno2),
+      cpf: documentoValidator.normalizarDocumento(req.body.cpfAluno2),
       telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno2),
       tamCamiseta: req.body.tamCamisetaAluno2
     });
@@ -822,7 +830,7 @@ router.post('/registro', testaUsername2,
       nome: req.body.nomeAluno3,
       email: req.body.emailAluno3,
       nacionalidade: req.body.nacionalidadeAluno3,
-      cpf: splita(req.body.cpfAluno3),
+      cpf: documentoValidator.normalizarDocumento(req.body.cpfAluno3),
       telefone: documentoValidator.normalizarTelefone(req.body.telefoneAluno3),
       tamCamiseta: req.body.tamCamisetaAluno3
     });
@@ -876,6 +884,16 @@ router.post('/registro', testaUsername2,
 
     if(req.body.nomeAluno3 && req.body.emailAluno3 && req.body.cpfAluno3 && req.body.telefoneAluno3 && req.body.tamCamisetaAluno3){
       newProject.integrantes.push(newIntegrante5);
+    }
+
+    // Cada integrante (orientador/estudante) é ligado à Pessoa do cadastro único pelo
+    // documento - mesma regra de segurança da inscrição de avaliador (inscrição é pública:
+    // Pessoa existente só é reaproveitada se o e-mail bater, ver vincularPessoa).
+    for (let integrante of newProject.integrantes) {
+      integrante.pessoa = await pessoaController.vincularPessoa({
+        cpf: integrante.cpf, nome: integrante.nome, email: integrante.email,
+        telefone: integrante.telefone, nacionalidade: integrante.nacionalidade
+      });
     }
 
     Projeto.createProject(newProject, (err, savedProject) => {

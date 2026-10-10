@@ -185,6 +185,27 @@
 				mostraParticipantes();
 				resetForm();
 			}, function(response) {
+				$scope.toast(response.data || 'Falha.','failed-toast');
+				console.log('Error: '+response.data);
+			});
+		};
+
+		// Participante é uma Pessoa do cadastro único (qualquer país): ao sair do campo de
+		// documento, procura no cadastro e, se achar, preenche nome/e-mail (bloqueados).
+		// Se não achar, nome e e-mail são digitados e a Pessoa é criada ao salvar.
+		$scope.buscarPessoa = function() {
+			var p = $scope.participante;
+			if (!p || !p.cpf) return;
+			var doc = p.cpf;
+			adminAPI.buscarPessoa(doc)
+			.then(function(response) {
+				if (p.cpf !== doc) return;
+				p.cadastrada = !!response.data.encontrado;
+				if (p.cadastrada) {
+					p.nome = response.data.nome;
+					p.email = response.data.email;
+				}
+			}, function(response) {
 				console.log('Error: '+response.data);
 			});
 		};

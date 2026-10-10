@@ -32,7 +32,7 @@
 
 		var CATEGORIAS = ['Fundamental I (1º ao 5º anos)', 'Fundamental II (6º ao 9º anos)', 'Ensino Médio, Técnico e Superior'];
 
-		var NACIONALIDADE_LABELS = { brasileiro: 'Brasil', paraguaio: 'Paraguai', uruguaio: 'Uruguai', venezuelano: 'Venezuela' };
+		var NACIONALIDADE_LABELS = { brasileiro: 'Brasil', paraguaio: 'Paraguai', uruguaio: 'Uruguai', venezuelano: 'Venezuela', outro: 'Outro país' };
 
 		// Frases oficiais da lista de trabalhos aprovados (ver models/projeto-schema.js,
 		// campo tipoAprovacao).

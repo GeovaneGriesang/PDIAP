@@ -1,0 +1,84 @@
+<span layout="column" layout-align="center center" class="loader" us-spinner>
+  <div layout="row" layout-sm="column" layout-align="space-around">
+    <md-progress-circular md-mode="indeterminate" md-diameter="40"></md-progress-circular>
+  </div>
+</span>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Pessoas</h4>
+      </div>
+    </md-toolbar>
+    <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+      <div class="md-toolbar-tools">
+        <span flex></span>
+        <div class="search-field" flex-gt-sm="50" flex="90">
+          <input placeholder="Buscar por nome, e-mail ou documento (mín. 3 caracteres)" style="width:100%!important;"
+                 data-ng-model="busca.q" data-ng-model-options="{ debounce: 500 }" data-ng-change="pesquisar()"/>
+        </div>
+        <span flex></span>
+      </div>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:20px 30px;">
+
+      <!-- Lista de resultados -->
+      <div data-ng-if="!perfil">
+        <p data-ng-if="!buscou" style="color:#666;">
+          Digite parte do nome, do e-mail ou do documento. Cada pessoa tem um cadastro único; os perfis
+          (estudante, orientador(a), avaliador(a), participante, responsável...) são definidos pelo que ela
+          fez em cada Mostra e podem mudar de uma Mostra para outra.
+        </p>
+        <div data-ng-if="buscou && !resultados.length" style="color:#666;">
+          <p>Ninguém encontrado no cadastro único.</p>
+          <p data-ng-if="busca.q.length >= 5">
+            Pessoas antigas podem ainda não ter cadastro único, só registros em projetos/avaliação:
+            <md-button class="md-raised" data-ng-click="verPerfis(busca.q)">Ver registros do documento "{{busca.q}}"</md-button>
+          </p>
+        </div>
+        <md-list data-ng-if="resultados.length" class="md-dense" style="background:#fff;">
+          <md-list-item class="md-2-line" data-ng-repeat="p in resultados" data-ng-click="verPerfis(p.documento)">
+            <md-icon md-svg-src="account-card-details" style="color:#43a047;"></md-icon>
+            <div class="md-list-item-text">
+              <h3>{{p.nome || '(sem nome)'}}</h3>
+              <p>Doc. {{p.documento}} · {{p.email || 'sem e-mail'}} · {{nomeNacionalidade(p.nacionalidade)}}</p>
+            </div>
+          </md-list-item>
+        </md-list>
+        <p data-ng-if="resultados.length === 30" style="color:#666;font-size:13px;">Mostrando os 30 primeiros - refine a busca.</p>
+      </div>
+
+      <!-- Perfis da pessoa por Mostra -->
+      <div data-ng-if="perfil">
+        <md-button class="md-raised" data-ng-click="voltar()" aria-label="Voltar">Voltar à busca</md-button>
+        <div style="background:#fff;padding:20px;margin:15px 0;">
+          <h3 style="margin:0 0 8px 0;">{{perfil.pessoa.nome || '(sem nome)'}}</h3>
+          <div>Doc. identificação: <strong>{{perfil.documento}}</strong></div>
+          <div data-ng-if="perfil.cadastrada">
+            E-mail: {{perfil.pessoa.email || '-'}} · Telefone: {{perfil.pessoa.telefone || '-'}} · Nacionalidade: {{nomeNacionalidade(perfil.pessoa.nacionalidade)}}
+          </div>
+          <div data-ng-if="!perfil.cadastrada" class="message-error" style="margin-top:6px;">
+            Ainda sem cadastro único - os registros abaixo foram achados pelo documento.
+          </div>
+        </div>
+
+        <p data-ng-if="!perfil.mostras.length" style="color:#666;">Nenhum registro encontrado para este documento.</p>
+
+        <div data-ng-repeat="m in perfil.mostras" style="background:#fff;padding:15px 20px;margin-bottom:12px;">
+          <h4 style="margin:0 0 10px 0;color:#225024;">{{m.mostra}}</h4>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr data-ng-repeat="p in m.papeis" style="border-top:1px solid #eee;">
+              <td style="padding:6px 10px 6px 0;width:35%;vertical-align:top;"><strong>{{p.papel}}</strong></td>
+              <td style="padding:6px 0;vertical-align:top;">{{p.detalhe}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+    </md-content>
+  </section>
+</div>

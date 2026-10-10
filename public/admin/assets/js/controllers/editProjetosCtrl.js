@@ -713,7 +713,7 @@
 		// direto no DOM pelo name (mesma técnica usada em registroCtrl.js/inscricao.html)
 		// porque os campos ficam dentro de ng-form aninhado num ng-repeat.
 		$scope.validarDocumento = function(valor, fieldName) {
-			var checagem = documentoValidatorService.validarDocumento(valor);
+			var checagem = documentoValidatorService.validarDocumentoQualquerPais(valor);
 			try {
 				var els = document.getElementsByName(fieldName);
 				if (els && els.length > 0) {
@@ -724,6 +724,40 @@
 				}
 			} catch (e) {}
 			return checagem.valido;
+		};
+
+		// Integrante é uma Pessoa do cadastro único: ao sair do campo de documento, procura no
+		// cadastro. Campos vazios são preenchidos direto; se nome/e-mail já digitados forem
+		// diferentes do cadastro, pergunta antes de trocar (pode ser correção intencional).
+		// `modelo` é projeto3/projeto4 e `campos` o item do ng-repeat com os nomes das chaves.
+		$scope.preencherDoCadastro = function(modelo, campos) {
+			var doc = modelo && modelo[campos.cpf];
+			if (!doc || !documentoValidatorService.validarDocumentoQualquerPais(doc).valido) return;
+			adminAPI.buscarPessoa(doc)
+			.then(function(response) {
+				var p = response.data;
+				if (!p.encontrado || modelo[campos.cpf] !== doc) return;
+				var aplicar = function(sobrescrever) {
+					[['nome', p.nome], ['email', p.email], ['telefone', p.telefone], ['nacionalidade', p.nacionalidade]].forEach(function(par) {
+						if (!par[1]) return;
+						if (sobrescrever || !modelo[campos[par[0]]]) modelo[campos[par[0]]] = par[1];
+					});
+				};
+				var diferente = function(chave, valor) {
+					var atual = (modelo[campos[chave]] || '').toString().trim().toLowerCase();
+					return atual && valor && atual !== valor.toString().trim().toLowerCase();
+				};
+				if (!diferente('nome', p.nome) && !diferente('email', p.email)) { aplicar(false); return; }
+				var confirm = $mdDialog.confirm()
+					.title('Pessoa já cadastrada')
+					.textContent('Este documento já está no cadastro como ' + p.nome + ' (' + p.email + '). Usar os dados do cadastro neste integrante?')
+					.theme('padrao')
+					.ok('Usar dados do cadastro')
+					.cancel('Manter o que digitei');
+				$mdDialog.show(confirm).then(function() { aplicar(true); }, function() { aplicar(false); });
+			}, function(response) {
+				console.log('Error: '+response.data);
+			});
 		};
 
 		$scope.removeOrientadorUpdate = function(index,idIntegrante) {

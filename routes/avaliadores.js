@@ -103,7 +103,7 @@ router.post('/registro', async (req, res) => {
 		nome: req.body.nome,
 		email: req.body.email,
 		nacionalidade: req.body.nacionalidade,
-		cpf: splita(req.body.cpf),
+		cpf: checagem.normalizado,
 		rg: splita(req.body.rg),
 		dtNascimento: req.body.dtNascimento,
 		nivelAcademico: req.body.nivelAcademico,

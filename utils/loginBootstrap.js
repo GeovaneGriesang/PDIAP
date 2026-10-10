@@ -38,8 +38,10 @@ module.exports.compareLoginOuBootstrap = (candidatePassword, credencial, callbac
 		});
 		return;
 	}
-	let documento = (credencial.documento || credencial.cpf || '').replace(/\D+/g, '');
-	let tentativa = (candidatePassword || '').replace(/\D+/g, '');
+	// Letras contam (documento de estrangeiro pode ser alfanumérico, ex: passaporte); só
+	// pontuação/espaço é ignorada, e maiúscula/minúscula tanto faz.
+	let documento = (credencial.documento || credencial.cpf || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+	let tentativa = (candidatePassword || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
 	callback(null, documento.length > 0 && documento === tentativa);
 };
 

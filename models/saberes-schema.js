@@ -28,6 +28,8 @@ const SaberesSchema = new Schema({
 	cargaHoraria: {
 		type: String
 	},
+	// Pessoa do cadastro único (models/pessoa-schema.js) - ver pessoaController.vincularPessoa.
+	pessoa: { type: Schema.Types.ObjectId, ref: 'Pessoa' },
 	createdAt: {
 		type: Date
 	}
