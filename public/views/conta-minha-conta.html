@@ -1,0 +1,67 @@
+<!-- Bloco compartilhado "Minha conta" (controller contaDadosCtrl) - incluído em
+     avaliador-dados.html e participante-dados.html via ng-include. -->
+<div data-ng-controller="contaDadosCtrl">
+  <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
+    <h3 style="margin-top:0;color:#225024;">Identificação</h3>
+    <div data-ng-if="!conta" style="color:rgba(0,0,0,0.6);">Carregando...</div>
+    <div data-ng-if="conta">
+      <md-input-container class="md-block">
+        <label>Nome completo</label>
+        <input type="text" data-ng-model="conta.nome" disabled/>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Documento de identificação</label>
+        <input type="text" data-ng-model="conta.documento" disabled/>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Nacionalidade</label>
+        <input type="text" value="{{nomeNacionalidade(conta.nacionalidade)}}" disabled/>
+      </md-input-container>
+      <p style="font-size:12px;color:rgba(0,0,0,0.5);margin:-10px 0 24px 0;">Nome e documento só podem ser alterados pela organização.</p>
+
+      <md-input-container class="md-block" style="margin-bottom:0;">
+        <label>E-mail (seu login)</label>
+        <input type="email" data-ng-model="conta.email" disabled/>
+      </md-input-container>
+      <p data-ng-if="conta.emailPendente" style="font-size:13px;color:#e65100;margin-top:0;">
+        Troca pendente para <strong>{{conta.emailPendente}}</strong>: clique no link que enviamos para esse endereço (vale 24 horas).
+      </p>
+      <md-button data-ng-if="!trocaEmail.aberta" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-click="abrirTrocaEmail()">Alterar e-mail</md-button>
+      <p data-ng-if="!trocaEmail.aberta && !conta.cadastroUnico" style="font-size:12px;color:rgba(0,0,0,0.5);">
+        Sua conta ainda não está no cadastro único: para trocar o e-mail, fale com a organização.
+      </p>
+
+      <form name="trocaEmailForm" novalidate data-ng-if="trocaEmail.aberta" style="border-top:1px solid #eee;padding-top:12px;margin-top:8px;">
+        <p style="font-size:13px;color:rgba(0,0,0,0.65);margin-top:0;">
+          O e-mail é o seu login. Vamos enviar um link de confirmação para o endereço novo; a troca só vale depois que você clicar nele.
+        </p>
+        <md-input-container class="md-block">
+          <label>Novo e-mail</label>
+          <input type="email" name="novoEmail" data-ng-model="trocaEmail.novoEmail" required data-ng-pattern="/^[^\s@]+@[^\s@]+\.[^\s@]+$/"/>
+          <div class="md-errors-spacer">
+            <div class="message-error" data-ng-show="trocaEmailForm.novoEmail.$touched && trocaEmailForm.novoEmail.$invalid">Informe um e-mail válido.</div>
+          </div>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <label>Senha atual</label>
+          <input type="password" name="senha" data-ng-model="trocaEmail.senha" required autocomplete="current-password"/>
+        </md-input-container>
+        <div layout="row" layout-align="end center">
+          <md-button style="text-transform:none;" data-ng-click="cancelarTrocaEmail()">Cancelar</md-button>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="trocaEmailForm.$invalid || trocaEmail.enviando" data-ng-click="pedirTrocaEmail()">Enviar link de confirmação</md-button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;" data-ng-if="conta">
+    <h3 style="margin-top:0;color:#225024;">Minhas participações no MOVACI</h3>
+    <p data-ng-if="!conta.mostras.length" style="color:rgba(0,0,0,0.6);">Nenhuma participação encontrada.</p>
+    <div data-ng-repeat="m in conta.mostras" style="margin-bottom:14px;">
+      <h4 style="margin:0 0 6px 0;color:#2e7d32;">{{m.mostra}}</h4>
+      <div data-ng-repeat="p in m.papeis" style="padding:4px 0;border-top:1px solid #f0f0f0;">
+        <strong>{{p.papel}}</strong><span data-ng-if="p.detalhe"> - {{p.detalhe}}</span>
+      </div>
+    </div>
+  </div>
+</div>

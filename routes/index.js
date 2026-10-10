@@ -30,6 +30,7 @@ const express = require('express')
 , { body, validationResult } = require('express-validator')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
+, perfisController = require('../controllers/perfis-controller')
 , certificadoSeminario = require('../utils/certificadoSeminario');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
@@ -1151,6 +1152,143 @@ router.post('/conta/nova-senha/:token', async (req, res) => {
   }
 });
 
+// --- Minha conta (Avaliador/Participante logado) -------------------------------------
+// Dados de identidade da Pessoa (cadastro único) + participações em cada Mostra, derivadas
+// dos vínculos (controllers/perfis-controller.js). Nome e documento só a organização altera;
+// o e-mail a própria pessoa troca, com confirmação (ver /conta/alterar-email abaixo).
+
+function ehPapelComLogin(req) {
+  let m = req.user && req.user.constructor && req.user.constructor.modelName;
+  return m === 'Avaliador' || m === 'Participante';
+}
+
+function enviarAvisoConta(para, assunto, locals) {
+  let template = new EmailTemplate(path.join(path.resolve(__dirname, '..', 'templates'), 'aviso-conta'));
+  const transport = nodemailer.createTransport({
+    host: 'smtp.gmail.com', port: 587,
+    auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
+  });
+  template.render(locals, function (err, results) {
+    if (err) { console.error(err); return; }
+    transport.sendMail({ from: 'MOVACI <va-movaci@ifsul.edu.br>', to: para, subject: assunto, html: results.html, text: results.text },
+      function (err) { if (err) console.error('Erro ao enviar aviso de conta', err); });
+  });
+}
+
+function regexEmailExato(email) {
+  return new RegExp('^' + email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+}
+
+// E-mail livre pra esta Pessoa: não pode ser login de outra Pessoa nem de um papel legado
+// (sem vínculo, ou vinculado a outra Pessoa) - o login tenta os dois.
+async function emailLivreParaPessoa(email, pessoaId) {
+  let re = regexEmailExato(email);
+  if (await pessoaSchema.findOne({ email: re, _id: { $ne: pessoaId } }, '_id')) return false;
+  let filtroPapel = { email: re, pessoa: { $ne: pessoaId } };
+  if (await avaliadorSchema.findOne(filtroPapel, '_id')) return false;
+  if (await participanteSchema.findOne(filtroPapel, '_id')) return false;
+  return true;
+}
+
+router.get('/conta/meus-dados', ensureAuthenticated, async (req, res) => {
+  if (!ehPapelComLogin(req)) return res.sendStatus(403);
+  try {
+    let pessoa = req.user.pessoa ? await pessoaSchema.findById(req.user.pessoa._id || req.user.pessoa).lean() : null;
+    let documento = pessoa ? pessoa.documento : documentoValidator.normalizarDocumento(req.user.cpf);
+    let perfis = documento ? await perfisController.perfis(documento) : null;
+    res.send({
+      nome: (pessoa && pessoa.nome) || req.user.nome,
+      email: (pessoa && pessoa.email) || req.user.email,
+      documento: documento,
+      telefone: (pessoa && pessoa.telefone) || req.user.telefone,
+      nacionalidade: (pessoa && pessoa.nacionalidade) || req.user.nacionalidade,
+      cadastroUnico: !!pessoa,
+      emailPendente: pessoa && pessoa.emailPendente && pessoa.emailPendenteExpira > Date.now() ? pessoa.emailPendente : undefined,
+      mostras: perfis ? perfis.mostras : []
+    });
+  } catch (err) {
+    console.error('Erro ao carregar meus dados', err);
+    res.status(500).send('Erro ao carregar seus dados.');
+  }
+});
+
+// Pede a troca do e-mail (= login). Exige a senha atual e só aplica depois que a pessoa
+// clicar no link enviado ao e-mail NOVO (prova que ela tem acesso a ele) - sem isso, um erro
+// de digitação deixaria a conta sem login nem recuperação de senha.
+router.post('/conta/alterar-email', authLimiter, ensureAuthenticated, async (req, res) => {
+  if (!ehPapelComLogin(req)) return res.sendStatus(403);
+  try {
+    let novoEmail = (req.body.novoEmail || '').toString().trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) return res.status(400).send('Informe um e-mail válido.');
+    if (!req.user.pessoa) return res.status(400).send('Sua conta ainda não está ligada ao cadastro único. Peça a troca de e-mail à organização.');
+
+    let pessoa = await pessoaSchema.findById(req.user.pessoa._id || req.user.pessoa);
+    if (!pessoa) return res.status(400).send('Cadastro não encontrado. Peça a troca de e-mail à organização.');
+    if ((pessoa.email || '').trim().toLowerCase() === novoEmail) return res.status(400).send('Este já é o seu e-mail atual.');
+
+    let senhaOk = await new Promise((resolve, reject) =>
+      loginBootstrap.compareLoginOuBootstrap(req.body.senha || '', pessoa, (err, ok) => err ? reject(err) : resolve(ok)));
+    if (!senhaOk) return res.status(400).send('Senha atual incorreta.');
+
+    if (!(await emailLivreParaPessoa(novoEmail, pessoa._id))) return res.status(400).send('Este e-mail já é usado por outra conta.');
+
+    let token = crypto.randomBytes(20).toString('hex');
+    pessoa.emailPendente = novoEmail;
+    pessoa.emailPendenteToken = token;
+    pessoa.emailPendenteExpira = Date.now() + 24 * 3600000;
+    await pessoa.save();
+
+    enviarAvisoConta(novoEmail, 'MOVACI - Confirme seu novo e-mail', {
+      titulo: 'Confirme seu novo e-mail', nome: pessoa.nome,
+      paragrafos: ['Recebemos um pedido para trocar o e-mail da sua conta no MOVACI para este endereço. Ele passa a ser o seu login depois que você confirmar.',
+        'O link vale por 24 horas. Se não foi você, ignore esta mensagem: nada será alterado.'],
+      url: 'https://movaci.com.br/conta/confirmar-email/' + token, rotuloBotao: 'Confirmar novo e-mail'
+    });
+    res.send({ emailPendente: novoEmail });
+  } catch (err) {
+    console.error('Erro ao pedir troca de e-mail', err);
+    res.status(500).send('Erro ao pedir a troca de e-mail.');
+  }
+});
+
+// Link do e-mail de confirmação (GET de propósito: é aberto direto do cliente de e-mail).
+// Aplica a troca na Pessoa e nos papéis vinculados a ela, e avisa o endereço antigo.
+router.get('/conta/confirmar-email/:token', async (req, res) => {
+  let pagina = (titulo, texto) => res.send('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MOVACI</title></head>' +
+    '<body style="font-family:Helvetica,Arial,sans-serif;background:#fafafa;margin:0;padding:40px 16px;"><div style="max-width:520px;margin:auto;background:#fff;padding:28px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.15);">' +
+    '<h2 style="color:#2e7d32;margin-top:0;">' + titulo + '</h2><p style="color:#444;line-height:1.5;">' + texto + '</p>' +
+    '<p><a href="/" style="color:#2e7d32;">Ir para o MOVACI</a></p></div></body></html>');
+  try {
+    let token = (req.params.token || '').toString();
+    let pessoa = /^[0-9a-f]{40}$/.test(token) ? await pessoaSchema.findOne({ emailPendenteToken: token }) : null;
+    if (!pessoa || !pessoa.emailPendente) return pagina('Link inválido', 'Este link de confirmação não é válido ou já foi usado.');
+    if (!(pessoa.emailPendenteExpira > Date.now())) return pagina('Link expirado', 'Este link expirou. Peça a troca de e-mail de novo em "Meus dados".');
+    let novoEmail = pessoa.emailPendente;
+    if (!(await emailLivreParaPessoa(novoEmail, pessoa._id))) return pagina('E-mail indisponível', 'Este e-mail passou a ser usado por outra conta. Peça a troca de novo com outro endereço.');
+
+    let emailAntigo = pessoa.email;
+    pessoa.email = novoEmail;
+    pessoa.emailPendente = undefined;
+    pessoa.emailPendenteToken = undefined;
+    pessoa.emailPendenteExpira = undefined;
+    await pessoa.save();
+    await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
+    await participanteSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
+
+    if (emailAntigo) {
+      enviarAvisoConta(emailAntigo, 'MOVACI - Seu e-mail de acesso foi alterado', {
+        titulo: 'E-mail de acesso alterado', nome: pessoa.nome,
+        paragrafos: ['O e-mail de acesso da sua conta no MOVACI foi trocado para ' + novoEmail + '.',
+          'Se não foi você, entre em contato com a organização imediatamente.']
+      });
+    }
+    pagina('E-mail confirmado', 'Pronto! A partir de agora, use ' + novoEmail.replace(/[<>&"]/g, '') + ' para entrar no MOVACI. Sua senha continua a mesma.');
+  } catch (err) {
+    console.error('Erro ao confirmar troca de e-mail', err);
+    res.status(500).send('Erro ao confirmar a troca de e-mail.');
+  }
+});
+
 router.post('/logout', (req, res) => {
   // Bug pré-existente encontrado ao testar a Etapa C2 (não é regressão daqui): desde a
   // atualização do passport (Nível 2), req.logout() exige um callback - chamado sem
@@ -1466,6 +1604,7 @@ router.get([
 router.get([
   '/participantes/dashboard',
   '/participantes/dashboard/trocar-senha',
+  '/participantes/dashboard/dados',
   '/participantes/dashboard/esqueci-senha',
   '/participantes/dashboard/nova-senha/:token'
 ], function(req, res, next) {

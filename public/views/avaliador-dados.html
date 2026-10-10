@@ -8,18 +8,13 @@
   </md-toolbar>
 
   <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:600px;width:100%;">
+      <div data-ng-include="'/views/conta-minha-conta.html'"></div>
+    </div>
     <div style="max-width:600px;width:100%;" class="md-whiteframe-2dp">
       <div style="background:#fff;border-radius:6px;padding:24px;">
+        <h3 style="margin-top:0;color:#225024;">Dados de avaliador(a)</h3>
         <form name="dadosForm" novalidate>
-          <md-input-container class="md-block">
-            <label>Nome</label>
-            <input type="text" data-ng-model="avaliador.nome" disabled/>
-          </md-input-container>
-          <md-input-container class="md-block">
-            <label>E-mail</label>
-            <input type="email" data-ng-model="avaliador.email" disabled/>
-          </md-input-container>
-          <p style="font-size:12px;color:rgba(0,0,0,0.5);margin-top:-10px;">Nome, e-mail e documento só podem ser alterados pela organização.</p>
 
           <md-input-container class="md-block">
             <label>Telefone</label>

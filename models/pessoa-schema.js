@@ -29,6 +29,12 @@ const PessoaSchema = new Schema({
 	resetPasswordToken: { type: String },
 	resetPasswordCreatedDate: { type: Date }, // guarda a expiração, não a criação
 
+	// Troca de e-mail pela própria pessoa (routes/index.js#/conta/alterar-email): o e-mail é o
+	// login, então só passa a valer depois de confirmado pelo link enviado ao endereço novo.
+	emailPendente: { type: String },
+	emailPendenteToken: { type: String },
+	emailPendenteExpira: { type: Date },
+
 	token: { type: String },
 	createdAt: { type: Date }
 }, { collection: 'pessoas' });

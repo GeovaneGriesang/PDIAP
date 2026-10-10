@@ -287,6 +287,15 @@
             loggedin: checkLoggedinParticipante,
           },
         })
+        // "Meus dados" do participante: só o bloco compartilhado de conta (identificação,
+        // troca de e-mail e participações por Mostra - ver contaDadosCtrl).
+        .state('participanteDados', {
+          url: '/participantes/dashboard/dados',
+          templateUrl: '/views/participante-dados.html',
+          resolve: {
+            loggedin: checkLoggedinParticipante,
+          },
+        })
         .state('participanteTrocarSenha', {
           url: '/participantes/dashboard/trocar-senha',
           templateUrl: '/views/participante-trocar-senha.html',
