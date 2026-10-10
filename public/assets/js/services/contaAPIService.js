@@ -19,7 +19,17 @@
 			return $http({ url: '/dashboard/trocar-papel', method: 'GET' });
 		};
 
+		let _getMeusDados = function(){
+			return $http({ url: '/conta/meus-dados', method: 'GET' });
+		};
+
+		let _alterarEmail = function(novoEmail, senha){
+			return $http({ url: '/conta/alterar-email', method: 'POST', data: { novoEmail: novoEmail, senha: senha } });
+		};
+
 		return {
+			getMeusDados: _getMeusDados,
+			alterarEmail: _alterarEmail,
 			redefinirSenha: _redefinirSenha,
 			novaSenhaComToken: _novaSenhaComToken,
 			trocarPapel: _trocarPapel
