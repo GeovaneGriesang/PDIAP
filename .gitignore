@@ -11,3 +11,4 @@
 log.txt
 *.swp
 npm-debug.log*
+/scripts/relatorio-vinculos-*.json
