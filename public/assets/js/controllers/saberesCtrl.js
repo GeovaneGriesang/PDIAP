@@ -93,10 +93,12 @@
 					showConfirmDialog();
 				}
 			}, function(response) {
+				// 400 traz o motivo (documento/telefone/e-mail inválido) - mostra em vez da mensagem genérica.
+				var motivo = (response.status === 400 && typeof response.data === 'string') ? response.data + ' ' : '';
 				let showConfirmDialog = function(ev) {
 					var confirm = $mdDialog.confirm()
 					.title('Ops...')
-					.textContent('A inscrição não foi realizada. Tente novamente ou então, entre em contato conosco.')
+					.textContent(motivo + 'A inscrição não foi realizada. Tente novamente ou então, entre em contato conosco.')
 					.ariaLabel('A inscrição não foi realizada.')
 					.targetEvent(ev)
 					.theme('error')

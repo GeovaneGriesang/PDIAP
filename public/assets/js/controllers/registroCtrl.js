@@ -614,6 +614,43 @@
 		};
       
 
+		// Cadastro único (ver controllers/pessoa-controller.js#vincularPessoa): ao sair do campo de
+		// documento ou de e-mail de um integrante, se os DOIS baterem com uma Pessoa já cadastrada,
+		// pergunta antes de preencher nome, telefone e nacionalidade - mesma regra e mesma rota
+		// (/pessoas/verificar, com limite de tentativas) da inscrição de avaliador: documento
+		// sozinho não basta, porque não é segredo. `modelo` é o objeto do form e `campos` o item
+		// do ng-repeat com os nomes das chaves (nome/email/cpf/telefone/nacionalidade).
+		var integrantesVerificados = {};
+		$scope.verificarIntegrante = function(modelo, campos) {
+			if (!modelo || !campos) return;
+			var doc = modelo[campos.cpf], email = modelo[campos.email];
+			if (!email || !documentoValidatorService.validarDocumentoQualquerPais(doc).valido) return;
+			var chave = documentoValidatorService.normalizarDocumento(doc) + '|' + email.trim().toLowerCase();
+			if (integrantesVerificados[campos.cpf] === chave) return;
+			integrantesVerificados[campos.cpf] = chave;
+			projetosAPI.verificarPessoa(doc, email)
+			.then(function(response) {
+				var data = response.data;
+				if (!data.encontrado) return;
+				// Só pergunta se o cadastro tiver algo diferente do que já está no form.
+				var muda = ['nome', 'telefone', 'nacionalidade'].some(function(k) {
+					return data[k] && String(data[k]).trim().toLowerCase() !== String(modelo[campos[k]] || '').trim().toLowerCase();
+				});
+				if (!muda) return;
+				var confirm = $mdDialog.confirm()
+					.title('Pessoa já cadastrada')
+					.textContent('Já existe um cadastro com este documento e e-mail. Preencher automaticamente com os dados salvos (nome, telefone e nacionalidade)?')
+					.ariaLabel('Preencher automaticamente com os dados salvos?')
+					.ok('Sim, preencher')
+					.cancel('Não, manter o que digitei');
+				$mdDialog.show(confirm).then(function() {
+					if (data.nome) modelo[campos.nome] = data.nome;
+					if (data.telefone) modelo[campos.telefone] = data.telefone;
+					if (data.nacionalidade) modelo[campos.nacionalidade] = data.nacionalidade;
+				}, function() {});
+			}, function(response) { console.log(response.data); });
+		};
+
 		// Marca os campos de documento como válidos ou inválidos, aceitando o valor se
 		// bater com QUALQUER nacionalidade suportada (não só a selecionada no form).
 		$scope.validarDocumento = function(valor, index, tipo) {
@@ -623,7 +660,7 @@
 			} else {
 				fieldName = 'cpfAluno' + (index + 1);
 			}
-			var valido = documentoValidatorService.validarDocumento(valor).valido;
+			var valido = documentoValidatorService.validarDocumentoQualquerPais(valor).valido;
 
 			// Try to get ngModelController from DOM element (robust for dynamic names/ng-forms)
 			try {

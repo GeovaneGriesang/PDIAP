@@ -39,7 +39,7 @@
           <div layout-gt-xs="row">
             <md-input-container class="md-block" flex-gt-xs>
               <label>Nome completo</label>
-              <input type="text" name="nome" data-ng-model="participante.nome" required minlength="2" />
+              <input type="text" name="nome" data-ng-model="participante.nome" data-ng-disabled="participante.cadastrada" required minlength="2" />
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.nome.$dirty">
                   <div class="message-error" data-ng-show="participantesForm.nome.$error.required">Obrigatório.</div>
@@ -49,7 +49,7 @@
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
               <label>Doc. identificação</label>
-              <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="5" maxlength="20"/>
+              <input type="text" name="cpf" data-ng-model="participante.cpf" required minlength="5" maxlength="20" data-ng-blur="buscarPessoa()"/>
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.cpf.$dirty">
                   <div class="message-error" data-ng-show="participantesForm.cpf.$error.required">Obrigatório.</div>
@@ -61,7 +61,7 @@
             <div flex="5" hide-xs></div>
             <md-input-container class="md-block" flex-gt-xs>
               <label>E-mail</label>
-              <input type="email" name="email" data-ng-model="participante.email" required data-ng-pattern="/^.+@.+\..+$/" />
+              <input type="email" name="email" data-ng-model="participante.email" data-ng-disabled="participante.cadastrada" required data-ng-pattern="/^.+@.+\..+$/" />
               <div class="md-errors-spacer">
                 <div data-ng-show="participantesForm.email.$dirty">
                   <div class="message-error" data-ng-show="participantesForm.email.$error.required">Obrigatório.</div>

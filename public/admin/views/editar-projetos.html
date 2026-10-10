@@ -322,6 +322,7 @@
                     <md-option value="paraguaio">Paraguaio(a)</md-option>
                     <md-option value="uruguaio">Uruguaio(a)</md-option>
                     <md-option value="venezuelano">Venezuelano(a)</md-option>
+                    <md-option value="outro">Outra nacionalidade</md-option>
                   </md-select>
                 </md-input-container>
                 <div flex="5" hide-xs hide-sm></div>
@@ -330,7 +331,7 @@
                   <input type="text" name="{{item1.cpf}}" data-ng-model="projeto3[item1.cpf]"
                     cpf-mask="projeto3[item1.nacionalidade] === 'brasileiro'"
                     data-ng-change="validarDocumento(projeto3[item1.cpf], item1.cpf)"
-                    data-ng-class="{'input-disabled': !editing11}" data-ng-focus="editing11=true" data-ng-blur="editing11=false" required minlength="0" maxlength="20"/>
+                    data-ng-class="{'input-disabled': !editing11}" data-ng-focus="editing11=true" data-ng-blur="editing11=false; preencherDoCadastro(projeto3, item1)" required minlength="0" maxlength="20"/>
                   <div class="md-errors-spacer">
                     <div data-ng-show="projetoForm3.{{item1.cpf}}.$dirty">
                       <div class="message-error" data-ng-show="projetoForm3.{{item1.cpf}}.$error.required">Preencha esse campo.</div>
@@ -420,6 +421,7 @@
                     <md-option value="paraguaio">Paraguaio(a)</md-option>
                     <md-option value="uruguaio">Uruguaio(a)</md-option>
                     <md-option value="venezuelano">Venezuelano(a)</md-option>
+                    <md-option value="outro">Outra nacionalidade</md-option>
                   </md-select>
                 </md-input-container>
                 <div flex="5" hide-xs hide-sm></div>
@@ -428,7 +430,7 @@
                   <input type="text" name="{{item2.cpf}}" data-ng-model="projeto4[item2.cpf]"
                     cpf-mask="projeto4[item2.nacionalidade] === 'brasileiro'"
                     data-ng-change="validarDocumento(projeto4[item2.cpf], item2.cpf)"
-                    data-ng-class="{'input-disabled': !editing16}" data-ng-focus="editing16=true" data-ng-blur="editing16=false" required minlength="6" maxlength="20"/>
+                    data-ng-class="{'input-disabled': !editing16}" data-ng-focus="editing16=true" data-ng-blur="editing16=false; preencherDoCadastro(projeto4, item2)" required minlength="6" maxlength="20"/>
                   <div class="md-errors-spacer">
                     <div data-ng-show="projetoForm4.{{item2.cpf}}.$dirty">
                       <div class="message-error" data-ng-show="projetoForm4.{{item2.cpf}}.$error.required">Preencha esse campo.</div>

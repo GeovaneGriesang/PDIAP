@@ -9,7 +9,9 @@ const express = require('express')
 , SaberesSchema = require('../models/saberes-schema')
 , nodemailer = require('nodemailer')
 , EmailTemplate = require('../utils/emailTemplate').EmailTemplate
-, path = require('path');
+, path = require('path')
+, documentoValidator = require('../utils/documentoValidator')
+, pessoaController = require('../controllers/pessoa-controller');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -34,20 +36,38 @@ async function testaEscola(req, res) {
 
 router.get('/registro', testaEscola, (req, res) => {});
 
-router.post('/registro', (req, res) => {
+router.post('/registro', async (req, res) => {
+	// Antes não validava nada. Documento de qualquer país (ver utils/documentoValidator.js),
+	// telefone e e-mail - os mesmos mínimos de qualquer pessoa do sistema.
+	if (!(req.body.nome || '').trim()) return res.status(400).send('Informe o nome completo.');
+	if (!req.body.email || !/^.+@.+\..+$/.test(req.body.email)) return res.status(400).send('Informe um e-mail válido.');
+	let checagemDoc = documentoValidator.validarDocumentoQualquerPais(req.body.cpf);
+	if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+	let checagemTelefone = documentoValidator.validarTelefone(req.body.telefone);
+	if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
 
 	let newSaberes = new SaberesSchema({
     		tipo: req.body.tipo,
 		nome: req.body.nome,
 		email: req.body.email,
-		cpf: splita(req.body.cpf),
-		telefone: splita(req.body.telefone),
+		cpf: checagemDoc.normalizado,
+		telefone: checagemTelefone.normalizado,
 		escola: req.body.escola,
 		resumo: req.body.resumo,
 		createdAt: Date.now()
 	});
 
-	Saberes.createSaberes(newSaberes);
+	// Liga ao cadastro único (inscrição pública: Pessoa existente só se o e-mail bater).
+	newSaberes.pessoa = await pessoaController.vincularPessoa({
+		cpf: newSaberes.cpf, nome: newSaberes.nome, email: newSaberes.email, telefone: newSaberes.telefone
+	});
+
+	try {
+		await Saberes.createSaberes(newSaberes);
+	} catch (error) {
+		console.error('Erro ao registrar saberes docentes', error);
+		return res.status(500).send('Erro ao registrar a inscrição.');
+	}
 
 	// E-mail de confirmação de inscrição, no mesmo padrão usado pra projetos/avaliadores.
 	// Antes não existia nenhum envio aqui.

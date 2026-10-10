@@ -28,7 +28,7 @@ const verificarLimiter = rateLimit({
 // devolvem a mesma resposta, pra não revelar por fora se aquele CPF já existe.
 router.post('/verificar', verificarLimiter, async (req, res) => {
 	try {
-		let documento = (req.body.documento || '').toString().replace(/\D+/g, '');
+		let documento = (req.body.documento || '').toString().replace(/[^0-9A-Za-z]/g, '').toUpperCase();
 		if (!documento) return res.send({ encontrado: false });
 
 		let pessoa = await PessoaSchema.findOne({ documento: documento });

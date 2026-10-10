@@ -60,7 +60,10 @@ var FAIXAS_TELEFONE = [
 	{ min: 10, max: 11 }, // brasileiro (DDD + fixo/celular)
 	{ min: 8, max: 8 },   // uruguaio
 	{ min: 9, max: 10 },  // paraguaio
-	{ min: 10, max: 11 }  // venezuelano
+	{ min: 10, max: 11 }, // venezuelano
+	// Qualquer outro país: número completo COM código do país (DDI), até 15 dígitos
+	// (limite do padrão internacional E.164) - ex: Argentina +54 9 11 xxxx-xxxx.
+	{ min: 12, max: 15 }
 ];
 
 // Quem copia o número de um contato/WhatsApp às vezes cola com o DDI (55) junto -
@@ -84,7 +87,25 @@ function validarTelefone(telefone) {
 	return valido ? { valido: true, normalizado: digits } : { valido: false, mensagem: 'Telefone inválido.' };
 }
 
+// Documento de pessoa de QUALQUER país (CPF, cédulas, RG, passaporte, DNI... - muitos têm
+// letras). Normaliza pra só letras/números em maiúsculo (remove espaço, ponto, traço, barra)
+// e aceita 5 a 20 caracteres; só o CPF (11 dígitos, só números) tem checksum conferido, pra
+// pegar erro de digitação de brasileiro sem rejeitar documentos estrangeiros que não temos
+// como validar. Chave de identificação da Pessoa (models/pessoa-schema.js).
+function normalizarDocumento(documento) {
+	return (documento || '').toString().replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+}
+
+function validarDocumentoQualquerPais(documento) {
+	var doc = normalizarDocumento(documento);
+	if (!/^[0-9A-Z]{5,20}$/.test(doc)) return { valido: false, mensagem: 'Documento de identificação inválido.' };
+	if (/^\d{11}$/.test(doc) && !validarCPF(doc)) return { valido: false, mensagem: 'CPF inválido.' };
+	return { valido: true, normalizado: doc };
+}
+
 module.exports = {
+	normalizarDocumento: normalizarDocumento,
+	validarDocumentoQualquerPais: validarDocumentoQualquerPais,
 	validarCPF: function (documento) { return validarCPF(apenasDigitos(documento)); },
 	validarCedulaUruguaia: function (documento) { return validarCedulaUruguaia(apenasDigitos(documento)); },
 	validarDocumentoGenerico: function (documento) { return validarDocumentoGenerico(apenasDigitos(documento)); },

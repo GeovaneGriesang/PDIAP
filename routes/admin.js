@@ -8,6 +8,8 @@ const express = require('express')
 , projetoSchema = require('../models/projeto-schema')
 , eventoSchema = require('../models/evento-schema')
 , seminarioSchema = require('../models/seminario-schema')
+, pessoaSchema = require('../models/pessoa-schema')
+, perfisController = require('../controllers/perfis-controller')
 , feiraSchema = require('../models/feira-schema')
 , escolaSchema = require('../models/escola-schema')
 , participanteSchema = require('../models/participante-schema')
@@ -117,13 +119,13 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
       ,seminarioId: seminarioId
     });
 
-    myArray.forEach(function (value, i) {
-      let newResponsavel = ({
-        nome: value.nome
-        ,cpf: splita(value.cpf)
-      });
-      newEvento.responsavel.push(newResponsavel);
-    });
+    // Responsável é sempre uma Pessoa do cadastro único (criada aqui se ainda não existir).
+    if (!Array.isArray(myArray) || !myArray.length) return res.status(400).send('Informe ao menos um responsável.');
+    for (let value of myArray) {
+      let r = await pessoaController.resolverPessoaAdmin(value, documentoValidator);
+      if (r.erro) return res.status(400).send(r.erro);
+      newEvento.responsavel.push({ nome: r.pessoa.nome, cpf: r.pessoa.documento, pessoa: r.pessoa._id });
+    }
 
     let data = await newEvento.save();
     console.log(data);
@@ -131,6 +133,43 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
   } catch (error){
     console.error('Erro ao criar um evento', error);
     res.status(500).send('Erro ao criar evento');
+  }
+});
+
+// Tela "Pessoas" do admin: busca no cadastro único e perfis por Mostra (derivados dos
+// vínculos, ver controllers/perfis-controller.js).
+router.get('/pessoas/pesquisar', miPermiso("3"), async (req, res) => {
+  try {
+    res.send(await perfisController.pesquisar(req.query.q));
+  } catch (error) {
+    console.error('Erro ao pesquisar pessoas', error);
+    res.status(500).send('Erro ao pesquisar pessoas');
+  }
+});
+
+router.get('/pessoas/perfis', miPermiso("3"), async (req, res) => {
+  try {
+    let resultado = await perfisController.perfis(req.query.documento);
+    if (!resultado) return res.status(400).send('Informe um documento.');
+    res.send(resultado);
+  } catch (error) {
+    console.error('Erro ao montar perfis da pessoa', error);
+    res.status(500).send('Erro ao montar perfis da pessoa');
+  }
+});
+
+// Busca no cadastro único (admin) por documento (letras/números) - usada pra preencher
+// nome/e-mail de uma pessoa já cadastrada em qualquer formulário que peça "uma pessoa".
+router.get('/pessoas/buscar', miPermiso("3"), async (req, res) => {
+  try {
+    let documento = documentoValidator.normalizarDocumento(req.query.documento);
+    if (!documento) return res.send({ encontrado: false });
+    let pessoa = await pessoaSchema.findOne({ documento: documento }, 'documento nome email telefone nacionalidade');
+    if (!pessoa) return res.send({ encontrado: false });
+    res.send({ encontrado: true, nome: pessoa.nome, email: pessoa.email, documento: pessoa.documento, telefone: pessoa.telefone, nacionalidade: pessoa.nacionalidade });
+  } catch (error) {
+    console.error('Erro ao buscar pessoa', error);
+    res.status(500).send('Erro ao buscar pessoa');
   }
 });
 
@@ -170,15 +209,22 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
     if (!evt) return res.status(404).send('Evento não encontrado');
 
     let responsaveisAtuais = evt.responsavel || [];
-    let responsaveisNovos = (req.body.responsavel || []).map((r) => {
-      let cpfLimpo = splita(r.cpf);
-      let existente = responsaveisAtuais.find((ra) => ra.cpf === cpfLimpo);
+    // Cada responsável é uma Pessoa do cadastro único (criada se não existir); nome vem do cadastro.
+    if (!Array.isArray(req.body.responsavel) || !req.body.responsavel.length) return res.status(400).send('Informe ao menos um responsável.');
+    let responsaveisNovos = [];
+    for (let r of req.body.responsavel) {
+      let res1 = await pessoaController.resolverPessoaAdmin(r, documentoValidator);
+      if (res1.erro) return res.status(400).send(res1.erro);
+      let pessoa = res1.pessoa;
+      let existente = responsaveisAtuais.find((ra) => ra.cpf === pessoa.documento);
       if (existente) {
-        existente.nome = r.nome;
-        return existente;
+        existente.nome = pessoa.nome;
+        existente.pessoa = pessoa._id;
+        responsaveisNovos.push(existente);
+      } else {
+        responsaveisNovos.push({ nome: pessoa.nome, cpf: pessoa.documento, pessoa: pessoa._id });
       }
-      return { nome: r.nome, cpf: cpfLimpo };
-    });
+    }
 
     // Evento antigo (sem Mostra) é vinculado à Mostra em que está sendo editado.
     if (req.body.feiraId) {
@@ -534,7 +580,7 @@ router.put('/atualizaAvaliador', miPermiso("3"), async (req, res) => {
       "nome": req.body.nome,
       "email": req.body.email,
       "nacionalidade": req.body.nacionalidade,
-      "cpf": splita(req.body.cpf),
+      "cpf": checagem.normalizado,
       "rg": splita(req.body.rg),
       "dtNascimento": req.body.dtNascimento,
       "nivelAcademico": req.body.nivelAcademico,
@@ -558,12 +604,12 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
     // E-mail é o identificador de login do participante (dashboard próprio) - exigido a
     // partir de agora pra todo cadastro novo, cadastros antigos sem e-mail só não conseguem
     // logar até o admin completar o dado.
-    if (!req.body.email || !/^.+@.+\..+$/.test(req.body.email)) {
-      return res.status(400).send('Informe um e-mail válido.');
-    }
-
-    let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
-    if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+    // Participante é uma Pessoa do cadastro único (qualquer país): reaproveita a existente
+    // pelo documento (nome/e-mail do cadastro prevalecem) ou cria uma nova - nesse caso nome
+    // completo, documento e e-mail são obrigatórios (ver pessoaController.resolverPessoaAdmin).
+    let resolvida = await pessoaController.resolverPessoaAdmin({ nome: req.body.nome, cpf: req.body.cpf, email: req.body.email }, documentoValidator);
+    if (resolvida.erro) return res.status(400).send(resolvida.erro);
+    let pessoa = resolvida.pessoa;
 
     // Mesmo esquema usado em /avaliadores/registro: permite cadastrar o participante em um
     // ano anterior usando o filtro de ano já existente na tela (ex: cadastro-participantes.html).
@@ -581,18 +627,12 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
     }
 
     let newParticipante = new participanteSchema({
-      nome: req.body.nome
-      ,cpf: splita(req.body.cpf)
-      ,email: req.body.email
+      nome: pessoa.nome
+      ,cpf: pessoa.documento
+      ,email: pessoa.email
       ,createdAt: createdAt
       ,feiraId: feiraId
-    });
-
-    // Login único: vincula à Pessoa do mesmo documento (ver controllers/pessoa-controller.js#vincularPessoa)
-    newParticipante.pessoa = await pessoaController.vincularPessoa({
-      cpf: newParticipante.cpf,
-      nome: newParticipante.nome,
-      email: newParticipante.email
+      ,pessoa: pessoa._id
     });
 
     if (req.body.eventos !== undefined) {
@@ -746,13 +786,14 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
   try {
     var id = req.body.id;
     let nome = req.body.nome;
-    let cpf = splita(req.body.cpf);
     let email = req.body.email;
     if (!idValido(id)) return res.status(400).send('ID inválido');
     if (!email || !/^.+@.+\..+$/.test(email)) return res.status(400).send('Informe um e-mail válido.');
 
-    let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
+    // Documento de qualquer país (pode ter letras) - mesma regra do cadastro.
+    let checagemDoc = documentoValidator.validarDocumentoQualquerPais(req.body.cpf);
     if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+    let cpf = checagemDoc.normalizado;
 
     await participanteSchema.findOneAndUpdate({"_id": id},{"$set": {"nome": nome, "cpf": cpf, "email": email}, "$unset": {"eventos": ""}}, {returnDocument: 'after'});
 
@@ -779,7 +820,7 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
 });
 
 router.post('/registroSaberes', miPermiso("3","2"), async (req, res) => {
-  let checagemDoc = documentoValidator.validarDocumento(req.body.cpf);
+  let checagemDoc = documentoValidator.validarDocumentoQualquerPais(req.body.cpf);
   if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
   let checagemTelefone = documentoValidator.validarTelefone(req.body.telefone);
@@ -794,13 +835,14 @@ router.post('/registroSaberes', miPermiso("3","2"), async (req, res) => {
     tipo: req.body.tipo,
     nome: req.body.nome,
     email: req.body.email,
-    cpf: splita(req.body.cpf),
-    telefone: splita(req.body.telefone),
+    cpf: checagemDoc.normalizado,
+    telefone: checagemTelefone.normalizado,
     escola: req.body.escola,
     resumo: req.body.resumo,
     createdAt: Date.now()
   });
   try {
+    newSaberes.pessoa = await pessoaController.vincularPessoa({ cpf: newSaberes.cpf, nome: newSaberes.nome, email: newSaberes.email, telefone: newSaberes.telefone });
     await Saberes.createSaberes(newSaberes);
     res.send('success');
   } catch (error) {
@@ -1523,8 +1565,11 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
     for (let j = 0; j < myArray.length; j++) {
       let v = myArray[j];
       if (v.cpf !== undefined) {
-        let checagemDoc = documentoValidator.validarDocumento(v.cpf);
+        let checagemDoc = documentoValidator.validarDocumentoQualquerPais(v.cpf);
         if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+        v.cpf = checagemDoc.normalizado;
+        // Liga o integrante à Pessoa do cadastro único (ver pessoaController.vincularPessoa).
+        v.pessoa = await pessoaController.vincularPessoa({ cpf: v.cpf, nome: v.nome, email: v.email, telefone: v.telefone, nacionalidade: v.nacionalidade });
       }
       if (v.telefone !== undefined) {
         let checagemTelefone = documentoValidator.validarTelefone(v.telefone);
@@ -1548,7 +1593,8 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
           nacionalidade: value.nacionalidade,
           cpf: splita(value.cpf),
           telefone: splita(value.telefone),
-          tamCamiseta: value.tamCamiseta
+          tamCamiseta: value.tamCamiseta,
+          pessoa: value.pessoa
         });
         return projetoSchema.findOneAndUpdate({"_id": id, "integrantes._id": value._id},
           {"$set": {"integrantes.$": newIntegrante, updatedAt: Date.now()}}, {returnDocument: 'after'});
@@ -1561,7 +1607,8 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
         nacionalidade: value.nacionalidade,
         cpf: splita(value.cpf),
         telefone: splita(value.telefone),
-        tamCamiseta: value.tamCamiseta
+        tamCamiseta: value.tamCamiseta,
+        pessoa: value.pessoa
       });
       // Bug real encontrado e corrigido ao testar o grupo 4 (routes/projetos.js), mesmo
       // padrão aqui: usr.integrantes.push(...) + usr.save() gera um modificador $pushAll,

@@ -51,7 +51,7 @@
 		// Valida o documento contra QUALQUER nacionalidade suportada, não só a
 		// selecionada no form (ver documentoValidatorService).
 		$scope.validarDocumento = function(valor) {
-			var checagem = documentoValidatorService.validarDocumento(valor);
+			var checagem = documentoValidatorService.validarDocumentoQualquerPais(valor);
 			if ($scope.avaliadoresForm && $scope.avaliadoresForm.cpf) {
 				$scope.avaliadoresForm.cpf.$setValidity('documento', checagem.valido);
 			}
@@ -352,7 +352,7 @@
 					};
 
 					$scope.validarDocumento = function(valor) {
-						var checagem = documentoValidatorService.validarDocumento(valor);
+						var checagem = documentoValidatorService.validarDocumentoQualquerPais(valor);
 						if ($scope.avaliadorEditForm && $scope.avaliadorEditForm.cpf) {
 							$scope.avaliadorEditForm.cpf.$setValidity('documento', checagem.valido);
 						}

@@ -47,11 +47,28 @@
 		return { valido: false, mensagem: 'Documento de identificação inválido.' };
 	}
 
+	// Documento de pessoa de QUALQUER país (pode ter letras, ex: passaporte) - mesma regra de
+	// utils/documentoValidator.js#validarDocumentoQualquerPais (servidor): 5 a 20 letras/números
+	// depois de tirar pontuação; só CPF (11 dígitos) tem o dígito verificador conferido.
+	function normalizarDocumento(documento) {
+		return (documento || '').toString().replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+	}
+
+	function validarDocumentoQualquerPais(documento) {
+		var doc = normalizarDocumento(documento);
+		if (!/^[0-9A-Z]{5,20}$/.test(doc)) return { valido: false, mensagem: 'Documento de identificação inválido.' };
+		if (/^[0-9]{11}$/.test(doc) && !validarCPF(doc)) return { valido: false, mensagem: 'CPF inválido.' };
+		return { valido: true, normalizado: doc };
+	}
+
 	var FAIXAS_TELEFONE = [
 		{ min: 10, max: 11 }, // brasileiro
 		{ min: 8, max: 8 },   // uruguaio
 		{ min: 9, max: 10 },  // paraguaio
-		{ min: 10, max: 11 }  // venezuelano
+		{ min: 10, max: 11 }, // venezuelano
+		// Qualquer outro país: número completo COM código do país (DDI), até 15 dígitos
+		// (limite do padrão internacional E.164) - ex: Argentina +54 9 11 xxxx-xxxx.
+		{ min: 12, max: 15 }
 	];
 
 	// Tolera um DDI "55" colado antes do DDD (comum ao copiar de um contato/WhatsApp) -
@@ -80,6 +97,8 @@
 			validarCedulaUruguaia: function (documento) { return validarCedulaUruguaia(apenasDigitos(documento)); },
 			validarDocumentoGenerico: function (documento) { return validarDocumentoGenerico(apenasDigitos(documento)); },
 			validarDocumento: validarDocumento,
+			normalizarDocumento: normalizarDocumento,
+			validarDocumentoQualquerPais: validarDocumentoQualquerPais,
 			validarTelefone: validarTelefone,
 			normalizarTelefone: normalizarTelefone
 		};

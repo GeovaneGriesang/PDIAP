@@ -125,9 +125,20 @@
                   </md-button>
                 </h5>
                 <div layout-gt-xs="row">
+                  <md-input-container class="md-block" flex-gt-xs="30">
+                    <label>Doc. identificação</label>
+                    <input type="text" name="{{item.cpf}}" data-ng-model="evento.responsavel[$index].cpf" required minlength="0" maxlength="20" data-ng-blur="buscarResponsavel($index)"/>
+                    <div class="md-errors-spacer">
+                      <div data-ng-show="eventosForm.{{item.cpf}}.$dirty">
+                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.required">Obrigatório.</div>
+                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.minlength && eventosForm.{{item.cpf}}.$touched">Documento inválido.</div>
+                      </div>
+                    </div>
+                  </md-input-container>
+                  <div flex="5" hide-xs></div>
                   <md-input-container class="md-block" flex-gt-xs>
                     <label>Nome completo</label>
-                    <input type="text" name="{{item.nome}}" data-ng-model="evento.responsavel[$index].nome" required minlength="2" />
+                    <input type="text" name="{{item.nome}}" data-ng-model="evento.responsavel[$index].nome" data-ng-disabled="evento.responsavel[$index].cadastrada" required minlength="2" />
                     <div class="md-errors-spacer">
                       <div data-ng-show="eventosForm.{{item.nome}}.$dirty">
                         <div class="message-error" data-ng-show="eventosForm.{{item.nome}}.$error.required">Obrigatório.</div>
@@ -136,13 +147,10 @@
                   </md-input-container>
                   <div flex="5" hide-xs></div>
                   <md-input-container class="md-block" flex-gt-xs>
-                    <label>Doc. identificação</label>
-                    <input type="text" name="{{item.cpf}}" data-ng-model="evento.responsavel[$index].cpf" required minlength="0" maxlength="20"/>
+                    <label>E-mail</label>
+                    <input type="email" name="email{{$index}}" data-ng-model="evento.responsavel[$index].email" data-ng-disabled="evento.responsavel[$index].cadastrada" required />
                     <div class="md-errors-spacer">
-                      <div data-ng-show="eventosForm.{{item.cpf}}.$dirty">
-                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.required">Obrigatório.</div>
-                        <div class="message-error" data-ng-show="eventosForm.{{item.cpf}}.$error.minlength && eventosForm.{{item.cpf}}.$touched">Documento inválido.</div>
-                      </div>
+                      <div class="message-error" data-ng-show="evento.responsavel[$index].cadastrada === false">Pessoa nova: será cadastrada ao salvar.</div>
                     </div>
                   </md-input-container>
                 </div>
