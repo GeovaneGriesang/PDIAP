@@ -34,7 +34,7 @@ router.post('/verificar', verificarLimiter, async (req, res) => {
 		let pessoa = await PessoaSchema.findOne({ documento: documento });
 		if (!pessoa) return res.send({ encontrado: false });
 
-		if (pessoaController.mesmoEmail(pessoa.email, req.body.email)) {
+		if (pessoaController.pessoaTemEmail(pessoa, req.body.email)) {
 			return res.send({ encontrado: true, nome: pessoa.nome, telefone: pessoa.telefone, nacionalidade: pessoa.nacionalidade });
 		}
 

@@ -15,7 +15,11 @@ const PessoaSchema = new Schema({
 	// a mesma pessoa entre papéis diferentes).
 	documento: { type: String, unique: true, required: true },
 	nome: { type: String },
-	email: { type: String },
+	// E-mail principal (avisos e certificados vão pra ele) + até 2 alternativos: a pessoa entra
+	// por qualquer um dos 3. Nenhum deles pode ser e-mail (principal ou alternativo) de outra
+	// Pessoa - ver controllers/pessoa-controller.js#filtroEmail/emailLivre.
+	email: { type: String, index: true },
+	emailsAlternativos: { type: [String], index: true, default: undefined },
 	telefone: { type: String },
 	// 'brasileiro' | 'paraguaio' | 'uruguaio' | 'venezuelano'
 	nacionalidade: { type: String },
@@ -32,6 +36,9 @@ const PessoaSchema = new Schema({
 	// Troca de e-mail pela própria pessoa (routes/index.js#/conta/alterar-email): o e-mail é o
 	// login, então só passa a valer depois de confirmado pelo link enviado ao endereço novo.
 	emailPendente: { type: String },
+	// 'principal' (troca o e-mail principal) ou 'alternativo' (acrescenta um e-mail de acesso).
+	// Ausente = 'principal' (pedidos feitos antes de existir e-mail alternativo).
+	emailPendenteTipo: { type: String },
 	emailPendenteToken: { type: String },
 	emailPendenteExpira: { type: Date },
 

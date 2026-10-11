@@ -40,49 +40,18 @@
         return deferred.promise;
       };
 
-      // Mesmo padrão de checkLoggedin, mas pro dashboard do avaliador (login próprio,
-      // separado do login de projeto) - ver routes/avaliadores.js#ensureAvaliador.
-      let checkLoggedinAvaliador = function ($q, $rootScope, $http, $window) {
+      // Painel único (routes/index.js#/conta/loggedin): qualquer pessoa logada - estudante,
+      // orientador(a), avaliador(a), participante... Guarda em $rootScope.pessoaLogada nome,
+      // senhaDefinida e os papéis (avaliador/participante). Sem login, volta pra home.
+      let checkLoggedinPessoa = function ($q, $rootScope, $http, $window) {
         var deferred = $q.defer();
-        $rootScope.logadoAvaliador = false;
-
         $http
-          .get('/avaliadores/dashboard/loggedin')
+          .get('/conta/loggedin')
           .then(function (response) {
-            if (response.status !== 403) {
-              $rootScope.logadoAvaliador = true;
-              $rootScope.avaliadorLogado = response.data;
-              deferred.resolve();
-            } else {
-              $window.location.href = 'http://movaci.com.br';
-              deferred.reject();
-            }
-          }, function (response) {
-            $window.location.href = 'http://movaci.com.br';
-            deferred.reject();
-          });
-        return deferred.promise;
-      };
-
-      // Mesmo padrão de checkLoggedinAvaliador, mas pro dashboard do participante (login
-      // próprio) - ver routes/participantes.js#ensureParticipante.
-      let checkLoggedinParticipante = function ($q, $rootScope, $http, $window) {
-        var deferred = $q.defer();
-        $rootScope.logadoParticipante = false;
-
-        $http
-          .get('/participantes/dashboard/loggedin')
-          .then(function (response) {
-            if (response.status !== 403) {
-              $rootScope.logadoParticipante = true;
-              $rootScope.participanteLogado = response.data;
-              deferred.resolve();
-            } else {
-              $window.location.href = 'http://movaci.com.br';
-              deferred.reject();
-            }
-          }, function (response) {
-            $window.location.href = 'http://movaci.com.br';
+            $rootScope.pessoaLogada = response.data;
+            deferred.resolve();
+          }, function () {
+            $window.location.href = '/';
             deferred.reject();
           });
         return deferred.promise;
@@ -220,51 +189,55 @@
           controller: 'redefinirCtrl',
         })
 
-        // Dashboard do avaliador (login próprio) - estados soltos (não aninhados): o "Meu
+        // Painel único de qualquer pessoa logada - estados soltos (não aninhados): o "Meu
         // painel" tem o próprio menu lateral (meu-painel.html, troca de Mostra sem mudar de
         // estado), e "Meus dados"/"Trocar senha" são telas avulsas com "Voltar ao painel". =========
-        .state('avaliadorDashboard', {
-          url: '/avaliadores/dashboard',
+        .state('painel', {
+          url: '/painel',
           templateUrl: '/views/meu-painel.html',
           controller: 'meuPainelCtrl',
           resolve: {
-            loggedin: checkLoggedinAvaliador,
+            loggedin: checkLoggedinPessoa,
           },
         })
-        .state('avaliadorTrocarSenha', {
-          url: '/avaliadores/dashboard/trocar-senha',
-          templateUrl: '/views/avaliador-trocar-senha.html',
-          controller: 'avaliadorSenhaCtrl',
+        .state('painelTrocarSenha', {
+          url: '/painel/trocar-senha',
+          templateUrl: '/views/painel-trocar-senha.html',
+          controller: 'painelSenhaCtrl',
           resolve: {
-            loggedin: checkLoggedinAvaliador,
+            loggedin: checkLoggedinPessoa,
           },
         })
-        .state('avaliadorDados', {
-          url: '/avaliadores/dashboard/dados',
-          templateUrl: '/views/avaliador-dados.html',
-          controller: 'avaliadorDadosCtrl',
+        .state('painelDados', {
+          url: '/painel/dados',
+          templateUrl: '/views/painel-dados.html',
           resolve: {
-            loggedin: checkLoggedinAvaliador,
+            loggedin: checkLoggedinPessoa,
           },
         })
-        // As duas abaixo precisam funcionar sem estar logado (esqueceu a senha / veio de
-        // um link de e-mail) - por isso não têm o resolve de loggedin.
-        .state('avaliadorEsqueciSenha', {
-          url: '/avaliadores/dashboard/esqueci-senha',
-          templateUrl: '/views/avaliador-esqueci-senha.html',
-          controller: 'avaliadorSenhaCtrl',
-        })
+
+        // URLs antigas dos painéis separados de avaliador(a)/participante (links de e-mails já
+        // enviados, favoritos): só redirecionam. A recuperação de senha antiga cai na unificada
+        // (/conta/nova-senha/:token aceita os tokens antigos também).
+        .state('avaliadorDashboard', { url: '/avaliadores/dashboard', redirectTo: 'painel' })
+        .state('avaliadorTrocarSenha', { url: '/avaliadores/dashboard/trocar-senha', redirectTo: 'painelTrocarSenha' })
+        .state('avaliadorDados', { url: '/avaliadores/dashboard/dados', redirectTo: 'painelDados' })
+        .state('avaliadorEsqueciSenha', { url: '/avaliadores/dashboard/esqueci-senha', redirectTo: 'contaEsqueciSenha' })
         .state('avaliadorNovaSenha', {
           url: '/avaliadores/dashboard/nova-senha/:token',
-          templateUrl: '/views/avaliador-trocar-senha.html',
-          controller: 'avaliadorSenhaCtrl',
+          redirectTo: function (trans) { return { state: 'contaNovaSenha', params: { token: trans.params().token } }; },
         })
-        // ======================================================================
+        .state('participanteDashboard', { url: '/participantes/dashboard', redirectTo: 'painel' })
+        .state('participanteTrocarSenha', { url: '/participantes/dashboard/trocar-senha', redirectTo: 'painelTrocarSenha' })
+        .state('participanteDados', { url: '/participantes/dashboard/dados', redirectTo: 'painelDados' })
+        .state('participanteEsqueciSenha', { url: '/participantes/dashboard/esqueci-senha', redirectTo: 'contaEsqueciSenha' })
+        .state('participanteNovaSenha', {
+          url: '/participantes/dashboard/nova-senha/:token',
+          redirectTo: function (trans) { return { state: 'contaNovaSenha', params: { token: trans.params().token } }; },
+        })
 
-        // Login único (ver routes/index.js#/conta): recuperação de senha que não
-        // diferencia Avaliador de Participante - substitui os dois links separados que
-        // existiam antes na tela de login. Sem resolve de loggedin de propósito, mesmo
-        // motivo dos estados acima. ===========================================
+        // Recuperação de senha (ver routes/index.js#/conta): funciona sem estar logado (esqueceu
+        // a senha / veio de um link de e-mail) - por isso sem resolve de loggedin. =============
         .state('contaEsqueciSenha', {
           url: '/conta/esqueci-senha',
           templateUrl: '/views/conta-esqueci-senha.html',
@@ -274,45 +247,6 @@
           url: '/conta/nova-senha/:token',
           templateUrl: '/views/conta-nova-senha.html',
           controller: 'contaSenhaCtrl',
-        })
-        // ======================================================================
-
-        // Dashboard do participante (login próprio) - mesmo padrão do avaliador acima,
-        // sem tela de "dados" (participante não tem campo próprio pra editar). =========
-        .state('participanteDashboard', {
-          url: '/participantes/dashboard',
-          templateUrl: '/views/meu-painel.html',
-          controller: 'meuPainelCtrl',
-          resolve: {
-            loggedin: checkLoggedinParticipante,
-          },
-        })
-        // "Meus dados" do participante: só o bloco compartilhado de conta (identificação,
-        // troca de e-mail e participações por Mostra - ver contaDadosCtrl).
-        .state('participanteDados', {
-          url: '/participantes/dashboard/dados',
-          templateUrl: '/views/participante-dados.html',
-          resolve: {
-            loggedin: checkLoggedinParticipante,
-          },
-        })
-        .state('participanteTrocarSenha', {
-          url: '/participantes/dashboard/trocar-senha',
-          templateUrl: '/views/participante-trocar-senha.html',
-          controller: 'participanteSenhaCtrl',
-          resolve: {
-            loggedin: checkLoggedinParticipante,
-          },
-        })
-        .state('participanteEsqueciSenha', {
-          url: '/participantes/dashboard/esqueci-senha',
-          templateUrl: '/views/participante-esqueci-senha.html',
-          controller: 'participanteSenhaCtrl',
-        })
-        .state('participanteNovaSenha', {
-          url: '/participantes/dashboard/nova-senha/:token',
-          templateUrl: '/views/participante-trocar-senha.html',
-          controller: 'participanteSenhaCtrl',
         })
         // ======================================================================
         .state('consulta_certificado', {

@@ -1,8 +1,8 @@
 (function(){
 	'use strict';
 
-	// Login único: recuperação de senha e troca de painel que não diferenciam Avaliador de
-	// Participante (ver routes/index.js#/conta/esqueci-senha e #/dashboard/trocar-papel).
+	// Conta da pessoa logada no painel único (ver routes/index.js#/conta/*): senha, recuperação
+	// de senha, "Meus dados" e os e-mails de acesso (principal + alternativos).
 	angular
 	.module('PDIAP')
 	.factory('contaAPI', function($http) {
@@ -15,8 +15,8 @@
 			return $http({ url: '/conta/nova-senha/' + token, method: 'POST', data: { password: password } });
 		};
 
-		let _trocarPapel = function(){
-			return $http({ url: '/dashboard/trocar-papel', method: 'GET' });
+		let _trocarSenha = function(senhaAtual, novaSenha){
+			return $http({ url: '/conta/trocar-senha', method: 'POST', data: { senhaAtual: senhaAtual, novaSenha: novaSenha } });
 		};
 
 		let _getMeusDados = function(){
@@ -27,12 +27,22 @@
 			return $http({ url: '/conta/alterar-email', method: 'POST', data: { novoEmail: novoEmail, senha: senha } });
 		};
 
+		let _adicionarEmail = function(novoEmail, senha){
+			return $http({ url: '/conta/emails-alternativos', method: 'POST', data: { novoEmail: novoEmail, senha: senha } });
+		};
+
+		let _removerEmail = function(email){
+			return $http({ url: '/conta/emails-alternativos/remover', method: 'POST', data: { email: email } });
+		};
+
 		return {
 			getMeusDados: _getMeusDados,
 			alterarEmail: _alterarEmail,
+			adicionarEmail: _adicionarEmail,
+			removerEmail: _removerEmail,
+			trocarSenha: _trocarSenha,
 			redefinirSenha: _redefinirSenha,
-			novaSenhaComToken: _novaSenhaComToken,
-			trocarPapel: _trocarPapel
+			novaSenhaComToken: _novaSenhaComToken
 		};
 	});
 })();

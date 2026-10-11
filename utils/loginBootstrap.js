@@ -45,51 +45,44 @@ module.exports.compareLoginOuBootstrap = (candidatePassword, credencial, callbac
 	callback(null, documento.length > 0 && documento === tentativa);
 };
 
-// Login único de verdade: quem loga por e-mail de Avaliador/Participante é sempre a
-// mesma Pessoa, então a autenticação tenta a Pessoa primeiro (uma senha só, pros dois
-// papéis) e só cai no jeito antigo (Avaliador por e-mail, depois Participante por
-// e-mail) se não achar Pessoa nenhuma com esse e-mail - conta legada sem vínculo, ou
-// algum e-mail que ficou divergente entre a Pessoa e o papel.
-module.exports.autenticarPapel = (email, password, callback) => {
-	pessoaController.getLoginPessoa(email, (err, pessoa) => {
-		if (err) return callback(err);
-		if (!pessoa) return module.exports.autenticarPapelLegado(email, password, callback);
-
-		module.exports.compareLoginOuBootstrap(password, pessoa, async (err, isMatch) => {
-			if (err) return callback(err);
-			if (!isMatch) return callback(null, false);
-
-			try {
-				// Mais recente primeiro - quem se inscreveu de novo numa Mostra seguinte usa o
-				// registro mais atual; prioridade Avaliador > Participante, mesma ordem que a
-				// cascata de login já respeitava.
-				let [avaliador, participante] = await Promise.all([
-					Avaliador.findOne({ pessoa: pessoa._id }).sort({ createdAt: -1 }),
-					Participante.findOne({ pessoa: pessoa._id }).sort({ createdAt: -1 })
-				]);
-				callback(null, avaliador || participante || false);
-			} catch (err) {
-				callback(err);
-			}
-		});
+function compararAsync(password, credencial) {
+	return new Promise((resolve, reject) => {
+		module.exports.compareLoginOuBootstrap(password, credencial, (err, ok) => err ? reject(err) : resolve(ok));
 	});
+}
+
+// Login de qualquer pessoa (painel único): a sessão é a própria Pessoa, achada por qualquer
+// um dos e-mails dela (principal ou alternativo) - não precisa ter papel de Avaliador/
+// Participante (estudante e orientador(a) também entram). Se houver mais de uma Pessoa com o
+// mesmo e-mail (cadastros duplicados antigos), entra na que a senha bater.
+// Sem Pessoa com esse e-mail, cai no jeito antigo (autenticarPapelLegado).
+// Callback: (err, usuarioDaSessao | false).
+module.exports.autenticarLogin = async (email, password, callback) => {
+	try {
+		let pessoas = await pessoaController.buscarPorEmail(email);
+		if (!pessoas.length) return module.exports.autenticarPapelLegado(email, password, callback);
+		for (let pessoa of pessoas) {
+			if (await compararAsync(password, pessoa)) return callback(null, pessoa);
+		}
+		callback(null, false);
+	} catch (err) {
+		callback(err);
+	}
 };
 
-// Comportamento de antes do login único por Pessoa: Avaliador por e-mail, senão
-// Participante por e-mail - cada um resolve pra quem guarda a senha (a Pessoa vinculada,
-// se houver, senão o próprio registro; ver carregarCredencial) antes de comparar, mesma
-// regra que controllers/avaliador-controller.js#compareLoginOuBootstrap e o irmão do
-// participante já aplicavam.
+// Comportamento de antes do login por Pessoa: Avaliador por e-mail, senão Participante por
+// e-mail - compara com quem guarda a senha (a Pessoa vinculada, se houver, senão o próprio
+// registro; ver carregarCredencial). Papel com Pessoa vinculada (e-mail do papel diferente do
+// da Pessoa) entra como a Pessoa; sem vínculo, como o próprio papel (conta legada).
 module.exports.autenticarPapelLegado = async (email, password, callback) => {
 	try {
-		let papel = await Avaliador.findOne({ email: email }) || await Participante.findOne({ email: email });
+		let re = pessoaController.regexEmailExato(email);
+		let papel = await Avaliador.findOne({ email: re }) || await Participante.findOne({ email: re });
 		if (!papel) return callback(null, false);
 
 		let credencial = await module.exports.carregarCredencial(papel);
-		module.exports.compareLoginOuBootstrap(password, credencial, (err, isMatch) => {
-			if (err) return callback(err);
-			callback(null, isMatch ? papel : false);
-		});
+		if (!(await compararAsync(password, credencial))) return callback(null, false);
+		callback(null, credencial.constructor.modelName === 'Pessoa' ? credencial : papel);
 	} catch (err) {
 		callback(err);
 	}

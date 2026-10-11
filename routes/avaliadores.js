@@ -16,7 +16,8 @@ const express = require('express')
 , ProjetoSchema = require('../models/projeto-schema')
 , AvaliadorSchema = require('../models/avaliador-schema')
 , ParticipanteSchema = require('../models/participante-schema')
-, feiraSchema = require('../models/feira-schema');
+, feiraSchema = require('../models/feira-schema')
+, sessao = require('../utils/sessao');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -37,14 +38,18 @@ function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-// Garante que quem está autenticado é mesmo um Avaliador (não Projeto/Admin) - login
-// único acontece em routes/index.js (strategy 'unico'), aqui só protege as rotas do
-// dashboard próprio do avaliador.
-function ensureAvaliador(req, res, next) {
-  if (req.isAuthenticated() && req.user.constructor.modelName === 'Avaliador') {
-    return next();
+// Pessoa logada que é avaliador(a): põe em req.avaliador o registro de Avaliador mais recente
+// dela (ver utils/sessao.js). Conta legada sem Pessoa loga como o próprio Avaliador.
+async function ensureAvaliador(req, res, next) {
+  if (!req.isAuthenticated()) return res.sendStatus(403);
+  try {
+    req.avaliador = await sessao.avaliadorDaSessao(req);
+  } catch (err) {
+    console.error('Erro ao resolver avaliador(a) da sessão', err);
+    return res.sendStatus(500);
   }
-  res.sendStatus(403);
+  if (!req.avaliador) return res.sendStatus(403);
+  next();
 }
 
 router.get('/', function(req, res, next) {
@@ -169,141 +174,15 @@ router.get('/loggedin', ensureAuthenticated, (req, res) => {
 
 // DASHBOARD DO AVALIADOR (login próprio) ===================================
 
-router.get('/dashboard/loggedin', ensureAvaliador, async (req, res) => {
-  try {
-    let credencial = await loginBootstrap.carregarCredencial(req.user);
-    // Login único: esta mesma Pessoa também pode ser Participante - ver
-    // routes/index.js#/dashboard/trocar-papel.
-    let outroPapel = req.user.pessoa && await ParticipanteSchema.exists({ pessoa: req.user.pessoa });
-    res.send({
-      nome: req.user.nome,
-      email: req.user.email,
-      senhaDefinida: !!credencial.senhaDefinida,
-      avaliacao: !!req.user.avaliacao,
-      outroPapel: !!outroPapel
-    });
-  } catch (err) {
-    console.error('Erro ao carregar dados do avaliador logado', err);
-    res.status(500).send('error');
-  }
-});
-
-// Troca de senha - funciona tanto pro primeiro acesso (senhaDefinida false, não exige
-// senhaAtual - a "senha" usada pra logar nesse caso foi o documento) quanto pra troca
-// voluntária estando logado (senhaDefinida true, exige senhaAtual correta).
-router.post('/dashboard/trocar-senha', ensureAvaliador, async (req, res) => {
-  let novaSenha = req.body.novaSenha;
-  if (!Avaliador.senhaForte(novaSenha)) {
-    return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
-  }
-
-  try {
-    let avaliador = await AvaliadorSchema.findById(req.user._id);
-    if (!avaliador) return res.status(404).send('Avaliador não encontrado.');
-
-    // Senha mora na Pessoa vinculada (compartilhada entre papéis) ou, sem vínculo, no
-    // próprio avaliador - ver utils/loginBootstrap.js#carregarCredencial.
-    let credencial = await loginBootstrap.carregarCredencial(avaliador);
-    if (credencial.senhaDefinida) {
-      if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
-      let isMatch = await bcrypt.compare(req.body.senhaAtual, credencial.password);
-      if (!isMatch) return res.status(400).send('Senha atual incorreta.');
-    }
-
-    let salt = await bcrypt.genSalt(10);
-    let hash = await bcrypt.hash(novaSenha, salt);
-    credencial.password = hash;
-    credencial.senhaDefinida = true;
-    await credencial.save();
-    res.send('success');
-  } catch (err) {
-    console.error('Erro ao trocar senha de avaliador', err);
-    return res.status(500).send('Erro ao trocar senha.');
-  }
-});
-
-// Recuperação de senha (esqueci a senha) - mesmo padrão de routes/index.js pro Projeto:
-// token aleatório com expiração de 1h, enviado por e-mail.
-router.post('/dashboard/redefinir-senha', async (req, res) => {
-  let email = req.body.email;
-  let avaliador;
-  let token = crypto.randomBytes(20).toString('hex');
-  try {
-    avaliador = await AvaliadorSchema.findOne({ email: email });
-    if (!avaliador) return res.status(404).send('E-mail não encontrado.');
-
-    // Token vai pra Pessoa vinculada (o link redefine a senha única dela) ou, sem vínculo,
-    // pro próprio avaliador.
-    let credencial = await loginBootstrap.carregarCredencial(avaliador);
-    await credencial.constructor.updateOne(
-      { _id: credencial._id },
-      { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
-    );
-  } catch (err) {
-    console.error('Erro ao redefinir senha de avaliador', err);
-    return res.status(500).send('error');
-  }
-
-  res.send(email);
-
-  var templatesDir = path.resolve(__dirname, '..', 'templates');
-  var template = new EmailTemplate(path.join(templatesDir, 'redefinicao-avaliador'));
-  const transport = nodemailer.createTransport({
-    host: 'smtp.gmail.com', port: 587,
-    auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
-  });
-  var locals = { email: email, nome: avaliador.nome, url: "http://www.movaci.com.br/avaliadores/dashboard/nova-senha/" + token };
-  template.render(locals, function (err, results) {
-    if (err) { console.error(err); return; }
-    transport.sendMail({
-      from: 'MOVACI <va-movaci@ifsul.edu.br>',
-      to: email,
-      subject: 'MOVACI - Redefinição de senha (avaliador)',
-      html: results.html,
-      text: results.text
-    }, function (err) {
-      if (err) { console.error(err); return; }
-    });
-  });
-});
-
-router.post('/dashboard/nova-senha/:token', async (req, res) => {
-  try {
-    // Token na Pessoa (fluxo novo) ou no avaliador (emitido antes do login único / sem vínculo).
-    let dono = await loginBootstrap.encontrarPorTokenReset(AvaliadorSchema, req.params.token);
-    if (!dono) return res.send('erro2');
-    if (dono.hasExpired()) return res.send('erro3');
-    if (!Avaliador.senhaForte(req.body.password)) {
-      return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
-    }
-
-    // A senha nova vai pra quem guarda a senha (a Pessoa, se o avaliador estiver vinculado -
-    // mesmo que o token legado tenha sido gravado no avaliador).
-    let credencial = await loginBootstrap.carregarCredencial(dono);
-    let salt = await bcrypt.genSalt(10);
-    let hash = await bcrypt.hash(req.body.password, salt);
-    credencial.password = hash;
-    credencial.senhaDefinida = true;
-    credencial.resetPasswordToken = undefined;
-    credencial.resetPasswordCreatedDate = undefined;
-    await credencial.save();
-    if (credencial !== dono) {
-      dono.resetPasswordToken = undefined;
-      dono.resetPasswordCreatedDate = undefined;
-      await dono.save();
-    }
-    res.send('Senha alterada');
-  } catch (err) {
-    console.error('Erro ao definir nova senha de avaliador', err);
-    return res.send('erro');
-  }
-});
+// Quem está logado, senha e recuperação de senha agora são da conta (routes/index.js
+// /conta/loggedin, /conta/trocar-senha, /conta/esqueci-senha e /conta/nova-senha/:token - esta
+// última também aceita tokens antigos gravados no Avaliador).
 
 // Dados pessoais - GET pra carregar a tela, PUT pra editar (campos de identidade como
 // cpf/email/nome ficam de fora, só o admin altera esses hoje).
 router.get('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
   try {
-    let avaliador = await AvaliadorSchema.findById(req.user._id, '-password -resetPasswordToken -resetPasswordCreatedDate');
+    let avaliador = await AvaliadorSchema.findById(req.avaliador._id, '-password -resetPasswordToken -resetPasswordCreatedDate');
     res.send(avaliador);
   } catch (err) {
     console.error('Erro ao buscar dados do avaliador', err);
@@ -319,31 +198,12 @@ router.put('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
     curriculo: req.body.curriculo
   };
   try {
-    await AvaliadorSchema.findByIdAndUpdate(req.user._id, { $set: campos }, { returnDocument: 'after' });
+    await AvaliadorSchema.findByIdAndUpdate(req.avaliador._id, { $set: campos }, { returnDocument: 'after' });
     res.send('success');
   } catch (err) {
     console.error('Erro ao atualizar dados do avaliador', err);
     return res.status(500).send('Erro ao salvar.');
   }
-});
-
-// Certificados disponíveis - mesma regra já usada na emissão pública por CPF
-// (routes/index.js#pesquisaAvaliador): só quem tem presença confirmada (avaliacao:true)
-// tem certificado. O token já existe sempre (gerado automaticamente no pre-save do
-// schema), então aqui não precisa gerar nada, só devolver os dados de quem já está logado.
-router.get('/dashboard/meus-certificados', ensureAvaliador, (req, res) => {
-  if (!req.user.avaliacao) return res.send([]);
-  let avaliadas = (req.user.categoriasEixosAvaliados && req.user.categoriasEixosAvaliados.length)
-    ? req.user.categoriasEixosAvaliados
-    : req.user.categoriasEixos;
-  res.send([{
-    nome: req.user.nome,
-    email: req.user.email,
-    token: req.user.token,
-    createdAt: req.user.createdAt,
-    ano: new Date(req.user.createdAt).getFullYear(),
-    categoriasAvaliadas: Avaliador.formatarCategoriasEixos(avaliadas)
-  }]);
 });
 
 // Lançar nota é coisa do admin (Avaliação > Inserir, Inconsistências, app de Avaliação/Ranking)

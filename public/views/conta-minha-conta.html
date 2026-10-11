@@ -1,6 +1,5 @@
-<!-- Bloco compartilhado "Minha conta" (controller contaDadosCtrl) - incluído em
-     avaliador-dados.html e participante-dados.html via ng-include. As participações por
-     Mostra ficam no "Meu painel" (meu-painel.html). -->
+<!-- Bloco "Minha conta" (controller contaDadosCtrl) - incluído em painel-dados.html via
+     ng-include. As participações por Mostra ficam no "Meu painel" (meu-painel.html). -->
 <div data-ng-controller="contaDadosCtrl">
   <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
     <h3 style="margin-top:0;color:#225024;">Identificação</h3>
@@ -20,24 +19,41 @@
       </md-input-container>
       <p style="font-size:12px;color:rgba(0,0,0,0.5);margin:-10px 0 24px 0;">Nome e documento só podem ser alterados pela organização.</p>
 
-      <md-input-container class="md-block" style="margin-bottom:0;">
-        <label>E-mail (seu login)</label>
-        <input type="email" data-ng-model="conta.email" disabled/>
-      </md-input-container>
-      <p data-ng-if="conta.emailPendente" style="font-size:13px;color:#e65100;margin-top:0;">
-        Troca pendente para <strong>{{conta.emailPendente}}</strong>: clique no link que enviamos para esse endereço (vale 24 horas).
+      <h4 style="margin:0 0 4px 0;color:#225024;">E-mails de acesso</h4>
+      <p style="font-size:12px;color:rgba(0,0,0,0.55);margin-top:0;">
+        Você entra na MOVACI com qualquer um destes e-mails (até {{conta.maxEmails || 3}}). Avisos e certificados vão para o principal.
       </p>
-      <md-button data-ng-if="!trocaEmail.aberta" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-click="abrirTrocaEmail()">Alterar e-mail</md-button>
+      <div layout="row" layout-align="start center" style="padding:6px 0;border-top:1px solid #f0f0f0;">
+        <span flex style="word-break:break-all;">{{conta.email}}</span>
+        <span style="font-size:12px;color:#2e7d32;font-weight:bold;margin-left:8px;">PRINCIPAL</span>
+      </div>
+      <div layout="row" layout-align="start center" style="padding:6px 0;border-top:1px solid #f0f0f0;" data-ng-repeat="e in conta.emailsAlternativos">
+        <span flex style="word-break:break-all;">{{e}}</span>
+        <md-button class="md-primary" style="text-transform:none;min-width:0;" data-ng-click="abrirTrocaEmail('principal', e)">Tornar principal</md-button>
+        <md-button style="text-transform:none;min-width:0;color:#c62828;" data-ng-click="removerEmail(e)">Remover</md-button>
+      </div>
+      <p data-ng-if="conta.emailPendente" style="font-size:13px;color:#e65100;">
+        Confirmação pendente para <strong>{{conta.emailPendente}}</strong>
+        ({{conta.emailPendenteTipo === 'alternativo' ? 'novo e-mail de acesso' : 'novo e-mail principal'}}): clique no link que enviamos para esse endereço (vale 24 horas).
+      </p>
+      <div data-ng-if="!trocaEmail.aberta && conta.cadastroUnico" style="margin-top:8px;">
+        <md-button class="md-raised" style="text-transform:none;margin-left:0;" data-ng-click="abrirTrocaEmail('principal')">Alterar e-mail principal</md-button>
+        <md-button class="md-raised" style="text-transform:none;" data-ng-if="podeIncluirEmail()" data-ng-click="abrirTrocaEmail('alternativo')">Incluir outro e-mail</md-button>
+      </div>
       <p data-ng-if="!trocaEmail.aberta && !conta.cadastroUnico" style="font-size:12px;color:rgba(0,0,0,0.5);">
-        Sua conta ainda não está no cadastro único: para trocar o e-mail, fale com a organização.
+        Sua conta ainda não está no cadastro único: para alterar o e-mail, fale com a organização.
       </p>
 
       <form name="trocaEmailForm" novalidate data-ng-if="trocaEmail.aberta" style="border-top:1px solid #eee;padding-top:12px;margin-top:8px;">
-        <p style="font-size:13px;color:rgba(0,0,0,0.65);margin-top:0;">
-          O e-mail é o seu login. Vamos enviar um link de confirmação para o endereço novo; a troca só vale depois que você clicar nele.
+        <p style="font-size:13px;color:rgba(0,0,0,0.65);margin-top:0;" data-ng-if="trocaEmail.fixo">
+          {{trocaEmail.novoEmail}} passa a ser o seu e-mail principal (o atual continua valendo para entrar). Confirme com a sua senha.
         </p>
-        <md-input-container class="md-block">
-          <label>Novo e-mail</label>
+        <p style="font-size:13px;color:rgba(0,0,0,0.65);margin-top:0;" data-ng-if="!trocaEmail.fixo">
+          {{trocaEmail.modo === 'alternativo' ? 'Mais um e-mail para entrar na MOVACI.' : 'Novo e-mail principal.'}}
+          Vamos enviar um link de confirmação para o endereço novo; ele só vale depois que você clicar nele.
+        </p>
+        <md-input-container class="md-block" data-ng-if="!trocaEmail.fixo">
+          <label>{{trocaEmail.modo === 'alternativo' ? 'E-mail a incluir' : 'Novo e-mail principal'}}</label>
           <input type="email" name="novoEmail" data-ng-model="trocaEmail.novoEmail" required data-ng-pattern="/^[^\s@]+@[^\s@]+\.[^\s@]+$/"/>
           <div class="md-errors-spacer">
             <div class="message-error" data-ng-show="trocaEmailForm.novoEmail.$touched && trocaEmailForm.novoEmail.$invalid">Informe um e-mail válido.</div>
@@ -49,7 +65,7 @@
         </md-input-container>
         <div layout="row" layout-align="end center">
           <md-button style="text-transform:none;" data-ng-click="cancelarTrocaEmail()">Cancelar</md-button>
-          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="trocaEmailForm.$invalid || trocaEmail.enviando" data-ng-click="pedirTrocaEmail()">Enviar link de confirmação</md-button>
+          <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="trocaEmailForm.$invalid || trocaEmail.enviando" data-ng-click="pedirTrocaEmail()">{{trocaEmail.fixo ? 'Tornar principal' : 'Enviar link de confirmação'}}</md-button>
         </div>
       </form>
     </div>

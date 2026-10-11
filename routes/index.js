@@ -31,7 +31,8 @@ const express = require('express')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
 , perfisController = require('../controllers/perfis-controller')
-, certificadoSeminario = require('../utils/certificadoSeminario');
+, certificadoSeminario = require('../utils/certificadoSeminario')
+, sessao = require('../utils/sessao');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -961,17 +962,17 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
       Projeto.getLoginAdmin(username, (err, user) => {
         if (err) { console.error(err); return; }
         if(!user){
-          // Login único (ver utils/loginBootstrap.js#autenticarPapel): Avaliador e
-          // Participante resolvem pela mesma Pessoa - uma só senha, sem diferenciar papel.
-          console.log('Usuário não é admin. Tentando avaliador/participante (login único por Pessoa).');
-          loginBootstrap.autenticarPapel(username, password, (err, papel) => {
-            if (err) { console.error(err); return; }
-            if (!papel) {
-              console.log('Usuário não é avaliador nem participante. Usuário desconhecido');
+          // Login de pessoa (painel único, ver utils/loginBootstrap.js#autenticarLogin): a
+          // sessão é a Pessoa, por qualquer um dos e-mails dela, com ou sem papel.
+          console.log('Usuário não é admin. Tentando login de pessoa.');
+          loginBootstrap.autenticarLogin(username, password, (err, usuario) => {
+            if (err) { console.error(err); return done(err); }
+            if (!usuario) {
+              console.log('Login de pessoa recusado.');
               return done(null, false, {message: 'Unknown User'});
             }
-            console.log(papel.constructor.modelName + ' conectado');
-            return done(null, papel);
+            console.log(usuario.constructor.modelName + ' conectado(a)');
+            return done(null, usuario);
           });
           return;
         }
@@ -1004,18 +1005,29 @@ passport.use('unico', new LocalStrategy(function(username, password, done) {
   });
 }));
 
-passport.serializeUser(function(user, done){ done(null, user.id) });
+// Pessoa vai pra sessão com prefixo ("pessoa:<id>") - sem ele, o _id dela poderia colidir
+// com o de outra coleção na cascata abaixo. Admin/Projeto/conta legada seguem só com o id.
+passport.serializeUser(function(user, done){
+  done(null, sessao.ehPessoa(user) ? 'pessoa:' + user.id : user.id);
+});
 
 passport.deserializeUser(async function(id, done){
   try {
+    if (typeof id === 'string' && id.indexOf('pessoa:') === 0) {
+      return done(null, (await pessoaSchema.findById(id.slice(7))) || false);
+    }
     let user = await adminSchema.findById(id);
     if (user) return done(null, user);
     user = await ProjetoSchema.findById(id);
     if (user) return done(null, user);
-    user = await avaliadorSchema.findById(id);
-    if (user) return done(null, user);
-    user = await participanteSchema.findById(id);
-    return done(null, user);
+    user = await avaliadorSchema.findById(id) || await participanteSchema.findById(id);
+    // Sessão aberta antes do painel único (era o papel): se o papel tem Pessoa, a sessão
+    // passa a ser a Pessoa, igual a um login novo.
+    if (user && user.pessoa) {
+      let pessoa = await pessoaSchema.findById(user.pessoa);
+      if (pessoa) return done(null, pessoa);
+    }
+    return done(null, user || false);
   } catch (err) {
     return done(err);
   }
@@ -1023,13 +1035,12 @@ passport.deserializeUser(async function(id, done){
 
 router.post('/login', authLimiter, passport.authenticate('unico'), async (req, res) => {
   // res.send(req.session);
-  // Avaliador/Participante: quem guarda a senha (e o "primeiro acesso") é a Pessoa vinculada,
-  // ou o próprio registro se não houver vínculo - ver utils/loginBootstrap.js#carregarCredencial.
-  if (req.user.constructor.modelName === 'Avaliador' || req.user.constructor.modelName === 'Participante') {
-    let base = req.user.constructor.modelName === 'Avaliador' ? '/avaliadores' : '/participantes';
+  // Pessoa (ou conta legada de Avaliador/Participante): todos no mesmo painel; primeiro
+  // acesso (senha = documento) vai direto definir a senha.
+  if (sessao.ehLoginDePessoa(req)) {
     try {
-      let credencial = await loginBootstrap.carregarCredencial(req.user);
-      res.send({redirect: credencial.senhaDefinida ? base + '/dashboard' : base + '/dashboard/trocar-senha'});
+      let credencial = await sessao.credencialDaSessao(req);
+      res.send({redirect: credencial.senhaDefinida ? '/painel' : '/painel/trocar-senha'});
     } catch (err) {
       console.error('Erro ao decidir redirecionamento do login', err);
       res.status(500).send('error');
@@ -1044,56 +1055,35 @@ router.post('/login', authLimiter, passport.authenticate('unico'), async (req, r
   //res.cookie('userid', user.id, { maxAge: 2592000000 });  // Expires in one month
 });
 
-// Troca de painel sem logar de novo: a mesma Pessoa pode ser Avaliador e Participante ao
-// mesmo tempo (ver utils/loginBootstrap.js#autenticarPapel, que prioriza Avaliador no
-// login) - esta rota troca a sessão pro outro papel, se existir, sem pedir senha.
-router.get('/dashboard/trocar-papel', ensureAuthenticated, async (req, res) => {
-  let modelName = req.user.constructor.modelName;
-  if (modelName !== 'Avaliador' && modelName !== 'Participante') return res.status(400).send('Este login não tem outro papel pra trocar.');
-  if (!req.user.pessoa) return res.status(400).send('Esta conta não tem outro papel vinculado.');
-
-  try {
-    let Outro = modelName === 'Avaliador' ? participanteSchema : avaliadorSchema;
-    let outro = await Outro.findOne({ pessoa: req.user.pessoa }).sort({ createdAt: -1 });
-    if (!outro) return res.status(404).send('Você não tem esse outro papel.');
-    req.login(outro, (err) => {
-      if (err) { console.error('Erro ao trocar de papel', err); return res.status(500).send('error'); }
-      res.send({ papel: outro.constructor.modelName === 'Avaliador' ? 'avaliador' : 'participante' });
-    });
-  } catch (err) {
-    console.error('Erro ao trocar de papel', err);
-    res.status(500).send('error');
-  }
-});
-
 // Recuperação de senha unificada pra Avaliador/Participante (ver models/pessoa-schema.js) -
 // substitui os dois links separados que existiam antes na tela de login. Mesmo padrão de
 // token/e-mail já usado em routes/avaliadores.js e routes/participantes.js, só que num
 // lugar só, que não precisa saber de antemão qual papel a pessoa tem.
 router.post('/conta/esqueci-senha', authLimiter, async (req, res) => {
-  let email = req.body.email;
-  let token = crypto.randomBytes(20).toString('hex');
-  let nome;
+  // toString(): o body pode vir como objeto (ex: {"$ne": null}) - nunca vai direto pra query.
+  let email = (req.body.email || '').toString().trim();
+  // Um link por dono de senha: normalmente uma Pessoa só; mais de uma só nos cadastros
+  // duplicados antigos com o mesmo e-mail (cada uma recebe o próprio link, com o nome dela).
+  let envios = [];
   try {
-    let pessoa = await pessoaSchema.findOne({ email: email });
-    if (pessoa) {
-      nome = pessoa.nome;
-      await pessoa.constructor.updateOne(
-        { _id: pessoa._id },
-        { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
-      );
-    } else {
+    let pessoas = await pessoaController.buscarPorEmail(email);
+    let donos = pessoas;
+    if (!donos.length) {
       // Conta legada sem vínculo (ou e-mail divergente): tenta Avaliador, depois Participante.
-      let avaliador = await avaliadorSchema.findOne({ email: email });
-      let participante = avaliador ? null : await participanteSchema.findOne({ email: email });
-      let registro = avaliador || participante;
+      let re = pessoaController.regexEmailExato(email);
+      let registro = email ? (await avaliadorSchema.findOne({ email: re }) || await participanteSchema.findOne({ email: re })) : null;
       if (!registro) return res.status(404).send('E-mail não encontrado.');
-      nome = registro.nome;
       let credencial = await loginBootstrap.carregarCredencial(registro);
-      await credencial.constructor.updateOne(
-        { _id: credencial._id },
+      credencial.nomeAviso = registro.nome;
+      donos = [credencial];
+    }
+    for (let dono of donos) {
+      let token = crypto.randomBytes(20).toString('hex');
+      await dono.constructor.updateOne(
+        { _id: dono._id },
         { $set: { resetPasswordToken: token, resetPasswordCreatedDate: Date.now() + 3600000 } }
       );
+      envios.push({ nome: dono.nome || dono.nomeAviso, token: token });
     }
   } catch (err) {
     console.error('Erro ao redefinir senha (login único)', err);
@@ -1108,17 +1098,19 @@ router.post('/conta/esqueci-senha', authLimiter, async (req, res) => {
     host: 'smtp.gmail.com', port: 587,
     auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
   });
-  var locals = { email: email, nome: nome, url: "http://www.movaci.com.br/conta/nova-senha/" + token };
-  template.render(locals, function (err, results) {
-    if (err) { console.error(err); return; }
-    transport.sendMail({
-      from: 'MOVACI <va-movaci@ifsul.edu.br>',
-      to: email,
-      subject: 'MOVACI - Redefinição de senha',
-      html: results.html,
-      text: results.text
-    }, function (err) {
+  envios.forEach((envio) => {
+    var locals = { email: email, nome: envio.nome, url: "http://www.movaci.com.br/conta/nova-senha/" + envio.token };
+    template.render(locals, function (err, results) {
       if (err) { console.error(err); return; }
+      transport.sendMail({
+        from: 'MOVACI <va-movaci@ifsul.edu.br>',
+        to: email,
+        subject: 'MOVACI - Redefinição de senha',
+        html: results.html,
+        text: results.text
+      }, function (err) {
+        if (err) { console.error(err); return; }
+      });
     });
   });
 });
@@ -1152,14 +1144,10 @@ router.post('/conta/nova-senha/:token', async (req, res) => {
   }
 });
 
-// --- Minha conta (Avaliador/Participante logado) -------------------------------------
-// Dados de identidade da Pessoa (cadastro único) + participações em cada Mostra, derivadas
-// dos vínculos (controllers/perfis-controller.js). Nome e documento só a organização altera;
-// o e-mail a própria pessoa troca, com confirmação (ver /conta/alterar-email abaixo).
-
-function ehPapelComLogin(req) {
-  let m = req.user && req.user.constructor && req.user.constructor.modelName;
-  return m === 'Avaliador' || m === 'Participante';
+// Login de pessoa (Pessoa, ou conta legada de Avaliador/Participante) - ver utils/sessao.js.
+function ensurePessoa(req, res, next) {
+  if (req.isAuthenticated() && sessao.ehLoginDePessoa(req)) return next();
+  res.sendStatus(403);
 }
 
 function enviarAvisoConta(para, assunto, locals) {
@@ -1168,42 +1156,87 @@ function enviarAvisoConta(para, assunto, locals) {
     host: 'smtp.gmail.com', port: 587,
     auth: { user: process.env.SMTP_GMAIL_USER, pass: process.env.SMTP_GMAIL_PASS }
   });
-  template.render(locals, function (err, results) {
-    if (err) { console.error(err); return; }
+  template.render(locals, (err, results) => {
+    if (err) return console.error('Erro ao montar aviso de conta', err);
     transport.sendMail({ from: 'MOVACI <va-movaci@ifsul.edu.br>', to: para, subject: assunto, html: results.html, text: results.text },
       function (err) { if (err) console.error('Erro ao enviar aviso de conta', err); });
   });
 }
 
-function regexEmailExato(email) {
-  return new RegExp('^' + email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// E-mail livre pra esta Pessoa: não pode ser login de outra Pessoa nem de um papel legado
-// (sem vínculo, ou vinculado a outra Pessoa) - o login tenta os dois.
-async function emailLivreParaPessoa(email, pessoaId) {
-  let re = regexEmailExato(email);
-  if (await pessoaSchema.findOne({ email: re, _id: { $ne: pessoaId } }, '_id')) return false;
-  let filtroPapel = { email: re, pessoa: { $ne: pessoaId } };
-  if (await avaliadorSchema.findOne(filtroPapel, '_id')) return false;
-  if (await participanteSchema.findOne(filtroPapel, '_id')) return false;
-  return true;
+function senhaConfere(senha, credencial) {
+  return new Promise((resolve, reject) =>
+    loginBootstrap.compareLoginOuBootstrap((senha || '').toString(), credencial, (err, ok) => err ? reject(err) : resolve(ok)));
 }
 
-router.get('/conta/meus-dados', ensureAuthenticated, async (req, res) => {
-  if (!ehPapelComLogin(req)) return res.sendStatus(403);
+// Quem está logado no painel: nome, se já definiu senha própria e quais papéis tem (o
+// "Meus dados" mostra o bloco de avaliador(a) só pra quem é).
+router.get('/conta/loggedin', ensurePessoa, async (req, res) => {
   try {
-    let pessoa = req.user.pessoa ? await pessoaSchema.findById(req.user.pessoa._id || req.user.pessoa).lean() : null;
+    let pessoa = await sessao.pessoaDaSessao(req);
+    let credencial = pessoa || req.user;
+    let [avaliador, participante] = await Promise.all([sessao.avaliadorDaSessao(req), sessao.participanteDaSessao(req)]);
+    res.send({
+      nome: (pessoa && pessoa.nome) || req.user.nome,
+      email: (pessoa && pessoa.email) || req.user.email,
+      senhaDefinida: !!credencial.senhaDefinida,
+      avaliador: !!avaliador,
+      participante: !!participante
+    });
+  } catch (err) {
+    console.error('Erro ao carregar quem está logado', err);
+    res.status(500).send('error');
+  }
+});
+
+// Definir (primeiro acesso, sem senha atual - a "senha" usada pra entrar foi o documento) ou
+// trocar a senha estando logado(a) (exige a senha atual).
+router.post('/conta/trocar-senha', authLimiter, ensurePessoa, async (req, res) => {
+  let novaSenha = req.body.novaSenha;
+  if (!loginBootstrap.senhaForte(novaSenha)) {
+    return res.status(400).send('A senha precisa ter de 8 a 12 caracteres, com maiúscula, minúscula, número e símbolo.');
+  }
+  try {
+    let credencial = await sessao.credencialDaSessao(req);
+    if (credencial.senhaDefinida) {
+      if (!req.body.senhaAtual) return res.status(400).send('Informe a senha atual.');
+      if (!(await bcrypt.compare(req.body.senhaAtual.toString(), credencial.password))) return res.status(400).send('Senha atual incorreta.');
+    }
+    credencial.password = await bcrypt.hash(novaSenha, await bcrypt.genSalt(10));
+    credencial.senhaDefinida = true;
+    await credencial.save();
+    res.send('success');
+  } catch (err) {
+    console.error('Erro ao trocar senha', err);
+    res.status(500).send('Erro ao trocar senha.');
+  }
+});
+
+// --- Minha conta -----------------------------------------------------------------------
+// Dados de identidade da Pessoa (cadastro único) + participações em cada Mostra, derivadas
+// dos vínculos (controllers/perfis-controller.js). Nome e documento só a organização altera;
+// os e-mails a própria pessoa gerencia, sempre com confirmação por link.
+
+router.get('/conta/meus-dados', ensurePessoa, async (req, res) => {
+  try {
+    let pessoa = await sessao.pessoaDaSessao(req);
+    if (pessoa) pessoa = pessoa.toObject();
     let documento = pessoa ? pessoa.documento : documentoValidator.normalizarDocumento(req.user.cpf);
     let perfis = documento ? await perfisController.perfis(documento) : null;
     res.send({
       nome: (pessoa && pessoa.nome) || req.user.nome,
       email: (pessoa && pessoa.email) || req.user.email,
+      emailsAlternativos: (pessoa && pessoa.emailsAlternativos) || [],
+      maxEmails: pessoaController.MAX_EMAILS,
       documento: documento,
       telefone: (pessoa && pessoa.telefone) || req.user.telefone,
       nacionalidade: (pessoa && pessoa.nacionalidade) || req.user.nacionalidade,
       cadastroUnico: !!pessoa,
       emailPendente: pessoa && pessoa.emailPendente && pessoa.emailPendenteExpira > Date.now() ? pessoa.emailPendente : undefined,
+      emailPendenteTipo: pessoa && pessoa.emailPendente ? (pessoa.emailPendenteTipo || 'principal') : undefined,
       mostras: perfis ? perfis.mostras : []
     });
   } catch (err) {
@@ -1212,47 +1245,84 @@ router.get('/conta/meus-dados', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Pede a troca do e-mail (= login). Exige a senha atual e só aplica depois que a pessoa
-// clicar no link enviado ao e-mail NOVO (prova que ela tem acesso a ele) - sem isso, um erro
-// de digitação deixaria a conta sem login nem recuperação de senha.
-router.post('/conta/alterar-email', authLimiter, ensureAuthenticated, async (req, res) => {
-  if (!ehPapelComLogin(req)) return res.sendStatus(403);
+// Pedido de e-mail novo (principal ou alternativo): exige a senha atual e só vale depois que a
+// pessoa clicar no link enviado ao endereço NOVO (prova que ela tem acesso a ele) - sem isso,
+// um erro de digitação deixaria a conta com um login que ninguém recebe.
+async function pedirEmail(req, res, tipo) {
   try {
     let novoEmail = (req.body.novoEmail || '').toString().trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) return res.status(400).send('Informe um e-mail válido.');
-    if (!req.user.pessoa) return res.status(400).send('Sua conta ainda não está ligada ao cadastro único. Peça a troca de e-mail à organização.');
+    if (!emailValido(novoEmail)) return res.status(400).send('Informe um e-mail válido.');
+    let pessoa = await sessao.pessoaDaSessao(req);
+    if (!pessoa) return res.status(400).send('Sua conta ainda não está ligada ao cadastro único. Peça a alteração de e-mail à organização.');
+    if (!(await senhaConfere(req.body.senha, pessoa))) return res.status(400).send('Senha atual incorreta.');
 
-    let pessoa = await pessoaSchema.findById(req.user.pessoa._id || req.user.pessoa);
-    if (!pessoa) return res.status(400).send('Cadastro não encontrado. Peça a troca de e-mail à organização.');
-    if ((pessoa.email || '').trim().toLowerCase() === novoEmail) return res.status(400).send('Este já é o seu e-mail atual.');
-
-    let senhaOk = await new Promise((resolve, reject) =>
-      loginBootstrap.compareLoginOuBootstrap(req.body.senha || '', pessoa, (err, ok) => err ? reject(err) : resolve(ok)));
-    if (!senhaOk) return res.status(400).send('Senha atual incorreta.');
-
-    if (!(await emailLivreParaPessoa(novoEmail, pessoa._id))) return res.status(400).send('Este e-mail já é usado por outra conta.');
+    let ehMeu = pessoaController.pessoaTemEmail(pessoa, novoEmail);
+    if (tipo === 'principal') {
+      if (pessoaController.mesmoEmail(pessoa.email, novoEmail)) return res.status(400).send('Este já é o seu e-mail principal.');
+      // Já é um alternativo dela (já confirmado): só troca de lugar com o principal, sem link.
+      if (ehMeu) {
+        let alternativos = (pessoa.emailsAlternativos || []).filter((e) => !pessoaController.mesmoEmail(e, novoEmail));
+        if (pessoa.email) alternativos.push(pessoa.email);
+        pessoa.email = novoEmail;
+        pessoa.emailsAlternativos = alternativos;
+        await pessoa.save();
+        await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
+        await participanteSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
+        return res.send({ trocado: true, email: pessoa.email, emailsAlternativos: pessoa.emailsAlternativos });
+      }
+    } else {
+      if (ehMeu) return res.status(400).send('Este e-mail já é seu.');
+      if (pessoaController.emailsDa(pessoa).length >= pessoaController.MAX_EMAILS) {
+        return res.status(400).send('Você já tem ' + pessoaController.MAX_EMAILS + ' e-mails. Remova um antes de incluir outro.');
+      }
+    }
+    if (!(await pessoaController.emailLivre(novoEmail, pessoa._id))) return res.status(400).send('Este e-mail já é usado por outra conta.');
 
     let token = crypto.randomBytes(20).toString('hex');
     pessoa.emailPendente = novoEmail;
+    pessoa.emailPendenteTipo = tipo;
     pessoa.emailPendenteToken = token;
     pessoa.emailPendenteExpira = Date.now() + 24 * 3600000;
     await pessoa.save();
 
-    enviarAvisoConta(novoEmail, 'MOVACI - Confirme seu novo e-mail', {
-      titulo: 'Confirme seu novo e-mail', nome: pessoa.nome,
-      paragrafos: ['Recebemos um pedido para trocar o e-mail da sua conta na MOVACI para este endereço. Ele passa a ser o seu login depois que você confirmar.',
+    enviarAvisoConta(novoEmail, 'MOVACI - Confirme seu e-mail', {
+      titulo: 'Confirme seu e-mail', nome: pessoa.nome,
+      paragrafos: [tipo === 'principal'
+          ? 'Recebemos um pedido para trocar o e-mail principal da sua conta na MOVACI para este endereço. Ele passa a valer depois que você confirmar.'
+          : 'Recebemos um pedido para incluir este endereço como mais um e-mail de acesso da sua conta na MOVACI. Ele passa a valer depois que você confirmar.',
         'O link vale por 24 horas. Se não foi você, ignore esta mensagem: nada será alterado.'],
-      url: 'https://movaci.com.br/conta/confirmar-email/' + token, rotuloBotao: 'Confirmar novo e-mail'
+      url: 'https://movaci.com.br/conta/confirmar-email/' + token, rotuloBotao: 'Confirmar e-mail'
     });
-    res.send({ emailPendente: novoEmail });
+    res.send({ emailPendente: novoEmail, emailPendenteTipo: tipo });
   } catch (err) {
-    console.error('Erro ao pedir troca de e-mail', err);
-    res.status(500).send('Erro ao pedir a troca de e-mail.');
+    console.error('Erro ao pedir e-mail novo', err);
+    res.status(500).send('Erro ao pedir a alteração de e-mail.');
+  }
+}
+
+router.post('/conta/alterar-email', authLimiter, ensurePessoa, (req, res) => pedirEmail(req, res, 'principal'));
+router.post('/conta/emails-alternativos', authLimiter, ensurePessoa, (req, res) => pedirEmail(req, res, 'alternativo'));
+
+// Remove um e-mail alternativo (o principal não sai - pra trocá-lo, use /conta/alterar-email).
+router.post('/conta/emails-alternativos/remover', authLimiter, ensurePessoa, async (req, res) => {
+  try {
+    let email = (req.body.email || '').toString().trim();
+    let pessoa = await sessao.pessoaDaSessao(req);
+    if (!pessoa) return res.status(400).send('Cadastro não encontrado.');
+    let antes = (pessoa.emailsAlternativos || []).length;
+    pessoa.emailsAlternativos = (pessoa.emailsAlternativos || []).filter((e) => !pessoaController.mesmoEmail(e, email));
+    if (pessoa.emailsAlternativos.length === antes) return res.status(400).send('Este e-mail não está entre os seus e-mails alternativos.');
+    await pessoa.save();
+    res.send({ emailsAlternativos: pessoa.emailsAlternativos });
+  } catch (err) {
+    console.error('Erro ao remover e-mail alternativo', err);
+    res.status(500).send('Erro ao remover o e-mail.');
   }
 });
 
 // Link do e-mail de confirmação (GET de propósito: é aberto direto do cliente de e-mail).
-// Aplica a troca na Pessoa e nos papéis vinculados a ela, e avisa o endereço antigo.
+// Principal: troca na Pessoa e nos papéis vinculados e avisa o endereço antigo. Alternativo:
+// acrescenta à lista de e-mails de acesso.
 router.get('/conta/confirmar-email/:token', async (req, res) => {
   let pagina = (titulo, texto) => res.send('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MOVACI</title></head>' +
     '<body style="font-family:Helvetica,Arial,sans-serif;background:#fafafa;margin:0;padding:40px 16px;"><div style="max-width:520px;margin:auto;background:#fff;padding:28px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.15);">' +
@@ -1262,15 +1332,35 @@ router.get('/conta/confirmar-email/:token', async (req, res) => {
     let token = (req.params.token || '').toString();
     let pessoa = /^[0-9a-f]{40}$/.test(token) ? await pessoaSchema.findOne({ emailPendenteToken: token }) : null;
     if (!pessoa || !pessoa.emailPendente) return pagina('Link inválido', 'Este link de confirmação não é válido ou já foi usado.');
-    if (!(pessoa.emailPendenteExpira > Date.now())) return pagina('Link expirado', 'Este link expirou. Peça a troca de e-mail de novo em "Meus dados".');
+    if (!(pessoa.emailPendenteExpira > Date.now())) return pagina('Link expirado', 'Este link expirou. Peça de novo em "Meus dados".');
     let novoEmail = pessoa.emailPendente;
-    if (!(await emailLivreParaPessoa(novoEmail, pessoa._id))) return pagina('E-mail indisponível', 'Este e-mail passou a ser usado por outra conta. Peça a troca de novo com outro endereço.');
+    let tipo = pessoa.emailPendenteTipo || 'principal';
+    if (!(await pessoaController.emailLivre(novoEmail, pessoa._id))) return pagina('E-mail indisponível', 'Este e-mail passou a ser usado por outra conta. Peça de novo com outro endereço.');
+
+    let limpar = () => {
+      pessoa.emailPendente = undefined;
+      pessoa.emailPendenteTipo = undefined;
+      pessoa.emailPendenteToken = undefined;
+      pessoa.emailPendenteExpira = undefined;
+    };
+    let emailSeguro = novoEmail.replace(/[<>&"]/g, '');
+
+    if (tipo === 'alternativo') {
+      if (!pessoaController.pessoaTemEmail(pessoa, novoEmail)) {
+        if (pessoaController.emailsDa(pessoa).length >= pessoaController.MAX_EMAILS) {
+          limpar(); await pessoa.save();
+          return pagina('Limite de e-mails', 'Sua conta já tem ' + pessoaController.MAX_EMAILS + ' e-mails. Remova um em "Meus dados" e peça de novo.');
+        }
+        pessoa.emailsAlternativos = (pessoa.emailsAlternativos || []).concat([novoEmail]);
+      }
+      limpar(); await pessoa.save();
+      return pagina('E-mail confirmado', 'Pronto! Agora você também pode entrar na MOVACI com ' + emailSeguro + '. Sua senha continua a mesma.');
+    }
 
     let emailAntigo = pessoa.email;
     pessoa.email = novoEmail;
-    pessoa.emailPendente = undefined;
-    pessoa.emailPendenteToken = undefined;
-    pessoa.emailPendenteExpira = undefined;
+    pessoa.emailsAlternativos = (pessoa.emailsAlternativos || []).filter((e) => !pessoaController.mesmoEmail(e, novoEmail));
+    limpar();
     await pessoa.save();
     await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
     await participanteSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: novoEmail } });
@@ -1278,14 +1368,14 @@ router.get('/conta/confirmar-email/:token', async (req, res) => {
     if (emailAntigo) {
       enviarAvisoConta(emailAntigo, 'MOVACI - Seu e-mail de acesso foi alterado', {
         titulo: 'E-mail de acesso alterado', nome: pessoa.nome,
-        paragrafos: ['O e-mail de acesso da sua conta na MOVACI foi trocado para ' + novoEmail + '.',
+        paragrafos: ['O e-mail principal da sua conta na MOVACI foi trocado para ' + novoEmail + '.',
           'Se não foi você, entre em contato com a organização imediatamente.']
       });
     }
-    pagina('E-mail confirmado', 'Pronto! A partir de agora, use ' + novoEmail.replace(/[<>&"]/g, '') + ' para entrar na MOVACI. Sua senha continua a mesma.');
+    pagina('E-mail confirmado', 'Pronto! A partir de agora, ' + emailSeguro + ' é o seu e-mail principal na MOVACI. Sua senha continua a mesma.');
   } catch (err) {
-    console.error('Erro ao confirmar troca de e-mail', err);
-    res.status(500).send('Erro ao confirmar a troca de e-mail.');
+    console.error('Erro ao confirmar e-mail', err);
+    res.status(500).send('Erro ao confirmar o e-mail.');
   }
 });
 
@@ -1582,6 +1672,13 @@ router.get('/solicitar-escola', function(req, res, next) {
 
 // :slug opcional (Fase 2) - mesma lógica de /projetos/inscricao/:slug? acima.
 router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
+  res.render('layout.ejs');
+});
+
+// Painel único de qualquer pessoa logada (ui-routes.js#painel*). As URLs antigas de
+// avaliador/participante abaixo continuam servindo a SPA, que redireciona pro /painel
+// (links de e-mails antigos).
+router.get(['/painel', '/painel/trocar-senha', '/painel/dados'], function(req, res, next) {
   res.render('layout.ejs');
 });
 

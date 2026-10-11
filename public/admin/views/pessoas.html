@@ -45,7 +45,7 @@
             <md-icon md-svg-src="account-card-details" style="color:#43a047;"></md-icon>
             <div class="md-list-item-text">
               <h3>{{p.nome || '(sem nome)'}}</h3>
-              <p>Doc. {{p.documento}} · {{p.email || 'sem e-mail'}} · {{nomeNacionalidade(p.nacionalidade)}}</p>
+              <p>Doc. {{p.documento}} · {{p.email || 'sem e-mail'}}<span data-ng-if="p.emailsAlternativos.length"> (+ {{p.emailsAlternativos.join(', ')}})</span> · {{nomeNacionalidade(p.nacionalidade)}}</p>
             </div>
           </md-list-item>
         </md-list>
@@ -59,7 +59,7 @@
           <h3 style="margin:0 0 8px 0;">{{perfil.pessoa.nome || '(sem nome)'}}</h3>
           <div>Doc. identificação: <strong>{{perfil.documento}}</strong></div>
           <div data-ng-if="perfil.cadastrada">
-            E-mail: {{perfil.pessoa.email || '-'}} · Telefone: {{perfil.pessoa.telefone || '-'}} · Nacionalidade: {{nomeNacionalidade(perfil.pessoa.nacionalidade)}}
+            E-mail: {{perfil.pessoa.email || '-'}}<span data-ng-if="perfil.pessoa.emailsAlternativos.length"> · Outros e-mails de acesso: {{perfil.pessoa.emailsAlternativos.join(', ')}}</span> · Telefone: {{perfil.pessoa.telefone || '-'}} · Nacionalidade: {{nomeNacionalidade(perfil.pessoa.nacionalidade)}}
           </div>
           <div data-ng-if="!perfil.cadastrada" class="message-error" style="margin-top:6px;">
             Ainda sem cadastro único - os registros abaixo foram achados pelo documento.

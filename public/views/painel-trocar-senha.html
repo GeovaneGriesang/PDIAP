@@ -2,6 +2,8 @@
   <md-toolbar style="background:#43a047;">
     <div class="md-toolbar-tools">
       <span style="font-weight:bold;">MOVACI - {{modoToken ? 'Definir nova senha' : (exigeSenhaAtual ? 'Trocar senha' : 'Definir sua senha')}}</span>
+      <span flex></span>
+      <md-button data-ng-if="exigeSenhaAtual" ui-sref="painel" class="md-raised" style="text-transform:none;">Voltar ao painel</md-button>
     </div>
   </md-toolbar>
 
