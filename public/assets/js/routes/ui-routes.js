@@ -219,13 +219,13 @@
           controller: 'redefinirCtrl',
         })
 
-        // Dashboard do avaliador (login próprio) - estados soltos (não aninhados) de
-        // propósito, cada tela já vem com seu próprio cabeçalho simples (ver views), sem
-        // precisar de um shell com sidenav como o do Projeto (home/admin.html). =========
+        // Dashboard do avaliador (login próprio) - estados soltos (não aninhados): o "Meu
+        // painel" tem o próprio menu lateral (meu-painel.html, troca de Mostra sem mudar de
+        // estado), e "Meus dados"/"Trocar senha" são telas avulsas com "Voltar ao painel". =========
         .state('avaliadorDashboard', {
           url: '/avaliadores/dashboard',
-          templateUrl: '/views/avaliador-dashboard.html',
-          controller: 'avaliadorDashboardCtrl',
+          templateUrl: '/views/meu-painel.html',
+          controller: 'meuPainelCtrl',
           resolve: {
             loggedin: checkLoggedinAvaliador,
           },
@@ -280,8 +280,8 @@
         // sem tela de "dados" (participante não tem campo próprio pra editar). =========
         .state('participanteDashboard', {
           url: '/participantes/dashboard',
-          templateUrl: '/views/participante-dashboard.html',
-          controller: 'participanteDashboardCtrl',
+          templateUrl: '/views/meu-painel.html',
+          controller: 'meuPainelCtrl',
           resolve: {
             loggedin: checkLoggedinParticipante,
           },

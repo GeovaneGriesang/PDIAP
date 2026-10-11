@@ -1,0 +1,170 @@
+<!-- "Meu painel" (controller meuPainelCtrl): menu lateral no mesmo padrão do admin
+     (public/admin/views/admin.html) - Início, uma entrada por Mostra em que a pessoa
+     participou, Meus dados, Trocar senha e Sair. Clicar numa Mostra mostra as participações
+     e os certificados daquela edição. Em tela pequena o menu vira gaveta (botão no topo). -->
+<style>
+  .painel-pessoa md-list-item.md-no-proxy,
+  .painel-pessoa md-list-item .md-no-style { padding: 0 22px !important; }
+  .painel-pessoa md-list-item p { color: #f5f5f5; }
+  .painel-pessoa md-list-item md-icon { color: #f5f5f5; }
+  .painel-pessoa md-list-item.item-ativo { background: rgba(0,0,0,0.18); }
+  .painel-pessoa md-list-item:hover { background: rgba(0,0,0,0.10); }
+  .painel-cartao { background:#fff;border-radius:6px;padding:24px;margin-bottom:20px; }
+  .painel-cartao h3 { margin-top:0;color:#225024; }
+  .painel-linha { padding:10px 0;border-top:1px solid #f0f0f0; }
+  .painel-linha:first-of-type { border-top:none; }
+  .painel-mostra { cursor:pointer;border:1px solid #e0e0e0;border-radius:6px;padding:14px 16px;margin-bottom:10px; }
+  .painel-mostra:hover { border-color:#43a047;background:#f6fbf6; }
+  .painel-suave { color:rgba(0,0,0,0.6); }
+</style>
+
+<div layout="row" data-ng-cloak style="min-height:100vh;" id="popupContainer">
+
+  <md-sidenav class="md-sidenav-left md-whiteframe-z2 painel-pessoa" md-component-id="menuPainel" md-is-locked-open="$mdMedia('gt-sm')" style="background:#43a047;">
+    <md-toolbar class="md-tall" layout-align="center center" style="background:#43a047;height:70px;">
+      <div layout="column" layout-align="center center" style="width:100%;margin-top:20px;">
+        <a href="/"><img src="assets/images/logo3-b.png" width="120px" alt="MOVACI"></a>
+      </div>
+    </md-toolbar>
+    <hr size="3" style="background:#2e7d32;border:none;height:3px;width:80%;">
+    <md-content role="navigation" style="background:#43a047;">
+      <md-list>
+        <md-list-item data-ng-click="selecionar(null)" data-ng-class="{'item-ativo': !selecionada}">
+          <md-icon md-svg-icon="home"></md-icon>
+          <p class="md-subheader">Início</p>
+        </md-list-item>
+      </md-list>
+
+      <md-list>
+        <md-list-item data-ng-click="secaoMostras = !secaoMostras">
+          <md-icon md-svg-icon="calendar"></md-icon>
+          <p class="md-subheader">Minhas Mostras</p>
+          <md-icon md-svg-icon="{{secaoMostras ? 'chevron-up' : 'chevron-down'}}"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secaoMostras" data-ng-repeat="m in conta.mostras" data-ng-click="selecionar(m)" data-ng-class="{'item-ativo': selecionada === m}">
+          <md-icon md-svg-icon="menu-right"></md-icon>
+          <p class="md-body-2 submenu">{{m.mostra}}</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secaoMostras && conta && !conta.mostras.length">
+          <p class="md-body-2 submenu" style="opacity:0.8;">Nenhuma participação</p>
+        </md-list-item>
+      </md-list>
+
+      <md-list>
+        <md-list-item ui-state="estadoDados">
+          <md-icon md-svg-icon="account"></md-icon>
+          <p class="md-subheader">Meus dados</p>
+        </md-list-item>
+        <md-list-item ui-state="estadoTrocarSenha">
+          <md-icon md-svg-icon="lock"></md-icon>
+          <p class="md-subheader">Trocar senha</p>
+        </md-list-item>
+      </md-list>
+
+      <hr size="3" style="background:#2e7d32;border:none;height:3px;width:80%;">
+      <md-list style="margin-bottom:1.4em;">
+        <md-list-item data-ng-click="logout()">
+          <md-icon md-svg-icon="exit-to-app"></md-icon>
+          <p class="md-subheader">Sair</p>
+        </md-list-item>
+      </md-list>
+    </md-content>
+  </md-sidenav>
+
+  <section layout="column" flex style="background:#fdfdfd;">
+    <md-toolbar hide-gt-sm style="background:#43a047;">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" aria-label="Abrir menu" data-ng-click="abrirMenu()">
+          <md-icon md-svg-icon="menu" style="color:#fff;"></md-icon>
+        </md-button>
+        <span style="font-weight:bold;">MOVACI - Meu painel</span>
+      </div>
+    </md-toolbar>
+
+    <div style="padding:32px 20px;">
+      <div style="max-width:800px;margin:0 auto;">
+
+        <!-- ===== Início ===== -->
+        <div data-ng-if="!selecionada">
+          <h2 style="color:#2e7d32;margin-top:0;">Olá, {{nome}}!</h2>
+
+          <div class="md-whiteframe-2dp painel-cartao">
+            <h3>Minhas participações na MOVACI</h3>
+            <p data-ng-if="!conta" class="painel-suave">Carregando...</p>
+            <p data-ng-if="conta && !conta.mostras.length" class="painel-suave">Nenhuma participação encontrada.</p>
+            <p data-ng-if="conta.mostras.length" class="painel-suave" style="margin-top:0;">Escolha uma Mostra para ver o que você fez nela e os seus certificados.</p>
+            <div class="painel-mostra" data-ng-repeat="m in conta.mostras" data-ng-click="selecionar(m)" layout="row" layout-align="start center">
+              <div flex>
+                <strong style="color:#2e7d32;">{{m.mostra}}</strong>
+                <div class="painel-suave" style="font-size:14px;margin-top:2px;">
+                  {{m.papeis.length}} {{m.papeis.length === 1 ? 'participação' : 'participações'}}<span data-ng-if="certificados"> · {{certificadosDaMostra(m).length}} {{certificadosDaMostra(m).length === 1 ? 'certificado' : 'certificados'}}</span>
+                </div>
+              </div>
+              <md-icon md-svg-icon="chevron-right" style="color:#43a047;"></md-icon>
+            </div>
+          </div>
+
+          <!-- Certificado cujo ano não bate com nenhuma Mostra da lista acima (ex: registro
+               antigo sem Mostra) - sem isso ele só apareceria no "ver todos". -->
+          <div class="md-whiteframe-2dp painel-cartao" data-ng-if="certificadosAvulsos().length">
+            <h3>Outros certificados</h3>
+            <div class="painel-linha" data-ng-repeat="c in certificadosAvulsos()" layout="row" layout-align="start center">
+              <div flex>
+                <strong>{{c.rotulo}} {{c.ano}}</strong>
+                <div data-ng-if="c.detalhe" class="painel-suave" style="font-size:14px;">{{c.detalhe}}</div>
+              </div>
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-click="baixar(c)">
+                <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;"></md-icon> Baixar
+              </md-button>
+            </div>
+          </div>
+
+          <div class="md-whiteframe-2dp painel-cartao">
+            <h3>Todos os certificados</h3>
+            <p class="painel-suave" style="margin-top:0;">
+              Todos os seus certificados, de todas as edições da MOVACI e de todas as formas de participação, numa lista só.
+            </p>
+            <div layout="row" layout-align="center center">
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="!conta" data-ng-click="verCertificados()">
+                <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;vertical-align:middle;margin-right:4px;"></md-icon>
+                Ver e baixar todos os meus certificados
+              </md-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Uma Mostra ===== -->
+        <div data-ng-if="selecionada">
+          <h2 style="color:#2e7d32;margin-top:0;">{{selecionada.mostra}}</h2>
+
+          <div class="md-whiteframe-2dp painel-cartao">
+            <h3>Minhas participações</h3>
+            <div class="painel-linha" data-ng-repeat="p in selecionada.papeis">
+              <strong>{{p.papel}}</strong>
+              <div data-ng-if="p.detalhe" class="painel-suave" style="font-size:14px;">{{p.detalhe}}</div>
+            </div>
+          </div>
+
+          <div class="md-whiteframe-2dp painel-cartao">
+            <h3>Certificados</h3>
+            <p data-ng-if="!certificados && !erroCertificados" class="painel-suave">Carregando certificados...</p>
+            <p data-ng-if="erroCertificados" class="painel-suave">Não foi possível carregar seus certificados agora. Tente novamente mais tarde.</p>
+            <p data-ng-if="certificados && !certificadosDaMostra(selecionada).length" class="painel-suave">
+              Ainda não há certificados desta Mostra. Eles ficam disponíveis depois que a participação é confirmada pela organização.
+            </p>
+            <div class="painel-linha" data-ng-repeat="c in certificadosDaMostra(selecionada)" layout="row" layout-align="start center">
+              <div flex>
+                <strong>{{c.rotulo}}</strong>
+                <div data-ng-if="c.detalhe" class="painel-suave" style="font-size:14px;">{{c.detalhe}}</div>
+              </div>
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-click="baixar(c)">
+                <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;"></md-icon> Baixar
+              </md-button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
