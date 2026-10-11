@@ -3,7 +3,7 @@
 // Importa a lista oficial de trabalhos aprovados (scripts/aprovacoes-2026.json,
 // transcrita do PDF da comissão) pro banco, e normaliza as edições anteriores.
 //
-// O Nº do PDF vem do sistema de submissão dos textos, NÃO é o numInscricao do MOVACI -
+// O Nº do PDF vem do sistema de submissão dos textos, NÃO é o numInscricao da MOVACI -
 // por isso o casamento é feito pelo TÍTULO normalizado (sem acento, minúsculo, só
 // alfanumérico). O que não casar NÃO é adivinhado: entra no relatório com os títulos
 // mais parecidos do banco ao lado, pra decisão manual.
@@ -76,7 +76,7 @@ function candidatosParecidos(tituloNormalizado, projetosDoAno, quantos) {
 }
 
 // Casamento por AUTORES: o título costuma ser reescrito entre o sistema de submissão
-// dos textos e a inscrição no MOVACI, mas os integrantes são os mesmos. Só vale quando
+// dos textos e a inscrição na MOVACI, mas os integrantes são os mesmos. Só vale quando
 // UM único projeto do ano tem sobreposição forte de autores - se dois projetos empatam,
 // devolve null e o caso vai pra revisão manual em vez de arriscar o trabalho errado.
 function casarPorAutores(autores, projetosDoAno) {

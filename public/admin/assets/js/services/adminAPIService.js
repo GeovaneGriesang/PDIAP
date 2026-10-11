@@ -519,7 +519,7 @@
 			return $http(request);
 		};
 
-		// Categorias/eixos da edição corrente do MOVACI/PDIAP (ver models/feira-schema.js,
+		// Categorias/eixos da edição corrente da MOVACI/PDIAP (ver models/feira-schema.js,
 		// tipo:'edicao') em vez do JSON estático fixo. Se nenhuma edição própria estiver
 		// cadastrada pro ano informado, cai pro JSON estático como fallback - mesma lógica
 		// de public/assets/js/services/projetosAPIService.js#getCategoriasEixos.
