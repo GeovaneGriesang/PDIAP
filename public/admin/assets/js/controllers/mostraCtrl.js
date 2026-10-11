@@ -1,7 +1,7 @@
 (function(){
 	'use strict';
 
-	// Configuração da "Mostra de Trabalhos" = a própria edição anual do MOVACI/PDIAP (ex: X
+	// Configuração da "Mostra de Trabalhos" = a própria edição anual da MOVACI/PDIAP (ex: X
 	// MOVACI em 2026, XI MOVACI em 2027), com categorias/eixos, dias/turnos de avaliação e
 	// quantidade de avaliadores por projeto próprios de cada ano. Reaproveita o mesmo schema/
 	// coleção de Feira (tipo:'edicao') usado por feirasCtrl.js (feiras externas de

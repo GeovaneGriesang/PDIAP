@@ -1,5 +1,5 @@
 {
-  "_comentario": "Lista oficial de trabalhos aprovados do X MOVACI 2026, transcrita do PDF 'Trabalhos_aprovados_ListaFinal.pdf' fornecido pela comissão. O campo 'numero' é o número do sistema de submissão dos textos (NÃO é o numInscricao do MOVACI) e fica aqui só para rastreabilidade - o casamento com o banco é feito pelo título. situacao: 'anais' = Aprovado para apresentação e publicação nos anais; 'apresentacao' = Aprovado somente para apresentação no evento.",
+  "_comentario": "Lista oficial de trabalhos aprovados da X MOVACI 2026, transcrita do PDF 'Trabalhos_aprovados_ListaFinal.pdf' fornecido pela comissão. O campo 'numero' é o número do sistema de submissão dos textos (NÃO é o numInscricao da MOVACI) e fica aqui só para rastreabilidade - o casamento com o banco é feito pelo título. situacao: 'anais' = Aprovado para apresentação e publicação nos anais; 'apresentacao' = Aprovado somente para apresentação no evento.",
   "_totaisEsperados": { "total": 208, "Resumo Simples": 126, "Resumo Expandido": 49, "Artigo": 33 },
   "trabalhos": [
     { "numero": "1682028", "modalidade": "Resumo Simples", "situacao": "anais", "titulo": "O USO DA ROBÓTICA EDUCACIONAL COMO FERRAMENTA NA SEGURANÇA E NA QUALIDADE DE VIDA DAS PESSOAS COM DEFICIÊNCIA VISUAL" },

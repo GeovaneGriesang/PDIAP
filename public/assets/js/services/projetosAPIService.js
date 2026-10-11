@@ -104,7 +104,7 @@
 			return $http(request);
 		};
 
-		// Categorias/eixos da edição corrente do MOVACI/PDIAP (ver models/feira-schema.js,
+		// Categorias/eixos da edição corrente da MOVACI/PDIAP (ver models/feira-schema.js,
 		// tipo:'edicao') em vez do JSON estático fixo. Se nenhuma edição própria estiver
 		// cadastrada pro ano informado (feira ainda não criada), cai pro JSON estático como
 		// fallback - garante que inscrição/avaliadores continuam funcionando sem quebrar

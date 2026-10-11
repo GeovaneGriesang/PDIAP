@@ -1240,7 +1240,7 @@ router.post('/conta/alterar-email', authLimiter, ensureAuthenticated, async (req
 
     enviarAvisoConta(novoEmail, 'MOVACI - Confirme seu novo e-mail', {
       titulo: 'Confirme seu novo e-mail', nome: pessoa.nome,
-      paragrafos: ['Recebemos um pedido para trocar o e-mail da sua conta no MOVACI para este endereço. Ele passa a ser o seu login depois que você confirmar.',
+      paragrafos: ['Recebemos um pedido para trocar o e-mail da sua conta na MOVACI para este endereço. Ele passa a ser o seu login depois que você confirmar.',
         'O link vale por 24 horas. Se não foi você, ignore esta mensagem: nada será alterado.'],
       url: 'https://movaci.com.br/conta/confirmar-email/' + token, rotuloBotao: 'Confirmar novo e-mail'
     });
@@ -1257,7 +1257,7 @@ router.get('/conta/confirmar-email/:token', async (req, res) => {
   let pagina = (titulo, texto) => res.send('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MOVACI</title></head>' +
     '<body style="font-family:Helvetica,Arial,sans-serif;background:#fafafa;margin:0;padding:40px 16px;"><div style="max-width:520px;margin:auto;background:#fff;padding:28px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.15);">' +
     '<h2 style="color:#2e7d32;margin-top:0;">' + titulo + '</h2><p style="color:#444;line-height:1.5;">' + texto + '</p>' +
-    '<p><a href="/" style="color:#2e7d32;">Ir para o MOVACI</a></p></div></body></html>');
+    '<p><a href="/" style="color:#2e7d32;">Ir para a MOVACI</a></p></div></body></html>');
   try {
     let token = (req.params.token || '').toString();
     let pessoa = /^[0-9a-f]{40}$/.test(token) ? await pessoaSchema.findOne({ emailPendenteToken: token }) : null;
@@ -1278,11 +1278,11 @@ router.get('/conta/confirmar-email/:token', async (req, res) => {
     if (emailAntigo) {
       enviarAvisoConta(emailAntigo, 'MOVACI - Seu e-mail de acesso foi alterado', {
         titulo: 'E-mail de acesso alterado', nome: pessoa.nome,
-        paragrafos: ['O e-mail de acesso da sua conta no MOVACI foi trocado para ' + novoEmail + '.',
+        paragrafos: ['O e-mail de acesso da sua conta na MOVACI foi trocado para ' + novoEmail + '.',
           'Se não foi você, entre em contato com a organização imediatamente.']
       });
     }
-    pagina('E-mail confirmado', 'Pronto! A partir de agora, use ' + novoEmail.replace(/[<>&"]/g, '') + ' para entrar no MOVACI. Sua senha continua a mesma.');
+    pagina('E-mail confirmado', 'Pronto! A partir de agora, use ' + novoEmail.replace(/[<>&"]/g, '') + ' para entrar na MOVACI. Sua senha continua a mesma.');
   } catch (err) {
     console.error('Erro ao confirmar troca de e-mail', err);
     res.status(500).send('Erro ao confirmar a troca de e-mail.');

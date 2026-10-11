@@ -1,5 +1,5 @@
 {
-  "_comentario": "Autores (coluna 'Autores' do PDF oficial) dos trabalhos cujo TÍTULO não casou sozinho com o banco, ou cujo título aparece em mais de um projeto do ano. Usado por scripts/importar-aprovacoes.js como segundo critério de casamento: o título pode ter sido reescrito entre o sistema de submissão dos textos e a inscrição no MOVACI, mas os integrantes são os mesmos. Chave = 'numero' do PDF.",
+  "_comentario": "Autores (coluna 'Autores' do PDF oficial) dos trabalhos cujo TÍTULO não casou sozinho com o banco, ou cujo título aparece em mais de um projeto do ano. Usado por scripts/importar-aprovacoes.js como segundo critério de casamento: o título pode ter sido reescrito entre o sistema de submissão dos textos e a inscrição na MOVACI, mas os integrantes são os mesmos. Chave = 'numero' do PDF.",
   "autoresPorNumero": {
     "1687708": ["Debora Ines Vogt", "Djulifer Gass Ortiz", "Klara Regina Vogt Kuntz", "Lívia Mahl Konzen"],
     "1735640": ["Nathália Santos Braga"],

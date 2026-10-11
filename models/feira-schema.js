@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 // classificado. Cadastrada por ano/mostra, com as categorias às quais se aplica e o texto
 // do certificado de classificação - ver models/projeto-schema.js (feirasClassificadas).
 //
-// Também serve, com tipo:'edicao', pra representar a própria edição anual do MOVACI/PDIAP
+// Também serve, com tipo:'edicao', pra representar a própria edição anual da MOVACI/PDIAP
 // (categoriasEixos/diasAvaliacao) - não existia nenhuma outra coleção com histórico por ano
 // pra isso, então reaproveita esta em vez de criar uma nova (decisão de produto, não só
 // técnica). categorias/textoCertificado só fazem sentido pra tipo:'classificacao'.
