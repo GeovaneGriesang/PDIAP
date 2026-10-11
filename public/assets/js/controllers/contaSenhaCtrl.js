@@ -6,7 +6,7 @@
 	.controller('contaSenhaCtrl', function($scope, $state, $stateParams, contaAPI) {
 
 		// Recuperação de senha única pra Avaliador/Participante (ver routes/index.js#/conta) -
-		// mesmo padrão de avaliadorSenhaCtrl.js/participanteSenhaCtrl.js, só que sem
+		// mesmo padrão dos antigos controllers de senha de avaliador(a)/participante, só que sem
 		// diferenciar o papel: quem pede o link não precisa saber se é avaliador(a) ou
 		// participante.
 		$scope.modoToken = $state.current.name === 'contaNovaSenha';

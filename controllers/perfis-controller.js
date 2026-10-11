@@ -23,24 +23,25 @@ function escaparRegex(texto) {
 }
 
 // Busca no cadastro único por nome (parte, sem diferenciar maiúscula), documento (início)
-// ou e-mail (parte). Até 30 resultados.
+// ou e-mail (parte; principal ou alternativo). Até 30 resultados.
 module.exports.pesquisar = async (termo) => {
 	let q = (termo || '').toString().trim();
 	if (q.length < 3) return [];
 	let condicoes = [
 		{ nome: new RegExp(escaparRegex(q), 'i') },
-		{ email: new RegExp(escaparRegex(q), 'i') }
+		{ email: new RegExp(escaparRegex(q), 'i') },
+		{ emailsAlternativos: new RegExp(escaparRegex(q), 'i') }
 	];
 	let doc = documentoValidator.normalizarDocumento(q);
 	if (doc.length >= 3) condicoes.push({ documento: new RegExp('^' + doc, 'i') });
-	return Pessoa.find({ $or: condicoes }, 'documento nome email nacionalidade').sort({ nome: 1 }).limit(30).lean();
+	return Pessoa.find({ $or: condicoes }, 'documento nome email emailsAlternativos nacionalidade').sort({ nome: 1 }).limit(30).lean();
 };
 
 module.exports.perfis = async (documentoInformado) => {
 	let documento = documentoValidator.normalizarDocumento(documentoInformado);
 	if (!documento) return null;
 
-	let pessoa = await Pessoa.findOne({ documento: documento }, 'documento nome email telefone nacionalidade createdAt').lean();
+	let pessoa = await Pessoa.findOne({ documento: documento }, 'documento nome email emailsAlternativos telefone nacionalidade createdAt').lean();
 	// Só letras/números no padrão (normalizado), então não há o que escapar.
 	let docRegex = new RegExp('^' + documento + '$', 'i');
 	let porDocOuPessoa = pessoa ? { $or: [{ cpf: docRegex }, { pessoa: pessoa._id }] } : { cpf: docRegex };
@@ -102,7 +103,7 @@ module.exports.perfis = async (documentoInformado) => {
 	return {
 		documento: documento,
 		cadastrada: !!pessoa,
-		pessoa: pessoa ? { nome: pessoa.nome, email: pessoa.email, telefone: pessoa.telefone, nacionalidade: pessoa.nacionalidade } : { nome: nomeRegistro },
+		pessoa: pessoa ? { nome: pessoa.nome, email: pessoa.email, emailsAlternativos: pessoa.emailsAlternativos || [], telefone: pessoa.telefone, nacionalidade: pessoa.nacionalidade } : { nome: nomeRegistro },
 		mostras: [...grupos.values()].sort((a, b) => b.ano - a.ano)
 	};
 };

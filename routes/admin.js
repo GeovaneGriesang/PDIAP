@@ -86,7 +86,9 @@ function miPermiso(role,role2) {
 // router.all('/*', ensureAuthenticated, miPermiso("2"));
 router.all('/*', ensureAuthenticated);
 
-router.get('/loggedin', ensureAuthenticated, (req, res) => {
+// Só admin: as telas do admin2 e do app de Avaliação usam isto pra decidir se abrem (antes
+// qualquer login passava, e com o painel único toda pessoa tem login).
+router.get('/loggedin', ensureAuthenticated, miPermiso("2","3"), (req, res) => {
   res.send('success');
 });
 

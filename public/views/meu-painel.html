@@ -6,6 +6,10 @@
   .painel-pessoa md-list-item.md-no-proxy,
   .painel-pessoa md-list-item .md-no-style { padding: 0 22px !important; }
   .painel-pessoa md-list-item p { color: #f5f5f5; }
+  /* Texto e ícone deixam o clique passar pro botão invisível que o Angular Material põe no
+     item (sem isso, p.md-subheader fica por cima e o clique no texto não faz nada). */
+  .painel-pessoa md-list-item p,
+  .painel-pessoa md-list-item md-icon { pointer-events: none; }
   .painel-pessoa md-list-item md-icon { color: #f5f5f5; }
   .painel-pessoa md-list-item.item-ativo { background: rgba(0,0,0,0.18); }
   .painel-pessoa md-list-item:hover { background: rgba(0,0,0,0.10); }
@@ -51,11 +55,11 @@
       </md-list>
 
       <md-list>
-        <md-list-item ui-state="estadoDados">
+        <md-list-item data-ng-click="irPara(estadoDados)">
           <md-icon md-svg-icon="account"></md-icon>
           <p class="md-subheader">Meus dados</p>
         </md-list-item>
-        <md-list-item ui-state="estadoTrocarSenha">
+        <md-list-item data-ng-click="irPara(estadoTrocarSenha)">
           <md-icon md-svg-icon="lock"></md-icon>
           <p class="md-subheader">Trocar senha</p>
         </md-list-item>

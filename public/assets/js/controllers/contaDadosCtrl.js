@@ -1,16 +1,15 @@
 (function(){
 	'use strict';
 
-	// Bloco "Minha conta" (views/conta-minha-conta.html), incluído em "Meus dados" do avaliador
-	// e do participante: identidade da Pessoa (nome e documento só a organização altera), troca
-	// de e-mail com confirmação por link e participações em cada Mostra (ver
-	// routes/index.js#/conta/meus-dados).
+	// Bloco "Minha conta" (views/conta-minha-conta.html), incluído em "Meus dados" do painel:
+	// identidade da Pessoa (nome e documento só a organização altera) e os e-mails de acesso -
+	// principal + até 2 alternativos, todos com confirmação por link (ver routes/index.js#/conta).
 	angular
 	.module('PDIAP')
 	.controller('contaDadosCtrl', function($scope, $mdToast, contaAPI) {
 
 		$scope.conta = null;
-		$scope.trocaEmail = { aberta: false, novoEmail: '', senha: '', enviando: false };
+		$scope.trocaEmail = { aberta: false, modo: 'principal', novoEmail: '', senha: '', enviando: false };
 
 		var NACIONALIDADES = { brasileiro: 'Brasileiro(a)', paraguaio: 'Paraguaio(a)', uruguaio: 'Uruguaio(a)', venezuelano: 'Venezuelano(a)', outro: 'Outra nacionalidade' };
 		$scope.nomeNacionalidade = function(n) { return NACIONALIDADES[n] || n || '-'; };
@@ -29,26 +28,52 @@
 		};
 		carregar();
 
-		$scope.abrirTrocaEmail = function() {
-			$scope.trocaEmail = { aberta: true, novoEmail: '', senha: '', enviando: false };
+		// Formulário de e-mail: modo 'principal' (trocar o principal ou tornar principal um
+		// alternativo - esse último sem link, já foi confirmado) ou 'alternativo' (incluir mais um).
+		$scope.abrirTrocaEmail = function(modo, email) {
+			$scope.trocaEmail = { aberta: true, modo: modo || 'principal', novoEmail: email || '', fixo: !!email, senha: '', enviando: false };
 		};
 
 		$scope.cancelarTrocaEmail = function() {
 			$scope.trocaEmail.aberta = false;
 		};
 
+		$scope.podeIncluirEmail = function() {
+			return $scope.conta && (1 + ($scope.conta.emailsAlternativos || []).length) < ($scope.conta.maxEmails || 3);
+		};
+
 		$scope.pedirTrocaEmail = function() {
 			$scope.trocaEmail.enviando = true;
-			contaAPI.alterarEmail($scope.trocaEmail.novoEmail, $scope.trocaEmail.senha)
+			var pedido = $scope.trocaEmail.modo === 'alternativo'
+				? contaAPI.adicionarEmail($scope.trocaEmail.novoEmail, $scope.trocaEmail.senha)
+				: contaAPI.alterarEmail($scope.trocaEmail.novoEmail, $scope.trocaEmail.senha);
+			pedido
 			.then(function(response) {
-				$scope.conta.emailPendente = response.data.emailPendente;
 				$scope.trocaEmail.aberta = false;
-				toast('Enviamos um link de confirmação para ' + response.data.emailPendente + '. O e-mail só muda depois que você clicar nele.', 'success-toast');
+				if (response.data.trocado) {
+					$scope.conta.email = response.data.email;
+					$scope.conta.emailsAlternativos = response.data.emailsAlternativos;
+					toast('Pronto! ' + response.data.email + ' agora é o seu e-mail principal.', 'success-toast');
+					return;
+				}
+				$scope.conta.emailPendente = response.data.emailPendente;
+				$scope.conta.emailPendenteTipo = response.data.emailPendenteTipo;
+				toast('Enviamos um link de confirmação para ' + response.data.emailPendente + '. O e-mail só passa a valer depois que você clicar nele.', 'success-toast');
 			}, function(response) {
-				toast(typeof response.data === 'string' && response.data ? response.data : 'Não foi possível pedir a troca de e-mail.', 'failed-toast');
+				toast(typeof response.data === 'string' && response.data ? response.data : 'Não foi possível pedir a alteração de e-mail.', 'failed-toast');
 			})
 			.finally(function() {
 				$scope.trocaEmail.enviando = false;
+			});
+		};
+
+		$scope.removerEmail = function(email) {
+			contaAPI.removerEmail(email)
+			.then(function(response) {
+				$scope.conta.emailsAlternativos = response.data.emailsAlternativos;
+				toast('E-mail ' + email + ' removido. Ele não serve mais para entrar.', 'success-toast');
+			}, function(response) {
+				toast(typeof response.data === 'string' && response.data ? response.data : 'Não foi possível remover o e-mail.', 'failed-toast');
 			});
 		};
 	});

@@ -1,13 +1,11 @@
 (function(){
 	'use strict';
 
-	// "Meu painel": um painel só pra qualquer pessoa logada (avaliador(a), participante...), com
-	// tudo num lugar - participações em cada Mostra (derivadas dos vínculos, ver
-	// routes/index.js#/conta/meus-dados) e todos os certificados. Substitui os dois painéis
-	// separados que existiam antes (avaliador e participante). As URLs antigas
-	// (/avaliadores/dashboard e /participantes/dashboard) continuam abrindo esta tela - o login
-	// ainda entra por um dos dois papéis (ver utils/loginBootstrap.js#autenticarPapel), e é esse
-	// papel que define as rotas de "Meus dados" e "Trocar minha senha".
+	// "Meu painel": o painel único de qualquer pessoa logada (estudante, orientador(a),
+	// avaliador(a), participante...), com tudo num lugar - participações em cada Mostra
+	// (derivadas dos vínculos, ver routes/index.js#/conta/meus-dados) e todos os certificados.
+	// A sessão é a própria Pessoa (utils/sessao.js); quem está logado vem de
+	// $rootScope.pessoaLogada (ui-routes.js#checkLoggedinPessoa).
 	angular
 	.module('PDIAP')
 	//
@@ -15,19 +13,18 @@
 	// escolhida mostra as participações dela e os certificados do mesmo ano.
 	.controller('meuPainelCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, $mdSidenav, $mdMedia, contaAPI, certificadosService) {
 
-		var ehAvaliador = $state.current.name === 'avaliadorDashboard';
-		var logado = (ehAvaliador ? $rootScope.avaliadorLogado : $rootScope.participanteLogado) || {};
+		var logado = $rootScope.pessoaLogada || {};
 
 		// Se por algum motivo chegou aqui sem ter definido senha ainda (ex: voltou pelo
 		// histórico do navegador), manda pra tela obrigatória em vez de mostrar o painel.
 		if (!logado.senhaDefinida) {
-			$window.location.href = ehAvaliador ? '/avaliadores/dashboard/trocar-senha' : '/participantes/dashboard/trocar-senha';
+			$state.go('painelTrocarSenha');
 			return;
 		}
 
 		$scope.nome = logado.nome;
-		$scope.estadoDados = ehAvaliador ? 'avaliadorDados' : 'participanteDados';
-		$scope.estadoTrocarSenha = ehAvaliador ? 'avaliadorTrocarSenha' : 'participanteTrocarSenha';
+		$scope.estadoDados = 'painelDados';
+		$scope.estadoTrocarSenha = 'painelTrocarSenha';
 		$scope.conta = null;
 
 		$scope.toast = function(message, tema) {
@@ -42,6 +39,11 @@
 		$scope.selecionar = function(mostra) {
 			$scope.selecionada = mostra;
 			if (!$mdMedia('gt-sm')) $mdSidenav('menuPainel').close();
+		};
+		// md-list-item só vira item clicável com ng-click/ui-sref (ui-state não conta), por isso
+		// a navegação do menu é por aqui.
+		$scope.irPara = function(estado) {
+			$state.go(estado);
 		};
 		$scope.abrirMenu = function() {
 			$mdSidenav('menuPainel').open();

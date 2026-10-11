@@ -38,6 +38,40 @@ function mesmoEmail(a, b) {
 }
 module.exports.mesmoEmail = mesmoEmail;
 
+// --- E-mails da Pessoa: principal + até 2 alternativos, login por qualquer um ----------
+const MAX_EMAILS = 3;
+module.exports.MAX_EMAILS = MAX_EMAILS;
+
+function regexEmailExato(email) {
+	let escapado = (email || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	return new RegExp('^' + escapado + '$', 'i');
+}
+module.exports.regexEmailExato = regexEmailExato;
+
+// Filtro Mongo: Pessoa que tem este e-mail como principal OU alternativo (sem diferenciar
+// maiúscula/minúscula).
+function filtroEmail(email) {
+	let re = regexEmailExato(email);
+	return { $or: [{ email: re }, { emailsAlternativos: re }] };
+}
+module.exports.filtroEmail = filtroEmail;
+
+// Todos os e-mails de acesso da Pessoa (principal primeiro).
+function emailsDa(pessoa) {
+	if (!pessoa) return [];
+	return [pessoa.email].concat(pessoa.emailsAlternativos || []).filter((e) => e && e.trim());
+}
+module.exports.emailsDa = emailsDa;
+
+module.exports.pessoaTemEmail = (pessoa, email) => emailsDa(pessoa).some((e) => mesmoEmail(e, email));
+
+// Pessoas com este e-mail (principal ou alternativo). Normalmente 0 ou 1; mais de 1 só nos
+// cadastros duplicados antigos - o login tenta a senha em cada uma (ver loginBootstrap).
+module.exports.buscarPorEmail = (email) => {
+	if (!email || !email.trim()) return Promise.resolve([]);
+	return Pessoa.find(filtroEmail(email));
+};
+
 // Decide a qual Pessoa um papel NOVO (Avaliador/Participante) deve ser vinculado, pelo
 // documento. Devolve o _id da Pessoa ou undefined (papel fica sem vínculo, com senha própria
 // como antes). Nunca lança: falha aqui não pode impedir o cadastro.
@@ -56,8 +90,7 @@ module.exports.vincularPessoa = async (dados) => {
 		// onde estudante às vezes usa o e-mail do(a) orientador(a).
 		let email = (dados.email || '').trim();
 		if (email && !(await Pessoa.findOne({ documento: documento }, '_id'))) {
-			let escapado = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-			if (await Pessoa.findOne({ email: new RegExp('^' + escapado + '$', 'i') }, '_id')) {
+			if (await Pessoa.findOne(filtroEmail(email), '_id')) {
 				console.warn('Documento novo com e-mail de outra Pessoa - papel fica sem vínculo.');
 				return undefined;
 			}
@@ -66,7 +99,7 @@ module.exports.vincularPessoa = async (dados) => {
 		let resultado = await new Promise((resolve, reject) => {
 			module.exports.findOrCreatePessoa(documento, dados, (err, pessoa, criada) => err ? reject(err) : resolve({ pessoa, criada }));
 		});
-		if (resultado.criada || mesmoEmail(resultado.pessoa.email, dados.email)) return resultado.pessoa._id;
+		if (resultado.criada || module.exports.pessoaTemEmail(resultado.pessoa, dados.email)) return resultado.pessoa._id;
 
 		let [avaliadores, participantes] = await Promise.all([
 			Avaliador.find({ pessoa: resultado.pessoa._id }, 'email'),
@@ -101,18 +134,20 @@ module.exports.resolverPessoaAdmin = async (dados, documentoValidator) => {
 	if (!/^.+@.+\..+$/.test(email)) return { erro: 'Informe um e-mail válido para ' + nome + ' (necessário para certificado e login).' };
 
 	// Login é pelo e-mail: dois cadastros com o mesmo e-mail e documentos diferentes quebrariam o login.
-	let escapado = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	if (await Pessoa.findOne({ email: new RegExp('^' + escapado + '$', 'i') }, '_id')) return { erro: 'O e-mail ' + email + ' já pertence a outra pessoa cadastrada com outro documento.' };
+	if (await Pessoa.findOne(filtroEmail(email), '_id')) return { erro: 'O e-mail ' + email + ' já pertence a outra pessoa cadastrada com outro documento.' };
 
 	let pessoa = await new Pessoa({ documento: documento, nome: nome, email: email }).save();
 	return { pessoa };
 };
 
-// Busca por e-mail - login é sempre pelo e-mail cadastrado (mesmo padrão que Avaliador/
-// Participante já usavam).
-module.exports.getLoginPessoa = (email, callback) => {
-	Pessoa.findOne({ email: email }).then(
-		(pessoa) => callback(null, pessoa),
-		(err) => callback(err)
-	);
+// E-mail livre pra ser usado pela Pessoa `pessoaId` (como principal ou alternativo): não pode
+// ser e-mail de outra Pessoa nem de um Avaliador/Participante sem vínculo com ela (esse e-mail
+// ainda é login de conta legada).
+module.exports.emailLivre = async (email, pessoaId) => {
+	let re = regexEmailExato(email);
+	if (await Pessoa.findOne(Object.assign(filtroEmail(email), { _id: { $ne: pessoaId } }), '_id')) return false;
+	let filtroPapel = { email: re, pessoa: { $ne: pessoaId } };
+	if (await Avaliador.findOne(filtroPapel, '_id')) return false;
+	if (await Participante.findOne(filtroPapel, '_id')) return false;
+	return true;
 };
