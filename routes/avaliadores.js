@@ -346,7 +346,11 @@ router.get('/dashboard/meus-certificados', ensureAvaliador, (req, res) => {
   }]);
 });
 
+// Lançar nota é coisa do admin (Avaliação > Inserir, Inconsistências, app de Avaliação/Ranking)
+// - antes bastava estar logado, então qualquer avaliador(a)/participante podia mudar a nota de
+// qualquer projeto. Mesmos perfis de GET /admin/projetos ("2" ou "3").
 router.put('/addNota', ensureAuthenticated, (req, res) => {
+	if (req.user.permissao !== '2' && req.user.permissao !== '3') return res.sendStatus(403);
 	try {
 	let id = req.body.id
 	,	arrayNota = req.body.adrovan;
