@@ -76,7 +76,7 @@ module.exports.perfis = async (documentoInformado) => {
 		return (pessoa && sub.pessoa && String(sub.pessoa) === String(pessoa._id)) || docRegex.test(sub.cpf || '');
 	}
 
-	avaliadores.forEach((a) => grupo(a).papeis.push({ papel: 'Avaliador(a)', detalhe: a.avaliacao ? 'Avaliou projetos' : 'Inscrito(a)' }));
+	avaliadores.forEach((a) => grupo(a).papeis.push({ papel: 'Avaliador(a)', detalhe: a.avaliacao ? 'Presença confirmada' : 'Inscrito(a), presença ainda não confirmada' }));
 	projetos.forEach((p) => {
 		(p.integrantes || []).filter(dele).forEach((i) => {
 			grupo(p).papeis.push({

@@ -1,5 +1,6 @@
 <!-- Bloco compartilhado "Minha conta" (controller contaDadosCtrl) - incluído em
-     avaliador-dados.html e participante-dados.html via ng-include. -->
+     avaliador-dados.html e participante-dados.html via ng-include. As participações por
+     Mostra ficam no "Meu painel" (meu-painel.html). -->
 <div data-ng-controller="contaDadosCtrl">
   <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;">
     <h3 style="margin-top:0;color:#225024;">Identificação</h3>
@@ -54,14 +55,4 @@
     </div>
   </div>
 
-  <div class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;" data-ng-if="conta">
-    <h3 style="margin-top:0;color:#225024;">Minhas participações na MOVACI</h3>
-    <p data-ng-if="!conta.mostras.length" style="color:rgba(0,0,0,0.6);">Nenhuma participação encontrada.</p>
-    <div data-ng-repeat="m in conta.mostras" style="margin-bottom:14px;">
-      <h4 style="margin:0 0 6px 0;color:#2e7d32;">{{m.mostra}}</h4>
-      <div data-ng-repeat="p in m.papeis" style="padding:4px 0;border-top:1px solid #f0f0f0;">
-        <strong>{{p.papel}}</strong><span data-ng-if="p.detalhe"> - {{p.detalhe}}</span>
-      </div>
-    </div>
-  </div>
 </div>
