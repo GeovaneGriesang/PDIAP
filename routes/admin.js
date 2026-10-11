@@ -71,9 +71,13 @@ function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
+// Bug grave corrigido: com um argumento só (miPermiso("3")), role2 ficava undefined e
+// "req.user.permissao === role2" dava TRUE pra quem não tem o campo permissao - Avaliador e
+// Participante logados passavam em TODAS as rotas de admin com um argumento só.
 function miPermiso(role,role2) {
+  let permitidos = [role, role2].filter((r) => r !== undefined);
   return function(req, res, next) {
-    if(req.user.permissao === role || req.user.permissao === role2)
+    if(req.user && req.user.permissao !== undefined && permitidos.indexOf(req.user.permissao) !== -1)
       next();
     else res.sendStatus(403);
   }
@@ -681,7 +685,9 @@ router.put('/removeParticipante', miPermiso("3"), async (req, res) => {
 
 //Mateus Roberto Algayer - 14/10/2021
 //rota para cadastro de certificado
-router.post('/postCertificado', async (req, res) => {
+// miPermiso("3"): antes só exigia estar logado - qualquer avaliador(a)/participante logado(a)
+// conseguia apagar e trocar o layout do certificado de um ano.
+router.post('/postCertificado', miPermiso("3"), async (req, res) => {
   try {
     //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
     //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
@@ -726,7 +732,8 @@ router.get('/getCertificados', async (req, res) => {
 
 //Leandro Henrique Kopp Ferreira - 14/10/2021
 //rota para cadastrar os documentos
-router.post('/postDocumento', async (req, res) => {
+// miPermiso("3"): mesma brecha de /postCertificado (só exigia estar logado).
+router.post('/postDocumento', miPermiso("3"), async (req, res) => {
   console.log(req.body.pacote.exibe);
   let novoCadastro = new CadastroDocumentoSchema({
     pdf: req.body.pacote.pdf,
