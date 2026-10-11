@@ -3,10 +3,9 @@
 
 	angular
 	.module('PDIAP')
-	.controller('avaliadorDashboardCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, avaliadorAPI, projetosAPI, contaAPI) {
+	.controller('avaliadorDashboardCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, avaliadorAPI, contaAPI, certificadosService) {
 
 		$scope.avaliador = $rootScope.avaliadorLogado || {};
-		$scope.certificados = [];
 
 		// Login único: esta mesma Pessoa também pode ser Participante (ver
 		// routes/index.js#/dashboard/trocar-papel) - troca sem pedir senha de novo.
@@ -26,57 +25,25 @@
 			return;
 		}
 
-		avaliadorAPI.getCertificados()
-		.then(function(response) {
-			$scope.certificados = response.data;
-		}, function(response) {
-			console.log('Error: ' + response.data);
-		});
-
-		var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-
-		// Gera o certificado de avaliador em PDF (mesma lógica do branch 'Avaliador' de
-		// emitirCertificado1 em homeCtrl.js, só que a partir dos dados de quem já está
-		// logado, sem precisar pedir CPF de novo).
-		$scope.baixarCertificado = function(cert) {
-			projetosAPI.getMostra()
+		// Certificados: abre o mesmo diálogo da página pública de certificados, já com o documento
+		// de quem está logado - lista TODOS os certificados da pessoa (todas as edições da MOVACI e
+		// todos os papéis: avaliador(a), orientador(a), estudante, participante, responsável...),
+		// não só os do papel deste painel (ver services/certificadosService.js).
+		$scope.buscandoCertificados = false;
+		$scope.verCertificados = function() {
+			$scope.buscandoCertificados = true;
+			contaAPI.getMeusDados()
 			.then(function(response) {
-				var dadosMostra = response.data;
-				var ano = new Date(cert.createdAt).getFullYear();
-				var dadosCertificado = null;
-				for (var i = 0; i < dadosMostra.length; i++) {
-					if (dadosMostra[i].ano_certificado == ano) { dadosCertificado = dadosMostra[i]; break; }
-				}
-				if (!dadosCertificado) {
-					$scope.toast('Certificado do ano ' + ano + ' ainda não foi cadastrado.', 'failed-toast');
+				if (!response.data.documento) {
+					$scope.toast('Seu cadastro está sem documento de identificação. Fale com a organização.', 'failed-toast');
 					return;
 				}
-
-				var texto = dadosCertificado.textoAvaliador || '';
-				while (texto.match(/¨\w+/) != null) {
-					texto = texto.replace(/¨\w+/, function(str) {
-						var chave = str.slice(1);
-						return cert[chave] !== undefined ? String(cert[chave]).toUpperCase() : str;
-					});
-				}
-
-				var agora = new Date();
-				var docDefinition = {
-					pageSize: 'A4',
-					pageOrientation: 'landscape',
-					background: [{ image: dadosCertificado.imagem, width: 841, alignment: 'center' }],
-					content: [
-						{ text: texto + "\n\n\n\n", alignment: 'justify', margin: [50,210,50,0], fontSize: 16 },
-						{ text: 'Venâncio Aires, ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear() + '.', alignment: 'center', fontSize: 14 }
-					],
-					footer: [{
-						text: 'Número de validação: ' + cert.token + '. As informações deste certificado podem ser validadas em www.movaci.com.br/certificados.',
-						alignment: 'center', fontSize: 11
-					}]
-				};
-				pdfMake.createPdf(docDefinition).download('Certificado_Avaliador_MOVACI_' + ano + '.pdf');
+				certificadosService.buscarPorDocumento(response.data.documento);
 			}, function(response) {
-				console.log('Error: ' + response.data);
+				$scope.toast('Não foi possível carregar seus certificados.', 'failed-toast');
+			})
+			.finally(function() {
+				$scope.buscandoCertificados = false;
 			});
 		};
 
