@@ -192,6 +192,12 @@
 			templateUrl:'admin/views/editar-tela-inicial.html',
 			controller: 'editCtrl'
 		})
+		// Avaliação prévia dos trabalhos (configuração por Mostra).
+		.state('master.avaliacao-previa', {
+			url: "/avaliacao-previa",
+			templateUrl:'admin/views/avaliacao-previa.html',
+			controller: 'avaliacaoPreviaCtrl'
+		})
 		// Administradores por Mostra (só super-admin).
 		.state('master.administradores', {
 			url: "/administradores",

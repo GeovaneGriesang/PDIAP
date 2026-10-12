@@ -11,7 +11,7 @@
 	// mais que isso, a edição é encerrada sozinha. Sair da tela ou fechar a aba solta a trava.
 	angular
 	.module('PDIAP')
-	.controller('painelProjetoCtrl', function($scope, $rootScope, $state, $stateParams, $window, $interval, $mdToast, projetosAPI) {
+	.controller('painelProjetoCtrl', function($scope, $rootScope, $state, $stateParams, $window, $interval, $mdToast, Upload, projetosAPI) {
 
 		var INATIVIDADE_MS = 15 * 60 * 1000;
 		var RENOVAR_MS = 60 * 1000;
@@ -119,6 +119,26 @@
 		};
 		$scope.carregarProjeto = carregarProjeto;
 		carregarProjeto();
+
+		// Texto pra avaliação PRÉVIA (Feira.avaliacaoPrevia da Mostra): qualquer integrante envia o PDF
+		// dentro do prazo; o último envio vale. Não precisa da trava de edição.
+		$scope.urlTextoPrevia = '/api/painel/projetos/' + $stateParams.id + '/texto-previa';
+		$scope.envioTexto = { enviando: false, progresso: 0 };
+		$scope.enviarTextoPrevia = function(arquivo, invalidos) {
+			if (invalidos && invalidos.length) { $scope.toast('Envie um PDF de até 15MB.', 'failed-toast'); return; }
+			if (!arquivo) return;
+			$scope.envioTexto = { enviando: true, progresso: 0 };
+			Upload.upload({ url: $scope.urlTextoPrevia, method: 'POST', data: { file: arquivo } })
+			.then(function() {
+				$scope.toast('Texto enviado!', 'success-toast');
+				carregarProjeto();
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao enviar o texto.', 'failed-toast');
+			}, function(evt) {
+				$scope.envioTexto.progresso = Math.min(100, parseInt(100.0 * evt.loaded / evt.total, 10));
+			})
+			.finally(function() { $scope.envioTexto.enviando = false; });
+		};
 
 		// --- trava de edição -------------------------------------------------------------
 

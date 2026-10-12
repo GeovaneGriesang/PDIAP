@@ -65,6 +65,27 @@ const FeiraSchema = new Schema({
 	// projeto pelo painel, mais o texto/link da tela do projeto. Sem valor gravado = nunca
 	// configurada (ver controllers/opcoes-projetos-controller.js, que decide o que vale nesse caso);
 	// por isso nenhum campo aqui tem default.
+	// Avaliação PRÉVIA dos trabalhos (aprovação pra apresentação/anais) desta Mostra - ver
+	// controllers/avaliacao-previa-controller.js. Os projetos enviam o texto (PDF) pelo painel até
+	// envioPrazo; avaliadores(as) aptos(as) recebem os trabalhos (P2) e avaliam pela ficha da categoria.
+	avaliacaoPrevia: new Schema({
+		ativa: {type: Boolean},
+		envioInicio: {type: Date},
+		envioPrazo: {type: Date},
+		instrucoesEnvio: {type: String},
+		modo: {type: String, enum: ['convite', 'direto']},
+		diasParaAceitar: {type: Number},
+		prazoAvaliacao: {type: Date},
+		avaliadoresPorTrabalho: {type: Number},
+		anonima: {type: Boolean},
+		contaNaFinal: {type: Boolean},
+		instrucoesAvaliador: {type: String},
+		fichas: [{
+			categoria: {type: String},
+			criterios: [{ nome: {type: String}, maximo: {type: Number}, _id: false }],
+			_id: false
+		}]
+	}, { _id: false }),
 	// Administradores(as) DESTA Mostra (só tipo:'edicao'): Pessoas com o acesso do admin2
 	// restrito a esta edição (ver utils/perfil.js). Atribuídos pelo(a) super-admin.
 	administradores: [{type: Schema.Types.ObjectId, ref: 'Pessoa'}],

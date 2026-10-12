@@ -3,7 +3,7 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('avaliadoresCtrl', function($scope, $rootScope, $window, $location, $timeout, $mdDialog, $filter, adminAPI, documentoValidatorService, relatorioPdfService) {
+	.controller('avaliadoresCtrl', function($scope, $rootScope, $window, $location, $timeout, $mdDialog, $filter, $http, adminAPI, documentoValidatorService, relatorioPdfService) {
 
 		$scope.avaliadores = [];
 		$scope.count = 0;
@@ -296,6 +296,16 @@
 				console.log('Error: '+response.data);
 			});
 		}
+
+		// Aprova (ou tira) da distribuição da avaliação prévia dos trabalhos.
+		$scope.marcarPrevia = function(ava) {
+			$http.put('/admin/avaliadores/previa', { id: ava._id, apto: ava.aptoAvaliacaoPrevia === true }).then(function() {
+				$scope.toast(ava.nome + (ava.aptoAvaliacaoPrevia ? ' entra' : ' sai') + ' na avaliação prévia.', 'success-toast');
+			}, function(response) {
+				ava.aptoAvaliacaoPrevia = !ava.aptoAvaliacaoPrevia;
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao salvar.', 'failed-toast');
+			});
+		};
 
 		$scope.removerAvaliador = function(ev,id,nome) {
 			var confirm = $mdDialog.confirm()

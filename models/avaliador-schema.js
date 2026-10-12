@@ -47,6 +47,10 @@ const AvaliadorSchema = new Schema({
 	// cadastrados pelo admin pra edição corrente (diaTurnoPicker).
 	disponibilidade: [{ data: String, turno: String, _id: false }],
 	avaliacao: { type: Boolean },
+	// Avaliação PRÉVIA dos trabalhos (Feira.avaliacaoPrevia): a pessoa se oferece na inscrição
+	// (ou em Meus dados) e a organização aprova quem entra na distribuição.
+	aceitaAvaliacaoPrevia: { type: Boolean },
+	aptoAvaliacaoPrevia: { type: Boolean },
 	token: { type: String }, // Adicionado
 	createdAt:{ type: Date },
 

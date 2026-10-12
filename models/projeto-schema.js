@@ -110,6 +110,16 @@ const ProjetoSchema = new Schema({
 	feiraId: {type: Schema.Types.ObjectId, ref: 'Feira'},
 	token: {type:String},
 
+	// Texto (PDF) enviado pelos integrantes pra avaliação PRÉVIA (Feira.avaliacaoPrevia). O arquivo
+	// fica FORA de public/ (uploads/textos-previa/<_id do projeto>.pdf) e só é servido por rota com
+	// permissão - não usar numInscricao no nome: ele se repete entre anos.
+	textoPrevia: {
+		nome: {type: String},
+		tamanho: {type: Number},
+		enviadoEm: {type: Date},
+		enviadoPor: {type: Schema.Types.ObjectId, ref: 'Pessoa'}
+	},
+
 	// Trava de edição pelo painel (routes/painel-projetos.js): vários integrantes podem abrir o
 	// projeto, mas só quem está com a trava consegue salvar. Renovada pelo navegador enquanto a
 	// tela de edição está aberta; vencida (expira no passado), qualquer integrante pode pegar.

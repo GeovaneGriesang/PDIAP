@@ -122,6 +122,8 @@ router.post('/registro', async (req, res) => {
 		curriculo: req.body.curriculo,
 		turnos: req.body.turnos,
 		disponibilidade: Array.isArray(req.body.disponibilidade) ? req.body.disponibilidade : [],
+		// Se oferece pra avaliação PRÉVIA dos trabalhos (a organização aprova depois).
+		aceitaAvaliacaoPrevia: req.body.aceitaAvaliacaoPrevia === true,
 		avaliacao: req.body.avaliacao,
 		createdAt: createdAt,
 		feiraId: feiraId
@@ -200,6 +202,9 @@ router.put('/dashboard/meus-dados', ensureAvaliador, pendencias.exigeSemPendenci
     tempoAtuacao: req.body.tempoAtuacao,
     curriculo: req.body.curriculo
   };
+  // Pode deixar de se oferecer pra avaliação prévia (ou passar a se oferecer); a aprovação
+  // (aptoAvaliacaoPrevia) continua com a organização. Só mexe se a tela mandou o campo.
+  if (typeof req.body.aceitaAvaliacaoPrevia === 'boolean') campos.aceitaAvaliacaoPrevia = req.body.aceitaAvaliacaoPrevia;
   try {
     await AvaliadorSchema.findByIdAndUpdate(req.avaliador._id, { $set: campos }, { returnDocument: 'after' });
     res.send('success');

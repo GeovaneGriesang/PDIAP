@@ -224,6 +224,13 @@
     <div data-dia-turno-picker="avaliadores.disponibilidade" data-lista-dias="listaDias"></div>
   </div>
 
+  <!-- Avaliação prévia dos trabalhos (antes do evento) - a organização aprova quem entra. -->
+  <div style="margin-top:2em;">
+    <md-checkbox data-ng-model="avaliadores.aceitaAvaliacaoPrevia" aria-label="Aceito avaliar trabalhos antes do evento">
+      Aceito avaliar, <b>antes do evento</b>, os textos enviados pelos projetos (etapa de aprovação para apresentação e anais), pelo próprio sistema e dentro do prazo informado pela organização.
+    </md-checkbox>
+  </div>
+
   <!-- Finalizar inscrição -->
   <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0;">
     <md-button class="md-raised md-primary teal lighten-1" data-ng-disabled="!(avaliadoresForm.$valid && cadastro_avaliadores && avaliadores.categoriasEixos.length > 0)" data-ng-click="registrarAvaliador(avaliadores)">
