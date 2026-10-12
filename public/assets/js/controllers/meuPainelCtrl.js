@@ -11,7 +11,7 @@
 	//
 	// Menu lateral (meu-painel.html): "Início" (resumo) e uma entrada por Mostra - a Mostra
 	// escolhida mostra as participações dela e os certificados do mesmo ano.
-	.controller('meuPainelCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, $mdSidenav, $mdMedia, contaAPI, certificadosService) {
+	.controller('meuPainelCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, $mdDialog, $mdSidenav, $mdMedia, contaAPI, certificadosService) {
 
 		var logado = $rootScope.pessoaLogada || {};
 
@@ -97,6 +97,48 @@
 				return;
 			}
 			certificadosService.buscarPorDocumento(documento);
+		};
+
+		// Avaliação prévia (routes/painel-avaliacoes.js): trabalhos recebidos pra avaliar.
+		$scope.virgula = function(n) { return n === null || n === undefined ? '' : String(n).replace('.', ','); };
+		$scope.avaliacoes = [];
+		var carregarAvaliacoes = function() {
+			$http.get('/api/painel/avaliacoes-previas').then(function(response) {
+				$scope.avaliacoes = response.data || [];
+			}, function() {});
+		};
+		carregarAvaliacoes();
+		var erroDe = function(response, padrao) {
+			return typeof response.data === 'string' && response.data ? response.data : padrao;
+		};
+		$scope.aceitarAvaliacao = function(a) {
+			a.ocupado = true;
+			$http.post('/api/painel/avaliacoes-previas/' + a._id + '/aceitar').then(function() {
+				$scope.toast('Convite aceito. O texto e a ficha já estão disponíveis.', 'success-toast');
+				$state.go('painelAvaliacaoPrevia', { id: a._id });
+			}, function(response) {
+				a.ocupado = false;
+				$scope.toast(erroDe(response, 'Não foi possível aceitar.'), 'failed-toast');
+				carregarAvaliacoes();
+			});
+		};
+		$scope.recusarAvaliacao = function(a, ev) {
+			var dialogo = $mdDialog.prompt()
+				.title('Recusar o convite?')
+				.textContent('O trabalho vai para outra pessoa. Se quiser, conte o motivo (opcional).')
+				.placeholder('Motivo (opcional)').ariaLabel('Motivo').initialValue('')
+				.targetEvent(ev).ok('Recusar').cancel('Voltar');
+			$mdDialog.show(dialogo).then(function(motivo) {
+				a.ocupado = true;
+				$http.post('/api/painel/avaliacoes-previas/' + a._id + '/recusar', { motivo: motivo || '' }).then(function() {
+					$scope.toast('Convite recusado.', 'success-toast');
+					carregarAvaliacoes();
+				}, function(response) {
+					a.ocupado = false;
+					$scope.toast(erroDe(response, 'Não foi possível recusar.'), 'failed-toast');
+					carregarAvaliacoes();
+				});
+			}, function() {});
 		};
 
 		$scope.logout = function() {

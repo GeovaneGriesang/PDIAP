@@ -77,6 +77,7 @@ const FeiraSchema = new Schema({
 		diasParaAceitar: {type: Number},
 		prazoAvaliacao: {type: Date},
 		avaliadoresPorTrabalho: {type: Number},
+		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
 		anonima: {type: Boolean},
 		contaNaFinal: {type: Boolean},
 		instrucoesAvaliador: {type: String},
@@ -85,6 +86,15 @@ const FeiraSchema = new Schema({
 			criterios: [{ nome: {type: String}, maximo: {type: Number}, _id: false }],
 			_id: false
 		}]
+	}, { _id: false }),
+	// Estado da distribuição da etapa prévia (fora de avaliacaoPrevia, que a tela de configuração
+	// regrava inteira): iniciadaEm = a organização ligou; a partir daí a substituição (recusa,
+	// convite vencido, texto novo) roda sozinha. faltando = trabalhos sem avaliadores(as) suficientes
+	// na última rodada.
+	distribuicaoPrevia: new Schema({
+		iniciadaEm: {type: Date},
+		ultimaEm: {type: Date},
+		faltando: [{ projeto: {type: Schema.Types.ObjectId, ref: 'Projeto'}, nomeProjeto: {type: String}, numInscricao: {type: Number}, categoria: {type: String}, eixo: {type: String}, faltam: {type: Number}, _id: false }]
 	}, { _id: false }),
 	// Administradores(as) DESTA Mostra (só tipo:'edicao'): Pessoas com o acesso do admin2
 	// restrito a esta edição (ver utils/perfil.js). Atribuídos pelo(a) super-admin.

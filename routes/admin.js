@@ -35,7 +35,8 @@ const express = require('express')
 , sessao = require('../utils/sessao')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
 , mesclarPessoas = require('../controllers/mesclar-pessoas-controller')
-, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller');
+, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
+, distribuicaoPrevia = require('../controllers/distribuicao-previa-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -135,11 +136,12 @@ router.get('/inconsistencias/cadastro', miPermiso("3"), async (req, res) => {
 router.get('/avaliacao-previa', miPermiso("3"), async (req, res) => {
   try {
     if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
-    let mostra = await feiraSchema.findById(req.query.mostraId, 'nome ano categoriasEixos avaliacaoPrevia').lean();
+    let mostra = await feiraSchema.findById(req.query.mostraId, 'nome ano categoriasEixos avaliacaoPrevia distribuicaoPrevia').lean();
     let comTexto = await projetoSchema.countDocuments(await perfil.comEscopo(req, { feiraId: mostra._id, 'textoPrevia.enviadoEm': { $exists: true } }));
     let aptos = await avaliadorSchema.countDocuments({ feiraId: mostra._id, aptoAvaliacaoPrevia: true });
     let voluntarios = await avaliadorSchema.countDocuments({ feiraId: mostra._id, aceitaAvaliacaoPrevia: true });
-    res.send({ config: avaliacaoPrevia.paraTela(mostra), resumo: { textosEnviados: comTexto, avaliadoresAptos: aptos, avaliadoresQueSeOfereceram: voluntarios } });
+    res.send({ config: avaliacaoPrevia.paraTela(mostra), resumo: { textosEnviados: comTexto, avaliadoresAptos: aptos, avaliadoresQueSeOfereceram: voluntarios },
+      distribuicao: await distribuicaoPrevia.resumo(mostra) });
   } catch (error) {
     console.error('Erro ao ler avaliação prévia', error);
     res.status(500).send('Erro ao ler a configuração.');
@@ -158,6 +160,31 @@ router.put('/avaliacao-previa', miPermiso("3"), async (req, res) => {
   } catch (error) {
     console.error('Erro ao salvar avaliação prévia', error);
     res.status(500).send('Erro ao salvar a configuração.');
+  }
+});
+
+// Distribuir agora (e ligar a substituição automática - ver distribuicao-previa-controller.js).
+router.post('/avaliacao-previa/distribuir', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let r = await distribuicaoPrevia.distribuir(req.body.mostraId, { iniciar: true });
+    if (r.erro) return res.status(400).send(r.erro);
+    if (r.ocupado) return res.status(409).send('A distribuição desta Mostra já está rodando. Aguarde um instante.');
+    res.send(r);
+  } catch (error) {
+    console.error('Erro ao distribuir trabalhos da avaliação prévia', error);
+    res.status(500).send('Erro ao distribuir os trabalhos.');
+  }
+});
+
+router.post('/avaliacao-previa/pausar', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    await distribuicaoPrevia.pausar(req.body.mostraId);
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao pausar distribuição da avaliação prévia', error);
+    res.status(500).send('Erro ao pausar.');
   }
 });
 

@@ -28,6 +28,8 @@
 				c.prazoAvaliacao = paraDia(c.prazoAvaliacao);
 				$scope.config = c;
 				$scope.resumo = response.data.resumo;
+				$scope.distribuicao = response.data.distribuicao || { situacoes: {}, faltando: [] };
+				$scope.salvo = { envioPrazo: c.envioPrazo };
 			}, function(response) {
 				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Não foi possível carregar.', 'failed-toast');
 			});
@@ -56,6 +58,33 @@
 		};
 		$scope.removerCriterio = function(f, i) {
 			f.criterios.splice(i, 1);
+		};
+
+		// Distribuição (usa a configuração já salva no servidor).
+		$scope.distribuicao = { situacoes: {}, faltando: [] };
+		$scope.distribuindo = false;
+		$scope.envioAindaAberto = function() {
+			var p = $scope.salvo && $scope.salvo.envioPrazo;
+			return !!p && fimDoDia(p) > new Date();
+		};
+		$scope.distribuir = function() {
+			$scope.distribuindo = true;
+			$http.post('/admin/avaliacao-previa/distribuir', { mostraId: $rootScope.mostraId }).then(function(response) {
+				var r = response.data;
+				$scope.toast(r.novas + ' entrega(s) nova(s)' + (r.faltando.length ? '; ' + r.faltando.length + ' trabalho(s) sem avaliadores(as) suficientes.' : '.'), r.faltando.length ? 'failed-toast' : 'success-toast');
+				$scope.carregar();
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao distribuir.', 'failed-toast');
+			}).finally(function() { $scope.distribuindo = false; });
+		};
+		$scope.pausar = function() {
+			$scope.distribuindo = true;
+			$http.post('/admin/avaliacao-previa/pausar', { mostraId: $rootScope.mostraId }).then(function() {
+				$scope.toast('Distribuição automática pausada. O que já foi entregue continua valendo.', 'success-toast');
+				$scope.carregar();
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao pausar.', 'failed-toast');
+			}).finally(function() { $scope.distribuindo = false; });
 		};
 
 		$scope.salvar = function() {

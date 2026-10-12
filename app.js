@@ -26,6 +26,7 @@ const express = require('express'),
       participantes = require('./routes/participantes'),
       pessoas = require('./routes/pessoas'),
       painelProjetos = require('./routes/painel-projetos'),
+      painelAvaliacoes = require('./routes/painel-avaliacoes'),
       saberes = require('./routes/saberes-docentes'),
       admin = require('./routes/admin'),
       app = express();
@@ -115,6 +116,7 @@ app.use('/avaliadores', avaliadores);
 app.use('/participantes', participantes);
 app.use('/pessoas', pessoas);
 app.use('/api/painel/projetos', painelProjetos);
+app.use('/api/painel/avaliacoes-previas', painelAvaliacoes);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
 
@@ -138,5 +140,9 @@ app.use(function(err, req, res, next) {
   }
   res.status(err.status || 500).send('Erro interno do servidor');
 });
+
+// Rodada automática da avaliação prévia (substituições e lembretes) - AGENDADOR_PREVIA=0 desliga
+// (servidor de testes).
+if (process.env.AGENDADOR_PREVIA !== '0') require('./controllers/distribuicao-previa-controller').iniciarAgendador();
 
 module.exports = app;
