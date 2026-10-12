@@ -20,16 +20,15 @@ const express = require('express')
 , path = require('path')
 , formidable = require('formidable')
 , ProjetoSchema = require('../models/projeto-schema')
-, adminSchema = require('../models/admin-schema')
-, Admin = require('../controllers/admin-controller')
+, opcoesProjetos = require('../controllers/opcoes-projetos-controller')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
 , sessao = require('../utils/sessao');
 
 const TRAVA_MS = 3 * 60 * 1000;
 
-// Campos que os integrantes podem alterar e a opção de Editar > Campos editáveis (admin) que
-// libera cada um. Qualquer outro campo do body (aprovado, premiacao, token...) é ignorado.
+// Campos que os integrantes podem alterar e a opção de Editar > Campos editáveis (admin, POR
+// MOSTRA - ver controllers/opcoes-projetos-controller.js) que libera cada um. Qualquer outro campo do body (aprovado, premiacao, token...) é ignorado.
 // hospedagem também é limpa ao trocar alunos (aba Aluno(s)), por isso vale com "integrantes".
 const CAMPO_OPCAO = {
   nomeProjeto: ['nomeProjeto'], palavraChave: ['palavras_chave'], categoria: ['categoria'], eixo: ['eixo'],
@@ -51,22 +50,6 @@ function splita(arg) {
 
 function escaparRegex(texto) {
   return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function opcoesAtuais() {
-  return new Promise((resolve) => {
-    Admin.getOpcoesAtuais((err, docs) => resolve((!err && docs && docs[0] && docs[0].opcoes) || {}));
-  });
-}
-
-// Só o projeto da edição atual pode ser alterado - ano do projeto (createdAt) contra o "ano"
-// da edição em Editar > Tela inicial (texto livre, ex "de 2026": pega os 4 dígitos). Mesma
-// regra que valia na área antiga do projeto.
-async function edicaoAnterior(projeto) {
-  let admin = await adminSchema.findOne({ username: 'admin2' }, 'ano');
-  let m = admin && admin.ano != null && String(admin.ano).match(/\d{4}/);
-  let anoAdmin = m ? parseInt(m[0], 10) : null;
-  return !!(anoAdmin && new Date(projeto.createdAt).getFullYear() !== anoAdmin);
 }
 
 // Carrega o projeto `req.params.id` só se a Pessoa logada for integrante dele (pelo vínculo
@@ -103,18 +86,22 @@ function estadoTrava(projeto, pessoa) {
   };
 }
 
-// Edição liberada? (edição atual + projeto ainda existe) - não olha a trava.
-async function motivoBloqueio(projeto) {
-  if (await edicaoAnterior(projeto)) return 'Este projeto é de uma edição anterior e não pode mais ser alterado.';
-  return null;
+// Edição liberada? Vale o que a Mostra DO PROJETO libera em Campos editáveis - projeto de
+// edição passada fica com tudo desligado (ver opcoes-projetos-controller). Não olha a trava.
+async function situacaoEdicao(projeto) {
+  let r = await opcoesProjetos.opcoesDoProjeto(projeto);
+  let motivo = null;
+  if (!r.mostra) motivo = 'Este projeto não está ligado a uma Mostra. Alterações, só com a organização.';
+  else if (!opcoesProjetos.FLAGS.some((k) => r.opcoes[k])) motivo = 'A organização não liberou alterações nos projetos desta Mostra agora.';
+  return { mostra: r.mostra, opcoes: r.opcoes, motivo: motivo };
 }
 
-// Gravação: exige edição liberada e a trava DESTA pessoa com o código certo (X-Trava). Renova
+// Gravação: exige edição liberada (pela Mostra) e a trava DESTA pessoa com o código certo (X-Trava). Renova
 // a trava a cada gravação.
 async function exigeTrava(req, res, next) {
   try {
-    let bloqueio = await motivoBloqueio(req.projeto);
-    if (bloqueio) return res.status(403).send(bloqueio);
+    let situacao = await situacaoEdicao(req.projeto);
+    if (situacao.motivo) return res.status(403).send(situacao.motivo);
     let codigo = (req.get('X-Trava') || '').toString();
     let t = req.projeto.trava;
     let ok = codigo && t && t.token === codigo && String(t.pessoa) === String(req.pessoa._id);
@@ -126,7 +113,7 @@ async function exigeTrava(req, res, next) {
     }
     // Trava vencida mas ainda dela (ninguém pegou): vale e é renovada.
     await ProjetoSchema.updateOne({ _id: req.projeto._id, 'trava.token': codigo }, { $set: { 'trava.expira': new Date(Date.now() + TRAVA_MS) } });
-    req.opcoes = await opcoesAtuais();
+    req.opcoes = situacao.opcoes;
     next();
   } catch (err) {
     console.error('Erro ao conferir a trava do projeto', err);
@@ -139,10 +126,12 @@ async function exigeTrava(req, res, next) {
 router.get('/:id', exigeIntegrante, async (req, res) => {
   try {
     let projeto = await ProjetoSchema.findById(req.projeto._id, PROJECAO_SEGURA).lean();
-    let bloqueio = await motivoBloqueio(req.projeto);
+    let situacao = await situacaoEdicao(req.projeto);
     projeto._painel = {
-      edicaoPermitida: !bloqueio,
-      motivoBloqueio: bloqueio || undefined,
+      edicaoPermitida: !situacao.motivo,
+      motivoBloqueio: situacao.motivo || undefined,
+      mostra: situacao.mostra ? { nome: situacao.mostra.nome, ano: situacao.mostra.ano } : undefined,
+      opcoes: situacao.opcoes,
       trava: estadoTrava(req.projeto, req.pessoa)
     };
     delete projeto.trava;
@@ -153,13 +142,23 @@ router.get('/:id', exigeIntegrante, async (req, res) => {
   }
 });
 
+// Campos editáveis da Mostra do projeto (o formulário de edição desabilita o que está desligado).
+router.get('/:id/opcoes', exigeIntegrante, async (req, res) => {
+  try {
+    res.send((await situacaoEdicao(req.projeto)).opcoes);
+  } catch (err) {
+    console.error('Erro ao ler opções do projeto', err);
+    res.status(500).send('error');
+  }
+});
+
 // --- trava -------------------------------------------------------------------------------
 
 // Pega a trava (ou renova, se já é dela). Devolve o código que toda gravação precisa mandar.
 router.post('/:id/trava', exigeIntegrante, async (req, res) => {
   try {
-    let bloqueio = await motivoBloqueio(req.projeto);
-    if (bloqueio) return res.status(403).send(bloqueio);
+    let situacao = await situacaoEdicao(req.projeto);
+    if (situacao.motivo) return res.status(403).send(situacao.motivo);
     let agora = new Date();
     let atual = req.projeto.trava;
     // Já é dela e ainda vale: mantém o mesmo código (outra aba dela continua funcionando).

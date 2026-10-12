@@ -29,12 +29,10 @@
 			return $http(request);
 		}
 
+		// Campos editáveis: com um projeto aberto no painel (usarProjeto), os da Mostra DELE;
+		// senão, os da Mostra atual.
 		let _getOpcoes = function(){
-			const request = {
-				url:'/getOpcoes',
-				method: 'GET',
-			}
-			return $http(request);
+			return $http({ url: projetoAtual.id ? urlProjeto('/opcoes') : '/getOpcoes', method: 'GET' });
 		}		
 
 		let _saveProjeto = function(projeto) {

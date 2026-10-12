@@ -49,9 +49,6 @@
 			$mdToast.show($mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000));
 		};
 
-		projetosAPI.getOpcoes().then(function(response) {
-			$scope.opcoes = response.data || {};
-		}, function() {});
 
 		// Documentos cadastrados pelo admin (Eventos > Cadastrar Documento) - os mesmos da home. A
 		// área antiga do projeto linkava arquivos fixos em /alpha/documentos que não existiam mais.
@@ -81,6 +78,8 @@
 				var projeto = response.data;
 				$scope.projeto = projeto;
 				$scope.painel = projeto._painel || {};
+				// Campos editáveis da Mostra DO PROJETO (cada Mostra tem os seus).
+				$scope.opcoes = $scope.painel.opcoes || {};
 				$scope.aviso = avisoSituacao(projeto);
 				$scope.orientadores = (projeto.integrantes || []).filter(function(i) { return i.tipo === 'Orientador'; });
 				$scope.estudantes = (projeto.integrantes || []).filter(function(i) { return i.tipo === 'Aluno'; });
@@ -194,6 +193,7 @@
 				projetosAPI.liberarTrava();
 				pararEdicao();
 			}
+			projetosAPI.usarProjeto(null);
 		});
 	});
 })();

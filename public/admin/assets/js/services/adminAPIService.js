@@ -48,20 +48,12 @@
 			return $http(request);
 		}
 
-		let _postOpcoes = function(op){
-			const request = {
-				url: '/admin/setOpcoes',
-				method: 'POST',
-				data: op
-			}
-			return $http(request);
+		// Campos editáveis são POR MOSTRA (routes/admin.js#/setOpcoes e #/getOpcoes).
+		let _postOpcoes = function(mostraId, op){
+			return $http({ url: '/admin/setOpcoes', method: 'POST', data: { mostraId: mostraId, opcoes: op } });
 		}
-		let _getOpcoes = function(){
-			const request = {
-				url:'/admin/getOpcoes',
-				method: 'GET'
-			}
-			return $http(request);
+		let _getOpcoes = function(mostraId){
+			return $http({ url: '/admin/getOpcoes', method: 'GET', params: mostraId ? { mostraId: mostraId } : {} });
 		}
 
 		// Mostra atual (Editar > Mostra atual): { mostraId } (null = nenhuma marcada). id null desmarca.

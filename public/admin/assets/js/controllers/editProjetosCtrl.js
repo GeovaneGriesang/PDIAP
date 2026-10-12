@@ -23,7 +23,7 @@
 		// nem aparece: não faz sentido cobrar/mostrar um campo que a edição não usa.
 		$scope.opcoes = {};
 		$scope.carregarOpcoes = function() {
-			adminAPI.getOpcoes().then(function(response) {
+			adminAPI.getOpcoes($rootScope.mostraId).then(function(response) {
 				$scope.opcoes = response.data;
 			}, function(response) {
 				console.log(response.data);

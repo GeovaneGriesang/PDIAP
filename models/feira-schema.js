@@ -60,7 +60,18 @@ const FeiraSchema = new Schema({
 		dataProrrogacao: { type: Date },
 		textoProrrogacao: { type: String },
 		textoEncerrado: { type: String }
-	}
+	},
+	// "Campos editáveis" desta Mostra (só tipo:'edicao') - o que os integrantes podem alterar no
+	// projeto pelo painel, mais o texto/link da tela do projeto. Sem valor gravado = nunca
+	// configurada (ver controllers/opcoes-projetos-controller.js, que decide o que vale nesse caso);
+	// por isso nenhum campo aqui tem default.
+	opcoesProjetos: new Schema({
+		nomeProjeto: {type: Boolean}, palavras_chave: {type: Boolean}, resumo: {type: Boolean},
+		categoria: {type: Boolean}, eixo: {type: Boolean}, participa: {type: Boolean},
+		instituicao: {type: Boolean}, integrantes: {type: Boolean}, hospedagem: {type: Boolean}, upload: {type: Boolean},
+		link: {type: Boolean}, linkValor: {type: String},
+		textoInicial: {type: Boolean}, textoInicialValor: {type: String}
+	}, { _id: false })
 }, { collection: 'feiras' });
 
 const Feira = module.exports = mongoose.model('Feira', FeiraSchema);
