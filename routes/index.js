@@ -1601,7 +1601,7 @@ router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
 // Painel único de qualquer pessoa logada (ui-routes.js#painel*). As URLs antigas de
 // avaliador/participante abaixo continuam servindo a SPA, que redireciona pro /painel
 // (links de e-mails antigos).
-router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/pendencias', '/painel/projeto/:id'], function(req, res, next) {
+router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/pendencias', '/painel/projeto/:id', '/painel/avaliacao-previa/:id'], function(req, res, next) {
   res.render('layout.ejs');
 });
 

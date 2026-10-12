@@ -3,7 +3,7 @@
 // Avaliação PRÉVIA dos trabalhos (aprovação pra apresentação e/ou anais), por Mostra - ver memória
 // project-avaliacao-pelo-sistema. P1: configuração (Feira.avaliacaoPrevia), envio do texto (PDF) pelo
 // projeto no painel e avaliadores(as) que se oferecem + aprovação da organização. Distribuição,
-// convites e avaliação pela ficha vêm na P2.
+// convites e avaliação pela ficha (P2): controllers/distribuicao-previa-controller.js.
 
 const path = require('path')
 ,	fs = require('fs');
@@ -37,6 +37,7 @@ module.exports.limpar = (c) => {
 		diasParaAceitar: inteiro(c.diasParaAceitar, 1, 60, 3),
 		prazoAvaliacao: data(c.prazoAvaliacao),
 		avaliadoresPorTrabalho: inteiro(c.avaliadoresPorTrabalho, 1, 10, 2),
+		maxPorAvaliador: inteiro(c.maxPorAvaliador, 0, 200, 0),
 		anonima: c.anonima !== false,
 		contaNaFinal: c.contaNaFinal === true,
 		instrucoesAvaliador: texto(c.instrucoesAvaliador),
@@ -70,7 +71,7 @@ module.exports.paraTela = (mostra) => {
 	return {
 		ativa: !!c.ativa, envioInicio: c.envioInicio, envioPrazo: c.envioPrazo, instrucoesEnvio: c.instrucoesEnvio || '',
 		modo: c.modo || 'convite', diasParaAceitar: c.diasParaAceitar || 3, prazoAvaliacao: c.prazoAvaliacao,
-		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
+		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, maxPorAvaliador: c.maxPorAvaliador || 0, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
 		instrucoesAvaliador: c.instrucoesAvaliador || '', fichas: fichas, categoriasCadastradas: categorias.length
 	};
 };

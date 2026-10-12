@@ -1,0 +1,92 @@
+<!-- Avaliação prévia de um trabalho (controller painelAvaliacaoPreviaCtrl, /painel/avaliacao-previa/:id):
+     dados do trabalho (sem integrantes nem escola na avaliação anônima), texto em PDF e a ficha da
+     categoria com o total calculado. "Guardar rascunho" salva sem exigir todas as notas. -->
+<style>
+  .av-cartao { background:#fff;border-radius:6px;padding:24px;margin-bottom:20px; }
+  .av-cartao h3 { margin-top:0;color:#225024; }
+  .av-suave { color:rgba(0,0,0,0.6); }
+  .av-criterio { padding:6px 0;border-top:1px solid #f0f0f0; }
+  .av-criterio:first-of-type { border-top:none; }
+  .av-aviso { background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:12px 16px;margin-bottom:16px;color:#7a4a00; }
+</style>
+
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Avaliação prévia</span>
+      <span flex></span>
+      <md-button ui-sref="painel" class="md-raised" style="text-transform:none;">Voltar ao painel</md-button>
+    </div>
+  </md-toolbar>
+
+  <div style="padding:32px 20px;">
+    <div style="max-width:900px;margin:0 auto;">
+      <p data-ng-if="carregando" class="av-suave">Carregando o trabalho...</p>
+      <div data-ng-if="erro" class="md-whiteframe-2dp av-cartao"><p style="margin:0;">{{erro}}</p></div>
+
+      <div data-ng-if="!carregando && !erro">
+        <h2 style="color:#2e7d32;margin:0 0 4px 0;">{{av.projeto.nomeProjeto}}</h2>
+        <p class="av-suave" style="margin-top:0;">
+          {{av.mostra.ano}} - {{av.mostra.nome}} · {{av.projeto.categoria}}<span data-ng-if="av.projeto.eixo"> · {{av.projeto.eixo}}</span>
+        </p>
+
+        <div class="av-aviso" data-ng-if="av.situacao === 'convidado'">
+          Este é um convite: responda até {{av.responderAte | date:'dd/MM/yyyy'}}. O texto e a ficha ficam disponíveis depois de aceitar.
+          <div style="margin-top:8px;">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;" data-ng-disabled="salvando" data-ng-click="aceitar()">Aceitar</md-button>
+          </div>
+        </div>
+        <div class="av-aviso" data-ng-if="!av.aberta">{{av.motivo}} As notas não podem mais ser alteradas.</div>
+
+        <div class="md-whiteframe-2dp av-cartao">
+          <h3>Trabalho</h3>
+          <p data-ng-if="av.anonima" class="av-suave" style="margin-top:0;font-size:14px;">Avaliação anônima: integrantes e escola não são mostrados.</p>
+          <div data-ng-if="!av.anonima" style="margin-bottom:10px;">
+            <div data-ng-if="av.projeto.nomeEscola"><b>Escola:</b> {{av.projeto.nomeEscola}}<span data-ng-if="av.projeto.cidade"> - {{av.projeto.cidade}}/{{av.projeto.estado}}</span></div>
+            <div data-ng-if="av.projeto.integrantes.length"><b>Integrantes:</b>
+              <span data-ng-repeat="i in av.projeto.integrantes">{{i.nome}} ({{i.tipo}}){{$last ? '' : ', '}}</span>
+            </div>
+          </div>
+          <div data-ng-if="av.projeto.resumo"><b>Resumo da inscrição</b><p style="white-space:pre-wrap;margin-top:4px;">{{av.projeto.resumo}}</p></div>
+          <div data-ng-if="av.situacao !== 'convidado'" layout="row" layout-align="start center">
+            <md-button data-ng-if="av.projeto.temTexto" class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;" data-ng-href="{{urlTexto}}" target="_blank">
+              <md-icon md-svg-icon="download" style="width:18px;height:18px;color:#fff;"></md-icon> Abrir o texto (PDF)
+            </md-button>
+            <span data-ng-if="!av.projeto.temTexto" class="av-suave">O texto deste trabalho não está disponível. Fale com a organização.</span>
+          </div>
+        </div>
+
+        <div class="md-whiteframe-2dp av-cartao" data-ng-if="av.instrucoes">
+          <h3>Orientações da organização</h3>
+          <p style="white-space:pre-wrap;margin:0;">{{av.instrucoes}}</p>
+        </div>
+
+        <form name="fichaForm" novalidate class="md-whiteframe-2dp av-cartao" data-ng-if="av.situacao !== 'convidado'">
+          <h3>Ficha de avaliação</h3>
+          <p class="av-suave" style="margin-top:0;font-size:14px;" data-ng-if="av.prazoAvaliacao">Você pode alterar as notas até {{av.prazoAvaliacao | date:'dd/MM/yyyy'}}.</p>
+          <div class="av-criterio" data-ng-repeat="k in av.ficha" layout="row" layout-align="start center">
+            <div flex>{{k.nome}}</div>
+            <md-input-container style="margin:4px 0 4px 12px;width:150px;">
+              <label>Nota (0 a {{k.maximo}})</label>
+              <input type="number" name="nota{{$index}}" min="0" max="{{k.maximo}}" step="0.1" data-ng-model="notas[$index]" data-ng-disabled="!av.aberta"/>
+            </md-input-container>
+          </div>
+          <div style="text-align:right;font-size:18px;margin:10px 0 16px;">
+            Total: <b>{{total() === null ? '-' : virgula(total())}}</b> de {{maximo()}} ponto(s)
+          </div>
+          <md-input-container class="md-block">
+            <label>Parecer (comentários para a organização, opcional)</label>
+            <textarea data-ng-model="form.parecer" rows="4" maxlength="5000" data-ng-disabled="!av.aberta"></textarea>
+          </md-input-container>
+          <p data-ng-if="av.situacao === 'concluido'" style="color:#2e7d32;">Avaliação concluída em {{av.concluidoEm | date:'dd/MM/yyyy HH:mm'}}.</p>
+          <div layout="row" layout-align="center center" data-ng-if="av.aberta">
+            <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="salvando || fichaForm.$invalid" data-ng-click="salvar(false)">Guardar rascunho</md-button>
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || fichaForm.$invalid || total() === null" data-ng-click="salvar(true)">
+              {{av.situacao === 'concluido' ? 'Salvar alterações' : 'Concluir avaliação'}}
+            </md-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

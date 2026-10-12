@@ -72,6 +72,10 @@
               <input type="number" min="1" max="10" data-ng-model="config.avaliadoresPorTrabalho" required/>
             </md-input-container>
             <md-input-container flex="33">
+              <label>Máx. de trabalhos por avaliador(a) (0 = sem limite)</label>
+              <input type="number" min="0" max="200" data-ng-model="config.maxPorAvaliador"/>
+            </md-input-container>
+            <md-input-container flex="33">
               <label>Prazo da avaliação (até o fim do dia)</label>
               <input type="date" data-ng-model="config.prazoAvaliacao"/>
             </md-input-container>
@@ -111,6 +115,46 @@
           <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || (config.ativa && previaForm.$invalid)" data-ng-click="salvar()">
             Salvar etapa prévia
           </md-button>
+        </div>
+
+        <!-- Distribuição (controllers/distribuicao-previa-controller.js) - usa a configuração SALVA. -->
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin:24px 0 16px;" data-ng-if="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Distribuição dos trabalhos</h3>
+          <p style="color:rgba(0,0,0,0.7);margin-top:0;">
+            O sistema entrega cada trabalho com texto a {{config.avaliadoresPorTrabalho}} avaliador(a)(es) aprovado(a)(s), preferindo quem se inscreveu
+            na mesma categoria e eixo e dividindo a quantidade entre as pessoas. Ninguém recebe um trabalho de que é integrante.
+            Depois de iniciada, a distribuição continua sozinha (a cada 30 min): substitui quem recusa ou não responde o convite,
+            inclui textos que chegarem depois e manda os lembretes.
+          </p>
+          <p data-ng-if="distribuicao.iniciadaEm" style="margin:0 0 8px;">
+            <b>Distribuição automática ligada</b> desde {{distribuicao.iniciadaEm | date:'dd/MM/yyyy HH:mm'}} · última rodada {{distribuicao.ultimaEm | date:'dd/MM/yyyy HH:mm'}}
+          </p>
+          <p data-ng-if="!distribuicao.iniciadaEm && distribuicao.ultimaEm" style="margin:0 0 8px;color:#7a4a00;">
+            Distribuição automática pausada (última rodada {{distribuicao.ultimaEm | date:'dd/MM/yyyy HH:mm'}}).
+          </p>
+          <p data-ng-if="envioAindaAberto()" style="margin:0 0 8px;color:#7a4a00;">
+            Atenção: o envio dos textos ainda está aberto. Os projetos podem trocar o texto depois de distribuído.
+          </p>
+          <div style="font-size:14px;color:rgba(0,0,0,0.7);margin-bottom:8px;">
+            Convites aguardando: {{distribuicao.situacoes.convidado || 0}} ·
+            Em avaliação: {{distribuicao.situacoes.aceito || 0}} ·
+            Concluídas: {{distribuicao.situacoes.concluido || 0}} ·
+            Recusados: {{distribuicao.situacoes.recusado || 0}} ·
+            Convites vencidos: {{distribuicao.situacoes.expirado || 0}}
+          </div>
+          <div data-ng-if="distribuicao.faltando.length" style="background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:10px 14px;margin:10px 0;color:#7a4a00;">
+            <b>{{distribuicao.faltando.length}} trabalho(s) sem avaliadores(as) suficientes</b> - aprove mais pessoas da categoria em Avaliação > Avaliadores
+            (coluna "Prévia") ou diminua o número por trabalho / o limite por pessoa:
+            <div data-ng-repeat="f in distribuicao.faltando" style="font-size:14px;">
+              <span data-ng-if="f.numInscricao">nº {{f.numInscricao}} - </span>{{f.nomeProjeto}} ({{f.categoria}}<span data-ng-if="f.eixo"> - {{f.eixo}}</span>): falta(m) {{f.faltam}}
+            </div>
+          </div>
+          <div layout="row" layout-align="center center">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="distribuindo" data-ng-click="distribuir()">
+              {{distribuicao.iniciadaEm ? 'Rodar a distribuição agora' : 'Iniciar a distribuição'}}
+            </md-button>
+            <md-button data-ng-if="distribuicao.iniciadaEm" class="md-raised" style="text-transform:none;" data-ng-disabled="distribuindo" data-ng-click="pausar()">Pausar a distribuição automática</md-button>
+          </div>
         </div>
       </form>
     </md-content>

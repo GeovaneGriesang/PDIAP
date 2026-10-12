@@ -176,6 +176,16 @@
           },
         })
 
+        // Trabalho recebido na avaliação PRÉVIA (routes/painel-avaliacoes.js): texto + ficha.
+        .state('painelAvaliacaoPrevia', {
+          url: '/painel/avaliacao-previa/:id',
+          templateUrl: '/views/painel-avaliacao-previa.html',
+          controller: 'painelAvaliacaoPreviaCtrl',
+          resolve: {
+            loggedin: checkLoggedinPessoa,
+          },
+        })
+
         // URLs antigas dos painéis separados de avaliador(a)/participante (links de e-mails já
         // enviados, favoritos): só redirecionam. A recuperação de senha antiga cai na unificada
         // (/conta/nova-senha/:token aceita os tokens antigos também).
