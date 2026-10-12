@@ -24,6 +24,10 @@
 
 		$scope.nome = logado.nome;
 		$scope.estadoDados = 'painelDados';
+		$scope.ehAdmin = !!logado.admin;
+		$scope.abrirAdmin = function() {
+			$window.location.href = '/master';
+		};
 		$scope.estadoTrocarSenha = 'painelTrocarSenha';
 		$scope.conta = null;
 

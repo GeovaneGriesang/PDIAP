@@ -54,6 +54,14 @@
         </md-list-item>
       </md-list>
 
+      <!-- Perfil Administrador(a) de Mostra / Super-admin (utils/perfil.js): atalho pro admin. -->
+      <md-list data-ng-if="ehAdmin">
+        <md-list-item data-ng-click="abrirAdmin()">
+          <md-icon md-svg-icon="settings"></md-icon>
+          <p class="md-subheader">Administração</p>
+        </md-list-item>
+      </md-list>
+
       <md-list>
         <md-list-item data-ng-click="irPara(estadoDados)">
           <md-icon md-svg-icon="account"></md-icon>

@@ -65,6 +65,9 @@ const FeiraSchema = new Schema({
 	// projeto pelo painel, mais o texto/link da tela do projeto. Sem valor gravado = nunca
 	// configurada (ver controllers/opcoes-projetos-controller.js, que decide o que vale nesse caso);
 	// por isso nenhum campo aqui tem default.
+	// Administradores(as) DESTA Mostra (só tipo:'edicao'): Pessoas com o acesso do admin2
+	// restrito a esta edição (ver utils/perfil.js). Atribuídos pelo(a) super-admin.
+	administradores: [{type: Schema.Types.ObjectId, ref: 'Pessoa'}],
 	opcoesProjetos: new Schema({
 		nomeProjeto: {type: Boolean}, palavras_chave: {type: Boolean}, resumo: {type: Boolean},
 		categoria: {type: Boolean}, eixo: {type: Boolean}, participa: {type: Boolean},

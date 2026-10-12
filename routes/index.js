@@ -33,7 +33,8 @@ const express = require('express')
 , perfisController = require('../controllers/perfis-controller')
 , certificadoSeminario = require('../utils/certificadoSeminario')
 , sessao = require('../utils/sessao')
-, opcoesProjetos = require('../controllers/opcoes-projetos-controller');
+, opcoesProjetos = require('../controllers/opcoes-projetos-controller')
+, perfil = require('../utils/perfil');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -1103,7 +1104,11 @@ router.get('/conta/loggedin', ensurePessoa, async (req, res) => {
     let pessoa = await sessao.pessoaDaSessao(req);
     let credencial = pessoa || req.user;
     let [avaliador, participante] = await Promise.all([sessao.avaliadorDaSessao(req), sessao.participanteDaSessao(req)]);
+    let p = await perfil.carregar(req);
     res.send({
+      // Administrador(a) de alguma Mostra ou super-admin: o painel mostra o atalho pro admin.
+      admin: p.ehAdmin,
+      superAdmin: p.superAdmin,
       nome: (pessoa && pessoa.nome) || req.user.nome,
       email: (pessoa && pessoa.email) || req.user.email,
       senhaDefinida: !!credencial.senhaDefinida,

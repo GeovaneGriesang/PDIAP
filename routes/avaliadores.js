@@ -17,7 +17,8 @@ const express = require('express')
 , AvaliadorSchema = require('../models/avaliador-schema')
 , ParticipanteSchema = require('../models/participante-schema')
 , feiraSchema = require('../models/feira-schema')
-, sessao = require('../utils/sessao');
+, sessao = require('../utils/sessao')
+, perfil = require('../utils/perfil');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -81,14 +82,15 @@ router.post('/registro', async (req, res) => {
 	// vem do slug do link de inscrição usado (/avaliadores/inscricao/:slug), resolvido pro _id
 	// da Feira correspondente. Sem slug (link antigo, tela do admin, ou nenhuma edição com
 	// slug ainda), feiraId fica undefined - mesmo comportamento de antes da Fase 2.
-	// Cadastro pela tela do admin manda a Mostra selecionada no filtro (feiraId) - só vale em
-	// sessão de admin (permissao "3"), senão qualquer um poderia anexar um cadastro a uma
-	// Mostra qualquer. Mostra inválida => 400.
+	// Cadastro pela tela do admin manda a Mostra selecionada no filtro (feiraId) - só vale pra
+	// admin dessa Mostra (utils/perfil.js), senão qualquer um poderia anexar um cadastro a uma
+	// Mostra qualquer. Mostra inválida => 400; Mostra de outro(a) admin => 403.
 	let feiraId;
-	if (req.body.feiraId && req.isAuthenticated() && req.user.permissao === "3") {
+	if (req.body.feiraId && (await perfil.carregar(req)).ehAdmin) {
 		try {
 			let feira = idValido(req.body.feiraId) ? await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, '_id') : null;
 			if (!feira) return res.status(400).send('Mostra inválida');
+			if (!(await perfil.podeMostra(req, req.body.feiraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
 			feiraId = feira._id;
 		} catch (err) {
 			console.error('Erro ao resolver a Mostra do cadastro', err);
@@ -208,13 +210,14 @@ router.put('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
 
 // Lançar nota é coisa do admin (Avaliação > Inserir, Inconsistências, app de Avaliação/Ranking)
 // - antes bastava estar logado, então qualquer avaliador(a)/participante podia mudar a nota de
-// qualquer projeto. Mesmos perfis de GET /admin/projetos ("2" ou "3").
-router.put('/addNota', ensureAuthenticated, (req, res) => {
-	if (req.user.permissao !== '2' && req.user.permissao !== '3') return res.sendStatus(403);
+// qualquer projeto. Agora: admin, e só em projeto das Mostras dele(a).
+router.put('/addNota', ensureAuthenticated, perfil.exigeAdmin, async (req, res) => {
 	try {
 	let id = req.body.id
 	,	arrayNota = req.body.adrovan;
 	if (!idValido(id)) return res.status(400).send('ID inválido');
+	// Só projeto de uma das Mostras do(a) admin (utils/perfil.js).
+	if (await perfil.foraDoEscopo(req, ProjetoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
 
 	(async () => {
 		try {
