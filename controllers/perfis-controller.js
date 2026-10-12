@@ -81,6 +81,8 @@ module.exports.perfis = async (documentoInformado) => {
 	projetos.forEach((p) => {
 		(p.integrantes || []).filter(dele).forEach((i) => {
 			grupo(p).papeis.push({
+				// projetoId: o "Meu painel" usa pra abrir o projeto (routes/painel-projetos.js).
+				projetoId: p._id,
 				papel: i.tipo === 'Orientador' ? 'Orientador(a)' : 'Estudante',
 				detalhe: (p.numInscricao ? '#' + p.numInscricao + ' ' : '') + p.nomeProjeto + (p.aprovado === true ? ' (aprovado)' : p.aprovado === false ? ' (não aprovado)' : '')
 			});

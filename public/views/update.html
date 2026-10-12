@@ -150,7 +150,8 @@
                 Não encontrei minha escola na lista - solicitar cadastro
               </md-button>
             </div>
-          </div>
+          <!-- Um </div> sobrando aqui fechava o formulário antes de Estado/Cidade/CEP e, em cascata, o
+               <md-tabs> - as abas Orientador(es), Aluno(s), Hospedagem e Upload nunca apareciam. -->
           <div layout-gt-sm="row">
             <md-input-container class="md-block" data-ng-init="editing6=false" flex-gt-sm="20">
               <label>Estado</label>
@@ -469,10 +470,15 @@
   <md-content class="md-padding" style="background:#fdfdfd;padding-top:25px;">
     <md-content flex layout="column" layout-align="center center" style="width:100%!important;background:#fdfdfd;">
       <form name="projetoForm6" novalidate style="width:85%;max-width:850px;padding:8px;">
-        <div layout="column" layout-align="start start" style="padding:20px 0;">
-          <p style="margin:0 0 12px 0;color:#616161;">O envio do relatório já está disponível na área de upload do painel do projeto.</p>
-          <p style="margin:0;color:#616161;">Acesse a opção Upload no menu lateral após entrar no dashboard.</p>
+        <!-- Envio do relatório (só Ensino Médio, Técnico e Superior, mesma regra da área antiga do
+             projeto) - fileUploadCtrl manda pro projeto aberto no painel, com a trava de edição. -->
+        <div data-ng-if="projeto1.categoria === 'Ensino Médio, Técnico e Superior'" data-ng-controller="fileUploadCtrl">
+          <p data-ng-if="f && statusText === 'Enviado'" style="color:#2e7d32;">Relatório já enviado: {{f.name}} ({{calcSize}} KB). Enviar outro arquivo substitui o atual.</p>
+          <div data-ng-include="'/views/fileUpload.html'"></div>
         </div>
+        <p data-ng-if="projeto1.categoria !== 'Ensino Médio, Técnico e Superior'" style="color:#616161;padding:20px 0;">
+          O envio de relatório é só para projetos da categoria Ensino Médio, Técnico e Superior.
+        </p>
       </form>
     </md-content>
   </md-content>

@@ -527,17 +527,7 @@
 								</div>
 							</div>
 						</md-input-container>
-						<md-input-container class="md-block" flex-gt-sm>
-							<label>Nome do usuário</label>
-							<!--<input type="text" name="username" data-ng-model="projeto1_2.username" data-ng-change="verificaUsername(projeto1_2.username)" required/>-->
-                            <input type="text" name="username" data-ng-model="projeto1_2.username" required/>
-							<div class="md-errors-spacer">
-								<div data-ng-if="projetoForm1_2.username.$dirty">
-									<div class="message-error" data-ng-if="projetoForm1_2.username.$error.required">Obrigatório.</div>
-								</div>
-								<div class="message-error" data-ng-if="projetoForm1_2.username.$error.duplicado">Username já está sendo utilizado.</div>
-							</div>
-						</md-input-container>
+						<!-- "Nome do usuário" do login do projeto saiu: esse login acabou (os integrantes entram com a própria conta). -->
 					</div>
 				</div>
             </ng-form>

@@ -1,0 +1,110 @@
+<!-- Projeto no "Meu painel" (controller painelProjetoCtrl, /painel/projeto/:id). Leitura pra
+     qualquer integrante; "Editar projeto" pega a trava de edição e abre o mesmo formulário da
+     área antiga do projeto (update.html + updateCtrl). -->
+<style>
+  .projeto-cartao { background:#fff;border-radius:6px;padding:24px;margin-bottom:20px; }
+  .projeto-cartao h3 { margin-top:0;color:#225024; }
+  .projeto-suave { color:rgba(0,0,0,0.6); }
+  .projeto-linha { padding:8px 0;border-top:1px solid #f0f0f0; }
+  .projeto-linha:first-of-type { border-top:none; }
+  .projeto-editando { background:#e8f5e9;border:1px solid #81c784;border-radius:6px;padding:12px 16px;margin-bottom:16px; }
+  .projeto-ocupado { background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:12px 16px;margin-bottom:16px;color:#7a4a00; }
+</style>
+
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;" id="popupContainer3">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Projeto</span>
+      <span flex></span>
+      <md-button ui-sref="painel" class="md-raised" style="text-transform:none;">Voltar ao painel</md-button>
+    </div>
+  </md-toolbar>
+
+  <div style="padding:32px 20px;">
+    <div style="max-width:900px;margin:0 auto;">
+
+      <p data-ng-if="carregando" class="projeto-suave">Carregando o projeto...</p>
+      <div data-ng-if="erro" class="md-whiteframe-2dp projeto-cartao">
+        <p style="margin:0;">{{erro}}</p>
+      </div>
+
+      <div data-ng-if="!carregando && !erro">
+        <h2 style="color:#2e7d32;margin:0 0 4px 0;">{{projeto.nomeProjeto}}</h2>
+        <p class="projeto-suave" style="margin-top:0;">
+          <span data-ng-if="projeto.numInscricao">Inscrição nº {{projeto.numInscricao}} · </span>{{projeto.categoria}}<span data-ng-if="projeto.eixo"> · {{projeto.eixo}}</span>
+        </p>
+
+        <!-- ===== Edição ===== -->
+        <div data-ng-if="edicao.ativa" class="projeto-editando" layout="row" layout-align="start center">
+          <div flex>
+            <strong>Você está editando este projeto.</strong>
+            <span class="projeto-suave">Enquanto isso, os outros integrantes só conseguem ver. Cada aba tem o próprio botão de salvar.</span>
+          </div>
+          <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-click="concluirEdicao()">Concluir edição</md-button>
+        </div>
+        <div data-ng-if="!edicao.ativa && edicao.ocupadaPor" class="projeto-ocupado" layout="row" layout-align="start center">
+          <div flex><strong>{{edicao.ocupadaPor}}</strong> está editando este projeto agora. Para não haver alterações ao mesmo tempo, aguarde terminar.</div>
+          <md-button class="md-raised" style="text-transform:none;" data-ng-click="editar()" data-ng-disabled="edicao.abrindo">Tentar de novo</md-button>
+        </div>
+
+        <div data-ng-if="edicao.ativa" data-ng-controller="updateCtrl" class="md-whiteframe-2dp" style="background:#fff;border-radius:6px;margin-bottom:20px;">
+          <div data-ng-include="'/views/update.html'"></div>
+        </div>
+
+        <!-- ===== Leitura ===== -->
+        <div data-ng-if="!edicao.ativa">
+          <div class="md-whiteframe-2dp projeto-cartao">
+            <h3>Situação</h3>
+            <p data-ng-if="aviso.titulo" style="font-weight:bold;color:#2e7d32;margin-bottom:4px;">{{aviso.titulo}}</p>
+            <p style="margin-top:0;">{{aviso.texto}}</p>
+            <p data-ng-if="opcoes.textoInicial && opcoes.textoInicialValor" style="white-space:pre-wrap;color:#424242;">{{opcoes.textoInicialValor}}</p>
+            <div data-ng-if="opcoes.link && opcoes.linkValor">
+              <md-button class="md-raised" ng-href="{{opcoes.linkValor}}" target="_blank" style="background:#2e7d32;color:#fff;text-transform:none;margin-left:0;">Acessar link</md-button>
+            </div>
+
+            <div style="margin-top:16px;" data-ng-if="painel.edicaoPermitida">
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;" data-ng-click="editar()" data-ng-disabled="edicao.abrindo || edicao.ocupadaPor">
+                <md-icon md-svg-icon="pencil" style="width:18px;height:18px;color:#fff;"></md-icon>
+                Editar projeto
+              </md-button>
+              <span class="projeto-suave" style="font-size:13px;">Só os campos liberados pela organização podem ser alterados.</span>
+            </div>
+            <p data-ng-if="!painel.edicaoPermitida" class="projeto-suave" style="margin-bottom:0;">{{painel.motivoBloqueio}}</p>
+          </div>
+
+          <div class="md-whiteframe-2dp projeto-cartao">
+            <h3>Integrantes</h3>
+            <div class="projeto-linha" data-ng-repeat="i in orientadores">
+              <strong>{{i.nome}}</strong> <span class="projeto-suave">· Orientador(a)</span>
+            </div>
+            <div class="projeto-linha" data-ng-repeat="i in estudantes">
+              <strong>{{i.nome}}</strong> <span class="projeto-suave">· Estudante</span>
+            </div>
+          </div>
+
+          <div class="md-whiteframe-2dp projeto-cartao">
+            <h3>Dados do projeto</h3>
+            <div class="projeto-linha" data-ng-if="projeto.nomeEscola"><span class="projeto-suave">Instituição:</span> {{projeto.nomeEscola}}<span data-ng-if="projeto.cidade"> · {{projeto.cidade}}<span data-ng-if="projeto.estado">/{{projeto.estado}}</span></span></div>
+            <div class="projeto-linha" data-ng-if="palavraChave.length"><span class="projeto-suave">Palavras-chave:</span> {{palavraChave.join(', ')}}</div>
+            <div class="projeto-linha" data-ng-if="projeto.resumo"><span class="projeto-suave">Resumo:</span>
+              <div style="white-space:pre-wrap;margin-top:4px;">{{projeto.resumo}}</div>
+            </div>
+            <div class="projeto-linha" data-ng-if="projeto.categoria === 'Ensino Médio, Técnico e Superior'">
+              <span class="projeto-suave">Relatório:</span>
+              <span data-ng-if="relatorio">enviado ({{relatorio.name}})</span>
+              <span data-ng-if="!relatorio">ainda não enviado<span data-ng-if="opcoes.upload"> - envie em "Editar projeto", aba Upload</span>.</span>
+            </div>
+          </div>
+
+          <div class="md-whiteframe-2dp projeto-cartao" data-ng-if="documentos.length">
+            <h3>Documentos</h3>
+            <div class="projeto-linha" data-ng-repeat="doc in documentos">
+              <a ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank" style="color:#2e7d32;">{{doc.titulo}}</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

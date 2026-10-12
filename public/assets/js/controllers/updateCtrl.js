@@ -13,6 +13,12 @@
 
 		$scope.opcoes = {};
 
+		// Motivo mandado pelo servidor (ex: outra pessoa está editando, campo não liberado), ou o
+		// texto genérico de antes.
+		var motivoErro = function(response) {
+			return typeof response.data === 'string' && response.data && response.data.length < 300 ? response.data : 'Falha na alteração';
+		};
+
 		$scope.carregarOpcoes = function(){
 			projetosAPI.getOpcoes().then(function(response){
 				$scope.opcoes = response.data;
@@ -33,7 +39,7 @@
 				$scope.carregarProjeto();
 			}, function(response){
 				console.log('update error: '+response.data);
-				$scope.toast(response.data || 'Falha na alteração','failed-toast');
+				$scope.toast(motivoErro(response),'failed-toast');
 			});
 		};
 
@@ -49,7 +55,7 @@
 				$scope.toast('Alteração realizada com sucesso!','success-toast');
 			}, function(response){
 				console.log('update error: '+response.data);
-				$scope.toast('Falha na alteração','failed-toast');
+				$scope.toast(motivoErro(response),'failed-toast');
 			});
 		};
 
@@ -155,7 +161,7 @@
 				 $scope.carregarProjeto();
 			}, function(response){
 				console.log('update error: '+response.data);
-				$scope.toast('Falha na alteração','failed-toast');
+				$scope.toast(motivoErro(response),'failed-toast');
 			});
 
 			updateIntegrante($scope.alunosUpdate);
@@ -475,7 +481,7 @@
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
 						}, function(response){
 							console.log(response.data);
-							$scope.toast('Falha na alteração','failed-toast');
+							$scope.toast(motivoErro(response),'failed-toast');
 						});
 					});
 				};
@@ -524,7 +530,7 @@
 							.then(function(response){
 							}, function(response){
 								console.log('update error: '+response.data);
-								$scope.toast('Falha na alteração','failed-toast');
+								$scope.toast(motivoErro(response),'failed-toast');
 							});
 
 							let showAlert = function(ev) {
@@ -547,7 +553,7 @@
 							$scope.toast('Alteração realizada com sucesso!','success-toast');
 						}, function(response){
 							console.log(response.data);
-							$scope.toast('Falha na alteração','failed-toast');
+							$scope.toast(motivoErro(response),'failed-toast');
 						});
 					});
 				};

@@ -68,11 +68,9 @@
 
 		$scope.registro = false;
 		$scope.loginHabilitado = false;
-		$scope.usernameDuplicado = false;
 		$scope.hospedagemVerify = 'Não';
 		$scope.eixos = [];
 		$scope.cidades = [];
-		$scope.usernames = [];
 		$scope.escolas = [];
 
 		// Envia o projeto ao backend e trata a resposta de sucesso ou erro.
@@ -82,23 +80,21 @@
 			projetosAPI.saveProjeto(projeto)
 			.then(function(response) {
 				var data = response.data, status = response.status;
-				if (status === 202) {
-					$scope.usernameDuplicado = true;
-					$scope.projetoForm.username.$setValidity('duplicado',false);
-					// console.log('user duplicado: '+$scope.usernameDuplicado);
-				} else if (data && data.redirect) {
+				if (data && data.inscrito) {
 					$scope.registro = true;
-					// O backend já autenticou o projeto recém-criado nesta sessão, então
-					// o redirect (normalmente /projetos) já cai na página logada.
+					// Não existe mais login do projeto: cada integrante entra com a própria conta e
+					// abre o projeto pelo "Meu painel" (todos recebem um e-mail explicando).
 					let showConfirmDialog = function(ev) {
 						var confirm = $mdDialog.alert()
 						.title('Parabéns!')
-						.textContent('Inscrição realizada com sucesso! Você será direcionado à página do seu projeto.')
+						.textContent('Inscrição realizada com sucesso' + (data.numInscricao ? ' (nº ' + data.numInscricao + ')' : '') + '! ' +
+							'Cada integrante acompanha e altera o projeto entrando na MOVACI com o próprio e-mail informado na inscrição ' +
+							'(no primeiro acesso, a senha é o documento de identificação). Enviamos um e-mail com essas orientações.')
 						.ariaLabel('Inscrição realizada com sucesso!')
 						.targetEvent(ev)
 						.ok('OK');
 						$mdDialog.show(confirm).then(function() {
-							$window.location.href = data.redirect;
+							$window.location.href = '/';
 						});
 					};
 					showConfirmDialog();
@@ -177,10 +173,7 @@
 			cep: 'CEP',
 			hospedagemVerify: 'Se algum integrante precisa de hospedagem (Sim/Não)',
 			hospedagem: 'Quais integrantes precisam de hospedagem',
-			email: 'E-mail principal do login',
-			username: 'Nome de usuário do login',
-			password: 'Senha',
-			password2: 'Confirmação de senha'
+			email: 'E-mail principal do projeto'
 		};
 
 		var CAMPO_DINAMICO_LABELS = { nome: 'nome completo', email: 'e-mail', cpf: 'documento de identificação', telefone: 'telefone', tamCamiseta: 'tamanho da camiseta' };
@@ -399,19 +392,6 @@
 			console.log($scope.dynamicFields2.length);
 		};
 
-		// getUsersEscolas() só serve pra checagem de username duplicado aqui agora - a
-		// lista de escolas (pra seleção) vem da coleção Escola (getEscolas, abaixo).
-		projetosAPI.getUsersEscolas()
-		.then(function(response) {
-			angular.forEach(response.data, function (value) {
-				if (value.username !== undefined) {
-					$scope.usernames.push(value.username);
-				}
-			});
-		}, function(response) {
-			console.log('Error: ' + response.data);
-		});
-
 		// Lista de escolas aprovadas, pra seleção no cadastro de projeto (antes era
 		// texto livre com sugestão - agora só dá pra escolher da lista, ver
 		// md-require-match em inscricao.html).
@@ -578,22 +558,6 @@
 					console.log('Erro ao solicitar escola: '+response.data);
 				});
 			}, function() {});
-		};
-
-		$scope.verificaUsername = function(username) {
-			let valido = true;
-			for (var i in $scope.usernames) {
-				if ($scope.usernames[i] == username) {
-					valido = false;
-					//$scope.projetoForm.username.$setValidity('duplicado',false);
-					break; // importante parar caso email seja igual, senão não funciona
-				} /*else {
-					valido = true;
-					//$scope.projetoForm.username.$setValidity('duplicado',true);
-				}*/
-			}
-
-			$scope.projetoForm.username.$setValidity('duplicado',valido);
 		};
 
 		$scope.alunosArray = [];

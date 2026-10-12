@@ -57,61 +57,9 @@
 			});
 		};
 
-		let enviarEmail = function(username) {
-			projetosAPI.postRedef1inir(username)
-			.then(function(response) {
-				var data = response.data;
-				$scope.email = data;
-				// console.log(data);
-				console.log('authjs'+ $scope.email);
-				let showAlert = function(ev) {
-					console.log('authjs'+ $scope.email)
-					$mdDialog.show(
-						$mdDialog.alert()
-						.parent(angular.element(document.querySelector('#popupContainer')))
-						.clickOutsideToClose(false)
-						.title('Quase lá...')
-						.textContent('Foi enviado um email para '+$scope.email+', onde seguem as instruções para a alteração da senha.')
-						.ok('OK')
-						.targetEvent(ev)
-					);
-				};
-				showAlert();
-			}, function(response) {
-				console.log(response.status);
-				let showConfirmDialog = function(ev) {
-					var confirm = $mdDialog.confirm()
-					.title('Oxe...')
-					.textContent('Houve algum erro ao enviar o email. Tente mais tarde ou então, entre em contato conosco.')
-					.targetEvent(ev)
-					.theme('error')
-					.ok('Continuar')
-					.cancel('Entrar em contato');
-					$mdDialog.show(confirm).then(function() {}
-					, function() {
-						$window.location.href="http://movaci.com.br/contato";
-					});
-				};
-				showConfirmDialog();
-			});
-		};
-
-		$scope.showPrompt = function(ev) {
-			var confirm = $mdDialog.prompt()
-			.title('RECUPERAR SENHA')
-			.placeholder('Username')
-			.ariaLabel('Username')
-			.targetEvent(ev)
-			.ok('Enviar >')
-			.cancel('Fechar');
-			$mdDialog.show(confirm).then(function(result) {
-				// console.log(result);
-				let username = ({
-					username: result
-				});
-				enviarEmail(username);
-			}, function() {});
-		};
+		// "Esqueceu sua senha?" (login.html) leva pra /conta/esqueci-senha. A recuperação da senha do
+		// login próprio do projeto (que já estava quebrada: chamava projetosAPI.postRedef1inir) saiu
+		// junto com esse login.
 	})
 	.run(function($rootScope, $http, $window) {
 			// Função logout está disponível em todas as páginas
