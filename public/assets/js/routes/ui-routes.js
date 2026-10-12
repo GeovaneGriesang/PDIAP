@@ -14,32 +14,6 @@
       $urlMatcherFactoryProvider.caseInsensitive(true);
       $urlRouterProvider.otherwise('/404');
 
-      let checkLoggedin = function ($q, $rootScope, $http, $location, $window) {
-        var deferred = $q.defer(); // Inicializa nova promissa
-        $rootScope.logado = false;
-
-        $http
-          .get('/projetos/loggedin')
-          .then(function (response) {
-            if (response.status !== 403) {
-              // Authenticated
-              $rootScope.logado = true;
-              deferred.resolve();
-            } else {
-              // Not Authenticated
-              $rootScope.logado = false;
-              $window.location.href = 'http://movaci.com.br';
-              deferred.reject();
-            }
-          }, function (response) {
-            // Not Authenticated
-            $rootScope.logado = false;
-            $window.location.href = 'http://movaci.com.br';
-            deferred.reject();
-          });
-        return deferred.promise;
-      };
-
       // Painel único (routes/index.js#/conta/loggedin): qualquer pessoa logada - estudante,
       // orientador(a), avaliador(a), participante... Guarda em $rootScope.pessoaLogada nome,
       // senhaDefinida e os papéis (avaliador/participante). Sem login, volta pra home.
@@ -133,61 +107,19 @@
           templateUrl: '/views/avaliadores.html',
           controller: 'avaliadoresCtrl',
         })
-        .state('home', {
-          url: '/projetos',
-          views: {
-            '': {
-              templateUrl: '/views/admin.html',
-              controller: 'adminCtrl',
-            },
-            '@home': { templateUrl: '/views/home-admin.html' },
-          },
-          resolve: {
-            loggedin: checkLoggedin,
-          },
-        })
-        .state('home.update', {
-          url: '/update',
-          templateUrl: '/views/update.html',
-          controller: 'updateCtrl',
-        })
-        .state('home.conta', {
-          url: '/update-conta',
-          templateUrl: '/views/conta.html',
-          controller: 'updateCtrl',
-        })
-
-        //upload dos relatorios pros projetos
-        .state('home.fileUpload', {
-          url: "/upload-relatorio",
-          templateUrl: "/views/fileUpload.html",
-          controller: "fileUploadCtrl"
-        })
-        .state('home.regulamento', {
-          url: '/regulamento',
-          templateUrl: '/views/regulamento.html',
-        })
-        .state('home.avaliacao-fundamental', {
-          url: '/avaliacao-fundamental',
-          templateUrl: '/views/avaliacao-fundamental.html',
-        })
-        .state('home.avaliacao-medio', {
-          url: '/avaliacao-medio',
-          templateUrl: '/views/avaliacao-medio.html',
-        })
-        .state('home.avaliacao-medio-extensao', {
-          url: '/avaliacao-medio-extensao',
-          templateUrl: '/views/avaliacao-medio-ext.html',
-        })
-        .state('home.programacao', {
-          url: '/programacao',
-          templateUrl: '/views/programacao.html',
-        })
-        .state('nova-senha', {
-          url: '/nova-senha/:token',
-          templateUrl: '/views/nova-senha.html',
-          controller: 'redefinirCtrl',
-        })
+        // Área antiga do PROJETO (login próprio do projeto, que acabou): os integrantes abrem o
+        // projeto pelo painel (painelProjeto). URLs antigas só redirecionam pro painel; a antiga
+        // redefinição de senha do projeto cai na recuperação de senha da conta. =================
+        .state('home', { url: '/projetos', redirectTo: 'painel' })
+        .state('home.update', { url: '/update', redirectTo: 'painel' })
+        .state('home.conta', { url: '/update-conta', redirectTo: 'painel' })
+        .state('home.fileUpload', { url: '/upload-relatorio', redirectTo: 'painel' })
+        .state('home.regulamento', { url: '/regulamento', redirectTo: 'regulamento' })
+        .state('home.avaliacao-fundamental', { url: '/avaliacao-fundamental', redirectTo: 'avaliacao-fundamental' })
+        .state('home.avaliacao-medio', { url: '/avaliacao-medio', redirectTo: 'avaliacao-medio' })
+        .state('home.avaliacao-medio-extensao', { url: '/avaliacao-medio-extensao', redirectTo: 'avaliacao-medio-extensao' })
+        .state('home.programacao', { url: '/programacao', redirectTo: 'programacao' })
+        .state('nova-senha', { url: '/nova-senha/:token', redirectTo: 'contaEsqueciSenha' })
 
         // Painel único de qualquer pessoa logada - estados soltos (não aninhados): o "Meu
         // painel" tem o próprio menu lateral (meu-painel.html, troca de Mostra sem mudar de
@@ -211,6 +143,16 @@
         .state('painelDados', {
           url: '/painel/dados',
           templateUrl: '/views/painel-dados.html',
+          resolve: {
+            loggedin: checkLoggedinPessoa,
+          },
+        })
+        // Projeto de que a pessoa é integrante (routes/painel-projetos.js): leitura pra todos os
+        // integrantes, edição com trava (um(a) integrante por vez).
+        .state('painelProjeto', {
+          url: '/painel/projeto/:id',
+          templateUrl: '/views/painel-projeto.html',
+          controller: 'painelProjetoCtrl',
           resolve: {
             loggedin: checkLoggedinPessoa,
           },

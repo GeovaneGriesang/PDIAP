@@ -71,37 +71,6 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-async function testaUsernameEEscola(req, res) {
-  try {
-    // Bug pré-existente (mesma classe do já corrigido em saberes-docentes/testaEscola -
-    // ver grupo 1 da Etapa C2): primeiro argumento era a STRING 'username nomeEscola' em
-    // vez de um filtro {} - o Mongoose sempre rejeitou isso, então esta rota sempre
-    // devolveu 400. Corrigido pra filtro vazio (busca todos), que é o que o resto do
-    // código espera (lista de username+escola já cadastrados, usada no client pra
-    // validação de duplicidade antes de enviar o formulário).
-    let escolas = await ProjetoSchema.find({}, 'username nomeEscola -_id');
-    return res.status(200).send(escolas);
-  } catch (error) {
-    return res.status(400).send({msg:"error occurred"});
-  }
-}
-
-async function testaUsername2(req, res, next) {
-  let query2 = req.body.username
-  ,   query = new RegExp(["^", query2, "$"].join(""), "i");
-
-  try {
-    let usernames = await ProjetoSchema.find({'username':query},'username -_id');
-    if (usernames != 0) {
-      res.status(202).send("Username já cadastrado");
-    } else {
-      return next();
-    }
-  } catch (error) {
-    return res.status(400).send({msg:"error occurred"});
-  }
-}
-
 router.get('/edit', (req, res) => {
 	Admin.getEdicaoAtual((err, usr) => {
 		if (err || !usr) return res.sendStatus(500);
@@ -747,17 +716,12 @@ router.post('/contato', (req, res) => {
   });
 });
 
-router.get('/registroProjeto', testaUsernameEEscola, (req, res) => {});
-
-router.post('/registro', testaUsername2,
-  body('username', 'Username is required').notEmpty(),
-  body('password', 'Password is required').notEmpty(),
-  body('password2').custom((value, { req }) => value === req.body.password).withMessage('Passwords do not match'),
+// Inscrição de projeto (pública). Não cria mais login do projeto: cada integrante acessa o
+// projeto pelo "Meu painel" com a própria conta (cadastro único), e todos recebem um e-mail
+// explicando isso.
+router.post('/registro',
+  body('email', 'E-mail is required').notEmpty(),
   async (req, res) => {
-  let  username = req.body.username
-  ,   password = req.body.password
-  ,   password2 = req.body.password2
-
   let errors = validationResult(req);
 
   if(!errors.isEmpty()){
@@ -863,8 +827,6 @@ router.post('/registro', testaUsername2,
       estado: req.body.estado,
       hospedagem: req.body.hospedagem,
       email: req.body.email,
-      username: req.body.username,
-      password: req.body.password,
       permissao: 1,
       createdAt: Date.now(),
       resumo: req.body.resumo,
@@ -898,15 +860,11 @@ router.post('/registro', testaUsername2,
       });
     }
 
-    Projeto.createProject(newProject, (err, savedProject) => {
-      if (err || !savedProject) {
-        console.error('Erro ao criar projeto', err);
-        return res.status(500).send('error');
-      }
+    // username só existe porque o índice único já está no banco (ver models/projeto-schema.js).
+    newProject.username = 'projeto-' + newProject._id;
+    newProject.save().then((savedProject) => {
 
-      let email = req.body.email
-      let nomeProjeto = req.body.nomeProjeto
-      let username = req.body.username
+      let nomeProjeto = req.body.nomeProjeto;
       var templatesDir = path.resolve(__dirname, '..', 'templates');
       var template = new EmailTemplate(path.join(templatesDir, 'inscricao'));
       const transport = nodemailer.createTransport({
@@ -918,90 +876,55 @@ router.post('/registro', testaUsername2,
         }
       });
 
-      var locals = {
-        email: email,
-        projeto: nomeProjeto,
-        username: username
-      }
+      // Um e-mail por endereço (e-mail do projeto + de cada integrante, sem repetir).
+      let destinos = [];
+      [req.body.email].concat(savedProject.integrantes.map((i) => i.email)).forEach((e) => {
+        let limpo = (e || '').toString().trim();
+        if (limpo && !destinos.some((d) => d.toLowerCase() === limpo.toLowerCase())) destinos.push(limpo);
+      });
 
       //se o programa crasha para mandar o email de confirmação de inscrição é porque a máquina não está com direito para acessar o email
-
-      template.render(locals, function (err, results) {
+      template.render({ projeto: nomeProjeto }, function (err, results) {
         if (err) { console.error(err); return; }
-       	transport.sendMail({
-          	from: 'MOVACI <va-movaci@ifsul.edu.br>',
-         		to: locals.email,
-          	subject: 'MOVACI - Confirmação de inscrição',
-          	html: results.html,
-          	text: results.text
-       	}, function (err, responseStatus) {
-          if (err) { console.error(err); return; }
-        	})
+        destinos.forEach((para) => {
+          transport.sendMail({
+            from: 'MOVACI <va-movaci@ifsul.edu.br>',
+            to: para,
+            subject: 'MOVACI - Confirmação de inscrição',
+            html: results.html,
+            text: results.text
+          }, function (err) {
+            if (err) { console.error(err); return; }
+          });
+        });
       });
 
-      // Autentica o projeto recém-criado na sessão atual, para que o usuário já
-      // caia logado na página do projeto em vez de precisar logar manualmente.
-      req.login(savedProject, function(err) {
-        if (err) {
-          console.error('Erro ao autenticar após inscrição', err);
-          return res.send({redirect: '/'});
-        }
-        res.send({redirect: '/projetos'});
-      });
+      res.send({ inscrito: true, numInscricao: savedProject.numInscricao });
+    }, (err) => {
+      console.error('Erro ao criar projeto', err);
+      res.status(500).send('error');
     });
   }
 });
 
+// Login: o admin (conta admin2, até a fase de perfis por Mostra) e, fora isso, qualquer pessoa
+// (painel único, ver utils/loginBootstrap.js#autenticarLogin) - por qualquer um dos e-mails
+// dela, com ou sem papel. O login próprio do PROJETO acabou: os integrantes entram com a própria
+// conta e abrem o projeto pelo painel (routes/painel-projetos.js).
 passport.use('unico', new LocalStrategy(function(username, password, done) {
-  var ano_atual = new Date(Date.now());
-  console.log('Usuário:'+username);
-  Projeto.getLoginProjeto(username, ano_atual.getFullYear(), (err, user) => {    
-    if (err) { console.error(err); return; }
-    if(!user){
-      console.log('Usuário não é de projeto');
-      Projeto.getLoginAdmin(username, (err, user) => {
-        if (err) { console.error(err); return; }
-        if(!user){
-          // Login de pessoa (painel único, ver utils/loginBootstrap.js#autenticarLogin): a
-          // sessão é a Pessoa, por qualquer um dos e-mails dela, com ou sem papel.
-          console.log('Usuário não é admin. Tentando login de pessoa.');
-          loginBootstrap.autenticarLogin(username, password, (err, usuario) => {
-            if (err) { console.error(err); return done(err); }
-            if (!usuario) {
-              console.log('Login de pessoa recusado.');
-              return done(null, false, {message: 'Unknown User'});
-            }
-            console.log(usuario.constructor.modelName + ' conectado(a)');
-            return done(null, usuario);
-          });
-          return;
-        }
-        Projeto.compareLogin(password, user.password, (err, isMatch) => {
-          console.log('Usuário é admin / Comparação de senha sendo realizada');
-          if (err) { console.error(err); return; }
-          if(isMatch){
-	    console.log("Admin conectado");
-            return done(null, user);
-          } else {
-            console.log("Erro ao conectar como admin");
-            return done(null, false, {message: 'Invalid password'});
-          }
-        });
-      });
-      // return done(null, false, {message: 'Unknown User'});
-    } else {
-      Projeto.compareLogin(password, user.password, (err, isMatch) => {
-        if (err) { console.error(err); return; }
-	console.log("Usuário é de projeto");
-        if(isMatch){
-	  console.log("Usuário(Projeto) conectado");
-          return done(null, user);
-        } else {
-	  console.log("Erro ao conectar usuário(Projeto)");
-          return done(null, false, {message: 'Invalid password'});
-        }
+  Projeto.getLoginAdmin(username, (err, admin) => {
+    if (err) { console.error(err); return done(err); }
+    if (admin) {
+      return Projeto.compareLogin(password, admin.password, (err, isMatch) => {
+        if (err) { console.error(err); return done(err); }
+        return isMatch ? done(null, admin) : done(null, false, {message: 'Invalid password'});
       });
     }
+    loginBootstrap.autenticarLogin(username, password, (err, usuario) => {
+      if (err) { console.error(err); return done(err); }
+      if (!usuario) return done(null, false, {message: 'Unknown User'});
+      return done(null, usuario);
+    });
   });
 }));
 
@@ -1018,8 +941,7 @@ passport.deserializeUser(async function(id, done){
     }
     let user = await adminSchema.findById(id);
     if (user) return done(null, user);
-    user = await ProjetoSchema.findById(id);
-    if (user) return done(null, user);
+    // Sessão aberta com o login antigo do projeto não acha nada aqui e é encerrada.
     user = await avaliadorSchema.findById(id) || await participanteSchema.findById(id);
     // Sessão aberta antes do painel único (era o papel): se o papel tem Pessoa, a sessão
     // passa a ser a Pessoa, igual a um login novo.
@@ -1045,9 +967,6 @@ router.post('/login', authLimiter, passport.authenticate('unico'), async (req, r
       console.error('Erro ao decidir redirecionamento do login', err);
       res.status(500).send('error');
     }
-  } else if (req.user.permissao === "1") {
-    // res.redirect('/projetos/');
-    res.send({redirect:'/projetos'});
   } else if (req.user.permissao === "3") {
     // res.redirect('/admin/');
     res.send({redirect:'/master'});
@@ -1393,97 +1312,8 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.post('/redefinir-senha', authLimiter, async (req, res) => {
-  let username = req.body.username;
-  console.log('meuusuario:'+ username);
-  let token = crypto.randomBytes(20).toString('hex');
-
-  let doc;
-  try {
-    doc = await ProjetoSchema.findOneAndUpdate({username: username}, {$set:{resetPasswordToken:token, resetPasswordCreatedDate:Date.now() + 3600000}}, {returnDocument: 'after'});
-  } catch (err) {
-    doc = null;
-  }
-  if (!doc) {
-    return res.status(400).send({ error: 'Não foi possível encontrar o usuário: '+username}) //ARUUMAR A MENSAGEM DE ERRO DO USUARIO
-  }
-
-  let email = doc.email;
-  let nome_projeto = doc.nomeProjeto;
-  let url = "http://www.movaci.com.br/nova-senha/"+token;
-  // let url = "http://www.movaci.com.br/nova-senha/"+username+"/"+token;
-
-  // res.sendStatus(200);
-  res.send(email);
-
-  var templatesDir = path.resolve(__dirname, '..', 'templates')
-  var template = new EmailTemplate(path.join(templatesDir, 'redefinicao'))
-  // Prepare nodemailer transport object
-  const transport = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    auth: {
-      user: process.env.SMTP_GMAIL_USER,
-      pass: process.env.SMTP_GMAIL_PASS
-    }
-  });
-
-  var locals = {
-    email: email,
-    projeto: nome_projeto,
-    url: url,
-  }
-
-  template.render(locals, function (err, results) {
-    if (err) {
-      return console.error(err)
-    }
-
-    transport.sendMail({
-      from: 'MOVACI <va-movaci@ifsul.edu.br>',
-      to: locals.email,
-      subject: 'MOVACI - Redefinição de senha',
-      html: results.html,
-      text: results.text
-    }, function (err, responseStatus) {
-      if (err) {
-        return console.error(err)
-      }
-      console.log(responseStatus.message)
-    })
-  });
-});
-
-router.post('/nova-senha/:token', async (req, res) => {
-  if (req.params.token === '') {
-    return res.status(400).send("erro");
-  }
-
-  let usr;
-  try {
-    usr = await ProjetoSchema.findOne({resetPasswordToken: (req.params.token)});
-  } catch (err) {
-    return res.status(400).send("erro2");
-  }
-  if (!usr) return res.status(400).send("erro2");
-  if (!(usr.resetPasswordToken == req.params.token && !usr.hasExpired())) {
-    return res.status(400).send("erro3");
-  }
-
-  usr.resetPasswordToken = undefined;
-  usr.resetPasswordCreatedDate = undefined;
-  let password = req.body.password;
-
-  try {
-    let salt = await bcrypt.genSalt(10);
-    let hash = await bcrypt.hash(password, salt);
-    usr.password = hash;
-    await usr.save();
-    res.status(200).send('Senha alterada');
-  } catch (err) {
-    console.error(err);
-  }
-});
+// A redefinição de senha do login do PROJETO (/redefinir-senha, /nova-senha/:token) acabou junto
+// com esse login - links antigos caem na recuperação de senha da conta (ui-routes.js#nova-senha).
 
 //Mateus Roberto Algayer - 24/11/2021
 //Função para recuperar os dados da mostra na base de dados 
@@ -1678,7 +1508,7 @@ router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
 // Painel único de qualquer pessoa logada (ui-routes.js#painel*). As URLs antigas de
 // avaliador/participante abaixo continuam servindo a SPA, que redireciona pro /painel
 // (links de e-mails antigos).
-router.get(['/painel', '/painel/trocar-senha', '/painel/dados'], function(req, res, next) {
+router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/projeto/:id'], function(req, res, next) {
   res.render('layout.ejs');
 });
 

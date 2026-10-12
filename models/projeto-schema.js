@@ -63,9 +63,13 @@ const ProjetoSchema = new Schema({
 	estado: {type: String},
 
 
+	// Login PRÓPRIO do projeto acabou (painel único: cada integrante entra com a própria conta e
+	// abre o projeto pelo "Meu painel"). username continua obrigatório e único só porque o índice
+	// único já existe no banco - projeto novo recebe um valor interno ("projeto-<_id>", ver
+	// routes/index.js POST /registro); password não é mais gravado em projeto novo.
 	username: {type: String, required: true, unique: true},
 	email: {type: String, required: true},
-	password: {type: String, required: true},
+	password: {type: String},
 	permissao: {type: String},
 	aprovado: {type: Boolean},
 	// Qual dos dois tipos de aprovação o projeto recebeu. Só faz sentido quando
@@ -104,7 +108,18 @@ const ProjetoSchema = new Schema({
 	// scripts/migrar-feiraId.js) - permite ter mais de uma Mostra no mesmo ano com listas de
 	// projetos separadas de verdade, ver memória project-mostra-ano-nao-unico.
 	feiraId: {type: Schema.Types.ObjectId, ref: 'Feira'},
-	token: {type:String}
+	token: {type:String},
+
+	// Trava de edição pelo painel (routes/painel-projetos.js): vários integrantes podem abrir o
+	// projeto, mas só quem está com a trava consegue salvar. Renovada pelo navegador enquanto a
+	// tela de edição está aberta; vencida (expira no passado), qualquer integrante pode pegar.
+	trava: {
+		pessoa: {type: Schema.Types.ObjectId, ref: 'Pessoa'},
+		nome: {type: String},
+		expira: {type: Date},
+		// Código entregue a quem pegou a trava; nunca sai pro navegador de outra pessoa.
+		token: {type: String}
+	}
 
 // }, { collection: 'betaPorcaoAPI' });
 // }, { collection: 'projetos2016' });

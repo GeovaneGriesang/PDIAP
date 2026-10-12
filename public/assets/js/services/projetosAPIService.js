@@ -88,12 +88,39 @@
 		 	return $http(request);
 		 };
 
+		// Projeto aberto no "Meu painel" (painelProjetoCtrl chama usarProjeto(id) ao abrir): o
+		// formulário de edição (update.html/updateCtrl) e o envio de relatório falam com
+		// /api/painel/projetos/:id (routes/painel-projetos.js). Toda gravação manda o código da
+		// trava de edição (definirTrava) no cabeçalho X-Trava.
+		var projetoAtual = { id: null, trava: null };
+		let _usarProjeto = function(id) {
+			projetoAtual.id = id;
+			projetoAtual.trava = null;
+		};
+		let _definirTrava = function(codigo) {
+			projetoAtual.trava = codigo || null;
+		};
+		let urlProjeto = function(sufixo) {
+			return '/api/painel/projetos/' + projetoAtual.id + (sufixo || '');
+		};
+		let _cabecalhosTrava = function() {
+			return projetoAtual.trava ? { 'X-Trava': projetoAtual.trava } : {};
+		};
+		let _urlRelatorio = function() {
+			return urlProjeto('/relatorio');
+		};
+
 		let _getProjeto = function() {
-			const request = {
-				url: '/projetos/loggedin',
-				method: 'GET',
-			}
-			return $http(request);
+			return $http({ url: urlProjeto(), method: 'GET' });
+		};
+		let _pegarTrava = function() {
+			return $http({ url: urlProjeto('/trava'), method: 'POST' });
+		};
+		let _renovarTrava = function() {
+			return $http({ url: urlProjeto('/trava/renovar'), method: 'POST', headers: _cabecalhosTrava() });
+		};
+		let _liberarTrava = function() {
+			return $http({ url: urlProjeto('/trava/liberar'), method: 'POST', headers: _cabecalhosTrava() });
 		};
 
 		let _getCategorias = function() {
@@ -147,13 +174,6 @@
 			return $http(request);
 		};
 
-		let _getUsersEscolas = function() {
-			const request = {
-				url: '/registro',
-				method: 'GET',
-			}
-			return $http(request);
-		};
 
 		// Escolas aprovadas (cadastro formal, ver models/escola-schema.js) - usada pra
 		// seleção no cadastro de projeto, no lugar do texto livre de antes.
@@ -185,49 +205,16 @@
 			return $http(request);
 		};
 
-		 let _putProjeto = function(projeto) {
-		 	const request = {
-		 		url: '/projetos/update',
-		 		method: 'PUT',
-		 		data: projeto
-		 	}
-		 	return $http(request);
-		 };
+		let _putProjeto = function(projeto) {
+			return $http({ url: urlProjeto(), method: 'PUT', data: projeto, headers: _cabecalhosTrava() });
+		};
 
-		let _putIntegrante = function(integrante) {
-			const request = {
-				url: '/projetos/upgreice',
-				method: 'PUT',
-				data: integrante
-			}
-			return $http(request);
+		let _putIntegrante = function(integrantes) {
+			return $http({ url: urlProjeto('/integrantes'), method: 'PUT', data: integrantes, headers: _cabecalhosTrava() });
 		};
 
 		let _removeIntegrante = function(integrante) {
-			const request = {
-				url: '/projetos/removerIntegrante',
-				method: 'PUT',
-				data: integrante
-			}
-			return $http(request);
-		};
-
-		let _postRedefinir = function(username) {
-			const request = {
-				url: '/redefinir-senha',
-				method: 'POST',
-				data: username
-			}
-			return $http(request);
-		};
-
-		let _postNewPassword = function(password,token) {
-			const request = {
-				url: '/nova-senha/'+token,
-				method: 'POST',
-				data: password
-			}
-			return $http(request);
+			return $http({ url: urlProjeto('/integrantes/remover'), method: 'PUT', data: integrante, headers: _cabecalhosTrava() });
 		};
 
 		let _postContato = function(contato) {
@@ -308,19 +295,23 @@
 			getEdicoesInscricao: _getEdicoesInscricao,
 			postLogin: _postLogin,
 			getProjeto: _getProjeto,
+			usarProjeto: _usarProjeto,
+			definirTrava: _definirTrava,
+			cabecalhosTrava: _cabecalhosTrava,
+			urlRelatorio: _urlRelatorio,
+			pegarTrava: _pegarTrava,
+			renovarTrava: _renovarTrava,
+			liberarTrava: _liberarTrava,
 			getCategorias: _getCategorias,
 			getCategoriasEixos: _getCategoriasEixos,
 			getDiasAvaliacao: _getDiasAvaliacao,
 			getEstados: _getEstados,
-			getUsersEscolas: _getUsersEscolas,
 			getEscolas: _getEscolas,
 			solicitarEscola: _solicitarEscola,
 			getEscolasSaberes: _getEscolasSaberes,
 			//Descomentar para salvar alterações dos projetos inscritos
 			putProjeto: _putProjeto,
 			putIntegrante: _putIntegrante,
-			postRedefinir: _postRedefinir,
-			postNewPassword: _postNewPassword,
 			postContato: _postContato,
 			removeIntegrante: _removeIntegrante,
 			postCertificado: _postCertificado,

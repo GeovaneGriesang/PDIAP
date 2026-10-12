@@ -143,9 +143,13 @@
 
           <div class="md-whiteframe-2dp painel-cartao">
             <h3>Minhas participações</h3>
-            <div class="painel-linha" data-ng-repeat="p in selecionada.papeis">
-              <strong>{{p.papel}}</strong>
-              <div data-ng-if="p.detalhe" class="painel-suave" style="font-size:14px;">{{p.detalhe}}</div>
+            <div class="painel-linha" data-ng-repeat="p in selecionada.papeis" layout="row" layout-align="start center">
+              <div flex>
+                <strong>{{p.papel}}</strong>
+                <div data-ng-if="p.detalhe" class="painel-suave" style="font-size:14px;">{{p.detalhe}}</div>
+              </div>
+              <!-- Participação em projeto: abre o projeto (situação, documentos e edição com trava). -->
+              <md-button data-ng-if="p.projetoId" class="md-raised" style="text-transform:none;" ui-sref="painelProjeto({id: p.projetoId})">Abrir projeto</md-button>
             </div>
           </div>
 

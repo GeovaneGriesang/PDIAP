@@ -55,7 +55,9 @@ function splita(arg){
 // saía vazio, só updatedAt mudava, sem erro nenhum pro admin perceber). escola é o vínculo
 // com a coleção Escola (ver models/escola-schema.js) - sem ele, selecionar uma escola na
 // aba Instituição nunca persistia, só o nomeEscola de texto livre.
-const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem', 'username', 'email', 'escola', 'nomeEscola'];
+const CAMPOS_EDITAVEIS_PROJETO = ['nomeProjeto', 'categoria', 'eixo', 'participa', 'resumo', 'palavraChave', 'estado', 'cidade', 'cep', 'hospedagem', 'email', 'escola', 'nomeEscola'];
+// 'username' saiu da lista: o login próprio do projeto acabou (painel único) - o valor que
+// sobra no banco é só interno.
 
 function filtrarCamposEditaveis(body) {
   let filtrado = {};

@@ -21,7 +21,7 @@
     </md-card>
     <form name="userLogin" novalidate style="width:85%!important;">
       <md-input-container class="md-block" flex-gt-sm>
-        <label>E-mail (ou usuário do projeto)</label>
+        <label>E-mail</label>
         <input type="text" name="username" data-ng-model="user.username" autofocus required />
       </md-input-container>
       <md-input-container class="md-block" flex-gt-sm>
@@ -30,9 +30,6 @@
       </md-input-container>
       <div class="redefinir">
         Esqueceu sua senha? <a class="btn-redefinir" href="/conta/esqueci-senha" target="_self">Recuperar senha</a>
-      </div>
-      <div class="redefinir" style="margin-top:4px;">
-        Senha do login do projeto? <a class="btn-redefinir" data-ng-click="showPrompt($event)">Redefinir</a>
       </div>
 
       <div layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin-bottom:10px;">

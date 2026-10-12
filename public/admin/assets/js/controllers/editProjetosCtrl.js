@@ -377,8 +377,7 @@
 			cep: 'CEP',
 			hospedagemVerify: 'Se algum integrante precisa de hospedagem (Sim/Não)',
 			hospedagem: 'Quais integrantes precisam de hospedagem',
-			email: 'E-mail principal da conta de usuário',
-			username: 'Nome de usuário da conta'
+			email: 'E-mail principal da conta de usuário'
 		};
 
 		var CAMPO_DINAMICO_LABELS_EDICAO = {

@@ -19,9 +19,12 @@
 
 			if (file) {
 
+				// Relatório do projeto aberto no painel, com o código da trava de edição (ver
+				// projetosAPI.usarProjeto/definirTrava e routes/painel-projetos.js).
 				let upload = Upload.upload({
-					url: '/projetos/upload',
+					url: projetosAPI.urlRelatorio(),
 					method: 'POST',
+					headers: projetosAPI.cabecalhosTrava(),
 					data: { file: file }
 				});
 
@@ -34,12 +37,13 @@
 					$scope.statusColor = '#43a047';
 					$scope.statusText = 'Enviado';
 					$scope.toast('Relatório enviado com sucesso!','success-toast');
+					if ($scope.carregarProjeto) $scope.carregarProjeto();
 				}, function (response) {
 					$scope.progresso = 'Status';
 					$scope.status = 'window-close';
 					$scope.statusColor = '#f44336';
 					$scope.statusText = 'Falhou';
-					$scope.toast('Falha ao enviar o relatório','failed-toast');
+					$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao enviar o relatório','failed-toast');
 					if (response.status > 0) {
 						console.log(response.status + ': ' + response.data);
 					}

@@ -512,18 +512,19 @@
 				</md-button>
 			</div>
 
-			<!-- Etapa de cadastro de login após a primeira validação do formulário -->
+			<!-- Etapa final após a primeira validação do formulário. Não existe mais login do projeto:
+			     cada integrante acompanha o projeto pelo "Meu painel", com a própria conta. -->
 			<div data-ng-if="loginHabilitado">
-				<p style="text-align:center;color:rgba(0,0,0,0.73);">Os dados informados serão usados para a criação de
-					um <b>login único</b> do projeto.</p>
+				<p style="text-align:center;color:rgba(0,0,0,0.73);">Depois da inscrição, <b>cada integrante</b> acompanha e altera o projeto
+					entrando na MOVACI com o <b>próprio e-mail</b> informado acima (no primeiro acesso, a senha é o documento de identificação).</p>
 				<div layout="row">
 					<div class="bloco-left" flex="25" hide-xs style="padding-left:20px;background:#81c784;">
-						<span>Cadastro Login</span>
+						<span>Contato do projeto</span>
 					</div>
 					<div class="bloco-right" flex-xs="100" flex="75" style="border:1.5px solid #81c784;padding:20px;">
 						<!-- <div layout-gt-sm="row"> -->
 						<md-input-container class="md-block" flex-gt-sm>
-							<label>E-mail principal</label>
+							<label>E-mail principal do projeto</label>
 							<md-select name="email" data-ng-model="projeto.email" md-on-open="loadEmails()" required>
 								<md-option ng-value="email" data-ng-repeat="email in emails">{{email}}</md-option>
 								<md-option value="" disabled data-ng-if="!emails || !emails.length">Nenhum email
@@ -536,57 +537,6 @@
 								</div>
 							</div>
 						</md-input-container>
-						<md-input-container class="md-block" flex-gt-sm>
-							<label>Nome do usuário</label>
-							<input type="text" name="username" data-ng-model="projeto.username"
-								data-ng-change="verificaUsername(projeto.username)" required />
-							<div class="md-errors-spacer">
-								<div data-ng-if="projetoForm.username.$dirty">
-									<div class="message-error" data-ng-if="projetoForm.username.$error.required">
-										Obrigatório.</div>
-								</div>
-								<div class="message-error" data-ng-if="projetoForm.username.$error.duplicado">Username
-									já está sendo utilizado.</div>
-							</div>
-						</md-input-container>
-						<!-- </div> -->
-						<div layout-gt-sm="row">
-							<md-input-container class="md-block" flex-gt-sm>
-								<label>Senha</label>
-								<input type="password" name="password" data-ng-model="projeto.password" required
-									data-ng-minlength="5" />
-								<div class="md-errors-spacer">
-									<div data-ng-if="projetoForm.password.$dirty">
-										<div class="message-error" data-ng-if="projetoForm.password.$error.required">
-											Obrigatório.</div>
-										<div class="message-error"
-											data-ng-if="projetoForm.password.$error.minlength && projetoForm.password.$touched">
-											Senha muito fraca</div>
-										<div class="message-error" id="senha-regular"
-											data-ng-if="projeto.password.length > 4 && projeto.password.length < 12">
-											Senha regular</div>
-										<div class="message-error" id="senha-forte"
-											data-ng-if="projeto.password.length >= 12">Senha forte</div>
-									</div>
-								</div>
-							</md-input-container>
-							<div flex="5" hide-xs hide-sm></div>
-							<md-input-container class="md-block" flex-gt-sm>
-								<label>Confirme a senha</label>
-								<input type="password" name="password2" data-ng-model="projeto.password2" required
-									data-password-verify="projeto.password" />
-								<div class="md-errors-spacer">
-									<div data-ng-if="projetoForm.password2.$dirty">
-										<div class="message-error" data-ng-if="projetoForm.password2.$error.required">
-											Obrigatório.</div>
-										<div class="message-error"
-											data-ng-if="projetoForm.password2.$error.passwordVerify && !projetoForm.password2.$error.required && !projetoForm.password.$error.minlength">
-											Senha não confere!</div>
-									</div>
-									<div><span>Guarde bem a sua senha!</span></div>
-								</div>
-							</md-input-container>
-						</div>
 					</div>
 				</div>
 				<div layout="row" layout-align="center center" layout-padding>
