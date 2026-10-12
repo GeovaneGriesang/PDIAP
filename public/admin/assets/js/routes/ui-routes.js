@@ -15,9 +15,11 @@
 			$rootScope.logado = false;
 
 			$http.get('/admin/loggedin').then(function(response) {
-				console.log(response.status);
 				if (response.status !== 403) { // Authenticated
 					$rootScope.logado = true;
+					// Perfil (utils/perfil.js): super-admin vê os menus globais; administrador(a) de
+					// Mostra só as telas das Mostras dele(a) - o servidor filtra de qualquer jeito.
+					$rootScope.perfil = response.data || {};
 					deferred.resolve();
 				} else { // Not Authenticated
 					$rootScope.logado = false;
@@ -189,6 +191,12 @@
 			url: "/editar-tela-inicial",
 			templateUrl:'admin/views/editar-tela-inicial.html',
 			controller: 'editCtrl'
+		})
+		// Administradores por Mostra (só super-admin).
+		.state('master.administradores', {
+			url: "/administradores",
+			templateUrl:'admin/views/administradores.html',
+			controller: 'administradoresCtrl'
 		})
 		.state('master.editar-opcoes-projetos', {
 			url: "/editar-opcoes-projetos",

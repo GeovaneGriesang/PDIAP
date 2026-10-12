@@ -107,13 +107,14 @@
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Certificado</p>
         </md-list-item>
-        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-feiras">
+        <md-list-item data-ng-show="section3.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.cadastro-feiras">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Feiras Filiadas</p>
         </md-list-item>
         <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-documento">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Documento</p>
+        </md-list-item>
       </md-list>
       <md-list>
         <md-list-item ng-click="section4.expand = !section4.expand">
@@ -137,7 +138,7 @@
           <span flex></span>
           <md-icon md-svg-src="{{section5.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
         </md-list-item>
-        <md-list-item data-ng-show="section5.expand" ui-sref="master.editar-tela-inicial">
+        <md-list-item data-ng-show="section5.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.editar-tela-inicial">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Tela inicial</p>
         </md-list-item>
@@ -145,13 +146,13 @@
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Campos editáveis</p>
         </md-list-item>
-        <md-list-item data-ng-show="section5.expand" ui-sref="master.editar-mostra-atual">
+        <md-list-item data-ng-show="section5.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.editar-mostra-atual">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Mostra atual</p>
         </md-list-item>
       </md-list>
 
-      <md-list>
+      <md-list data-ng-if="$root.perfil.superAdmin">
         <md-list-item ng-click="section6.expand = !section6.expand">
           <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Escolas</p>
           <span flex></span>
@@ -174,10 +175,18 @@
 
       <!-- Cadastro único: perfis de cada pessoa por Mostra (avaliador, orientador, estudante,
            participante, responsável...) - atravessa todas as seções, por isso é avulso. -->
-      <md-list>
+      <md-list data-ng-if="$root.perfil.superAdmin">
         <md-list-item ui-sref="master.pessoas">
           <md-icon md-svg-src="account-search" style="color:#f5f5f5;"></md-icon>
           <p class="md-subheader" style="color:#f5f5f5;">Pessoas</p>
+        </md-list-item>
+      </md-list>
+
+      <!-- Perfis: quem administra cada Mostra (só super-admin). -->
+      <md-list data-ng-if="$root.perfil.superAdmin">
+        <md-list-item ui-sref="master.administradores">
+          <md-icon md-svg-src="account-key" style="color:#f5f5f5;"></md-icon>
+          <p class="md-subheader" style="color:#f5f5f5;">Administradores</p>
         </md-list-item>
       </md-list>
 

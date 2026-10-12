@@ -42,6 +42,11 @@ const PessoaSchema = new Schema({
 	emailPendenteToken: { type: String },
 	emailPendenteExpira: { type: Date },
 
+	// Perfil Super-admin (acesso a tudo, todas as Mostras e configurações globais). Os outros perfis
+	// não ficam aqui: Administrador(a) é por Mostra (Feira.administradores) e Padrão é todo mundo.
+	// Marcado só por script (scripts/definir-super-admin.js), nunca por tela.
+	superAdmin: { type: Boolean },
+
 	token: { type: String },
 	createdAt: { type: Date }
 }, { collection: 'pessoas' });

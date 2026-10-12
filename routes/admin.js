@@ -30,7 +30,8 @@ const express = require('express')
 , async = require('async')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
-, opcoesProjetos = require('../controllers/opcoes-projetos-controller');
+, opcoesProjetos = require('../controllers/opcoes-projetos-controller')
+, perfil = require('../utils/perfil');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -74,15 +75,29 @@ function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-// Bug grave corrigido: com um argumento só (miPermiso("3")), role2 ficava undefined e
-// "req.user.permissao === role2" dava TRUE pra quem não tem o campo permissao - Avaliador e
-// Participante logados passavam em TODAS as rotas de admin com um argumento só.
-function miPermiso(role,role2) {
-  let permitidos = [role, role2].filter((r) => r !== undefined);
-  return function(req, res, next) {
-    if(req.user && req.user.permissao !== undefined && permitidos.indexOf(req.user.permissao) !== -1)
-      next();
-    else res.sendStatus(403);
+// Acesso ao admin pelos PERFIS (utils/perfil.js): qualquer admin (super-admin ou administrador(a) de
+// alguma Mostra) passa; cada rota restringe às Mostras dele(a). Os papéis "2"/"3" antigos não
+// existem mais além da conta admin2 (que conta como super-admin) - os argumentos ficaram só por
+// compatibilidade das chamadas. soSuper: configurações globais (só super-admin).
+function miPermiso() {
+  return perfil.exigeAdmin;
+}
+const soSuper = perfil.exigeSuperAdmin;
+
+// Não-super-admin precisa criar o registro numa das Mostras DELE(A) (feiraId do body).
+async function mostraDoBodyPermitida(req) {
+  if ((await perfil.carregar(req)).superAdmin) return true;
+  return perfil.podeMostra(req, req.body.feiraId);
+}
+
+// Pros relatórios em PDF (handlers sem async): põe o filtro de Mostras em req.escopoMostras.
+async function escopoNaReq(req, res, next) {
+  try {
+    req.escopoMostras = await perfil.escopo(req);
+    next();
+  } catch (err) {
+    console.error('Erro ao calcular escopo', err);
+    res.sendStatus(500);
   }
 }
 
@@ -91,12 +106,53 @@ router.all('/*', ensureAuthenticated);
 
 // Só admin: as telas do admin2 e do app de Avaliação usam isto pra decidir se abrem (antes
 // qualquer login passava, e com o painel único toda pessoa tem login).
-router.get('/loggedin', ensureAuthenticated, miPermiso("2","3"), (req, res) => {
-  res.send('success');
+router.get('/loggedin', ensureAuthenticated, miPermiso("2","3"), async (req, res) => {
+  // Perfil pra tela: super-admin vê tudo; administrador(a) só as Mostras dele(a) e sem os menus globais.
+  let p = await perfil.carregar(req);
+  res.send({ superAdmin: p.superAdmin, nome: p.nome, mostras: p.mostras.map((m) => ({ _id: m._id, nome: m.nome, ano: m.ano })) });
+});
+
+// --- Administradores por Mostra (só super-admin) ------------------------------------------
+router.get('/administradores', soSuper, async (req, res) => {
+  try {
+    let mostras = await feiraSchema.find({ tipo: 'edicao' }, 'nome ano administradores').sort({ ano: -1, _id: -1 })
+      .populate('administradores', 'nome email documento').lean();
+    res.send(mostras);
+  } catch (error) {
+    console.error('Erro ao listar administradores', error);
+    res.status(500).send('Erro ao listar administradores.');
+  }
+});
+
+router.post('/administradores', soSuper, async (req, res) => {
+  try {
+    let { mostraId, pessoaId } = req.body;
+    if (!idValido(mostraId) || !idValido(pessoaId)) return res.status(400).send('ID inválido.');
+    if (!(await pessoaSchema.exists({ _id: pessoaId }))) return res.status(400).send('Pessoa não encontrada.');
+    let r = await feiraSchema.updateOne({ _id: mostraId, tipo: 'edicao' }, { $addToSet: { administradores: pessoaId } });
+    if (!r.matchedCount) return res.status(400).send('Mostra não encontrada.');
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao incluir administrador', error);
+    res.status(500).send('Erro ao incluir administrador.');
+  }
+});
+
+router.post('/administradores/remover', soSuper, async (req, res) => {
+  try {
+    let { mostraId, pessoaId } = req.body;
+    if (!idValido(mostraId) || !idValido(pessoaId)) return res.status(400).send('ID inválido.');
+    await feiraSchema.updateOne({ _id: mostraId, tipo: 'edicao' }, { $pull: { administradores: pessoaId } });
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao remover administrador', error);
+    res.status(500).send('Erro ao remover administrador.');
+  }
 });
 
 router.post('/criarEvento', miPermiso("3"), async (req, res) => {
   try {
+    if (!(await mostraDoBodyPermitida(req))) return res.status(403).send('Escolha uma das Mostras que você administra.');
     let myArray = req.body.responsavel;
 
     // Mostra a que o evento pertence (duas Mostras no mesmo ano não se distinguem só pelo ano).
@@ -147,7 +203,7 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
 
 // Tela "Pessoas" do admin: busca no cadastro único e perfis por Mostra (derivados dos
 // vínculos, ver controllers/perfis-controller.js).
-router.get('/pessoas/pesquisar', miPermiso("3"), async (req, res) => {
+router.get('/pessoas/pesquisar', soSuper, async (req, res) => {
   try {
     res.send(await perfisController.pesquisar(req.query.q));
   } catch (error) {
@@ -156,7 +212,7 @@ router.get('/pessoas/pesquisar', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.get('/pessoas/perfis', miPermiso("3"), async (req, res) => {
+router.get('/pessoas/perfis', soSuper, async (req, res) => {
   try {
     let resultado = await perfisController.perfis(req.query.documento);
     if (!resultado) return res.status(400).send('Informe um documento.');
@@ -184,7 +240,7 @@ router.get('/pessoas/buscar', miPermiso("3"), async (req, res) => {
 
 router.get('/mostraEvento', miPermiso("3","2"), async (req, res) => {
   try {
-    let usr = await eventoSchema.find();
+    let usr = await eventoSchema.find(await perfil.comEscopo(req, {}));
     res.send(usr);
   } catch (error){
     console.error('Erro ao mostrar evento', error);
@@ -195,6 +251,7 @@ router.put('/removeEvento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, eventoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     await eventoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error){
@@ -213,6 +270,8 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, eventoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
+    if (req.body.feiraId && !(await perfil.podeMostra(req, req.body.feiraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
 
     let evt = await eventoSchema.findOne({"_id": id});
     if (!evt) return res.status(404).send('Evento não encontrado');
@@ -285,6 +344,7 @@ router.put('/atualizaEvento', miPermiso("3"), async (req, res) => {
 // eventosCtrl.js).
 router.post('/criarSeminario', miPermiso("3"), async (req, res) => {
   try {
+    if (!(await mostraDoBodyPermitida(req))) return res.status(403).send('Escolha uma das Mostras que você administra.');
     let nome = (req.body.nome || '').trim();
     if (!nome) return res.status(400).send('Informe um nome pro Seminário.');
 
@@ -311,7 +371,7 @@ router.post('/criarSeminario', miPermiso("3"), async (req, res) => {
 
 router.get('/mostraSeminarios', miPermiso("3","2"), async (req, res) => {
   try {
-    let usr = await seminarioSchema.find();
+    let usr = await seminarioSchema.find(await perfil.comEscopo(req, {}));
     res.send(usr);
   } catch (error){
     console.error('Erro ao mostrar seminários', error);
@@ -321,7 +381,7 @@ router.get('/mostraSeminarios', miPermiso("3","2"), async (req, res) => {
 // Feiras externas (Mostratec, Mostratec Júnior, MOCITEC, etc) para as quais um projeto pode
 // ser classificado - cadastradas por ano, com as categorias às quais se aplicam e o texto do
 // certificado de classificação (ver premiacao.html/details.premiacao.html e getFeirasInfo).
-router.post('/criarFeira', miPermiso("3"), async (req, res) => {
+router.post('/criarFeira', soSuper, async (req, res) => {
   try {
     // Link de inscrição (slug) precisa ser único entre edições - diferente do "ano" (que
     // pode se repetir de propósito, ver memória project-mostra-ano-nao-unico), um slug
@@ -357,6 +417,11 @@ router.put('/editarFeira', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    let alvo = await feiraSchema.findById(id, 'tipo').lean();
+    if (!alvo) return res.status(404).send('Mostra não encontrada');
+    let perfilAtual = await perfil.carregar(req);
+    if (alvo.tipo === 'edicao' ? !(await perfil.podeMostra(req, id)) : !perfilAtual.superAdmin) return res.status(403).send('Fora das Mostras que você administra.');
+    if (!perfilAtual.superAdmin && req.body.tipo && req.body.tipo !== alvo.tipo) return res.status(403).send('Só o(a) super-admin muda o tipo.');
 
     if (req.body.tipo === 'edicao' && req.body.slug) {
       let existente = await feiraSchema.findOne({ tipo: 'edicao', slug: req.body.slug, _id: { $ne: id } });
@@ -393,14 +458,15 @@ router.put('/editarFeira', miPermiso("3"), async (req, res) => {
 
 router.get('/mostraFeiras', miPermiso("3","2"), async (req, res) => {
   try {
-    let usr = await feiraSchema.find();
+    let p = await perfil.carregar(req);
+    let usr = await feiraSchema.find(p.superAdmin ? {} : { $or: [{ tipo: { $ne: 'edicao' } }, { _id: { $in: p.mostras.map((m) => m._id) } }] });
     res.send(usr);
   } catch (error){
     console.error('Erro ao mostrar feiras', error);
   }
 });
 
-router.put('/removeFeira', miPermiso("3"), async (req, res) => {
+router.put('/removeFeira', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -415,7 +481,7 @@ router.put('/removeFeira', miPermiso("3"), async (req, res) => {
 // que cada projeto digitava em nomeEscola. Criada pelo admin já sai "aprovada"; criada
 // via solicitação pública (ver routes/index.js#solicitarEscola) sai "pendente" até o
 // admin revisar/corrigir e aprovar.
-router.post('/criarEscola', miPermiso("3"), async (req, res) => {
+router.post('/criarEscola', soSuper, async (req, res) => {
   try {
     let newEscola = new escolaSchema({
       nome: req.body.nome,
@@ -470,7 +536,7 @@ function avisarDecisaoEscola(escola, aprovada) {
 
 // Aprova uma escola pendente - permite corrigir nome/cep/cidade/estado no mesmo passo
 // (a pessoa que solicitou pode ter digitado algo com erro/variação).
-router.put('/aprovarEscola', miPermiso("3"), async (req, res) => {
+router.put('/aprovarEscola', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -495,7 +561,7 @@ router.put('/aprovarEscola', miPermiso("3"), async (req, res) => {
 // Rejeita uma escola pendente - diferente de removeEscola (que só se aplica a uma
 // escola JÁ aprovada e sem projeto vinculado), aqui é uma decisão sobre a
 // solicitação em si, com motivo obrigatório (vai no e-mail de aviso).
-router.put('/rejeitarEscola', miPermiso("3"), async (req, res) => {
+router.put('/rejeitarEscola', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -514,7 +580,7 @@ router.put('/rejeitarEscola', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.put('/editarEscola', miPermiso("3"), async (req, res) => {
+router.put('/editarEscola', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -534,7 +600,7 @@ router.put('/editarEscola', miPermiso("3"), async (req, res) => {
 // Recusa remover uma escola que ainda tem projeto vinculado - diferente de removeFeira,
 // aqui a integridade importa mais: um projeto sem escola visível quebraria os
 // relatórios/listas que dependem desse vínculo.
-router.put('/removeEscola', miPermiso("3"), async (req, res) => {
+router.put('/removeEscola', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
@@ -555,7 +621,7 @@ router.put('/removeEscola', miPermiso("3"), async (req, res) => {
 
 router.get('/mostraAvaliadores', miPermiso("3","2"), async (req, res) => {
   try {
-    let usr = await avaliadorSchema.find();
+    let usr = await avaliadorSchema.find(await perfil.comEscopo(req, {}));
     res.send(usr);
   } catch (error){
     console.error('Erro ao mostrar avaliadores', error);
@@ -566,6 +632,7 @@ router.put('/removeAvaliador', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, avaliadorSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     await avaliadorSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
@@ -578,6 +645,7 @@ router.put('/atualizaAvaliador', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, avaliadorSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let checagem = AvaliadorController.validarDocumento(req.body.cpf);
     if (!checagem.valido) return res.status(400).send(checagem.mensagem);
@@ -610,6 +678,7 @@ router.put('/atualizaAvaliador', miPermiso("3"), async (req, res) => {
 
 router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //alteração Lucas A. Ferreira
   try {
+    if (!(await mostraDoBodyPermitida(req))) return res.status(403).send('Escolha uma das Mostras que você administra.');
     // E-mail é o identificador de login do participante (dashboard próprio) - exigido a
     // partir de agora pra todo cadastro novo, cadastros antigos sem e-mail só não conseguem
     // logar até o admin completar o dado.
@@ -669,7 +738,7 @@ router.post('/criarParticipante', miPermiso("3"), async (req, res) => { //altera
 
 router.get('/mostraParticipante', miPermiso("3","2"), async (req, res) => {
   try {
-    let usr = await participanteSchema.find();
+    let usr = await participanteSchema.find(await perfil.comEscopo(req, {}));
     res.send(usr);
   } catch (error) {
     console.error('Erro ao mostrar participante', error);
@@ -680,6 +749,7 @@ router.put('/removeParticipante', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, participanteSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     await participanteSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
@@ -694,6 +764,7 @@ router.put('/removeParticipante', miPermiso("3"), async (req, res) => {
 // conseguia apagar e trocar o layout do certificado de um ano.
 router.post('/postCertificado', miPermiso("3"), async (req, res) => {
   try {
+    if (!(await perfil.podeAno(req, req.body.data && req.body.data.ano_certificado))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
     //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
     //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
     await CadastroMostraSchema.deleteOne({"ano_certificado":req.body.data.ano_certificado});
@@ -739,6 +810,7 @@ router.get('/getCertificados', async (req, res) => {
 //rota para cadastrar os documentos
 // miPermiso("3"): mesma brecha de /postCertificado (só exigia estar logado).
 router.post('/postDocumento', miPermiso("3"), async (req, res) => {
+  if (!(await perfil.podeAno(req, req.body.pacote && req.body.pacote.ano))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
   console.log(req.body.pacote.exibe);
   let novoCadastro = new CadastroDocumentoSchema({
     pdf: req.body.pacote.pdf,
@@ -771,6 +843,8 @@ router.put('/putDocumento', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    let docAno = await CadastroDocumentoSchema.findById(id, 'ano').lean();
+    if (docAno && !(await perfil.podeAno(req, docAno.ano))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
     await CadastroDocumentoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
@@ -785,6 +859,8 @@ router.put('/putUpdateExibir', miPermiso("3"), async (req, res) => {
     let id = req.body.id;
     let exibe = req.body.exibe;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    let docAno = await CadastroDocumentoSchema.findById(id, 'ano').lean();
+    if (docAno && !(await perfil.podeAno(req, docAno.ano))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
 
     await CadastroDocumentoSchema.updateOne({'_id': id}, {$set:{'exibe': exibe}});
     res.send('sucess');
@@ -800,6 +876,7 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
     let nome = req.body.nome;
     let email = req.body.email;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, participanteSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     if (!email || !/^.+@.+\..+$/.test(email)) return res.status(400).send('Informe um e-mail válido.');
 
     // Documento de qualquer país (pode ter letras) - mesma regra do cadastro.
@@ -832,6 +909,7 @@ router.put('/atualizaParticipante', miPermiso("3"), async (req, res) => {
 });
 
 router.post('/registroSaberes', miPermiso("3","2"), async (req, res) => {
+  if (!(await perfil.podeAno(req, new Date().getFullYear()))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
   let checagemDoc = documentoValidator.validarDocumentoQualquerPais(req.body.cpf);
   if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
 
@@ -865,7 +943,7 @@ router.post('/registroSaberes', miPermiso("3","2"), async (req, res) => {
 
 router.get('/mostraCPFparticipantes', miPermiso("3"), async (req, res) => {
   try {
-    let cpfs = await participanteSchema.find({},'cpf -_id');
+    let cpfs = await participanteSchema.find(await perfil.comEscopo(req, {}),'cpf -_id');
     return res.status(200).send(cpfs);
   } catch (error) {
     return res.status(400).send({msg:"error occurred - "+error});
@@ -877,6 +955,8 @@ router.put('/setPresencaProjetos', miPermiso("3"), async (req, res) => {
   try {
     let myArray0 = req.body.integrantesPresentes;
     let myArray1 = req.body.integrantesAusentes;
+    let idsIntegrantes = [].concat(myArray0 || [], myArray1 || []).filter(idValido);
+    if (await perfil.foraDoEscopo(req, projetoSchema, { 'integrantes._id': { $in: idsIntegrantes } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     for (let id_integ of myArray0) {
       await projetoSchema.findOneAndUpdate({"integrantes._id": id_integ}, {"$set": {"integrantes.$.presenca": true}}, {returnDocument: 'after'});
@@ -894,6 +974,8 @@ router.put('/setPresencaProjetos', miPermiso("3"), async (req, res) => {
 router.put('/setPremiadoProjetos', miPermiso("3"), async (req, res) => {
   try {
     let premiacao = req.body;
+    if (!idValido(premiacao._id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: premiacao._id })) return res.status(403).send('Fora das Mostras que você administra.');
     if (premiacao.premiacao === 'Premiado') {
       if (premiacao.colocacao === undefined) { premiacao.colocacao = null; }
       await projetoSchema.findOneAndUpdate({'_id':premiacao._id},{$set:{"premiacao":premiacao.premiacao,"colocacao":premiacao.colocacao,"feirasClassificadas":premiacao.feirasClassificadas}},{returnDocument: 'after'});
@@ -914,7 +996,7 @@ router.put('/setPremiadoProjetos', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.post('/edit', miPermiso("3"), async (req, res) => {
+router.post('/edit', soSuper, async (req, res) => {
 	try {
     let obj = {
       ano: req.body[0].ano,
@@ -950,6 +1032,7 @@ router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
 	try {
     let mostra = await opcoesProjetos.mostraPorId(req.body.mostraId);
     if (!mostra) return res.status(400).send('Escolha uma Mostra válida.');
+    if (!(await perfil.podeMostra(req, String(mostra._id)))) return res.status(403).send('Fora das Mostras que você administra.');
     if (!(await opcoesProjetos.salvar(mostra._id, req.body.opcoes || {}))) return res.status(400).send('Mostra não encontrada.');
     res.send('success');
   } catch (error) {
@@ -959,10 +1042,11 @@ router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
 });
 
 // ?mostraId= (sem ele, a Mostra atual). Mostra nunca configurada: ver opcoesDaMostra.
-router.get('/getOpcoes', async (req, res) => {
+router.get('/getOpcoes', miPermiso("3"), async (req, res) => {
 	try {
 		let mostra = await opcoesProjetos.mostraPorId(req.query.mostraId);
 		if (req.query.mostraId && !mostra) return res.status(400).send('Mostra inválida.');
+		if (mostra && !(await perfil.podeMostra(req, String(mostra._id)))) return res.status(403).send('Fora das Mostras que você administra.');
 		res.send(await opcoesProjetos.opcoesDaMostra(mostra));
 	} catch (err) {
 		console.error('Erro ao ler campos editáveis', err);
@@ -981,7 +1065,7 @@ router.get('/mostraAtual', miPermiso("3","2"), async (req, res) => {
   }
 });
 
-router.put('/mostraAtual', miPermiso("3"), async (req, res) => {
+router.put('/mostraAtual', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (id) {
@@ -1003,7 +1087,7 @@ router.get('/projetos', miPermiso("2","3"), async (req, res) => {
     // Antes mandava o documento inteiro pro navegador, incluindo o hash da senha de
     // TODOS os 957 projetos — em toda tentativa de listar/avaliar/rankear projetos no
     // painel. Nenhuma tela do admin usa esse campo; só exclui.
-    let usr = await projetoSchema.find({}, '-password');
+    let usr = await projetoSchema.find(await perfil.comEscopo(req, {}), '-password');
     res.send(usr);
   } catch (error) {
     console.error('Erro em projetos', error);
@@ -1034,7 +1118,7 @@ router.get('/projetos/relatorios.zip', miPermiso("3"), async (req, res) => {
 
   let projetos;
   try {
-    projetos = await projetoSchema.find(filtro, 'numInscricao nomeProjeto');
+    projetos = await projetoSchema.find(await perfil.comEscopo(req, filtro), 'numInscricao nomeProjeto');
   } catch (err) {
     console.error('Erro ao buscar projetos pro zip', err);
     return res.status(500).send('Erro ao gerar o zip.');
@@ -1183,6 +1267,7 @@ router.post('/enviarEmailProjetos', miPermiso("3"), async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um projeto.');
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: { $in: ids } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let projetos = await projetoSchema.find({ _id: { $in: ids } }, '-password');
 
@@ -1240,6 +1325,7 @@ router.post('/enviarEmailPremiados', miPermiso("3"), async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um projeto.');
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: { $in: ids } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let projetos = await projetoSchema.find({
       _id: { $in: ids },
@@ -1293,6 +1379,7 @@ router.get('/configPremiacao', miPermiso("3","2"), async (req, res) => {
   var mostraId = req.query.mostraId;
   if (mostraId && !idValido(mostraId)) return res.status(400).send('ID inválido.');
   if (!ano && !mostraId) return res.status(400).send('Ano inválido.');
+  if (mostraId ? !(await perfil.podeMostra(req, mostraId)) : !(await perfil.podeAno(req, ano))) return res.status(403).send('Fora das Mostras que você administra.');
   try {
     let doc = mostraId
       ? await feiraSchema.findOne({ _id: mostraId, tipo: 'edicao' })
@@ -1314,6 +1401,8 @@ router.post('/confirmarPremiados', miPermiso("3"), async (req, res) => {
     var ano = parseInt(req.body.ano, 10);
     var numPremiadosPorEixo = parseInt(req.body.numPremiadosPorEixo, 10);
     var premiados = req.body.premiados;
+    if (req.body.mostraId ? !(await perfil.podeMostra(req, req.body.mostraId)) : !(await perfil.podeAno(req, ano))) return res.status(403).send('Fora das Mostras que você administra.');
+    if (Array.isArray(premiados) && (await perfil.foraDoEscopo(req, projetoSchema, { _id: { $in: premiados.map((p) => p && p.id).filter(idValido) } }))) return res.status(403).send('Fora das Mostras que você administra.');
     // mostraId (opcional, Mostra atual): distingue duas Mostras no mesmo ano e o ano passa a vir
     // da própria Mostra. Sem ele vale o ano enviado, como sempre.
     var mostra = null;
@@ -1371,6 +1460,7 @@ router.post('/enviarEmailAvaliadores', miPermiso("3"), async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um avaliador.');
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+    if (await perfil.foraDoEscopo(req, avaliadorSchema, { _id: { $in: ids } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let avaliadores = await avaliadorSchema.find({ _id: { $in: ids } });
 
@@ -1425,6 +1515,7 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).send('Selecione ao menos um participante.');
     if (!assunto || !corpo) return res.status(400).send('Preencha assunto e corpo do e-mail.');
     if (!ids.every(idValido)) return res.status(400).send('ID inválido.');
+    if (await perfil.foraDoEscopo(req, participanteSchema, { _id: { $in: ids } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let participantes = await participanteSchema.find({ _id: { $in: ids } });
 
@@ -1471,6 +1562,7 @@ router.post('/enviarEmailParticipantes', miPermiso("3"), async (req, res) => {
 router.get('/historicoEmails', miPermiso("3"), async (req, res) => {
   var ano = parseInt(req.query.ano, 10);
   if (!ano) return res.status(400).send('Ano inválido.');
+  if (!(await perfil.podeAno(req, ano))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
   try {
     let historico = await emailHistoricoSchema.find({ ano: ano }).sort({ data: -1 });
     res.send(historico);
@@ -1482,7 +1574,7 @@ router.get('/historicoEmails', miPermiso("3"), async (req, res) => {
 
 router.post('/avaliador', miPermiso("2","3"), async (req, res) => {
   try {
-    let usr = await avaliadorSchema.find();
+    let usr = await avaliadorSchema.find(await perfil.comEscopo(req, {}));
     res.send(usr);
   } catch (error) {
     console.error('Erro em avaliador', error);
@@ -1491,7 +1583,7 @@ router.post('/avaliador', miPermiso("2","3"), async (req, res) => {
 
 router.post('/saberes', miPermiso("2","3"), async (req, res) => {
   try {
-    let usr = await saberesSchema.find();
+    let usr = await saberesSchema.find((await perfil.escopoPorAno(req)) || {});
     res.send(usr);
   } catch (error) {
     console.error('Erro em saberes docentes', error);
@@ -1508,6 +1600,8 @@ router.put('/upgreice', ensureAuthenticated, miPermiso("3"), async (req, res) =>
     let anais = req.body.projetosAnais || [];
     let apresentacao = req.body.projetosApresentacao || [];
     let reprovados = req.body.projetosReprovados || [];
+    let todosIds = [].concat(aprovadosSemTipo, anais, apresentacao, reprovados).filter(idValido);
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: { $in: todosIds } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     let marcar = async (ids, update) => {
       for (let id of ids) {
@@ -1536,6 +1630,8 @@ router.put('/upgreiceAvaliadores', ensureAuthenticated, miPermiso("3"), async (r
   try {
     let myArray0 = req.body.avaliadoresMarcados;
     let myArray1 = req.body.avaliadoresNMarcados;
+    let idsAvaliadores = [].concat(myArray0 || [], myArray1 || []).filter(idValido);
+    if (await perfil.foraDoEscopo(req, avaliadorSchema, { _id: { $in: idsAvaliadores } })) return res.status(403).send('Fora das Mostras que você administra.');
 
     for (let id_doc of myArray0) {
       await avaliadorSchema.findOneAndUpdate({"_id": id_doc}, {"$set": {"avaliacao": true}}, {returnDocument: 'after'});
@@ -1559,6 +1655,7 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), async (req, res) => {
     }
     let id = req.body._id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     let newProject = filtrarCamposEditaveis(req.body);
 
     console.log(newProject);
@@ -1579,6 +1676,7 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
     if (!myArray.length) return res.status(400).send('Nenhum integrante enviado');
     let id = myArray[0].ID;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     if (!(await projetoSchema.findById(id, '_id'))) return res.status(404).send('Projeto não encontrado');
 
     for (let j = 0; j < myArray.length; j++) {
@@ -1650,6 +1748,7 @@ router.put('/removerIntegrante', ensureAuthenticated, miPermiso("3"), async (req
     let id = req.body.integrantes_id;
     let ID = req.body.ID;
     if (!idValido(id) || !idValido(ID)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: ID })) return res.status(403).send('Fora das Mostras que você administra.');
 
     // Duas chamadas viraram uma só, atômica: a antiga usava usr.integrantes.id(id).remove()
     // + usr.save() (API de subdocumento removida nas versões novas do Mongoose) e, em
@@ -1672,6 +1771,7 @@ router.put('/removeProjeto', miPermiso("3"), async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, projetoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     await projetoSchema.deleteOne({"_id": id});
     res.send('success');
   } catch (error) {
@@ -1680,7 +1780,7 @@ router.put('/removeProjeto', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.get('/camisetas', miPermiso("3"), (req, res) => {
+router.get('/camisetas', miPermiso("3"), escopoNaReq, (req, res) => {
   var myDoc = new pdf;
   let cont = 0;
   myDoc.pipe(fs.createWriteStream('camisetasMedio.pdf'));
@@ -1693,7 +1793,7 @@ router.get('/camisetas', miPermiso("3"), (req, res) => {
   .fontSize(12)
 
   // saberesSchema.find({}).sort({"nome":1}).exec((err, usr) => {Fundamental II (6º ao 9º anos)
-  projetoSchema.find({"participa":true,"categoria":"Ensino Médio, Técnico e Superior"}).sort({"eixo":1, "nomeProjeto":1}).then((usr) => {
+  projetoSchema.find({ $and: [{"participa":true,"categoria":"Ensino Médio, Técnico e Superior"}, req.escopoMostras || {}] }).sort({"eixo":1, "nomeProjeto":1}).then((usr) => {
     let echu = "";
     let cont = 0;
     for (let user in usr) {
@@ -1755,7 +1855,7 @@ router.get('/camisetas', miPermiso("3"), (req, res) => {
   res.sendStatus(200);
 });
 
-router.post('/pdf2', miPermiso("3"), (req, res) => {
+router.post('/pdf2', miPermiso("3"), escopoNaReq, (req, res) => {
 
   var myDoc = new pdf;
 
@@ -1771,7 +1871,7 @@ router.post('/pdf2', miPermiso("3"), (req, res) => {
   .text("FUNDAMENTAL I (1° ao 5° ano)", {align: 'center'})
   .moveDown(1)
 
-  projetoSchema.find({"aprovado":true,"categoria":"Fundamental I (1º ao 5º anos)"}).sort({"eixo":1, "nomeProjeto":1}).then((user) => {
+  projetoSchema.find({ $and: [{"aprovado":true,"categoria":"Fundamental I (1º ao 5º anos)"}, req.escopoMostras || {}] }).sort({"eixo":1, "nomeProjeto":1}).then((user) => {
     // let echu = "";
 
     for (i in user) {

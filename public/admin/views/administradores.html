@@ -1,0 +1,48 @@
+<!-- Administradores por Mostra (administradoresCtrl, só super-admin). Cada administrador(a) tem o
+     acesso do admin restrito às Mostras em que aparece aqui (ver utils/perfil.js). -->
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Administradores por Mostra</h4>
+      </div>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:30px;">
+      <p style="max-width:760px;margin:0 auto 24px;color:rgba(0,0,0,0.7);text-align:center;">
+        Quem administra uma Mostra entra com a própria conta e vê, no admin, <b>só</b> as Mostras em que está listado(a) aqui
+        (projetos, avaliação, eventos, participantes, certificados, e-mails e campos editáveis delas).
+        Configurações gerais do site continuam só com super-admin.
+      </p>
+
+      <div data-ng-repeat="m in mostras" class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin:0 auto 18px;max-width:760px;">
+        <h3 style="margin:0 0 10px 0;color:#225024;">{{m.ano}} - {{m.nome}}</h3>
+
+        <p data-ng-if="!m.administradores.length" style="color:rgba(0,0,0,0.55);margin:0 0 10px;">Ninguém administra esta Mostra além do(a) super-admin.</p>
+        <div data-ng-repeat="a in m.administradores" layout="row" layout-align="start center" style="border-top:1px solid #f0f0f0;padding:4px 0;">
+          <div flex>
+            <strong>{{a.nome}}</strong>
+            <span style="color:rgba(0,0,0,0.55);font-size:13px;"> · {{a.email}}</span>
+          </div>
+          <md-button style="text-transform:none;color:#c62828;" data-ng-click="remover(m, a, $event)">Remover</md-button>
+        </div>
+
+        <form data-ng-submit="pesquisar(m)" layout="row" layout-align="start center" style="margin-top:12px;">
+          <md-input-container flex style="margin:0;">
+            <label>Incluir: nome, documento ou e-mail (mín. 3 letras)</label>
+            <input type="text" data-ng-model="busca[m._id].termo"/>
+          </md-input-container>
+          <md-button type="submit" class="md-raised" style="text-transform:none;" data-ng-disabled="busca[m._id].buscando">Buscar</md-button>
+        </form>
+        <p data-ng-if="busca[m._id].nenhum" style="color:rgba(0,0,0,0.55);font-size:13px;margin:4px 0 0;">Ninguém encontrado no cadastro único (ou já administra esta Mostra).</p>
+        <div data-ng-repeat="p in busca[m._id].resultados" layout="row" layout-align="start center" style="padding:2px 0;">
+          <div flex style="font-size:14px;">{{p.nome}} <span style="color:rgba(0,0,0,0.55);">· {{p.email || 'sem e-mail'}} · doc. {{p.documento}}</span></div>
+          <md-button class="md-primary" style="text-transform:none;" data-ng-disabled="!p.email" data-ng-click="incluir(m, p)">Incluir</md-button>
+        </div>
+      </div>
+    </md-content>
+  </section>
+</div>
