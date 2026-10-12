@@ -13,6 +13,8 @@
 
 		var NACIONALIDADES = { brasileiro: 'Brasileiro(a)', paraguaio: 'Paraguaio(a)', uruguaio: 'Uruguaio(a)', venezuelano: 'Venezuelano(a)', outro: 'Outra nacionalidade' };
 		$scope.nomeNacionalidade = function(n) { return NACIONALIDADES[n] || n || '-'; };
+		$scope.opcoesNacionalidade = Object.keys(NACIONALIDADES).map(function(k) { return { valor: k, nome: NACIONALIDADES[k] }; });
+		$scope.nacionalidade = { valor: null, salvando: false };
 
 		var toast = function(message, tema) {
 			$mdToast.show($mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(8000));
@@ -22,6 +24,7 @@
 			contaAPI.getMeusDados()
 			.then(function(response) {
 				$scope.conta = response.data;
+				$scope.nacionalidade.valor = response.data.nacionalidade || null;
 			}, function(response) {
 				toast(response.data || 'Não foi possível carregar seus dados.', 'failed-toast');
 			});
@@ -64,6 +67,21 @@
 			})
 			.finally(function() {
 				$scope.trocaEmail.enviando = false;
+			});
+		};
+
+		// Nacionalidade: a própria pessoa altera (ver routes/index.js#/conta/nacionalidade).
+		$scope.salvarNacionalidade = function() {
+			$scope.nacionalidade.salvando = true;
+			contaAPI.alterarNacionalidade($scope.nacionalidade.valor)
+			.then(function(response) {
+				$scope.conta.nacionalidade = response.data.nacionalidade;
+				toast('Nacionalidade atualizada.', 'success-toast');
+			}, function(response) {
+				toast(typeof response.data === 'string' && response.data ? response.data : 'Não foi possível alterar a nacionalidade.', 'failed-toast');
+			})
+			.finally(function() {
+				$scope.nacionalidade.salvando = false;
 			});
 		};
 
