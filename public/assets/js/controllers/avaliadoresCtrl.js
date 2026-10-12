@@ -129,6 +129,8 @@
 				categoriasEixos: avaliador.categoriasEixos,
 				curriculo: curriculo1,
 				disponibilidade: avaliador.disponibilidade,
+				// Se oferece pra avaliação prévia dos trabalhos (a organização aprova depois).
+				aceitaAvaliacaoPrevia: avaliador.aceitaAvaliacaoPrevia === true,
 				createdAt: Date.now(),
 				slug: $scope.mostraSlug
 			});

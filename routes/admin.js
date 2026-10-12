@@ -34,7 +34,8 @@ const express = require('express')
 , perfil = require('../utils/perfil')
 , sessao = require('../utils/sessao')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
-, mesclarPessoas = require('../controllers/mesclar-pessoas-controller');
+, mesclarPessoas = require('../controllers/mesclar-pessoas-controller')
+, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -127,6 +128,65 @@ router.get('/inconsistencias/cadastro', miPermiso("3"), async (req, res) => {
   } catch (error) {
     console.error('Erro ao listar inconsistências de cadastro', error);
     res.status(500).send('Erro ao listar inconsistências de cadastro.');
+  }
+});
+
+// --- Avaliação PRÉVIA (controllers/avaliacao-previa-controller.js) - por Mostra -------------
+router.get('/avaliacao-previa', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let mostra = await feiraSchema.findById(req.query.mostraId, 'nome ano categoriasEixos avaliacaoPrevia').lean();
+    let comTexto = await projetoSchema.countDocuments(await perfil.comEscopo(req, { feiraId: mostra._id, 'textoPrevia.enviadoEm': { $exists: true } }));
+    let aptos = await avaliadorSchema.countDocuments({ feiraId: mostra._id, aptoAvaliacaoPrevia: true });
+    let voluntarios = await avaliadorSchema.countDocuments({ feiraId: mostra._id, aceitaAvaliacaoPrevia: true });
+    res.send({ config: avaliacaoPrevia.paraTela(mostra), resumo: { textosEnviados: comTexto, avaliadoresAptos: aptos, avaliadoresQueSeOfereceram: voluntarios } });
+  } catch (error) {
+    console.error('Erro ao ler avaliação prévia', error);
+    res.status(500).send('Erro ao ler a configuração.');
+  }
+});
+
+router.put('/avaliacao-previa', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let config = avaliacaoPrevia.limpar(req.body.config);
+    if (config.ativa && !config.envioPrazo) return res.status(400).send('Informe o prazo de envio dos textos.');
+    if (config.envioInicio && config.envioPrazo && config.envioInicio > config.envioPrazo) return res.status(400).send('O início do envio precisa ser antes do prazo.');
+    if (config.prazoAvaliacao && config.envioPrazo && config.prazoAvaliacao < config.envioPrazo) return res.status(400).send('O prazo da avaliação precisa ser depois do prazo de envio dos textos.');
+    await feiraSchema.updateOne({ _id: req.body.mostraId, tipo: 'edicao' }, { $set: { avaliacaoPrevia: config } });
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao salvar avaliação prévia', error);
+    res.status(500).send('Erro ao salvar a configuração.');
+  }
+});
+
+// Aprovar (ou tirar) avaliador(a) da distribuição da etapa prévia.
+router.put('/avaliadores/previa', miPermiso("3"), async (req, res) => {
+  try {
+    let id = req.body.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    if (await perfil.foraDoEscopo(req, avaliadorSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
+    await avaliadorSchema.updateOne({ _id: id }, req.body.apto === true ? { $set: { aptoAvaliacaoPrevia: true } } : { $unset: { aptoAvaliacaoPrevia: 1 } });
+    res.send('success');
+  } catch (error) {
+    console.error('Erro ao aprovar avaliador pra etapa prévia', error);
+    res.status(500).send('Erro ao salvar.');
+  }
+});
+
+// Texto enviado pelo projeto (só admin da Mostra do projeto).
+router.get('/projetos/:id/texto-previa', miPermiso("3"), async (req, res) => {
+  try {
+    let id = req.params.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido');
+    let projeto = await projetoSchema.findOne(await perfil.comEscopo(req, { _id: id }), 'textoPrevia').lean();
+    let arquivo = avaliacaoPrevia.arquivoDoProjeto(id);
+    if (!projeto || !projeto.textoPrevia || !fs.existsSync(arquivo)) return res.status(404).send('Texto não encontrado.');
+    res.download(arquivo, projeto.textoPrevia.nome || 'texto.pdf');
+  } catch (error) {
+    console.error('Erro ao baixar texto da avaliação prévia', error);
+    res.status(500).send('Erro ao baixar o texto.');
   }
 });
 

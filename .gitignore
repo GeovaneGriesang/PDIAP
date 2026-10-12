@@ -12,3 +12,5 @@ log.txt
 *.swp
 npm-debug.log*
 /scripts/relatorio-vinculos-*.json
+# Textos da avaliação prévia (privados - servidos só por rota com permissão, ver routes/painel-projetos.js)
+/uploads/

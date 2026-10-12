@@ -48,6 +48,11 @@
             <input type="text" data-ng-model="avaliador.curriculo"/>
           </md-input-container>
 
+          <md-checkbox data-ng-model="avaliador.aceitaAvaliacaoPrevia" aria-label="Aceito avaliar trabalhos antes do evento">
+            Aceito avaliar, antes do evento, os textos enviados pelos projetos (etapa de aprovação).
+            <span data-ng-if="avaliador.aptoAvaliacaoPrevia" style="color:#2e7d32;"> Aprovado(a) pela organização.</span>
+          </md-checkbox>
+
           <div layout="row" layout-align="center center" style="margin-top:20px;">
             <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-click="salvar(avaliador)">
               Salvar

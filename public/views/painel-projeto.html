@@ -72,6 +72,26 @@
             <p data-ng-if="!painel.edicaoPermitida" class="projeto-suave" style="margin-bottom:0;">{{painel.motivoBloqueio}}</p>
           </div>
 
+          <!-- Texto pra avaliação prévia (aprovação pra apresentação/anais) - Feira.avaliacaoPrevia. -->
+          <div class="md-whiteframe-2dp projeto-cartao" data-ng-if="painel.textoPrevia.ativa">
+            <h3>Texto para avaliação</h3>
+            <p style="margin-top:0;" class="projeto-suave">
+              O texto do projeto (PDF) é avaliado antes do evento para a aprovação para apresentação e anais.
+              <span data-ng-if="painel.textoPrevia.envioPrazo">Prazo de envio: <b>{{painel.textoPrevia.envioPrazo | date:'dd/MM/yyyy'}}</b>.</span>
+            </p>
+            <p data-ng-if="painel.textoPrevia.instrucoes" style="white-space:pre-wrap;">{{painel.textoPrevia.instrucoes}}</p>
+            <p data-ng-if="projeto.textoPrevia.enviadoEm" style="color:#2e7d32;">
+              Enviado em {{projeto.textoPrevia.enviadoEm | date:'dd/MM/yyyy HH:mm'}}: <a ng-href="{{urlTextoPrevia}}" target="_self" style="color:#2e7d32;">{{projeto.textoPrevia.nome}}</a>
+              <span data-ng-if="painel.textoPrevia.aberto"> - enviar outro arquivo substitui este.</span>
+            </p>
+            <p data-ng-if="!projeto.textoPrevia.enviadoEm && !painel.textoPrevia.aberto" style="color:#c62828;">O texto não foi enviado.</p>
+            <p data-ng-if="!painel.textoPrevia.aberto && painel.textoPrevia.motivo" class="projeto-suave">{{painel.textoPrevia.motivo}}</p>
+            <md-button data-ng-if="painel.textoPrevia.aberto" class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;"
+                       ngf-select="enviarTextoPrevia($file, $invalidFiles)" accept="application/pdf" ngf-pattern="'.pdf'" ngf-max-size="15MB" data-ng-disabled="envioTexto.enviando">
+              {{envioTexto.enviando ? 'Enviando... ' + envioTexto.progresso + '%' : (projeto.textoPrevia.enviadoEm ? 'Enviar outro PDF' : 'Enviar o texto (PDF)')}}
+            </md-button>
+          </div>
+
           <div class="md-whiteframe-2dp projeto-cartao">
             <h3>Integrantes</h3>
             <div class="projeto-linha" data-ng-repeat="i in orientadores">

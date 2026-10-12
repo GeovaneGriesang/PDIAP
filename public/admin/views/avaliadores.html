@@ -210,9 +210,12 @@
             <p data-ng-if="ava.categoriasEixos.length" style="font-size:12px;color:rgba(0,0,0,0.5);">
               <span data-ng-repeat="ce in ava.categoriasEixos">{{ce.categoria}} - {{ce.eixo}}{{$last ? '' : ' · '}}</span>
             </p>
+            <p data-ng-if="ava.aceitaAvaliacaoPrevia" style="font-size:12px;color:#2e7d32;">Se ofereceu para a avaliação prévia dos trabalhos</p>
           </div>
           <div class="md-list-item-text" flex="15">
             <md-checkbox aria-label="Check" data-ng-model="ava.avaliacao" data-ng-click="contador(ava.avaliacao,ava._id)">Presença</md-checkbox>
+            <!-- Aprovação pra receber trabalhos na avaliação prévia (Avaliação > Etapa prévia). -->
+            <md-checkbox aria-label="Avaliação prévia" data-ng-model="ava.aptoAvaliacaoPrevia" data-ng-change="marcarPrevia(ava)">Prévia</md-checkbox>
           </div>
           <div flex="20" style="display:flex;align-self:center;justify-content:center;gap:8px;">
             <md-button no-ink class="md-raised md-primary green darken-1 md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Editar avaliador" ng-click="editarAvaliador($event,ava)">

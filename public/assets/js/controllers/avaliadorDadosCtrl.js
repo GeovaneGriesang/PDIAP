@@ -27,7 +27,8 @@
 				nivelAcademico: avaliador.nivelAcademico,
 				atuacaoProfissional: avaliador.atuacaoProfissional,
 				tempoAtuacao: avaliador.tempoAtuacao,
-				curriculo: avaliador.curriculo
+				curriculo: avaliador.curriculo,
+				aceitaAvaliacaoPrevia: avaliador.aceitaAvaliacaoPrevia === true
 			};
 			avaliadorAPI.putDados(dados)
 			.then(function() {

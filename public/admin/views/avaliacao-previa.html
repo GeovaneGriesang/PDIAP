@@ -1,0 +1,118 @@
+<!-- Avaliação > Etapa prévia (avaliacaoPreviaCtrl): configuração POR MOSTRA da avaliação dos textos
+     antes do evento. Distribuição, convites e avaliação pelo sistema chegam na próxima parte (P2). -->
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Etapa prévia</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+        <div class="md-toolbar-tools">
+          <div style="width:220px;">
+            <md-select data-ng-change="recarregar()" data-ng-model="$root.mostraId" placeholder="Mostra" style="width:100%!important;font-size:17px;">
+              <md-optgroup label="Mostra:">
+                <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
+              </md-optgroup>
+            </md-select>
+          </div>
+        </div>
+      </md-toolbar>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:24px 30px 80px;">
+      <p data-ng-if="!config" style="color:rgba(0,0,0,0.5);">Carregando...</p>
+      <form name="previaForm" novalidate data-ng-if="config" style="max-width:860px;margin:0 auto;">
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;">
+          <p style="margin-top:0;color:rgba(0,0,0,0.7);">
+            Antes do evento, cada projeto da <b>{{nomeMostra()}}</b> envia o texto (PDF) pelo Meu painel. Os(as) avaliadores(as)
+            aprovados(as) recebem os trabalhos, avaliam pela ficha da categoria e a organização decide a aprovação vendo as notas.
+          </p>
+          <p style="color:rgba(0,0,0,0.6);font-size:14px;margin-bottom:0;">
+            Agora: {{resumo.textosEnviados}} texto(s) enviado(s) · {{resumo.avaliadoresQueSeOfereceram}} avaliador(a)(es) se ofereceram ·
+            {{resumo.avaliadoresAptos}} aprovado(a)(s) para a etapa (em Avaliação > Avaliadores, coluna "Prévia").
+          </p>
+          <md-checkbox data-ng-model="config.ativa" style="margin:16px 0 0;"><b>Etapa prévia ativa nesta Mostra</b></md-checkbox>
+        </div>
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Envio dos textos pelos projetos</h3>
+          <div layout="row" layout-wrap>
+            <md-input-container flex="50">
+              <label>Envio abre em (opcional)</label>
+              <input type="date" data-ng-model="config.envioInicio"/>
+            </md-input-container>
+            <md-input-container flex="50">
+              <label>Prazo do envio (até o fim do dia)</label>
+              <input type="date" data-ng-model="config.envioPrazo" data-ng-required="config.ativa"/>
+            </md-input-container>
+          </div>
+          <md-input-container class="md-block">
+            <label>Instruções para quem envia (aparecem no projeto)</label>
+            <textarea data-ng-model="config.instrucoesEnvio" rows="3"></textarea>
+          </md-input-container>
+        </div>
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Avaliadores(as)</h3>
+          <md-radio-group data-ng-model="config.modo">
+            <md-radio-button value="convite"><b>Convite:</b> a pessoa recebe o convite e aceita ou recusa; quem recusa ou não responde é substituído(a).</md-radio-button>
+            <md-radio-button value="direto"><b>Envio direto:</b> o trabalho já vai para a pessoa avaliar, com aviso por e-mail.</md-radio-button>
+          </md-radio-group>
+          <div layout="row" layout-wrap style="margin-top:12px;">
+            <md-input-container flex="33" data-ng-if="config.modo === 'convite'">
+              <label>Dias para aceitar o convite</label>
+              <input type="number" min="1" max="60" data-ng-model="config.diasParaAceitar"/>
+            </md-input-container>
+            <md-input-container flex="33">
+              <label>Avaliadores(as) por trabalho</label>
+              <input type="number" min="1" max="10" data-ng-model="config.avaliadoresPorTrabalho" required/>
+            </md-input-container>
+            <md-input-container flex="33">
+              <label>Prazo da avaliação (até o fim do dia)</label>
+              <input type="date" data-ng-model="config.prazoAvaliacao"/>
+            </md-input-container>
+          </div>
+          <md-checkbox data-ng-model="config.anonima">Avaliação anônima (quem avalia não vê integrantes nem escola)</md-checkbox><br>
+          <md-checkbox data-ng-model="config.contaNaFinal">A nota desta etapa vale na avaliação final do projeto (como a parte escrita da ficha)</md-checkbox>
+          <md-input-container class="md-block" style="margin-top:12px;">
+            <label>Instruções para quem avalia</label>
+            <textarea data-ng-model="config.instrucoesAvaliador" rows="3"></textarea>
+          </md-input-container>
+        </div>
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Ficha de avaliação por categoria</h3>
+          <p data-ng-if="!config.fichas.length" style="color:#7a4a00;">Esta Mostra ainda não tem categorias cadastradas (em Mostra). Cadastre-as para montar as fichas.</p>
+          <div data-ng-repeat="f in config.fichas" style="border-top:1px solid #eee;padding-top:10px;margin-top:10px;">
+            <b>{{f.categoria}}</b> <span style="color:rgba(0,0,0,0.55);">- total {{totalFicha(f)}} ponto(s)</span>
+            <span data-ng-if="f.padrao" style="font-size:12px;color:#7a4a00;"> (ficha inicial tirada da ficha em papel - revise e salve)</span>
+            <div data-ng-repeat="k in f.criterios" layout="row" layout-align="start center">
+              <md-input-container flex style="margin:6px 0;">
+                <label>Critério</label>
+                <input type="text" data-ng-model="k.nome" required/>
+              </md-input-container>
+              <md-input-container style="margin:6px 0 6px 12px;width:110px;">
+                <label>Máximo</label>
+                <input type="number" min="1" data-ng-model="k.maximo" required/>
+              </md-input-container>
+              <md-button class="md-icon-button" aria-label="Remover critério" data-ng-click="removerCriterio(f, $index)">
+                <md-icon md-svg-src="close" style="color:#c62828;"></md-icon>
+              </md-button>
+            </div>
+            <md-button class="md-raised" style="text-transform:none;margin-left:0;" data-ng-click="adicionarCriterio(f)">+ Critério</md-button>
+          </div>
+        </div>
+
+        <div layout="row" layout-align="center center">
+          <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || (config.ativa && previaForm.$invalid)" data-ng-click="salvar()">
+            Salvar etapa prévia
+          </md-button>
+        </div>
+      </form>
+    </md-content>
+  </section>
+</div>

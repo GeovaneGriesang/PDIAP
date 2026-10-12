@@ -24,7 +24,8 @@ const express = require('express')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
 , sessao = require('../utils/sessao')
-, pendencias = require('../utils/pendencias');
+, pendencias = require('../utils/pendencias')
+, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller');
 
 const TRAVA_MS = 3 * 60 * 1000;
 
@@ -138,7 +139,9 @@ router.get('/:id', exigeIntegrante, async (req, res) => {
       motivoBloqueio: situacao.motivo || undefined,
       mostra: situacao.mostra ? { nome: situacao.mostra.nome, ano: situacao.mostra.ano } : undefined,
       opcoes: situacao.opcoes,
-      trava: estadoTrava(req.projeto, req.pessoa)
+      trava: estadoTrava(req.projeto, req.pessoa),
+      // Envio do texto pra avaliação prévia (Feira.avaliacaoPrevia da Mostra do projeto).
+      textoPrevia: avaliacaoPrevia.situacaoEnvio(situacao.mostra)
     };
     delete projeto.trava;
     res.send(projeto);
@@ -337,6 +340,61 @@ router.post('/:id/relatorio', exigeIntegrante, exigeTrava, (req, res) => {
       res.status(500).send('Erro ao salvar o relatório.');
     }
   });
+});
+
+// --- texto da avaliação PRÉVIA (controllers/avaliacao-previa-controller.js) ---------------
+// Qualquer integrante envia (sem trava: é um arquivo só, o último envio vale) dentro do prazo da
+// Mostra, com o cadastro em dia. Fica fora de public/ - só sai pela rota GET abaixo.
+router.post('/:id/texto-previa', exigeIntegrante, async (req, res) => {
+  try {
+    if (pendencias.daPessoa(req.pessoa).length) return res.status(403).send('Antes, corrija os dados do seu cadastro (Meu painel > Corrija seus dados).');
+    let situacao = avaliacaoPrevia.situacaoEnvio((await opcoesProjetos.opcoesDoProjeto(req.projeto)).mostra);
+    if (!situacao.ativa) return res.status(403).send('Esta Mostra não tem envio de texto para avaliação prévia.');
+    if (!situacao.aberto) return res.status(403).send(situacao.motivo || 'O envio do texto não está aberto.');
+  } catch (err) {
+    console.error('Erro ao conferir envio do texto', err);
+    return res.status(500).send('Erro ao enviar o texto.');
+  }
+  let form = new formidable.IncomingForm();
+  form.maxFileSize = 15 * 1024 * 1024;
+  form.parse(req, async (err, fields, files) => {
+    let arquivo = files && files.file && files.file[0];
+    if (err || !arquivo) return res.status(400).send('Falha no envio (arquivo ausente ou maior que 15MB).');
+    let assinaturaValida = false;
+    try {
+      let fd = fs.openSync(arquivo.filepath, 'r');
+      let buffer = Buffer.alloc(5);
+      fs.readSync(fd, buffer, 0, 5, 0);
+      fs.closeSync(fd);
+      assinaturaValida = buffer.toString('ascii') === '%PDF-';
+    } catch (e) {}
+    if (!(arquivo.originalFilename || '').toLowerCase().endsWith('.pdf') || !assinaturaValida) {
+      fs.unlink(arquivo.filepath, () => {});
+      return res.status(400).send('Arquivo inválido: envie um PDF de até 15MB.');
+    }
+    try {
+      await avaliacaoPrevia.garantirPasta();
+      let destino = avaliacaoPrevia.arquivoDoProjeto(req.projeto._id);
+      try {
+        await fs.promises.rename(arquivo.filepath, destino);
+      } catch (e) {
+        await fs.promises.copyFile(arquivo.filepath, destino);
+        fs.unlink(arquivo.filepath, () => {});
+      }
+      let info = { nome: arquivo.originalFilename, tamanho: arquivo.size, enviadoEm: new Date(), enviadoPor: req.pessoa._id };
+      await ProjetoSchema.updateOne({ _id: req.projeto._id }, { $set: { textoPrevia: info, updatedAt: Date.now() } });
+      res.send({ nome: info.nome, tamanho: info.tamanho, enviadoEm: info.enviadoEm });
+    } catch (e) {
+      console.error('Erro ao salvar texto da avaliação prévia', e);
+      res.status(500).send('Erro ao salvar o texto.');
+    }
+  });
+});
+
+router.get('/:id/texto-previa', exigeIntegrante, (req, res) => {
+  let arquivo = avaliacaoPrevia.arquivoDoProjeto(req.projeto._id);
+  if (!req.projeto.textoPrevia || !fs.existsSync(arquivo)) return res.status(404).send('O texto ainda não foi enviado.');
+  res.download(arquivo, req.projeto.textoPrevia.nome || 'texto.pdf');
 });
 
 module.exports = router;
