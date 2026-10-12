@@ -113,6 +113,9 @@ const ProjetoSchema = new Schema({
 	// Texto (PDF) enviado pelos integrantes pra avaliação PRÉVIA (Feira.avaliacaoPrevia). O arquivo
 	// fica FORA de public/ (uploads/textos-previa/<_id do projeto>.pdf) e só é servido por rota com
 	// permissão - não usar numInscricao no nome: ele se repete entre anos.
+	// Avaliadores(as) a MAIS que a organização pediu pra este trabalho na etapa prévia (ex: notas
+	// muito diferentes entre si) - soma ao avaliadoresPorTrabalho da Mostra na distribuição.
+	previaExtras: {type: Number},
 	textoPrevia: {
 		nome: {type: String},
 		tamanho: {type: Number},

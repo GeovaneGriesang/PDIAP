@@ -198,6 +198,12 @@
 			templateUrl:'admin/views/avaliacao-previa.html',
 			controller: 'avaliacaoPreviaCtrl'
 		})
+		// Acompanhamento e decisão da etapa prévia.
+		.state('master.avaliacao-previa-acompanhamento', {
+			url: "/avaliacao-previa/acompanhamento",
+			templateUrl:'admin/views/avaliacao-previa-acompanhamento.html',
+			controller: 'avaliacaoPreviaAcompCtrl'
+		})
 		// Administradores por Mostra (só super-admin).
 		.state('master.administradores', {
 			url: "/administradores",

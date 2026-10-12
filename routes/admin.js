@@ -36,7 +36,9 @@ const express = require('express')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
 , mesclarPessoas = require('../controllers/mesclar-pessoas-controller')
 , avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
-, distribuicaoPrevia = require('../controllers/distribuicao-previa-controller');
+, distribuicaoPrevia = require('../controllers/distribuicao-previa-controller')
+, resultadoPrevia = require('../controllers/resultado-previa-controller')
+, avaliacaoPreviaSchema = require('../models/avaliacao-previa-schema');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -186,6 +188,108 @@ router.post('/avaliacao-previa/pausar', miPermiso("3"), async (req, res) => {
     console.error('Erro ao pausar distribuição da avaliação prévia', error);
     res.status(500).send('Erro ao pausar.');
   }
+});
+
+// --- Acompanhamento e decisão da etapa prévia (controllers/resultado-previa-controller.js) ---
+const MOSTRA_PREVIA = 'nome ano avaliacaoPrevia distribuicaoPrevia resultadoPrevia';
+const msgOutraMostra = 'Escolha uma das Mostras que você administra.';
+const erroDe = (res, rotulo) => (error) => { console.error(rotulo, error); res.status(500).send(rotulo + '.'); };
+// Trabalho da Mostra dentro do escopo do admin (ou null).
+const trabalhoDaMostra = async (req, mostraId, projetoId) =>
+  idValido(String(projetoId)) && idValido(String(mostraId)) ? projetoSchema.findOne(await perfil.comEscopo(req, { _id: projetoId, feiraId: mostraId })).lean() : null;
+// Registro de avaliação + Mostra, se o admin pode a Mostra dele.
+const avaliacaoDoAdmin = async (req, id) => {
+  if (!idValido(String(id))) return null;
+  let atr = await avaliacaoPreviaSchema.findById(id);
+  if (!atr || !(await perfil.podeMostra(req, String(atr.feiraId)))) return null;
+  return { atr: atr, mostra: await feiraSchema.findById(atr.feiraId, MOSTRA_PREVIA).lean() };
+};
+const substituirSeLigada = (mostra) => {
+  if (mostra && mostra.distribuicaoPrevia && mostra.distribuicaoPrevia.iniciadaEm) {
+    distribuicaoPrevia.distribuir(mostra._id).catch((e) => console.error('Erro ao completar distribuição da etapa prévia', e));
+  }
+};
+
+router.get('/avaliacao-previa/acompanhamento', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send(msgOutraMostra);
+    let mostra = await feiraSchema.findById(req.query.mostraId, MOSTRA_PREVIA).lean();
+    await distribuicaoPrevia.expirarConvites(mostra._id);
+    res.send(await resultadoPrevia.acompanhamento(mostra, await perfil.comEscopo(req, { feiraId: mostra._id })));
+  } catch (error) { erroDe(res, 'Erro ao montar o acompanhamento')(error); }
+});
+
+router.put('/avaliacao-previa/criterios-resultado', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let k = resultadoPrevia.limparCriterios(req.body);
+    if (k.corteAnais !== undefined && k.corteApresentacao !== undefined && k.corteAnais < k.corteApresentacao) {
+      return res.status(400).send('A nota para os anais precisa ser maior ou igual à nota para apresentação.');
+    }
+    await feiraSchema.updateOne({ _id: req.body.mostraId, tipo: 'edicao' }, { $set: { resultadoPrevia: k } });
+    res.send('success');
+  } catch (error) { erroDe(res, 'Erro ao salvar os critérios')(error); }
+});
+
+router.post('/avaliacao-previa/atribuir', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let projeto = await trabalhoDaMostra(req, req.body.mostraId, req.body.projetoId);
+    if (!projeto) return res.status(404).send('Trabalho não encontrado nesta Mostra.');
+    if (!idValido(String(req.body.avaliadorId))) return res.status(400).send('ID inválido');
+    let mostra = await feiraSchema.findById(req.body.mostraId, MOSTRA_PREVIA).lean();
+    let r = await resultadoPrevia.atribuirManual(mostra, projeto, req.body.avaliadorId);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao entregar o trabalho')(error); }
+});
+
+// Tira o trabalho da pessoa (a vaga é completada pela distribuição automática, se ligada).
+router.post('/avaliacao-previa/remover', miPermiso("3"), async (req, res) => {
+  try {
+    let x = await avaliacaoDoAdmin(req, req.body.id);
+    if (!x) return res.status(404).send('Avaliação não encontrada nas suas Mostras.');
+    if (!distribuicaoPrevia.ATIVAS.includes(x.atr.situacao)) return res.status(409).send('Este trabalho já não está com esta pessoa.');
+    await avaliacaoPreviaSchema.updateOne({ _id: x.atr._id }, { $set: { situacao: 'removido', respondidoEm: new Date() } });
+    res.send('success');
+    substituirSeLigada(x.mostra);
+  } catch (error) { erroDe(res, 'Erro ao tirar o trabalho')(error); }
+});
+
+router.post('/avaliacao-previa/lembrar', miPermiso("3"), async (req, res) => {
+  try {
+    let x = await avaliacaoDoAdmin(req, req.body.id);
+    if (!x) return res.status(404).send('Avaliação não encontrada nas suas Mostras.');
+    let r = await resultadoPrevia.lembrarUm(x.mostra, x.atr);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao reenviar o aviso')(error); }
+});
+
+// Avaliadores(as) a mais (ou a menos) só para este trabalho: 0 a 5.
+router.post('/avaliacao-previa/extra', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let projeto = await trabalhoDaMostra(req, req.body.mostraId, req.body.projetoId);
+    if (!projeto) return res.status(404).send('Trabalho não encontrado nesta Mostra.');
+    let extras = Math.min(5, Math.max(0, (projeto.previaExtras || 0) + (req.body.mais === false ? -1 : 1)));
+    await projetoSchema.updateOne({ _id: projeto._id }, extras ? { $set: { previaExtras: extras } } : { $unset: { previaExtras: 1 } });
+    let mostra = await feiraSchema.findById(req.body.mostraId, MOSTRA_PREVIA).lean();
+    let r = mostra.distribuicaoPrevia && mostra.distribuicaoPrevia.iniciadaEm ? await distribuicaoPrevia.distribuir(mostra._id) : null;
+    res.send({ extras: extras, novas: r && r.novas });
+  } catch (error) { erroDe(res, 'Erro ao pedir mais avaliação')(error); }
+});
+
+router.put('/avaliacao-previa/decisao', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let d = req.body.decisao;
+    if (![null, 'anais', 'apresentacao', 'nao'].includes(d === undefined ? null : d)) return res.status(400).send('Decisão inválida.');
+    let projeto = await trabalhoDaMostra(req, req.body.mostraId, req.body.projetoId);
+    if (!projeto) return res.status(404).send('Trabalho não encontrado nesta Mostra.');
+    await resultadoPrevia.decidir(projeto._id, d || null);
+    res.send('success');
+  } catch (error) { erroDe(res, 'Erro ao salvar a decisão')(error); }
 });
 
 // Aprovar (ou tirar) avaliador(a) da distribuição da etapa prévia.

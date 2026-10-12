@@ -1,0 +1,182 @@
+<!-- Avaliação > Prévia: acompanhamento (avaliacaoPreviaAcompCtrl): trabalhos da Mostra na etapa
+     prévia - quem avalia, o que falta, notas, média, sugestão e a decisão da organização. -->
+<style>
+  .acp-cartao { background:#fff;border-radius:6px;padding:16px 20px;margin-bottom:12px; }
+  .acp-suave { color:rgba(0,0,0,0.6); }
+  .acp-chip { display:inline-block;cursor:pointer;border:1px solid #c8e6c9;border-radius:16px;padding:4px 12px;margin:0 6px 6px 0;font-size:14px;background:#fff; }
+  .acp-chip.ativo { background:#43a047;color:#fff;border-color:#43a047; }
+  .acp-selo { display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;margin-left:4px; }
+  .acp-sem-texto { background:#eeeeee;color:#555; }
+  .acp-faltam-avaliadores { background:#ffebee;color:#b71c1c; }
+  .acp-em-avaliacao { background:#fff3e0;color:#7a4a00; }
+  .acp-avaliado { background:#e8f5e9;color:#1b5e20; }
+  .acp-divergente { background:#fce4ec;color:#880e4f; }
+  .acp-linha-av { border-top:1px solid #f0f0f0;padding:8px 0; }
+  .acp-inativa { opacity:0.55; }
+</style>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Prévia: acompanhamento</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+        <div class="md-toolbar-tools">
+          <div style="width:220px;">
+            <md-select data-ng-change="recarregar()" data-ng-model="$root.mostraId" placeholder="Mostra" style="width:100%!important;font-size:17px;">
+              <md-optgroup label="Mostra:">
+                <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
+              </md-optgroup>
+            </md-select>
+          </div>
+          <span flex></span>
+          <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!dados" data-ng-click="exportar()">Baixar planilha</md-button>
+        </div>
+      </md-toolbar>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:20px 24px 80px;">
+      <p data-ng-if="!dados" class="acp-suave">Carregando...</p>
+      <div data-ng-if="dados" style="max-width:1100px;margin:0 auto;">
+
+        <div class="md-whiteframe-1dp acp-cartao" data-ng-if="!dados.ativa" style="color:#7a4a00;">
+          A etapa prévia desta Mostra está desligada (Avaliação > Etapa prévia). Aqui aparece só o que já foi feito.
+        </div>
+
+        <div class="md-whiteframe-1dp acp-cartao">
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'todos'}" data-ng-click="filtrar('todos')">Todos ({{conta('todos')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'faltam-avaliadores'}" data-ng-click="filtrar('faltam-avaliadores')">Faltam avaliadores(as) ({{conta('faltam-avaliadores')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'em-avaliacao'}" data-ng-click="filtrar('em-avaliacao')">Em avaliação ({{conta('em-avaliacao')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'avaliado'}" data-ng-click="filtrar('avaliado')">Avaliados ({{conta('avaliado')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'divergentes'}" data-ng-click="filtrar('divergentes')">Notas divergentes ({{conta('divergentes')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'sem-decisao'}" data-ng-click="filtrar('sem-decisao')">Sem decisão ({{conta('sem-decisao')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'decididos'}" data-ng-click="filtrar('decididos')">Decididos ({{conta('decididos')}})</span>
+          <span class="acp-chip" data-ng-class="{ativo: filtro.situacao === 'sem-texto'}" data-ng-click="filtrar('sem-texto')">Sem texto ({{conta('sem-texto')}})</span>
+          <div layout="row" layout-wrap layout-align="start center">
+            <md-input-container flex="40" style="margin:8px 12px 0 0;">
+              <label>Buscar (nome, nº ou escola)</label>
+              <input type="text" data-ng-model="filtro.texto"/>
+            </md-input-container>
+            <md-input-container flex="30" style="margin:8px 12px 0 0;">
+              <label>Categoria</label>
+              <md-select data-ng-model="filtro.categoria">
+                <md-option value="">Todas</md-option>
+                <md-option ng-value="c" data-ng-repeat="c in categorias">{{c}}</md-option>
+              </md-select>
+            </md-input-container>
+            <md-input-container flex style="margin:8px 0 0 0;">
+              <label>Ordem</label>
+              <md-select data-ng-model="filtro.ordem">
+                <md-option value="media">Maior média primeiro</md-option>
+                <md-option value="numero">Nº de inscrição</md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+        </div>
+
+        <div class="md-whiteframe-1dp acp-cartao">
+          <b style="color:#225024;">Critérios da sugestão</b>
+          <span class="acp-suave" style="font-size:14px;"> - pela média (% da nota máxima): a partir do mínimo dos anais sugere anais; do mínimo de apresentação, apresentação; abaixo, não aprovado. Divergência: diferença entre as notas (em pontos percentuais) que destaca o trabalho para uma avaliação a mais. A decisão é sempre da organização.</span>
+          <div layout="row" layout-wrap layout-align="start center">
+            <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
+              <label>Mínimo p/ anais (%)</label>
+              <input type="number" min="0" max="100" data-ng-model="criterios.corteAnais"/>
+            </md-input-container>
+            <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
+              <label>Mínimo p/ apresentação (%)</label>
+              <input type="number" min="0" max="100" data-ng-model="criterios.corteApresentacao"/>
+            </md-input-container>
+            <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
+              <label>Divergência (p.p.)</label>
+              <input type="number" min="0" max="100" data-ng-model="criterios.divergencia"/>
+            </md-input-container>
+            <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="salvarCriterios()">Salvar critérios</md-button>
+          </div>
+        </div>
+
+        <p data-ng-if="!visiveis().length" class="acp-suave">Nenhum trabalho neste filtro.</p>
+
+        <div class="md-whiteframe-1dp acp-cartao" data-ng-repeat="t in visiveis() track by t._id">
+          <div layout="row" layout-wrap layout-align="start center">
+            <div flex style="min-width:280px;cursor:pointer;" data-ng-click="alternar(t)">
+              <b><span data-ng-if="t.numInscricao">nº {{t.numInscricao}} - </span>{{t.nomeProjeto}}</b>
+              <span class="acp-selo acp-{{t.situacao}}">{{SITUACOES[t.situacao]}}</span>
+              <span class="acp-selo acp-divergente" data-ng-if="t.divergente">notas divergentes ({{virgula(t.diferenca)}} p.p.)</span>
+              <div class="acp-suave" style="font-size:14px;">
+                {{t.categoria}}<span data-ng-if="t.eixo"> - {{t.eixo}}</span><span data-ng-if="t.nomeEscola"> · {{t.nomeEscola}}</span>
+              </div>
+              <div style="font-size:14px;margin-top:2px;" data-ng-if="t.temTexto">
+                {{t.concluidas}} de {{t.vagas}} avaliação(ões) concluída(s)<span data-ng-if="t.extras"> ({{t.extras}} a mais pedida(s))</span>
+                <span data-ng-if="t.pct !== null"> · média <b>{{virgula(t.pct)}}%</b><span data-ng-if="t.mediaPontos !== null"> ({{virgula(t.mediaPontos)}} de {{t.maximo}})</span></span>
+                <span data-ng-if="t.sugestao"> · sugestão: <b>{{DECISOES[t.sugestao]}}</b><span data-ng-if="!t.sugestaoFinal" class="acp-suave"> (parcial)</span></span>
+              </div>
+            </div>
+            <div layout="row" layout-align="end center" data-ng-if="t.temTexto">
+              <md-input-container style="margin:0 8px;width:220px;">
+                <label>Decisão</label>
+                <md-select data-ng-model="t.decisao" data-ng-change="decidir(t)" data-ng-disabled="ocupado">
+                  <md-option ng-value="null">Sem decisão</md-option>
+                  <md-option value="anais">Aprovado - anais</md-option>
+                  <md-option value="apresentacao">Aprovado - apresentação</md-option>
+                  <md-option value="nao">Não aprovado</md-option>
+                </md-select>
+              </md-input-container>
+              <md-button class="md-icon-button" aria-label="Detalhes" data-ng-click="alternar(t)">
+                <md-icon md-svg-src="{{aberto[t._id] ? 'chevron-up' : 'chevron-down'}}"></md-icon>
+              </md-button>
+            </div>
+          </div>
+          <div data-ng-if="t.sugestao && t.sugestao !== t.decisao && t.temTexto" style="font-size:13px;">
+            <a href="" data-ng-click="usarSugestao(t)">Usar a sugestão ({{DECISOES[t.sugestao]}})</a>
+          </div>
+
+          <div data-ng-if="aberto[t._id]" style="margin-top:10px;">
+            <div layout="row" layout-wrap layout-align="start center" style="margin-bottom:6px;">
+              <md-button class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="/admin/projetos/{{t._id}}/texto-previa" target="_blank">Abrir o texto</md-button>
+              <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="extra(t, true)">+1 avaliador(a) neste trabalho</md-button>
+              <md-button class="md-raised" style="text-transform:none;" data-ng-if="t.extras" data-ng-disabled="ocupado" data-ng-click="extra(t, false)">-1</md-button>
+              <span class="acp-suave" style="font-size:13px;" data-ng-if="t.textoEnviadoEm">Texto enviado em {{t.textoEnviadoEm | date:'dd/MM/yyyy HH:mm'}}</span>
+            </div>
+            <p data-ng-if="!t.avaliacoes.length" class="acp-suave">Ainda não foi entregue a ninguém.</p>
+            <div class="acp-linha-av" data-ng-repeat="a in t.avaliacoes" data-ng-class="{'acp-inativa': ['recusado','expirado','removido'].indexOf(a.situacao) !== -1}">
+              <div layout="row" layout-wrap layout-align="start center">
+                <div flex style="min-width:260px;">
+                  <b>{{a.avaliador.nome}}</b> <span class="acp-suave" style="font-size:13px;">{{a.avaliador.email}}</span>
+                  <div style="font-size:14px;">
+                    {{situacaoAvaliacao(a)}}
+                    <span data-ng-if="a.situacao === 'convidado'"> (até {{a.responderAte | date:'dd/MM/yyyy'}})</span>
+                    <span data-ng-if="a.situacao === 'concluido'"> em {{a.concluidoEm | date:'dd/MM/yyyy'}}: <b>{{virgula(a.total)}} de {{a.maximo}}</b> ({{virgula(a.pct)}}%)</span>
+                    <span data-ng-if="a.situacao === 'aceito' && a.salvoEm" class="acp-suave"> - rascunho salvo em {{a.salvoEm | date:'dd/MM/yyyy'}}</span>
+                    <span data-ng-if="a.motivoRecusa" class="acp-suave"> - motivo: {{a.motivoRecusa}}</span>
+                  </div>
+                </div>
+                <div data-ng-if="['convidado','aceito','concluido'].indexOf(a.situacao) !== -1">
+                  <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao !== 'concluido'" data-ng-disabled="ocupado" data-ng-click="lembrar(a)">Reenviar aviso</md-button>
+                  <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
+                </div>
+              </div>
+              <div data-ng-if="a.situacao === 'concluido' || (a.notas.length && a.situacao !== 'convidado')" style="font-size:13px;margin:6px 0 0 12px;">
+                <div data-ng-repeat="k in a.ficha">{{k.nome}}: <b>{{a.notas[$index] === null ? '-' : virgula(a.notas[$index])}}</b> de {{k.maximo}}</div>
+                <div data-ng-if="a.parecer" style="margin-top:4px;white-space:pre-wrap;"><b>Parecer:</b> {{a.parecer}}</div>
+              </div>
+            </div>
+            <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="dados.ativa && t.temTexto">
+              <md-input-container flex style="margin:0 12px 0 0;min-width:280px;">
+                <label>Entregar a outra pessoa</label>
+                <md-select data-ng-model="escolha[t._id]">
+                  <md-option ng-value="v._id" data-ng-repeat="v in opcoesAvaliadores(t) track by v._id">{{rotuloAvaliador(v, t)}}</md-option>
+                </md-select>
+              </md-input-container>
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="ocupado || !escolha[t._id]" data-ng-click="atribuir(t)">
+                {{dados.modo === 'direto' ? 'Entregar' : 'Convidar'}}
+              </md-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </md-content>
+  </section>
+</div>
