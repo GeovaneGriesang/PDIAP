@@ -32,7 +32,8 @@ const express = require('express')
 , pessoaController = require('../controllers/pessoa-controller')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
 , perfil = require('../utils/perfil')
-, inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller');
+, inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
+, mesclarPessoas = require('../controllers/mesclar-pessoas-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -124,6 +125,28 @@ router.get('/inconsistencias/cadastro', miPermiso("3"), async (req, res) => {
   } catch (error) {
     console.error('Erro ao listar inconsistências de cadastro', error);
     res.status(500).send('Erro ao listar inconsistências de cadastro.');
+  }
+});
+
+// --- Juntar cadastros da mesma pessoa (só super-admin, ver mesclar-pessoas-controller.js) ---
+router.get('/pessoas/mesclagem', soSuper, async (req, res) => {
+  try {
+    let ids = (req.query.ids || '').toString().split(',').slice(0, 10);
+    res.send(await mesclarPessoas.detalhes(ids));
+  } catch (error) {
+    console.error('Erro ao detalhar cadastros pra juntar', error);
+    res.status(500).send('Erro ao carregar os cadastros.');
+  }
+});
+
+router.post('/pessoas/mesclar', soSuper, async (req, res) => {
+  try {
+    let r = await mesclarPessoas.mesclar(req.body.manterId, req.body.removerId, (await perfil.carregar(req)).nome);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send(r);
+  } catch (error) {
+    console.error('Erro ao juntar cadastros', error);
+    res.status(500).send('Erro ao juntar os cadastros.');
   }
 });
 

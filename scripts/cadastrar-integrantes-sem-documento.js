@@ -9,7 +9,8 @@
 // (pessoaController.emailLivre). Precisa do índice parcial de documento (scripts/indice-documento-pessoa.js).
 //
 // Uso:
-//   node scripts/cadastrar-integrantes-sem-documento.js --projeto 562 --dry-run
+//   node scripts/cadastrar-integrantes-sem-documento.js --projeto 562
+//   node scripts/cadastrar-integrantes-sem-documento.js --projeto 562 --ano 2026   (número repetido entre anos) --dry-run
 //   node scripts/cadastrar-integrantes-sem-documento.js --projeto 562
 
 require('dotenv').config(); // mesmo carregamento de .env que app.js faz
@@ -24,6 +25,7 @@ const pendencias = require('../utils/pendencias');
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const numero = parseInt(args[args.indexOf('--projeto') + 1], 10);
+const ano = args.indexOf('--ano') >= 0 ? parseInt(args[args.indexOf('--ano') + 1], 10) : null;
 
 (async () => {
 	try {
@@ -32,8 +34,14 @@ const numero = parseInt(args[args.indexOf('--projeto') + 1], 10);
 		let indices = await mongoose.connection.db.collection('pessoas').indexes();
 		let idx = indices.find((i) => i.key && i.key.documento === 1);
 		if (!idx || !idx.partialFilterExpression) throw new Error('Rode antes scripts/indice-documento-pessoa.js (índice de documento ainda não é parcial).');
-		let projeto = await Projeto.findOne({ numInscricao: numero });
-		if (!projeto) throw new Error('Projeto #' + numero + ' não encontrado.');
+		// O número de inscrição se repete entre anos (o contador já foi reiniciado): com mais de um,
+		// exige --ano pra não mexer no projeto errado.
+		let filtro = { numInscricao: numero };
+		if (ano) filtro.createdAt = { $gte: new Date(ano, 0, 1), $lt: new Date(ano + 1, 0, 1) };
+		let achados = await Projeto.find(filtro);
+		if (!achados.length) throw new Error('Projeto #' + numero + (ano ? ' de ' + ano : '') + ' não encontrado.');
+		if (achados.length > 1) throw new Error('Há ' + achados.length + ' projetos #' + numero + ' (' + achados.map((p) => new Date(p.createdAt).getFullYear()).join(', ') + '). Use --ano.');
+		let projeto = achados[0];
 		console.log('#' + numero + ' ' + projeto.nomeProjeto);
 		for (let i of projeto.integrantes) {
 			let rotulo = '  - ' + i.tipo + ' ' + i.nome + ' <' + (i.email || '-') + '>: ';

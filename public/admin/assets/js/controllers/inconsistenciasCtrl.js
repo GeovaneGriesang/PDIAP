@@ -23,6 +23,39 @@
 				$scope.cadastro = response.data;
 			}, function(response) { console.log(response.data); });
 		};
+		// Juntar cadastros da mesma pessoa (e-mail repetido) - só super-admin (mesclar-pessoas-controller.js).
+		$scope.abrirJuncao = function(grupo) {
+			grupo.abrindo = true;
+			$http.get('/admin/pessoas/mesclagem', { params: { ids: grupo.pessoas.map(function(p) { return p._id; }).join(',') } }).then(function(response) {
+				grupo.detalhes = response.data;
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' ? response.data : 'Não foi possível carregar os cadastros.', 'failed-toast');
+			}).finally(function() { grupo.abrindo = false; });
+		};
+		$scope.juntar = function(grupo, manter, ev) {
+			var outros = grupo.detalhes.filter(function(p) { return p._id !== manter._id; });
+			var confirm = $mdDialog.confirm()
+				.title('Juntar cadastros?')
+				.textContent('Fica o cadastro de ' + manter.nome + ' (doc. ' + (manter.documento || '-') + '). ' +
+					outros.map(function(p) { return p.nome + ' (doc. ' + (p.documento || '-') + ')'; }).join(', ') +
+					' será apagado e tudo o que está ligado a ele passa pro que fica. Confirme que é a MESMA pessoa.')
+				.targetEvent(ev).ok('Juntar').cancel('Cancelar');
+			$mdDialog.show(confirm).then(function() {
+				var seguir = function(i) {
+					if (i >= outros.length) {
+						$scope.toast('Cadastros juntados em ' + manter.nome + '.', 'success-toast');
+						carregarCadastro();
+						return;
+					}
+					$http.post('/admin/pessoas/mesclar', { manterId: manter._id, removerId: outros[i]._id }).then(function() { seguir(i + 1); }, function(response) {
+						$scope.toast(typeof response.data === 'string' ? response.data : 'Falha ao juntar.', 'failed-toast');
+						carregarCadastro();
+					});
+				};
+				seguir(0);
+			}, function() {});
+		};
+
 		$scope.totalCadastro = function() {
 			var c = $scope.cadastro;
 			if (!c) return 0;
