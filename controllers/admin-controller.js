@@ -24,12 +24,7 @@ module.exports.getEdicaoAtual = async (callback) => {
 	}
 }
 
-module.exports.getOpcoesAtuais = (callback) => {
-	Admin.find({'username':'admin2'}, 'opcoes -_id').then(
-		(docs) => callback(null, docs),
-		(err) => callback(err)
-	);
-}
+// Campos editáveis (opções) agora são por Mostra: controllers/opcoes-projetos-controller.js.
 
 // Mostra atual configurada no singleton admin2 (tela Editar > Mostra atual). Devolve o _id só
 // se a Feira ainda existe e é uma edição (Mostra apagada => null, e quem chama cai no padrão).

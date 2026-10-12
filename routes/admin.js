@@ -29,7 +29,8 @@ const express = require('express')
 , archiver = require('archiver')
 , async = require('async')
 , documentoValidator = require('../utils/documentoValidator')
-, pessoaController = require('../controllers/pessoa-controller');
+, pessoaController = require('../controllers/pessoa-controller')
+, opcoesProjetos = require('../controllers/opcoes-projetos-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -943,11 +944,13 @@ router.get('/editar', (req, res) => {
 	});
 });
 
+// Campos editáveis POR MOSTRA (controllers/opcoes-projetos-controller.js): body = { mostraId,
+// opcoes }. Grava na Mostra (Feira tipo:'edicao'), não mais no admin2 global.
 router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
 	try {
-    let obj = req.body;
-    console.log("OBJ:"+JSON.stringify(obj));
-    await adminSchema.findOneAndUpdate({'username':'admin2'},{$set:{'opcoes':obj}}, {returnDocument: 'after'});
+    let mostra = await opcoesProjetos.mostraPorId(req.body.mostraId);
+    if (!mostra) return res.status(400).send('Escolha uma Mostra válida.');
+    if (!(await opcoesProjetos.salvar(mostra._id, req.body.opcoes || {}))) return res.status(400).send('Mostra não encontrada.');
     res.send('success');
   } catch (error) {
     console.error('Erro ao editar', error);
@@ -955,11 +958,16 @@ router.post('/setOpcoes', miPermiso("3"), async (req, res) => {
   }
 });
 
-router.get('/getOpcoes', (req, res) => {
-	Admin.getOpcoesAtuais((err, usr) => {
-		if (err || !usr || !usr[0]) return res.sendStatus(500);
-		res.send(usr[0].opcoes);
-	});
+// ?mostraId= (sem ele, a Mostra atual). Mostra nunca configurada: ver opcoesDaMostra.
+router.get('/getOpcoes', async (req, res) => {
+	try {
+		let mostra = await opcoesProjetos.mostraPorId(req.query.mostraId);
+		if (req.query.mostraId && !mostra) return res.status(400).send('Mostra inválida.');
+		res.send(await opcoesProjetos.opcoesDaMostra(mostra));
+	} catch (err) {
+		console.error('Erro ao ler campos editáveis', err);
+		res.sendStatus(500);
+	}
 });
 
 // Mostra atual (Editar > Mostra atual): padrão de todos os seletores de Mostra do painel e do

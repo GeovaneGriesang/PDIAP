@@ -31,7 +31,7 @@
       <div data-ng-if="!carregando && !erro">
         <h2 style="color:#2e7d32;margin:0 0 4px 0;">{{projeto.nomeProjeto}}</h2>
         <p class="projeto-suave" style="margin-top:0;">
-          <span data-ng-if="projeto.numInscricao">Inscrição nº {{projeto.numInscricao}} · </span>{{projeto.categoria}}<span data-ng-if="projeto.eixo"> · {{projeto.eixo}}</span>
+          <span data-ng-if="painel.mostra">{{painel.mostra.ano}} - {{painel.mostra.nome}} · </span><span data-ng-if="projeto.numInscricao">Inscrição nº {{projeto.numInscricao}} · </span>{{projeto.categoria}}<span data-ng-if="projeto.eixo"> · {{projeto.eixo}}</span>
         </p>
 
         <!-- ===== Edição ===== -->

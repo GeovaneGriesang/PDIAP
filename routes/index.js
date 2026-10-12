@@ -32,7 +32,8 @@ const express = require('express')
 , pessoaController = require('../controllers/pessoa-controller')
 , perfisController = require('../controllers/perfis-controller')
 , certificadoSeminario = require('../utils/certificadoSeminario')
-, sessao = require('../utils/sessao');
+, sessao = require('../utils/sessao')
+, opcoesProjetos = require('../controllers/opcoes-projetos-controller');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -78,11 +79,15 @@ router.get('/edit', (req, res) => {
 	});
 });
 
-router.get('/getOpcoes', (req, res) => {
-	Admin.getOpcoesAtuais((err, usr) => {
-		if (err || !usr || !usr[0]) return res.sendStatus(500);
-		res.send(usr[0].opcoes);
-	});
+// Campos editáveis da Mostra ATUAL (público, compatibilidade - o painel usa os da Mostra do
+// projeto, em /api/painel/projetos/:id/opcoes).
+router.get('/getOpcoes', async (req, res) => {
+	try {
+		res.send(await opcoesProjetos.opcoesDaMostra(await opcoesProjetos.mostraAtual()));
+	} catch (err) {
+		console.error('Erro ao ler campos editáveis', err);
+		res.sendStatus(500);
+	}
 });
 
 
