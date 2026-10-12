@@ -5,6 +5,11 @@
 	.module('PDIAPa')
 	.controller('adminCtrl', function($scope, $rootScope, $timeout, $window, $mdToast, $mdSidenav) {
 
+		// Volta pro painel pessoal (/painel) - mesma sessão, sem sair.
+		$scope.voltarAoPainel = function() {
+			$window.location.href = '/painel';
+		};
+
 		$scope.toggleSidenav = function(menu) {
 			$mdSidenav(menu).toggle();
 		};
