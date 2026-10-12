@@ -96,6 +96,14 @@ const FeiraSchema = new Schema({
 		ultimaEm: {type: Date},
 		faltando: [{ projeto: {type: Schema.Types.ObjectId, ref: 'Projeto'}, nomeProjeto: {type: String}, numInscricao: {type: Number}, categoria: {type: String}, eixo: {type: String}, faltam: {type: Number}, _id: false }]
 	}, { _id: false }),
+	// Critérios pra SUGERIR a decisão na tela de acompanhamento (a decisão é sempre da organização):
+	// média (% da nota máxima) a partir da qual sugere anais / apresentação; divergencia = diferença
+	// (em pontos percentuais) entre avaliadores(as) que marca o trabalho pra uma avaliação a mais.
+	resultadoPrevia: new Schema({
+		corteAnais: {type: Number},
+		corteApresentacao: {type: Number},
+		divergencia: {type: Number}
+	}, { _id: false }),
 	// Administradores(as) DESTA Mostra (só tipo:'edicao'): Pessoas com o acesso do admin2
 	// restrito a esta edição (ver utils/perfil.js). Atribuídos pelo(a) super-admin.
 	administradores: [{type: Schema.Types.ObjectId, ref: 'Pessoa'}],

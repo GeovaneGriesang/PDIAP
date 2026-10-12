@@ -130,7 +130,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 		if (!opcoes.iniciar && !(mostra.distribuicaoPrevia && mostra.distribuicaoPrevia.iniciadaEm)) return { naoIniciada: true };
 		await module.exports.expirarConvites(mostra._id);
 
-		let projetos = await Projeto.find({ feiraId: mostra._id, 'textoPrevia.enviadoEm': { $exists: true } }, 'nomeProjeto numInscricao categoria eixo integrantes').lean();
+		let projetos = await Projeto.find({ feiraId: mostra._id, 'textoPrevia.enviadoEm': { $exists: true } }, 'nomeProjeto numInscricao categoria eixo integrantes previaExtras').lean();
 		let avaliadores = await Avaliador.find({ feiraId: mostra._id, aptoAvaliacaoPrevia: true, pessoa: { $ne: null } }, 'nome pessoa cpf categoriasEixos').lean();
 		let pessoas = await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa) } }, 'nome email documento').lean();
 		let pessoaPor = new Map(pessoas.map((p) => [String(p._id), p]));
@@ -147,6 +147,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 			}
 		});
 		let porTrabalho = c.avaliadoresPorTrabalho || 2, limite = c.maxPorAvaliador || 0;
+		let vagas = (p) => porTrabalho + Math.max(0, p.previaExtras || 0);
 		let candidatos = (p) => avaliadores
 			.filter((a) => !(ja.get(String(p._id)) || new Set()).has(String(a._id)))
 			.filter((a) => !conflito(a, docPor.get(String(a._id)), p))
@@ -154,7 +155,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 			.map((a) => ({ a: a, prio: prioridade(a, p) }))
 			.filter((x) => x.prio !== null);
 
-		let pendentes = projetos.filter((p) => (ocupadas.get(String(p._id)) || 0) < porTrabalho)
+		let pendentes = projetos.filter((p) => (ocupadas.get(String(p._id)) || 0) < vagas(p))
 			.map((p) => ({ p: p, n: candidatos(p).length }))
 			.sort((x, y) => x.n - y.n)
 			.map((x) => x.p);
@@ -162,7 +163,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 		let agora = new Date(), novas = [], faltando = [];
 		for (let p of pendentes) {
 			let chave = String(p._id);
-			let falta = porTrabalho - (ocupadas.get(chave) || 0);
+			let falta = vagas(p) - (ocupadas.get(chave) || 0);
 			while (falta > 0) {
 				let lista = candidatos(p).map((x) => ({ a: x.a, prio: x.prio, carga: carga.get(String(x.a._id)) || 0, sorte: Math.random() }))
 					.sort((x, y) => (x.prio - y.prio) || (x.carga - y.carga) || (x.sorte - y.sorte));
@@ -255,3 +256,9 @@ module.exports.resumo = async (mostra) => {
 	let d = mostra.distribuicaoPrevia || {};
 	return { situacoes: contagem, iniciadaEm: d.iniciadaEm, ultimaEm: d.ultimaEm, faltando: d.faltando || [] };
 };
+
+// Usados também pelo acompanhamento (controllers/resultado-previa-controller.js).
+module.exports.avisar = avisar;
+module.exports.conflito = conflito;
+module.exports.prioridade = prioridade;
+module.exports.digitos = digitos;
