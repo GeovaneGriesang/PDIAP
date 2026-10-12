@@ -32,6 +32,7 @@ const express = require('express')
 , pessoaController = require('../controllers/pessoa-controller')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
 , perfil = require('../utils/perfil')
+, sessao = require('../utils/sessao')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
 , mesclarPessoas = require('../controllers/mesclar-pessoas-controller');
 
@@ -111,7 +112,8 @@ router.all('/*', ensureAuthenticated);
 router.get('/loggedin', ensureAuthenticated, miPermiso("2","3"), async (req, res) => {
   // Perfil pra tela: super-admin vê tudo; administrador(a) só as Mostras dele(a) e sem os menus globais.
   let p = await perfil.carregar(req);
-  res.send({ superAdmin: p.superAdmin, nome: p.nome, mostras: p.mostras.map((m) => ({ _id: m._id, nome: m.nome, ano: m.ano })) });
+  // pessoa: entrou com conta de pessoa (tem "Meu painel" pra voltar); a conta antiga admin2 não tem.
+  res.send({ superAdmin: p.superAdmin, nome: p.nome, pessoa: sessao.ehPessoa(req.user), mostras: p.mostras.map((m) => ({ _id: m._id, nome: m.nome, ano: m.ano })) });
 });
 
 // --- Inconsistências > Cadastro (problemas de cadastro da Mostra; cadastro único inteiro só
