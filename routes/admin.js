@@ -31,7 +31,8 @@ const express = require('express')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
-, perfil = require('../utils/perfil');
+, perfil = require('../utils/perfil')
+, inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -110,6 +111,20 @@ router.get('/loggedin', ensureAuthenticated, miPermiso("2","3"), async (req, res
   // Perfil pra tela: super-admin vê tudo; administrador(a) só as Mostras dele(a) e sem os menus globais.
   let p = await perfil.carregar(req);
   res.send({ superAdmin: p.superAdmin, nome: p.nome, mostras: p.mostras.map((m) => ({ _id: m._id, nome: m.nome, ano: m.ano })) });
+});
+
+// --- Inconsistências > Cadastro (problemas de cadastro da Mostra; cadastro único inteiro só
+// pra super-admin - ver controllers/inconsistencias-cadastro-controller.js) ---------------------
+router.get('/inconsistencias/cadastro', miPermiso("3"), async (req, res) => {
+  try {
+    let mostraId = req.query.mostraId;
+    if (!(await perfil.podeMostra(req, mostraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let mostra = await feiraSchema.findById(mostraId, 'nome ano').lean();
+    res.send(await inconsistenciasCadastro.listar(mostra, (await perfil.carregar(req)).superAdmin));
+  } catch (error) {
+    console.error('Erro ao listar inconsistências de cadastro', error);
+    res.status(500).send('Erro ao listar inconsistências de cadastro.');
+  }
 });
 
 // --- Administradores por Mostra (só super-admin) ------------------------------------------

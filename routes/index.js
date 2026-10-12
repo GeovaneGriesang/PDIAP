@@ -34,7 +34,8 @@ const express = require('express')
 , certificadoSeminario = require('../utils/certificadoSeminario')
 , sessao = require('../utils/sessao')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
-, perfil = require('../utils/perfil');
+, perfil = require('../utils/perfil')
+, pendencias = require('../utils/pendencias');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -1112,6 +1113,9 @@ router.get('/conta/loggedin', ensurePessoa, async (req, res) => {
       nome: (pessoa && pessoa.nome) || req.user.nome,
       email: (pessoa && pessoa.email) || req.user.email,
       senhaDefinida: !!credencial.senhaDefinida,
+      // O que falta corrigir no próprio cadastro (utils/pendencias.js) - o painel manda pra tela
+      // "Corrija seus dados" enquanto houver.
+      pendencias: pendencias.daPessoa(pessoa),
       avaliador: !!avaliador,
       participante: !!participante
     });
@@ -1229,11 +1233,11 @@ async function pedirEmail(req, res, tipo) {
   }
 }
 
-router.post('/conta/alterar-email', authLimiter, ensurePessoa, (req, res) => pedirEmail(req, res, 'principal'));
-router.post('/conta/emails-alternativos', authLimiter, ensurePessoa, (req, res) => pedirEmail(req, res, 'alternativo'));
+router.post('/conta/alterar-email', authLimiter, ensurePessoa, pendencias.exigeSemPendencias, (req, res) => pedirEmail(req, res, 'principal'));
+router.post('/conta/emails-alternativos', authLimiter, ensurePessoa, pendencias.exigeSemPendencias, (req, res) => pedirEmail(req, res, 'alternativo'));
 
 // Remove um e-mail alternativo (o principal não sai - pra trocá-lo, use /conta/alterar-email).
-router.post('/conta/emails-alternativos/remover', authLimiter, ensurePessoa, async (req, res) => {
+router.post('/conta/emails-alternativos/remover', authLimiter, ensurePessoa, pendencias.exigeSemPendencias, async (req, res) => {
   try {
     let email = (req.body.email || '').toString().trim();
     let pessoa = await sessao.pessoaDaSessao(req);
@@ -1270,6 +1274,61 @@ router.post('/conta/nacionalidade', authLimiter, ensurePessoa, async (req, res) 
   } catch (err) {
     console.error('Erro ao alterar nacionalidade', err);
     res.status(500).send('Erro ao alterar a nacionalidade.');
+  }
+});
+
+// Corrige as pendências do próprio cadastro (utils/pendencias.js): só os campos que estão
+// pendentes são aceitos - nome e documento válidos continuam só com a organização. Documento que já
+// é de outra Pessoa é recusado (a organização resolve). O que for corrigido vai também pras cópias
+// nos papéis ligados a ela (integrantes de projeto, Avaliador, Participante, responsável de evento).
+router.post('/conta/pendencias', authLimiter, ensurePessoa, async (req, res) => {
+  try {
+    let pessoa = await sessao.pessoaDaSessao(req);
+    if (!pessoa) return res.status(400).send('Sua conta ainda não está ligada ao cadastro único. Fale com a organização.');
+    let campos = pendencias.daPessoa(pessoa).map((p) => p.campo);
+    let novo = {};
+    if (campos.indexOf('nome') !== -1) {
+      let nome = (req.body.nome || '').toString().trim().replace(/\s+/g, ' ');
+      if (!pendencias.nomeCompleto(nome)) return res.status(400).send('Informe o nome completo (nome e sobrenome).');
+      novo.nome = nome;
+    }
+    if (campos.indexOf('documento') !== -1) {
+      let checagem = documentoValidator.validarDocumentoQualquerPais((req.body.documento || '').toString());
+      if (!checagem.valido) return res.status(400).send(checagem.mensagem);
+      if (await pessoaSchema.exists({ documento: checagem.normalizado, _id: { $ne: pessoa._id } })) {
+        return res.status(400).send('Este documento já está cadastrado em outra conta. Fale com a organização (página Contato) para juntar os cadastros.');
+      }
+      novo.documento = checagem.normalizado;
+    }
+    if (campos.indexOf('nacionalidade') !== -1) {
+      let nacionalidade = (req.body.nacionalidade || '').toString();
+      if (pendencias.NACIONALIDADES.indexOf(nacionalidade) === -1) return res.status(400).send('Escolha a nacionalidade.');
+      novo.nacionalidade = nacionalidade;
+    }
+    if (!Object.keys(novo).length) return res.send({ pendencias: [] });
+
+    Object.assign(pessoa, novo);
+    await pessoa.save();
+    // Cópias nos papéis ligados a esta Pessoa.
+    let papel = {};
+    if (novo.nome) papel.nome = novo.nome;
+    if (novo.documento) papel.cpf = novo.documento;
+    let integ = {}, resp = {};
+    Object.keys(papel).forEach((k) => { integ['integrantes.$[eu].' + k] = papel[k]; resp['responsavel.$[eu].' + k] = papel[k]; });
+    if (novo.nacionalidade) integ['integrantes.$[eu].nacionalidade'] = novo.nacionalidade;
+    if (Object.keys(integ).length) {
+      await ProjetoSchema.updateMany({ 'integrantes.pessoa': pessoa._id }, { $set: integ }, { arrayFilters: [{ 'eu.pessoa': pessoa._id }] });
+    }
+    if (Object.keys(resp).length) {
+      await eventoSchema.updateMany({ 'responsavel.pessoa': pessoa._id }, { $set: resp }, { arrayFilters: [{ 'eu.pessoa': pessoa._id }] });
+    }
+    let doAvaliador = Object.assign({}, papel, novo.nacionalidade ? { nacionalidade: novo.nacionalidade } : {});
+    if (Object.keys(doAvaliador).length) await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: doAvaliador });
+    if (Object.keys(papel).length) await participanteSchema.updateMany({ pessoa: pessoa._id }, { $set: papel });
+    res.send({ pendencias: pendencias.daPessoa(pessoa) });
+  } catch (err) {
+    console.error('Erro ao corrigir pendências do cadastro', err);
+    res.status(500).send('Erro ao salvar os seus dados.');
   }
 });
 
@@ -1542,7 +1601,7 @@ router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
 // Painel único de qualquer pessoa logada (ui-routes.js#painel*). As URLs antigas de
 // avaliador/participante abaixo continuam servindo a SPA, que redireciona pro /painel
 // (links de e-mails antigos).
-router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/projeto/:id'], function(req, res, next) {
+router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/pendencias', '/painel/projeto/:id'], function(req, res, next) {
   res.render('layout.ejs');
 });
 

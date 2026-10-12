@@ -18,7 +18,8 @@ const express = require('express')
 , ParticipanteSchema = require('../models/participante-schema')
 , feiraSchema = require('../models/feira-schema')
 , sessao = require('../utils/sessao')
-, perfil = require('../utils/perfil');
+, perfil = require('../utils/perfil')
+, pendencias = require('../utils/pendencias');
 
 function splita(arg){
   if (arg !== undefined) {
@@ -191,7 +192,7 @@ router.get('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
   }
 });
 
-router.put('/dashboard/meus-dados', ensureAvaliador, async (req, res) => {
+router.put('/dashboard/meus-dados', ensureAvaliador, pendencias.exigeSemPendencias, async (req, res) => {
   let campos = {
     telefone: splita(req.body.telefone),
     nivelAcademico: req.body.nivelAcademico,

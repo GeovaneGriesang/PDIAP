@@ -8,9 +8,26 @@
 	// Cada aba reaproveita o MESMO mecanismo de edição das telas de origem (mesmos diálogos/
 	// rotas), só que a lista já vem filtrada pra só quem está inconsistente, então dá pra
 	// corrigir tudo aqui mesmo sem precisar ir cata a projeto nas telas de origem.
+	//
+	// Aba Cadastro: problemas de cadastro (documento inválido, e-mail de outra pessoa, integrante
+	// sem cadastro único...) - ver controllers/inconsistencias-cadastro-controller.js.
 	angular
 	.module('PDIAPa')
-	.controller('inconsistenciasCtrl', function($scope, $rootScope, $timeout, $mdDialog, $mdToast, adminAPI) {
+	.controller('inconsistenciasCtrl', function($scope, $rootScope, $timeout, $mdDialog, $mdToast, $http, adminAPI) {
+
+		$scope.cadastro = null;
+		var carregarCadastro = function() {
+			$scope.cadastro = null;
+			if (!$rootScope.mostraId) return;
+			$http.get('/admin/inconsistencias/cadastro', { params: { mostraId: $rootScope.mostraId } }).then(function(response) {
+				$scope.cadastro = response.data;
+			}, function(response) { console.log(response.data); });
+		};
+		$scope.totalCadastro = function() {
+			var c = $scope.cadastro;
+			if (!c) return 0;
+			return c.integrantes.length + c.avaliadores.length + (c.cadastroUnico ? c.cadastroUnico.emailsRepetidos.length + c.cadastroUnico.pessoasComPendencia.length + c.cadastroUnico.semEmail.length : 0);
+		};
 
 		$scope.abaAtiva = 'semPresenca';
 		$scope.mostras = [];
@@ -109,6 +126,7 @@
 				else if (!$rootScope.mostraId && mostras.length) $rootScope.mostraId = mostras[0]._id;
 				resolverMostraSelecionada();
 				carregarProjetos();
+				carregarCadastro();
 			});
 		}, function(response) {
 			console.log('Error: '+response.data);
@@ -118,6 +136,7 @@
 		$scope.recarregar = function() {
 			resolverMostraSelecionada();
 			carregarProjetos();
+			carregarCadastro();
 		};
 
 		$scope.toast = function(message, tema) {

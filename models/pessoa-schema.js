@@ -11,9 +11,12 @@ const mongoose = require('mongoose')
 // ao se cadastrar num segundo papel com o mesmo documento, reaproveita a Pessoa e o
 // login já existentes (ver controllers/pessoa-controller.js#findOrCreatePessoa).
 const PessoaSchema = new Schema({
-	// Só dígitos, sem formatação - único em todo o sistema (é a chave que identifica
-	// a mesma pessoa entre papéis diferentes).
-	documento: { type: String, unique: true, required: true },
+	// Só letras/números, sem formatação - único em todo o sistema (é a chave que identifica
+	// a mesma pessoa entre papéis diferentes). Pode faltar: cadastro criado pela organização sem
+	// documento (ex.: integrante inscrito com documento inválido) - a pessoa entra só com e-mail e
+	// senha e informa o documento na tela de pendências (utils/pendencias.js). Nunca gravar '':
+	// sem documento = campo ausente (o índice único abaixo só vale pra quem tem).
+	documento: { type: String },
 	nome: { type: String },
 	// E-mail principal (avisos e certificados vão pra ele) + até 2 alternativos: a pessoa entra
 	// por qualquer um dos 3. Nenhum deles pode ser e-mail (principal ou alternativo) de outra
@@ -50,6 +53,10 @@ const PessoaSchema = new Schema({
 	token: { type: String },
 	createdAt: { type: Date }
 }, { collection: 'pessoas' });
+
+// Único só entre quem TEM documento (índice parcial; ver scripts/indice-documento-pessoa.js, que
+// troca o índice único antigo, que exigia o campo em todo mundo).
+PessoaSchema.index({ documento: 1 }, { unique: true, partialFilterExpression: { documento: { $type: 'string' } } });
 
 PessoaSchema.methods.hasExpired = function(){
 	return Date.now() > this.resetPasswordCreatedDate;

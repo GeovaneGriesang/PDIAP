@@ -17,12 +17,21 @@
       // Painel único (routes/index.js#/conta/loggedin): qualquer pessoa logada - estudante,
       // orientador(a), avaliador(a), participante... Guarda em $rootScope.pessoaLogada nome,
       // senhaDefinida e os papéis (avaliador/participante). Sem login, volta pra home.
-      let checkLoggedinPessoa = function ($q, $rootScope, $http, $window) {
+      //
+      // Ordem obrigatória: primeiro definir a senha; depois corrigir as pendências do cadastro
+      // (utils/pendencias.js) - enquanto houver, qualquer tela do painel manda pra "Corrija seus dados".
+      let checkLoggedinPessoa = function ($q, $rootScope, $http, $window, $state, $transition$) {
         var deferred = $q.defer();
         $http
           .get('/conta/loggedin')
           .then(function (response) {
             $rootScope.pessoaLogada = response.data;
+            var destino = $transition$.to().name;
+            if (response.data.senhaDefinida && (response.data.pendencias || []).length && destino !== 'painelPendencias' && destino !== 'painelTrocarSenha') {
+              deferred.reject();
+              $state.go('painelPendencias');
+              return;
+            }
             deferred.resolve();
           }, function () {
             $window.location.href = '/';
@@ -136,6 +145,15 @@
           url: '/painel/trocar-senha',
           templateUrl: '/views/painel-trocar-senha.html',
           controller: 'painelSenhaCtrl',
+          resolve: {
+            loggedin: checkLoggedinPessoa,
+          },
+        })
+        // Pendências do próprio cadastro (nome, documento, nacionalidade) - obrigatória enquanto houver.
+        .state('painelPendencias', {
+          url: '/painel/pendencias',
+          templateUrl: '/views/painel-pendencias.html',
+          controller: 'painelPendenciasCtrl',
           resolve: {
             loggedin: checkLoggedinPessoa,
           },

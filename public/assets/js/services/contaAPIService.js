@@ -35,6 +35,10 @@
 			return $http({ url: '/conta/nacionalidade', method: 'POST', data: { nacionalidade: nacionalidade } });
 		};
 
+		let _corrigirPendencias = function(dados){
+			return $http({ url: '/conta/pendencias', method: 'POST', data: dados });
+		};
+
 		let _removerEmail = function(email){
 			return $http({ url: '/conta/emails-alternativos/remover', method: 'POST', data: { email: email } });
 		};
@@ -44,6 +48,7 @@
 			alterarEmail: _alterarEmail,
 			adicionarEmail: _adicionarEmail,
 			removerEmail: _removerEmail,
+			corrigirPendencias: _corrigirPendencias,
 			alterarNacionalidade: _alterarNacionalidade,
 			trocarSenha: _trocarSenha,
 			redefinirSenha: _redefinirSenha,
