@@ -23,7 +23,8 @@ const express = require('express')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
 , documentoValidator = require('../utils/documentoValidator')
 , pessoaController = require('../controllers/pessoa-controller')
-, sessao = require('../utils/sessao');
+, sessao = require('../utils/sessao')
+, pendencias = require('../utils/pendencias');
 
 const TRAVA_MS = 3 * 60 * 1000;
 
@@ -60,10 +61,13 @@ async function exigeIntegrante(req, res, next) {
     if (!req.isAuthenticated() || !sessao.ehPessoa(req.user)) return res.sendStatus(403);
     if (!idValido(req.params.id)) return res.status(400).send('ID inválido.');
     let pessoa = req.user;
-    let doc = new RegExp('^' + escaparRegex(pessoa.documento || '') + '$', 'i');
+    // Pelo vínculo com a Pessoa ou, em registro antigo sem vínculo, pelo documento - só se ela TEM
+    // documento (sem ele, '^$' casaria com qualquer integrante de documento vazio).
+    let ehDela = [{ pessoa: pessoa._id }];
+    if (pessoa.documento) ehDela.push({ cpf: new RegExp('^' + escaparRegex(pessoa.documento) + '$', 'i') });
     let projeto = await ProjetoSchema.findOne({
       _id: req.params.id,
-      integrantes: { $elemMatch: { $or: [{ pessoa: pessoa._id }, { cpf: doc }] } }
+      integrantes: { $elemMatch: { $or: ehDela } }
     });
     if (!projeto) return res.status(404).send('Projeto não encontrado entre os seus.');
     req.pessoa = pessoa;
@@ -100,6 +104,8 @@ async function situacaoEdicao(projeto) {
 // a trava a cada gravação.
 async function exigeTrava(req, res, next) {
   try {
+    // Cadastro com pendência (utils/pendencias.js): nada muda até corrigir.
+    if (pendencias.daPessoa(req.pessoa).length) return res.status(403).send('Antes de alterar o projeto, corrija os dados do seu cadastro (Meu painel > Corrija seus dados).');
     let situacao = await situacaoEdicao(req.projeto);
     if (situacao.motivo) return res.status(403).send(situacao.motivo);
     let codigo = (req.get('X-Trava') || '').toString();
@@ -157,6 +163,7 @@ router.get('/:id/opcoes', exigeIntegrante, async (req, res) => {
 // Pega a trava (ou renova, se já é dela). Devolve o código que toda gravação precisa mandar.
 router.post('/:id/trava', exigeIntegrante, async (req, res) => {
   try {
+    if (pendencias.daPessoa(req.pessoa).length) return res.status(403).send('Antes de alterar o projeto, corrija os dados do seu cadastro (Meu painel > Corrija seus dados).');
     let situacao = await situacaoEdicao(req.projeto);
     if (situacao.motivo) return res.status(403).send(situacao.motivo);
     let agora = new Date();

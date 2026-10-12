@@ -1,0 +1,57 @@
+<!-- "Corrija seus dados" (painelPendenciasCtrl): só os campos pendentes do próprio cadastro.
+     Enquanto houver pendência, nada mais do painel funciona (nem certificados). -->
+<div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
+  <md-toolbar style="background:#43a047;">
+    <div class="md-toolbar-tools">
+      <span style="font-weight:bold;">MOVACI - Corrija seus dados</span>
+      <span flex></span>
+      <md-button data-ng-click="logout()" class="md-raised" style="text-transform:none;">Sair</md-button>
+    </div>
+  </md-toolbar>
+
+  <div layout="column" layout-align="start center" style="padding:40px 20px;">
+    <div style="max-width:560px;width:100%;" class="md-whiteframe-2dp">
+      <div style="background:#fff;border-radius:6px;padding:24px;">
+        <h3 style="margin-top:0;color:#225024;">Olá{{nome ? ', ' + nome : ''}}!</h3>
+        <p style="color:rgba(0,0,0,0.75);margin-top:0;">
+          Antes de usar o painel, precisamos que você corrija o seu cadastro. Enquanto isso, não é possível alterar
+          projetos nem baixar certificados por aqui.
+        </p>
+        <ul style="color:#7a4a00;background:#fff3e0;border:1px solid #ffb74d;border-radius:4px;padding:10px 10px 10px 30px;">
+          <li data-ng-repeat="p in pendencias">{{p.mensagem}}</li>
+        </ul>
+
+        <form name="pendenciasForm" novalidate>
+          <md-input-container class="md-block" data-ng-if="precisa('nome')">
+            <label>Nome completo</label>
+            <input type="text" name="nome" data-ng-model="dados.nome" required/>
+          </md-input-container>
+
+          <md-input-container class="md-block" data-ng-if="precisa('nacionalidade') || precisa('documento')">
+            <label>Nacionalidade</label>
+            <md-select data-ng-model="dados.nacionalidade" aria-label="Nacionalidade" data-ng-required="precisa('nacionalidade')">
+              <md-option data-ng-repeat="n in nacionalidades" data-ng-value="n.valor">{{n.nome}}</md-option>
+            </md-select>
+          </md-input-container>
+
+          <md-input-container class="md-block" data-ng-if="precisa('documento')">
+            <label>{{dados.nacionalidade && dados.nacionalidade !== 'brasileiro' ? 'Documento de identificação (passaporte ou documento do seu país)' : 'CPF'}}</label>
+            <input type="text" name="documento" data-ng-model="dados.documento" required/>
+            <div class="md-errors-spacer"></div>
+          </md-input-container>
+          <p data-ng-if="precisa('documento')" style="font-size:12px;color:rgba(0,0,0,0.55);margin-top:-14px;">
+            Só números (ou letras e números, no caso de documento estrangeiro). Se o sistema disser que o documento já é de outra conta,
+            fale com a organização pela página <a href="/contato" target="_self">Contato</a>.
+          </p>
+
+          <p class="message-error" data-ng-if="mensagemErro">{{mensagemErro}}</p>
+
+          <div layout="row" layout-align="center center" style="margin-top:16px;">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;"
+                       data-ng-disabled="pendenciasForm.$invalid || enviando" data-ng-click="salvar()">Salvar e continuar</md-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

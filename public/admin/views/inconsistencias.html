@@ -43,6 +43,9 @@
       <div flex layout="row" layout-align="center center" style="padding:14px 0;cursor:pointer;color:#f5f5f5;" data-ng-class="{'inconsistencia-tab-ativa': abaAtiva === 'naoAprovado'}" ng-click="abaAtiva = 'naoAprovado'">
         Sem aprovação ({{naoAprovado.length}})
       </div>
+      <div flex layout="row" layout-align="center center" style="padding:14px 0;cursor:pointer;color:#f5f5f5;" data-ng-class="{'inconsistencia-tab-ativa': abaAtiva === 'cadastro'}" ng-click="abaAtiva = 'cadastro'">
+        Cadastro ({{totalCadastro()}})
+      </div>
     </div>
 
     <md-content>
@@ -113,6 +116,55 @@
             <md-button flex="50" aria-label="Salvar" class="md-raised md-primary white green darken-1 btnCustom1" data-ng-click="salvarSituacoes()">
               <span>Salvar</span>
             </md-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cadastro: problemas de cadastro (inconsistencias-cadastro-controller.js). Os da própria pessoa
+           (nome, documento, nacionalidade) ela é obrigada a corrigir ao entrar no painel. -->
+      <div data-ng-show="abaAtiva === 'cadastro'" style="padding:20px 30px 70px;">
+        <p data-ng-if="!cadastro" style="color:rgba(0,0,0,0.5);">Carregando...</p>
+        <div data-ng-if="cadastro">
+          <p style="color:rgba(0,0,0,0.65);margin-top:0;">
+            Quem tiver nome incompleto, documento inválido/ausente ou nacionalidade em branco no próprio cadastro precisa corrigir
+            ao entrar no painel (não altera nada nem baixa certificado até corrigir). Os itens abaixo dependem da organização.
+            <span data-ng-if="cadastro.integrantesSemNacionalidade"> {{cadastro.integrantesSemNacionalidade}} integrante(s) desta Mostra ainda estão sem nacionalidade.</span>
+          </p>
+
+          <h3 style="color:#225024;">Integrantes de projeto ({{cadastro.integrantes.length}})</h3>
+          <p data-ng-if="!cadastro.integrantes.length" style="color:rgba(0,0,0,0.5);">Nenhum problema.</p>
+          <div data-ng-repeat="i in cadastro.integrantes" style="background:#fff;border-left:3px solid #ffb74d;padding:8px 12px;margin-bottom:6px;">
+            <strong>#{{i.numInscricao}} {{i.nomeProjeto}}</strong> - {{i.tipo}} <b>{{i.nome}}</b>
+            <span style="color:rgba(0,0,0,0.55);font-size:13px;"> · doc. {{i.documento || '-'}} · {{i.email || 'sem e-mail'}}</span>
+            <ul style="margin:4px 0 0;padding-left:20px;font-size:13px;"><li data-ng-repeat="p in i.problemas">{{p}}</li></ul>
+          </div>
+
+          <h3 style="color:#225024;">Avaliadores(as) ({{cadastro.avaliadores.length}})</h3>
+          <p data-ng-if="!cadastro.avaliadores.length" style="color:rgba(0,0,0,0.5);">Nenhum problema.</p>
+          <div data-ng-repeat="a in cadastro.avaliadores" style="background:#fff;border-left:3px solid #ffb74d;padding:8px 12px;margin-bottom:6px;">
+            <b>{{a.nome}}</b><span style="color:rgba(0,0,0,0.55);font-size:13px;"> · doc. {{a.documento || '-'}} · {{a.email || 'sem e-mail'}}</span>
+            <ul style="margin:4px 0 0;padding-left:20px;font-size:13px;"><li data-ng-repeat="p in a.problemas">{{p}}</li></ul>
+          </div>
+
+          <div data-ng-if="cadastro.cadastroUnico">
+            <h3 style="color:#225024;margin-top:30px;">Cadastro único - todas as Mostras ({{cadastro.cadastroUnico.total}} pessoas)</h3>
+            <p style="color:rgba(0,0,0,0.6);margin-top:0;">{{cadastro.cadastroUnico.semNacionalidade}} pessoa(s) sem nacionalidade (vão informar ao entrar).</p>
+
+            <h4>Pessoas com o mesmo e-mail ({{cadastro.cadastroUnico.emailsRepetidos.length}})</h4>
+            <p style="color:rgba(0,0,0,0.55);font-size:13px;margin-top:-6px;">O login entra na pessoa cuja senha bater; o certificado sai pelo documento. Se forem a mesma pessoa, os cadastros precisam ser juntados.</p>
+            <div data-ng-repeat="g in cadastro.cadastroUnico.emailsRepetidos" style="background:#fff;border-left:3px solid #e57373;padding:8px 12px;margin-bottom:6px;">
+              <b>{{g.email}}</b>: <span data-ng-repeat="p in g.pessoas">{{p.nome}} (doc. {{p.documento || '-'}}){{$last ? '' : '; '}}</span>
+            </div>
+
+            <h4>Nome incompleto ou documento inválido/ausente ({{cadastro.cadastroUnico.pessoasComPendencia.length}})</h4>
+            <div data-ng-repeat="p in cadastro.cadastroUnico.pessoasComPendencia" style="background:#fff;border-left:3px solid #ffb74d;padding:6px 12px;margin-bottom:4px;font-size:14px;">
+              <b>{{p.nome || '(sem nome)'}}</b> · {{p.email || 'sem e-mail'}} · doc. {{p.documento || '-'}} - {{p.problemas.join(', ')}}
+            </div>
+
+            <h4>Sem e-mail ({{cadastro.cadastroUnico.semEmail.length}}) - não conseguem entrar</h4>
+            <div data-ng-repeat="p in cadastro.cadastroUnico.semEmail" style="background:#fff;border-left:3px solid #e57373;padding:6px 12px;margin-bottom:4px;font-size:14px;">
+              <b>{{p.nome || '(sem nome)'}}</b> · doc. {{p.documento || '-'}}
+            </div>
           </div>
         </div>
       </div>
