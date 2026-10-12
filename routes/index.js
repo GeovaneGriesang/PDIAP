@@ -1239,6 +1239,30 @@ router.post('/conta/emails-alternativos/remover', authLimiter, ensurePessoa, asy
   }
 });
 
+// Nacionalidade: a própria pessoa altera (nome e documento continuam só com a organização).
+// Grava na Pessoa e nas cópias que o cadastro mantém nos papéis ligados a ela (Avaliador e
+// integrantes de projeto) - o documento já é validado contra qualquer nacionalidade, então
+// trocar a nacionalidade não invalida o documento (ver utils/documentoValidator.js).
+const NACIONALIDADES_VALIDAS = ['brasileiro', 'paraguaio', 'uruguaio', 'venezuelano', 'outro'];
+router.post('/conta/nacionalidade', authLimiter, ensurePessoa, async (req, res) => {
+  try {
+    let nacionalidade = (req.body.nacionalidade || '').toString();
+    if (NACIONALIDADES_VALIDAS.indexOf(nacionalidade) === -1) return res.status(400).send('Nacionalidade inválida.');
+    let pessoa = await sessao.pessoaDaSessao(req);
+    if (!pessoa) return res.status(400).send('Sua conta ainda não está ligada ao cadastro único. Peça a alteração à organização.');
+    pessoa.nacionalidade = nacionalidade;
+    await pessoa.save();
+    await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: { nacionalidade: nacionalidade } });
+    await ProjetoSchema.updateMany({ 'integrantes.pessoa': pessoa._id },
+      { $set: { 'integrantes.$[eu].nacionalidade': nacionalidade } },
+      { arrayFilters: [{ 'eu.pessoa': pessoa._id }] });
+    res.send({ nacionalidade: nacionalidade });
+  } catch (err) {
+    console.error('Erro ao alterar nacionalidade', err);
+    res.status(500).send('Erro ao alterar a nacionalidade.');
+  }
+});
+
 // Link do e-mail de confirmação (GET de propósito: é aberto direto do cliente de e-mail).
 // Principal: troca na Pessoa e nos papéis vinculados e avisa o endereço antigo. Alternativo:
 // acrescenta à lista de e-mails de acesso.

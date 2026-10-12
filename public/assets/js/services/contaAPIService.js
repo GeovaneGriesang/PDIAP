@@ -31,6 +31,10 @@
 			return $http({ url: '/conta/emails-alternativos', method: 'POST', data: { novoEmail: novoEmail, senha: senha } });
 		};
 
+		let _alterarNacionalidade = function(nacionalidade){
+			return $http({ url: '/conta/nacionalidade', method: 'POST', data: { nacionalidade: nacionalidade } });
+		};
+
 		let _removerEmail = function(email){
 			return $http({ url: '/conta/emails-alternativos/remover', method: 'POST', data: { email: email } });
 		};
@@ -40,6 +44,7 @@
 			alterarEmail: _alterarEmail,
 			adicionarEmail: _adicionarEmail,
 			removerEmail: _removerEmail,
+			alterarNacionalidade: _alterarNacionalidade,
 			trocarSenha: _trocarSenha,
 			redefinirSenha: _redefinirSenha,
 			novaSenhaComToken: _novaSenhaComToken
