@@ -94,7 +94,7 @@ module.exports.listar = async (mostra, superAdmin) => {
 	let emailsRepetidos = [];
 	idx.porEmail.forEach((lista, email) => {
 		let distintas = [...new Map(lista.map((p) => [String(p._id), p])).values()];
-		if (distintas.length > 1) emailsRepetidos.push({ email: email, pessoas: distintas.map((p) => ({ nome: p.nome, documento: p.documento })) });
+		if (distintas.length > 1) emailsRepetidos.push({ email: email, pessoas: distintas.map((p) => ({ _id: p._id, nome: p.nome, documento: p.documento })) });
 	});
 	let pessoasComPendencia = [], semNacionalidade = 0, semEmail = [];
 	idx.pessoas.forEach((p) => {

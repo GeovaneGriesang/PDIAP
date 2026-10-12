@@ -153,7 +153,25 @@
             <h4>Pessoas com o mesmo e-mail ({{cadastro.cadastroUnico.emailsRepetidos.length}})</h4>
             <p style="color:rgba(0,0,0,0.55);font-size:13px;margin-top:-6px;">O login entra na pessoa cuja senha bater; o certificado sai pelo documento. Se forem a mesma pessoa, os cadastros precisam ser juntados.</p>
             <div data-ng-repeat="g in cadastro.cadastroUnico.emailsRepetidos" style="background:#fff;border-left:3px solid #e57373;padding:8px 12px;margin-bottom:6px;">
-              <b>{{g.email}}</b>: <span data-ng-repeat="p in g.pessoas">{{p.nome}} (doc. {{p.documento || '-'}}){{$last ? '' : '; '}}</span>
+              <div layout="row" layout-align="start center">
+                <div flex><b>{{g.email}}</b>: <span data-ng-repeat="p in g.pessoas">{{p.nome}} (doc. {{p.documento || '-'}}){{$last ? '' : '; '}}</span></div>
+                <md-button data-ng-if="!g.detalhes" class="md-raised" style="text-transform:none;" data-ng-disabled="g.abrindo" data-ng-click="abrirJuncao(g)">Juntar cadastros</md-button>
+              </div>
+              <!-- Mesma pessoa em dois cadastros: escolher qual fica (o outro é apagado e tudo dele passa pro que fica). -->
+              <div data-ng-if="g.detalhes" layout="row" layout-wrap style="margin-top:8px;">
+                <div data-ng-repeat="p in g.detalhes" flex="50" style="padding:6px;box-sizing:border-box;">
+                  <div style="border:1px solid #e0e0e0;border-radius:4px;padding:10px;font-size:13px;">
+                    <b style="font-size:14px;">{{p.nome}}</b><br>
+                    Doc.: {{p.documento || '(sem)'}} · Nacionalidade: {{p.nacionalidade || '-'}}<br>
+                    E-mails: {{p.email}}<span data-ng-if="p.emailsAlternativos.length">, {{p.emailsAlternativos.join(', ')}}</span><br>
+                    Senha própria: {{p.senhaDefinida ? 'sim' : 'não'}} · Cadastro: {{p.createdAt | date:'dd/MM/yyyy'}}<br>
+                    Ligado a: {{p.vinculos.projetos}} projeto(s), {{p.vinculos.avaliador}} avaliador(a), {{p.vinculos.participante}} participante,
+                    {{p.vinculos.eventos}} evento(s), {{p.vinculos.saberes}} Saberes<span data-ng-if="p.vinculos.administraMostras">, administra {{p.vinculos.administraMostras}} Mostra(s)</span>
+                    <div style="margin-top:6px;"><md-button class="md-raised md-primary" style="text-transform:none;margin-left:0;" data-ng-click="juntar(g, p, $event)">Manter este</md-button></div>
+                  </div>
+                </div>
+                <p flex="100" style="font-size:12px;color:rgba(0,0,0,0.55);margin:4px 6px 0;">Se NÃO forem a mesma pessoa, não junte: uma delas precisa trocar para um e-mail próprio.</p>
+              </div>
             </div>
 
             <h4>Nome incompleto ou documento inválido/ausente ({{cadastro.cadastroUnico.pessoasComPendencia.length}})</h4>
