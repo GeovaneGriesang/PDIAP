@@ -111,7 +111,8 @@
             </div>
             <div class="projeto-linha" data-ng-if="projeto.categoria === 'Ensino Médio, Técnico e Superior'">
               <span class="projeto-suave">Relatório:</span>
-              <span data-ng-if="relatorio">enviado ({{relatorio.name}})</span>
+              <span data-ng-if="relatorio && painel.temRelatorio">enviado ({{relatorio.name}}) - <a data-ng-href="{{urlRelatorio}}" target="_blank">abrir</a></span>
+              <span data-ng-if="relatorio && !painel.temRelatorio" style="color:#7a4a00;">o arquivo enviado ({{relatorio.name}}) não está mais guardado<span data-ng-if="opcoes.upload"> - envie de novo em "Editar projeto", aba Upload</span>.</span>
               <span data-ng-if="!relatorio">ainda não enviado<span data-ng-if="opcoes.upload"> - envie em "Editar projeto", aba Upload</span>.</span>
             </div>
           </div>

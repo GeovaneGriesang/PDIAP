@@ -42,9 +42,9 @@
             <a href="" data-ng-click="verResumo = !verResumo">{{verResumo ? 'Esconder' : 'Ver'}} o resumo da inscrição</a>
             <p data-ng-if="verResumo" style="white-space:pre-wrap;margin-top:4px;">{{av.projeto.resumo}}</p>
           </div>
-          <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="av.projeto.temTexto || av.projeto.relatorio">
+          <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="av.projeto.temTexto || av.projeto.temRelatorio">
             <md-button data-ng-if="av.projeto.temTexto" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="{{urlTexto}}" target="_blank">Abrir o texto (PDF)</md-button>
-            <md-button data-ng-if="av.projeto.relatorio" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="{{av.projeto.relatorio}}" target="_blank">Abrir o relatório (PDF)</md-button>
+            <md-button data-ng-if="av.projeto.temRelatorio" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="{{urlRelatorio}}" target="_blank">Abrir o relatório (PDF)</md-button>
           </div>
         </div>
 

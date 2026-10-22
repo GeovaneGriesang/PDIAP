@@ -14,6 +14,7 @@ const express = require('express')
 , sessao = require('../utils/sessao')
 , pendencias = require('../utils/pendencias')
 , configPrevia = require('../controllers/avaliacao-previa-controller')
+, relatorioProjeto = require('../utils/relatorioProjeto')
 , final = require('../controllers/avaliacao-final-controller');
 
 function idValido(id) {
@@ -84,7 +85,7 @@ router.get('/:id', carregar, async (req, res) => {
         nomeEscola: p.nomeEscola, cidade: p.cidade, estado: p.estado, integrantes: (p.integrantes || []).map((i) => ({ nome: i.nome, tipo: i.tipo })),
         // Material pra avaliar a parte escrita no evento (quando ela não veio da prévia).
         temTexto: temEscrita && !!p.textoPrevia,
-        relatorio: temEscrita && !p.textoPrevia && p.relatorio2 && p.numInscricao ? '/relatorios/' + p.numInscricao + '.pdf' : null
+        temRelatorio: temEscrita && !p.textoPrevia && relatorioProjeto.existe(p)
       },
       ficha: f.ficha, escritaDaPrevia: f.escritaDaPrevia,
       notas: atr.notas || [], parecer: atr.parecer || '', total: atr.total, maximo: atr.maximo, concluidoEm: atr.concluidoEm, salvoEm: atr.salvoEm
@@ -105,6 +106,12 @@ router.get('/:id/texto', carregar, async (req, res) => {
     console.error('Erro ao baixar texto (avaliação final)', err);
     res.status(500).send('Erro ao baixar o texto.');
   }
+});
+
+// Relatório enviado pelo projeto (material da parte escrita quando não há texto da prévia).
+router.get('/:id/relatorio', carregar, (req, res) => {
+  if (!relatorioProjeto.existe(req.projeto)) return res.status(404).send('Relatório não encontrado.');
+  res.download(relatorioProjeto.arquivoDoProjeto(req.projeto._id), relatorioProjeto.nomeParaDownload(req.projeto));
 });
 
 // Notas pela ficha. concluir=false guarda o rascunho (pode faltar nota); concluir=true exige todas,

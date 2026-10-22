@@ -25,7 +25,8 @@ const express = require('express')
 , pessoaController = require('../controllers/pessoa-controller')
 , sessao = require('../utils/sessao')
 , pendencias = require('../utils/pendencias')
-, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller');
+, avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
+, relatorioProjeto = require('../utils/relatorioProjeto');
 
 const TRAVA_MS = 3 * 60 * 1000;
 
@@ -141,7 +142,9 @@ router.get('/:id', exigeIntegrante, async (req, res) => {
       opcoes: situacao.opcoes,
       trava: estadoTrava(req.projeto, req.pessoa),
       // Envio do texto pra avaliação prévia (Feira.avaliacaoPrevia da Mostra do projeto).
-      textoPrevia: avaliacaoPrevia.situacaoEnvio(situacao.mostra)
+      textoPrevia: avaliacaoPrevia.situacaoEnvio(situacao.mostra),
+      // Arquivo do relatório guardado (relatorio2 marcado sem arquivo = perdido antes da migração).
+      temRelatorio: relatorioProjeto.existe(req.projeto)
     };
     delete projeto.trava;
     res.send(projeto);
@@ -296,7 +299,7 @@ router.put('/:id/integrantes/remover', exigeIntegrante, exigeTrava, async (req, 
   }
 });
 
-// Relatório em PDF (até 10MB), salvo como public/relatorios/<numInscricao>.pdf - mesma regra e
+// Relatório em PDF (até 10MB), salvo fora de public/ (utils/relatorioProjeto.js) - mesma regra e
 // mesmas checagens (extensão, tipo e assinatura %PDF-) da área antiga do projeto.
 router.post('/:id/relatorio', exigeIntegrante, exigeTrava, (req, res) => {
   if (req.opcoes.upload !== true) return res.status(403).send('O envio de relatório não está liberado agora.');
@@ -317,14 +320,9 @@ router.post('/:id/relatorio', exigeIntegrante, exigeTrava, (req, res) => {
       fs.unlink(arquivo.filepath, () => {});
       return res.status(400).send('Arquivo inválido: envie um PDF de até 10MB.');
     }
-    if (!req.projeto.numInscricao) {
-      fs.unlink(arquivo.filepath, () => {});
-      return res.status(400).send('O projeto ainda não tem número de inscrição.');
-    }
     try {
-      let pasta = path.join(__dirname, '..', 'public', 'relatorios');
-      await fs.promises.mkdir(pasta, { recursive: true });
-      let destino = path.join(pasta, req.projeto.numInscricao + '.pdf');
+      await relatorioProjeto.garantirPasta();
+      let destino = relatorioProjeto.arquivoDoProjeto(req.projeto._id);
       try {
         await fs.promises.rename(arquivo.filepath, destino);
       } catch (e) {
@@ -340,6 +338,11 @@ router.post('/:id/relatorio', exigeIntegrante, exigeTrava, (req, res) => {
       res.status(500).send('Erro ao salvar o relatório.');
     }
   });
+});
+
+router.get('/:id/relatorio', exigeIntegrante, (req, res) => {
+  if (!relatorioProjeto.existe(req.projeto)) return res.status(404).send('O relatório ainda não foi enviado.');
+  res.download(relatorioProjeto.arquivoDoProjeto(req.projeto._id), relatorioProjeto.nomeParaDownload(req.projeto));
 });
 
 // --- texto da avaliação PRÉVIA (controllers/avaliacao-previa-controller.js) ---------------

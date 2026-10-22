@@ -16,6 +16,7 @@
 
 		var base = '/api/painel/avaliacoes-finais/' + $stateParams.id;
 		$scope.urlTexto = base + '/texto';
+		$scope.urlRelatorio = base + '/relatorio';
 		$scope.carregando = true;
 		$scope.erro = null;
 		$scope.av = {};
