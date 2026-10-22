@@ -125,6 +125,34 @@
             </div>
           </div>
 
+          <!-- Avaliação no evento (routes/painel-avaliacoes-finais.js): trabalhos recebidos pra avaliar no estande. -->
+          <div class="md-whiteframe-2dp painel-cartao" data-ng-repeat="g in gruposFinais()">
+            <h3>Avaliação no evento - {{g.mostra.nome}}</h3>
+            <p class="painel-suave" style="margin-top:0;">
+              {{g.concluidas}} de {{g.itens.length}} trabalho(s) avaliado(s).
+              <span data-ng-if="!g.itens[0].aberta" style="color:#7a4a00;">{{g.itens[0].motivo}}</span>
+            </p>
+            <md-input-container class="md-block" style="margin:0 0 8px;" data-ng-if="g.itens.length > 5">
+              <label>Buscar pelo nº ou nome do trabalho</label>
+              <input type="text" data-ng-model="buscaFinal.texto"/>
+            </md-input-container>
+            <div class="painel-linha" data-ng-repeat="a in g.itens | filter:filtroFinal" layout="row" layout-wrap layout-align="start center">
+              <div flex>
+                <strong><span data-ng-if="a.projeto.numInscricao">nº {{a.projeto.numInscricao}} - </span>{{a.projeto.nomeProjeto}}</strong>
+                <div class="painel-suave" style="font-size:14px;">
+                  {{a.projeto.categoria}}<span data-ng-if="a.projeto.eixo"> - {{a.projeto.eixo}}</span><span data-ng-if="a.projeto.nomeEscola"> · {{a.projeto.nomeEscola}}</span>
+                </div>
+                <div style="font-size:14px;margin-top:2px;">
+                  <span data-ng-if="a.situacao === 'pendente'" style="color:#7a4a00;">{{a.rascunho ? 'Rascunho guardado - falta concluir' : 'A avaliar'}}</span>
+                  <span data-ng-if="a.situacao === 'concluido'" style="color:#2e7d32;">Avaliação concluída: {{virgula(a.total)}} de {{a.maximo}} ponto(s) na ficha</span>
+                </div>
+              </div>
+              <md-button class="md-raised" data-ng-class="{'md-primary white green darken-1': a.situacao === 'pendente' && a.aberta}" style="text-transform:none;" ui-sref="painelAvaliacaoFinal({id: a._id})">
+                {{a.situacao === 'pendente' ? (a.aberta ? 'Avaliar' : 'Ver') : (a.aberta ? 'Ver ou alterar' : 'Ver')}}
+              </md-button>
+            </div>
+          </div>
+
           <div class="md-whiteframe-2dp painel-cartao">
             <h3>Minhas participações na MOVACI</h3>
             <p data-ng-if="!conta" class="painel-suave">Carregando...</p>

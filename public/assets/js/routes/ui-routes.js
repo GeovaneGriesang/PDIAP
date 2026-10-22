@@ -186,6 +186,16 @@
           },
         })
 
+        // Trabalho recebido na avaliação NO EVENTO (routes/painel-avaliacoes-finais.js): ficha.
+        .state('painelAvaliacaoFinal', {
+          url: '/painel/avaliacao-evento/:id',
+          templateUrl: '/views/painel-avaliacao-final.html',
+          controller: 'painelAvaliacaoFinalCtrl',
+          resolve: {
+            loggedin: checkLoggedinPessoa,
+          },
+        })
+
         // URLs antigas dos painéis separados de avaliador(a)/participante (links de e-mails já
         // enviados, favoritos): só redirecionam. A recuperação de senha antiga cai na unificada
         // (/conta/nova-senha/:token aceita os tokens antigos também).

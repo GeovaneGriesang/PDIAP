@@ -27,6 +27,7 @@ const express = require('express'),
       pessoas = require('./routes/pessoas'),
       painelProjetos = require('./routes/painel-projetos'),
       painelAvaliacoes = require('./routes/painel-avaliacoes'),
+      painelAvaliacoesFinais = require('./routes/painel-avaliacoes-finais'),
       saberes = require('./routes/saberes-docentes'),
       admin = require('./routes/admin'),
       app = express();
@@ -117,6 +118,7 @@ app.use('/participantes', participantes);
 app.use('/pessoas', pessoas);
 app.use('/api/painel/projetos', painelProjetos);
 app.use('/api/painel/avaliacoes-previas', painelAvaliacoes);
+app.use('/api/painel/avaliacoes-finais', painelAvaliacoesFinais);
 app.use('/admin', admin);
 app.use('/saberes-docentes', saberes);
 

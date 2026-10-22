@@ -1,0 +1,183 @@
+<!-- Avaliação > No evento: acompanhamento (avaliacaoFinalAcompCtrl): trabalhos aprovados da Mostra - quem
+     avalia, o que falta, notas por critério e a nota que foi para o Ranking; trocas e quem não veio. -->
+<style>
+  .acf-cartao { background:#fff;border-radius:6px;padding:16px 20px;margin-bottom:12px; }
+  .acf-suave { color:rgba(0,0,0,0.6); }
+  .acf-chip { display:inline-block;cursor:pointer;border:1px solid #c8e6c9;border-radius:16px;padding:4px 12px;margin:0 6px 6px 0;font-size:14px;background:#fff; }
+  .acf-chip.ativo { background:#43a047;color:#fff;border-color:#43a047; }
+  .acf-selo { display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;margin-left:4px; }
+  .acf-faltam-avaliadores { background:#ffebee;color:#b71c1c; }
+  .acf-em-avaliacao { background:#fff3e0;color:#7a4a00; }
+  .acf-avaliado { background:#e8f5e9;color:#1b5e20; }
+  .acf-nao-aprovado { background:#eeeeee;color:#555; }
+  .acf-manual { background:#e3f2fd;color:#0d47a1; }
+  .acf-linha-av { border-top:1px solid #f0f0f0;padding:8px 0; }
+  .acf-inativa { opacity:0.55; }
+</style>
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | No evento: acompanhamento</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+        <div class="md-toolbar-tools">
+          <div style="width:220px;">
+            <md-select data-ng-change="recarregar()" data-ng-model="$root.mostraId" placeholder="Mostra" style="width:100%!important;font-size:17px;">
+              <md-optgroup label="Mostra:">
+                <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
+              </md-optgroup>
+            </md-select>
+          </div>
+          <span flex></span>
+          <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!dados || ocupado" data-ng-click="carregar()">Atualizar</md-button>
+          <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!dados" data-ng-click="exportar()">Baixar planilha</md-button>
+        </div>
+      </md-toolbar>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:20px 24px 80px;">
+      <p data-ng-if="!dados" class="acf-suave">Carregando...</p>
+      <div data-ng-if="dados" style="max-width:1100px;margin:0 auto;">
+
+        <div class="md-whiteframe-1dp acf-cartao" data-ng-if="!dados.ativa" style="color:#7a4a00;">
+          A avaliação no evento desta Mostra está desligada (Avaliação > No evento). Aqui aparece só o que já foi feito.
+        </div>
+
+        <div class="md-whiteframe-1dp acf-cartao">
+          <div style="margin-bottom:8px;font-size:15px;">
+            <b>{{conta('avaliado')}}</b> de {{conta('aprovados')}} trabalho(s) com as {{dados.vagas}} avaliações concluídas ·
+            <b>{{avaliacoesFeitas()}}</b> de {{avaliacoesPrevistas()}} avaliações feitas
+            <span data-ng-if="dados.escritaDaPrevia" class="acf-suave"> · a parte escrita vem da média da etapa prévia</span>
+          </div>
+          <span class="acf-chip" data-ng-class="{ativo: filtro.situacao === 'todos'}" data-ng-click="filtrar('todos')">Todos ({{conta('todos')}})</span>
+          <span class="acf-chip" data-ng-class="{ativo: filtro.situacao === 'faltam-avaliadores'}" data-ng-click="filtrar('faltam-avaliadores')">Faltam avaliadores(as) ({{conta('faltam-avaliadores')}})</span>
+          <span class="acf-chip" data-ng-class="{ativo: filtro.situacao === 'em-avaliacao'}" data-ng-click="filtrar('em-avaliacao')">Faltam avaliar ({{conta('em-avaliacao')}})</span>
+          <span class="acf-chip" data-ng-class="{ativo: filtro.situacao === 'avaliado'}" data-ng-click="filtrar('avaliado')">Avaliados ({{conta('avaliado')}})</span>
+          <span class="acf-chip" data-ng-class="{ativo: filtro.situacao === 'manual'}" data-ng-click="filtrar('manual')">Nota lançada no Inserir ({{conta('manual')}})</span>
+          <span class="acf-chip" data-ng-if="conta('nao-aprovado')" data-ng-class="{ativo: filtro.situacao === 'nao-aprovado'}" data-ng-click="filtrar('nao-aprovado')">Não aprovados com avaliação ({{conta('nao-aprovado')}})</span>
+          <div layout="row" layout-wrap layout-align="start center">
+            <md-input-container flex="40" flex-xs="100" style="margin:8px 12px 0 0;">
+              <label>Buscar (nome, nº, escola ou avaliador(a))</label>
+              <input type="text" data-ng-model="filtro.texto"/>
+            </md-input-container>
+            <md-input-container flex="30" flex-xs="100" style="margin:8px 12px 0 0;">
+              <label>Categoria</label>
+              <md-select data-ng-model="filtro.categoria">
+                <md-option value="">Todas</md-option>
+                <md-option ng-value="c" data-ng-repeat="c in categorias">{{c}}</md-option>
+              </md-select>
+            </md-input-container>
+            <md-input-container flex style="margin:8px 0 0 0;">
+              <label>Ordem</label>
+              <md-select data-ng-model="filtro.ordem">
+                <md-option value="numero">Nº de inscrição</md-option>
+                <md-option value="nota">Maior nota no ranking primeiro</md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+          <div style="font-size:13px;" class="acf-suave">
+            Mudou a etapa prévia ou o nº de avaliadores(as) depois das notas?
+            <a href="" data-ng-click="recalcular($event)">Recalcular as notas no ranking</a>.
+          </div>
+        </div>
+
+        <!-- Avaliadores(as): quem veio, carga, e "não veio" (tira os pendentes e completa as vagas). -->
+        <div class="md-whiteframe-1dp acf-cartao">
+          <div layout="row" layout-align="start center" style="cursor:pointer;" data-ng-click="verAvaliadores = !verAvaliadores">
+            <b flex style="color:#225024;">Avaliadores(as) da Mostra ({{dados.avaliadores.length}})</b>
+            <md-icon md-svg-src="{{verAvaliadores ? 'chevron-up' : 'chevron-down'}}"></md-icon>
+          </div>
+          <div data-ng-if="verAvaliadores">
+            <md-input-container class="md-block" style="margin:8px 0 0;">
+              <label>Buscar avaliador(a)</label>
+              <input type="text" data-ng-model="filtro.avaliador"/>
+            </md-input-container>
+            <div class="acf-linha-av" data-ng-repeat="v in avaliadoresVisiveis() track by v._id" layout="row" layout-wrap layout-align="start center">
+              <div flex style="min-width:260px;">
+                <b>{{v.nome}}</b> <span class="acf-suave" style="font-size:13px;">{{v.email}}</span>
+                <div style="font-size:13px;">
+                  <span data-ng-class="{'acf-suave': !v.presente}">{{v.presente ? 'Presença confirmada' : 'Presença não confirmada'}}</span>
+                  <span data-ng-if="!v.temConta" style="color:#b71c1c;"> · sem conta no Meu painel</span>
+                  · {{v.turnos}} turno(s) · a avaliar: <b>{{v.pendentes}}</b> · concluídas: <b>{{v.concluidas}}</b>
+                </div>
+              </div>
+              <md-button class="md-raised" style="text-transform:none;" data-ng-if="v.pendentes" data-ng-disabled="ocupado" data-ng-click="liberar(v, $event)">Não veio: passar os {{v.pendentes}} pendentes adiante</md-button>
+            </div>
+          </div>
+        </div>
+
+        <p data-ng-if="!visiveis().length" class="acf-suave">Nenhum trabalho neste filtro.</p>
+
+        <div class="md-whiteframe-1dp acf-cartao" data-ng-repeat="t in visiveis() track by t._id">
+          <div layout="row" layout-wrap layout-align="start center" style="cursor:pointer;" data-ng-click="alternar(t)">
+            <div flex style="min-width:280px;">
+              <b><span data-ng-if="t.numInscricao">nº {{t.numInscricao}} - </span>{{t.nomeProjeto}}</b>
+              <span class="acf-selo acf-{{t.situacao}}">{{SITUACOES[t.situacao]}}</span>
+              <span class="acf-selo acf-manual" data-ng-if="t.notaManual">nota lançada no Inserir</span>
+              <span class="acf-selo acf-manual" data-ng-if="t.editadaNoInserir">nota alterada no Inserir</span>
+              <div class="acf-suave" style="font-size:14px;">
+                {{t.categoria}}<span data-ng-if="t.eixo"> - {{t.eixo}}</span><span data-ng-if="t.nomeEscola"> · {{t.nomeEscola}}</span>
+              </div>
+              <div style="font-size:14px;margin-top:2px;">
+                {{t.concluidas}} de {{t.vagas}} avaliação(ões) concluída(s)
+                <span data-ng-if="t.notasRanking.length"> · no ranking: <b>{{virgula(t.somaRanking)}}</b> ({{notasTexto(t)}})</span>
+                <span data-ng-if="dados.escritaDaPrevia && t.mediaPrevia !== null" class="acf-suave"> · escrita (média da prévia): {{virgula(t.mediaPrevia)}}</span>
+                <span data-ng-if="dados.escritaDaPrevia && t.mediaPrevia === null" style="color:#7a4a00;"> · sem prévia concluída: a escrita é avaliada no evento</span>
+              </div>
+            </div>
+            <md-icon md-svg-src="{{aberto[t._id] ? 'chevron-up' : 'chevron-down'}}"></md-icon>
+          </div>
+
+          <div data-ng-if="aberto[t._id]" style="margin-top:10px;">
+            <p data-ng-if="t.notaManual" style="font-size:13px;color:#0d47a1;margin-top:0;">
+              As notas deste trabalho foram lançadas à mão em Avaliação > Inserir. Quando alguém concluir a avaliação pelo sistema, elas são substituídas
+              pelas do sistema (o desempate é mantido).
+            </p>
+            <p data-ng-if="!t.avaliacoes.length" class="acf-suave">Ainda não foi entregue a ninguém.</p>
+            <div class="acf-linha-av" data-ng-repeat="a in t.avaliacoes" data-ng-class="{'acf-inativa': a.situacao === 'removido'}">
+              <div layout="row" layout-wrap layout-align="start center">
+                <div flex style="min-width:260px;">
+                  <b>{{a.avaliador.nome}}</b> <span class="acf-suave" style="font-size:13px;">{{a.avaliador.email}}</span>
+                  <div style="font-size:14px;">
+                    <span data-ng-if="a.situacao === 'pendente'" style="color:#7a4a00;">A avaliar<span data-ng-if="a.salvoEm" class="acf-suave"> - rascunho salvo em {{a.salvoEm | date:'dd/MM HH:mm'}}</span></span>
+                    <span data-ng-if="a.situacao === 'concluido'">Concluída em {{a.concluidoEm | date:'dd/MM/yyyy HH:mm'}}: <b>{{virgula(a.nota)}}</b>
+                      <span class="acf-suave" data-ng-if="a.escritaDaPrevia">(ficha {{virgula(a.total)}} de {{a.maximo}} + escrita da prévia {{virgula(t.mediaPrevia || 0)}})</span>
+                      <span class="acf-suave" data-ng-if="!a.escritaDaPrevia">de {{a.maximo}}</span>
+                    </span>
+                    <span data-ng-if="a.situacao === 'removido'" class="acf-suave">Tirado(a) pela organização em {{a.removidoEm | date:'dd/MM HH:mm'}}</span>
+                    <span data-ng-if="a.origem === 'manual'" class="acf-suave"> · entregue pela organização</span>
+                    <span data-ng-if="a.avisadoEm" class="acf-suave"> · avisado(a) por e-mail</span>
+                  </div>
+                </div>
+                <div data-ng-if="a.situacao !== 'removido'">
+                  <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao === 'concluido'" data-ng-disabled="ocupado" data-ng-click="reabrir(a, $event)">Reabrir</md-button>
+                  <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
+                </div>
+              </div>
+              <div data-ng-if="a.notas.length && a.situacao !== 'removido' || a.situacao === 'concluido'" style="font-size:13px;margin:6px 0 0 12px;">
+                <div data-ng-repeat="k in a.ficha"><span class="acf-suave">{{k.parte === 'escrita' ? 'Escrita' : 'Apresentação'}} ·</span> {{k.nome}}: <b>{{a.notas[$index] === null || a.notas[$index] === undefined ? '-' : virgula(a.notas[$index])}}</b> de {{k.maximo}}</div>
+                <div data-ng-if="a.parecer" style="margin-top:4px;white-space:pre-wrap;"><b>Comentários:</b> {{a.parecer}}</div>
+              </div>
+            </div>
+            <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="dados.ativa && t.situacao !== 'nao-aprovado' && t.ativas < t.vagas">
+              <md-input-container flex style="margin:0 12px 0 0;min-width:280px;">
+                <label>Entregar a outra pessoa</label>
+                <md-select data-ng-model="escolha[t._id]">
+                  <md-option ng-value="v._id" data-ng-repeat="v in opcoesAvaliadores(t) track by v._id">{{rotuloAvaliador(v, t)}}</md-option>
+                </md-select>
+              </md-input-container>
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="ocupado || !escolha[t._id]" data-ng-click="atribuir(t)">Entregar</md-button>
+            </div>
+            <p data-ng-if="dados.ativa && t.situacao !== 'nao-aprovado' && t.ativas >= t.vagas" class="acf-suave" style="font-size:13px;margin-bottom:0;">
+              Para trocar quem avalia, tire uma pessoa e entregue a vaga a outra aqui mesmo (ou deixe para "Completar a distribuição" em Avaliação > No evento).
+            </p>
+          </div>
+        </div>
+      </div>
+    </md-content>
+  </section>
+</div>

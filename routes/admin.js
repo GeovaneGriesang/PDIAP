@@ -38,7 +38,9 @@ const express = require('express')
 , avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
 , distribuicaoPrevia = require('../controllers/distribuicao-previa-controller')
 , resultadoPrevia = require('../controllers/resultado-previa-controller')
-, avaliacaoPreviaSchema = require('../models/avaliacao-previa-schema');
+, avaliacaoPreviaSchema = require('../models/avaliacao-previa-schema')
+, avaliacaoFinal = require('../controllers/avaliacao-final-controller')
+, avaliacaoFinalSchema = require('../models/avaliacao-final-schema');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -319,6 +321,111 @@ router.get('/projetos/:id/texto-previa', miPermiso("3"), async (req, res) => {
     console.error('Erro ao baixar texto da avaliação prévia', error);
     res.status(500).send('Erro ao baixar o texto.');
   }
+});
+
+// --- Avaliação FINAL no evento (controllers/avaliacao-final-controller.js) - por Mostra -------
+const MOSTRA_FINAL = avaliacaoFinal.CAMPOS_MOSTRA;
+const mostraFinal = (id) => feiraSchema.findById(id, MOSTRA_FINAL).lean();
+// Registro de avaliação final + Mostra, se o admin pode a Mostra dele.
+const avaliacaoFinalDoAdmin = async (req, id) => {
+  if (!idValido(String(id))) return null;
+  let atr = await avaliacaoFinalSchema.findById(id).lean();
+  if (!atr || !(await perfil.podeMostra(req, String(atr.feiraId)))) return null;
+  return { atr: atr, mostra: await mostraFinal(atr.feiraId) };
+};
+
+router.get('/avaliacao-final', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send(msgOutraMostra);
+    let mostra = await mostraFinal(req.query.mostraId);
+    res.send({ config: avaliacaoFinal.paraTela(mostra), distribuicao: await avaliacaoFinal.resumo(mostra) });
+  } catch (error) { erroDe(res, 'Erro ao ler a configuração')(error); }
+});
+
+router.put('/avaliacao-final', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let config = avaliacaoFinal.limpar(req.body.config);
+    if (config.abreEm && config.fechaEm && config.abreEm > config.fechaEm) return res.status(400).send('A abertura precisa ser antes do encerramento.');
+    await feiraSchema.updateOne({ _id: req.body.mostraId, tipo: 'edicao' }, { $set: { avaliacaoFinal: config } });
+    res.send('success');
+  } catch (error) { erroDe(res, 'Erro ao salvar a configuração')(error); }
+});
+
+// Distribuir agora (só completa o que falta - ver avaliacao-final-controller.js#distribuir).
+router.post('/avaliacao-final/distribuir', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let r = await avaliacaoFinal.distribuir(req.body.mostraId, { iniciar: true });
+    if (r.erro) return res.status(400).send(r.erro);
+    if (r.ocupado) return res.status(409).send('A distribuição desta Mostra já está rodando. Aguarde um instante.');
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao distribuir os trabalhos')(error); }
+});
+
+// E-mail a quem recebeu trabalho e ainda não foi avisado(a).
+router.post('/avaliacao-final/avisar', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    res.send({ avisadas: await avaliacaoFinal.avisar(await mostraFinal(req.body.mostraId)) });
+  } catch (error) { erroDe(res, 'Erro ao avisar os(as) avaliadores(as)')(error); }
+});
+
+router.get('/avaliacao-final/acompanhamento', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send(msgOutraMostra);
+    let mostra = await mostraFinal(req.query.mostraId);
+    res.send(await avaliacaoFinal.acompanhamento(mostra, await perfil.comEscopo(req, { feiraId: mostra._id })));
+  } catch (error) { erroDe(res, 'Erro ao montar o acompanhamento')(error); }
+});
+
+router.post('/avaliacao-final/atribuir', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    let projeto = await trabalhoDaMostra(req, req.body.mostraId, req.body.projetoId);
+    if (!projeto) return res.status(404).send('Trabalho não encontrado nesta Mostra.');
+    if (!idValido(String(req.body.avaliadorId))) return res.status(400).send('ID inválido');
+    let r = await avaliacaoFinal.atribuirManual(await mostraFinal(req.body.mostraId), projeto, req.body.avaliadorId);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao entregar o trabalho')(error); }
+});
+
+router.post('/avaliacao-final/remover', miPermiso("3"), async (req, res) => {
+  try {
+    let x = await avaliacaoFinalDoAdmin(req, req.body.id);
+    if (!x) return res.status(404).send('Avaliação não encontrada nas suas Mostras.');
+    let r = await avaliacaoFinal.remover(x.atr);
+    if (r.erro) return res.status(409).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao tirar o trabalho')(error); }
+});
+
+router.post('/avaliacao-final/reabrir', miPermiso("3"), async (req, res) => {
+  try {
+    let x = await avaliacaoFinalDoAdmin(req, req.body.id);
+    if (!x) return res.status(404).send('Avaliação não encontrada nas suas Mostras.');
+    let r = await avaliacaoFinal.reabrir(x.atr);
+    if (r.erro) return res.status(409).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao reabrir a avaliação')(error); }
+});
+
+// Avaliador(a) que não veio: tira os trabalhos ainda não avaliados e completa as vagas.
+router.post('/avaliacao-final/liberar-pendentes', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    if (!idValido(String(req.body.avaliadorId))) return res.status(400).send('ID inválido');
+    res.send(await avaliacaoFinal.liberarPendentes(await mostraFinal(req.body.mostraId), req.body.avaliadorId));
+  } catch (error) { erroDe(res, 'Erro ao liberar os trabalhos')(error); }
+});
+
+// Regrava no ranking a nota de todos os trabalhos avaliados pelo sistema.
+router.post('/avaliacao-final/recalcular', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
+    res.send({ trabalhos: await avaliacaoFinal.republicarMostra(await mostraFinal(req.body.mostraId)) });
+  } catch (error) { erroDe(res, 'Erro ao recalcular as notas')(error); }
 });
 
 // --- Juntar cadastros da mesma pessoa (só super-admin, ver mesclar-pessoas-controller.js) ---

@@ -98,6 +98,10 @@ const ProjetoSchema = new Schema({
 	resumo: {type: String},
 	palavraChave: {type: String},
 	avaliacao: {type: Array},
+	// 'sistema' = as notas acima vieram da avaliação final pelo sistema (controllers/
+	// avaliacao-final-controller.js#publicar), que as regrava a cada avaliação concluída. Sem valor =
+	// lançadas à mão em Avaliação > Inserir (que apaga esta marca).
+	avaliacaoOrigem: {type: String},
 	premiacao: {type: String},
 	colocacao: {type: Number},
 	mostratec: {type: Boolean},

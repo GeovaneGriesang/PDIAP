@@ -6,6 +6,10 @@
   </div>
   <div style="padding:1em 2em;overflow:auto!important;">
     <p><b>Nome:</b> {{details.nomeProjeto}}</p>
+    <p data-ng-if="details.avaliacaoOrigem === 'sistema'" style="background:#e3f2fd;color:#0d47a1;border-radius:6px;padding:8px 12px;font-size:14px;">
+      As notas deste projeto vieram da avaliação no evento pelo sistema. Dá para corrigir aqui ou lançar o desempate, mas quando
+      uma avaliação for concluída ou reaberta no sistema as notas dos(as) avaliadores(as) são regravadas (o desempate fica).
+    </p>
     <h3 style="text-align:center;border-top:1px solid grey;margin:30px 0 -5px 0;font-size:15px;width:100%;">
       <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f5f5f5;bottom:10px;letter-spacing:1px;">Avaliação</span>
     </h3>

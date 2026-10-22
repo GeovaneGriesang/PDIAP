@@ -53,6 +53,7 @@
 							categoria: value.categoria,
 							eixo: value.eixo,
 							avaliacao: avaliacao,
+							avaliacaoOrigem: value.avaliacaoOrigem,
 							avaliado: avaliacao.length > 0
 						});
 						$scope.projetos.push(obj);
