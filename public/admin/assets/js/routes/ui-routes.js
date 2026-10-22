@@ -204,6 +204,18 @@
 			templateUrl:'admin/views/avaliacao-previa-acompanhamento.html',
 			controller: 'avaliacaoPreviaAcompCtrl'
 		})
+		// Avaliação final no evento pelo sistema (configuração e distribuição por Mostra).
+		.state('master.avaliacao-final', {
+			url: "/avaliacao-final",
+			templateUrl:'admin/views/avaliacao-final.html',
+			controller: 'avaliacaoFinalCtrl'
+		})
+		// Acompanhamento da avaliação no evento.
+		.state('master.avaliacao-final-acompanhamento', {
+			url: "/avaliacao-final/acompanhamento",
+			templateUrl:'admin/views/avaliacao-final-acompanhamento.html',
+			controller: 'avaliacaoFinalAcompCtrl'
+		})
 		// Administradores por Mostra (só super-admin).
 		.state('master.administradores', {
 			url: "/administradores",

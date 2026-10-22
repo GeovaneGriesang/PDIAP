@@ -1,0 +1,151 @@
+<!-- Avaliação > No evento (avaliacaoFinalCtrl): configuração POR MOSTRA da avaliação final pelo sistema
+     (janela das notas, quem entra, ficha da apresentação) e a distribuição dos trabalhos aprovados. -->
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | No evento</h4>
+      </div>
+      <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
+        <div class="md-toolbar-tools">
+          <div style="width:220px;">
+            <md-select data-ng-change="recarregar()" data-ng-model="$root.mostraId" placeholder="Mostra" style="width:100%!important;font-size:17px;">
+              <md-optgroup label="Mostra:">
+                <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
+              </md-optgroup>
+            </md-select>
+          </div>
+        </div>
+      </md-toolbar>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:24px 30px 80px;">
+      <p data-ng-if="!config" style="color:rgba(0,0,0,0.5);">Carregando...</p>
+      <form name="finalForm" novalidate data-ng-if="config" style="max-width:860px;margin:0 auto;">
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;">
+          <p style="margin-top:0;color:rgba(0,0,0,0.7);">
+            No evento da <b>{{nomeMostra()}}</b>, cada avaliador(a) abre o Meu painel (dá para usar o celular), vê os trabalhos que recebeu
+            e preenche a ficha. Ao concluir, a nota vai sozinha para o Ranking (o mesmo lugar de Avaliação > Inserir, que continua valendo
+            para corrigir uma nota e lançar o desempate).
+          </p>
+          <p style="color:rgba(0,0,0,0.6);font-size:14px;margin-bottom:0;">
+            Agora: {{distribuicao.trabalhosAprovados}} trabalho(s) aprovado(s) · {{distribuicao.avaliadoresQueEntram}} avaliador(a)(es) entram na distribuição ·
+            <b>{{config.avaliadoresPorTrabalho}}</b> avaliador(a)(es) por trabalho (definido em Mostra).
+            <span data-ng-if="distribuicao.avaliadoresSemConta"> {{distribuicao.avaliadoresSemConta}} avaliador(a)(es) ainda sem conta no Meu painel ficam de fora.</span>
+          </p>
+          <md-checkbox data-ng-model="config.ativa" style="margin:16px 0 0;"><b>Avaliação no evento pelo sistema ativa nesta Mostra</b></md-checkbox>
+        </div>
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Quando e quem</h3>
+          <div layout="row" layout-wrap>
+            <md-input-container flex="50" flex-xs="100">
+              <label>Notas abrem em (opcional)</label>
+              <input type="date" data-ng-model="config.abreEm"/>
+            </md-input-container>
+            <md-input-container flex="50" flex-xs="100">
+              <label>Notas fecham em (até o fim do dia, opcional)</label>
+              <input type="date" data-ng-model="config.fechaEm"/>
+            </md-input-container>
+            <md-input-container flex="50" flex-xs="100">
+              <label>Máx. de trabalhos por avaliador(a) (0 = sem limite)</label>
+              <input type="number" min="0" max="200" data-ng-model="config.maxPorAvaliador"/>
+            </md-input-container>
+          </div>
+          <p style="font-size:14px;color:rgba(0,0,0,0.6);margin-top:0;">Antes da abertura cada pessoa já vê a lista dos trabalhos dela, mas ainda não lança nota.</p>
+          <md-checkbox data-ng-model="config.soPresencaConfirmada">Distribuir só entre quem está com presença confirmada (Avaliação > Avaliadores)</md-checkbox>
+          <md-input-container class="md-block" style="margin-top:12px;">
+            <label>Instruções para quem avalia</label>
+            <textarea data-ng-model="config.instrucoesAvaliador" rows="3"></textarea>
+          </md-input-container>
+        </div>
+
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Ficha de avaliação</h3>
+          <p style="color:rgba(0,0,0,0.7);margin-top:0;" data-ng-if="config.escritaDaPrevia">
+            <b>Parte escrita:</b> vem da média da etapa prévia (lá está marcado que a nota da prévia vale na final) e soma à nota de cada
+            avaliador(a) do evento. Trabalho sem avaliação prévia concluída avalia a parte escrita no evento, pela ficha da etapa prévia.
+          </p>
+          <p style="color:rgba(0,0,0,0.7);margin-top:0;" data-ng-if="!config.escritaDaPrevia">
+            <b>Parte escrita:</b> avaliada no evento, pela ficha da categoria em Avaliação > Etapa prévia (a nota da prévia não vale na final).
+          </p>
+          <p style="color:rgba(0,0,0,0.7);"><b>Apresentação</b>, por categoria (e, se precisar, uma ficha só para um eixo, como Extensão):</p>
+          <p data-ng-if="!config.fichas.length" style="color:#7a4a00;">Esta Mostra ainda não tem categorias cadastradas (em Mostra). Cadastre-as para montar as fichas.</p>
+          <div data-ng-repeat="f in config.fichas" style="border-top:1px solid #eee;padding-top:10px;margin-top:10px;">
+            <b>{{f.categoria}}</b><span data-ng-if="f.eixo"> - só o eixo <b>{{f.eixo}}</b></span>
+            <span style="color:rgba(0,0,0,0.55);"> - total {{totalFicha(f)}} ponto(s)</span>
+            <span data-ng-if="f.padrao" style="font-size:12px;color:#7a4a00;"> (ficha inicial tirada da ficha em papel - revise e salve)</span>
+            <a href="" data-ng-if="f.eixo" style="font-size:13px;margin-left:8px;color:#c62828;" data-ng-click="removerFicha($index)">tirar esta ficha do eixo</a>
+            <div data-ng-repeat="k in f.criterios" layout="row" layout-align="start center">
+              <md-input-container flex style="margin:6px 0;">
+                <label>Critério</label>
+                <input type="text" data-ng-model="k.nome" required/>
+              </md-input-container>
+              <md-input-container style="margin:6px 0 6px 12px;width:110px;">
+                <label>Máximo</label>
+                <input type="number" min="1" data-ng-model="k.maximo" required/>
+              </md-input-container>
+              <md-button class="md-icon-button" aria-label="Remover critério" data-ng-click="removerCriterio(f, $index)">
+                <md-icon md-svg-src="close" style="color:#c62828;"></md-icon>
+              </md-button>
+            </div>
+            <md-button class="md-raised" style="text-transform:none;margin-left:0;" data-ng-click="adicionarCriterio(f)">+ Critério</md-button>
+          </div>
+          <div layout="row" layout-wrap layout-align="start center" style="border-top:1px solid #eee;margin-top:14px;padding-top:10px;" data-ng-if="eixosLivres.length">
+            <md-input-container flex style="margin:0 12px 0 0;min-width:260px;">
+              <label>Ficha só para um eixo</label>
+              <md-select data-ng-model="novaFicha.chave">
+                <md-option ng-value="o.chave" data-ng-repeat="o in eixosLivres track by o.chave">{{o.categoria}} - {{o.eixo}}</md-option>
+              </md-select>
+            </md-input-container>
+            <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!novaFicha.chave" data-ng-click="adicionarFichaEixo()">+ Ficha do eixo</md-button>
+          </div>
+        </div>
+
+        <div layout="row" layout-align="center center">
+          <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || (config.ativa && finalForm.$invalid)" data-ng-click="salvar()">
+            Salvar avaliação no evento
+          </md-button>
+        </div>
+
+        <!-- Distribuição (controllers/avaliacao-final-controller.js) - usa a configuração SALVA. -->
+        <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin:24px 0 16px;" data-ng-if="config.ativa">
+          <h3 style="margin-top:0;color:#225024;">Distribuição dos trabalhos</h3>
+          <p style="color:rgba(0,0,0,0.7);margin-top:0;">
+            O sistema entrega cada trabalho aprovado a {{config.avaliadoresPorTrabalho}} avaliador(a)(es), preferindo quem se inscreveu na mesma
+            categoria e eixo e dividindo a quantidade conforme os turnos em que cada pessoa está disponível (quem fica mais turnos recebe mais).
+            Ninguém recebe um trabalho de que é integrante. Rodar de novo só completa o que falta (trabalho aprovado depois, pessoa tirada).
+            Trabalho por trabalho, trocas e quem não veio: <a ui-sref="master.avaliacao-final-acompanhamento">No evento: acompanhamento</a>.
+          </p>
+          <p data-ng-if="distribuicao.iniciadaEm" style="margin:0 0 8px;">
+            Distribuída em {{distribuicao.iniciadaEm | date:'dd/MM/yyyy HH:mm'}} · última rodada {{distribuicao.ultimaEm | date:'dd/MM/yyyy HH:mm'}}.
+            Quando alguém não vier, use "Não veio" no acompanhamento: os trabalhos pendentes da pessoa vão para outras.
+          </p>
+          <div style="font-size:14px;color:rgba(0,0,0,0.7);margin-bottom:8px;">
+            A avaliar: {{distribuicao.situacoes.pendente || 0}} · Concluídas: {{distribuicao.situacoes.concluido || 0}} ·
+            Tiradas pela organização: {{distribuicao.situacoes.removido || 0}}
+          </div>
+          <div data-ng-if="distribuicao.faltando.length" style="background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:10px 14px;margin:10px 0;color:#7a4a00;">
+            <b>{{distribuicao.faltando.length}} trabalho(s) sem avaliadores(as) suficientes</b> - confirme a presença de mais pessoas da categoria
+            em Avaliação > Avaliadores, aumente o limite por pessoa ou entregue à mão no acompanhamento:
+            <div data-ng-repeat="f in distribuicao.faltando" style="font-size:14px;">
+              <span data-ng-if="f.numInscricao">nº {{f.numInscricao}} - </span>{{f.nomeProjeto}} ({{f.categoria}}<span data-ng-if="f.eixo"> - {{f.eixo}}</span>): falta(m) {{f.faltam}}
+            </div>
+          </div>
+          <div layout="row" layout-wrap layout-align="center center">
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="distribuindo" data-ng-click="distribuir()">
+              {{distribuicao.iniciadaEm ? 'Completar a distribuição agora' : 'Distribuir os trabalhos'}}
+            </md-button>
+            <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="distribuindo || !distribuicao.avisosPendentes" data-ng-click="avisar($event)">
+              Avisar por e-mail ({{distribuicao.avisosPendentes || 0}} pessoa(s) ainda sem aviso)
+            </md-button>
+          </div>
+        </div>
+      </form>
+    </md-content>
+  </section>
+</div>

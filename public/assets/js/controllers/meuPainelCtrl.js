@@ -111,6 +111,31 @@
 		var erroDe = function(response, padrao) {
 			return typeof response.data === 'string' && response.data ? response.data : padrao;
 		};
+
+		// Avaliação no evento (routes/painel-avaliacoes-finais.js): um cartão por Mostra, em ordem de nº.
+		$scope.avaliacoesFinais = [];
+		$scope.buscaFinal = { texto: '' };
+		$http.get('/api/painel/avaliacoes-finais').then(function(response) {
+			$scope.avaliacoesFinais = response.data || [];
+		}, function() {});
+		var gruposCache = { lista: null, grupos: [] };
+		$scope.gruposFinais = function() {
+			if (gruposCache.lista === $scope.avaliacoesFinais) return gruposCache.grupos;
+			var grupos = [];
+			$scope.avaliacoesFinais.forEach(function(a) {
+				var g = grupos.filter(function(x) { return x.mostra._id === a.mostra._id; })[0];
+				if (!g) { g = { mostra: a.mostra, itens: [], concluidas: 0 }; grupos.push(g); }
+				g.itens.push(a);
+				if (a.situacao === 'concluido') g.concluidas++;
+			});
+			gruposCache = { lista: $scope.avaliacoesFinais, grupos: grupos };
+			return grupos;
+		};
+		$scope.filtroFinal = function(a) {
+			var t = ($scope.buscaFinal.texto || '').toLowerCase();
+			return !t || ((a.projeto.numInscricao || '') + ' ' + (a.projeto.nomeProjeto || '')).toLowerCase().indexOf(t) !== -1;
+		};
+
 		$scope.aceitarAvaliacao = function(a) {
 			a.ocupado = true;
 			$http.post('/api/painel/avaliacoes-previas/' + a._id + '/aceitar').then(function() {

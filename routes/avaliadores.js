@@ -229,6 +229,9 @@ router.put('/addNota', ensureAuthenticated, perfil.exigeAdmin, async (req, res) 
 		try {
 			let usr = await ProjetoSchema.findOne({_id: id});
 			usr.avaliacao = arrayNota;
+			// Nota à mão: deixa de ser "do sistema" (ver controllers/avaliacao-final-controller.js#publicar,
+			// que regrava as notas a cada avaliação concluída pelo Meu painel).
+			usr.avaliacaoOrigem = undefined;
 			// Lançar nota é sinal de que o(a) pesquisador(a) esteve presente pra apresentar o
 			// projeto - confirma participação automaticamente (ver Projetos > Presença), pra
 			// equipe de credenciamento não precisar marcar de novo manualmente o que a nota já

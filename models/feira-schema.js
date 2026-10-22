@@ -104,6 +104,32 @@ const FeiraSchema = new Schema({
 		corteApresentacao: {type: Number},
 		divergencia: {type: Number}
 	}, { _id: false }),
+	// Avaliação FINAL no evento pelo sistema - ver controllers/avaliacao-final-controller.js. Quantos
+	// avaliam cada trabalho é o numAvaliadoresPorProjeto acima (o mesmo de Avaliação > Inserir).
+	// fichas = parte da APRESENTAÇÃO por categoria (eixo vazio) ou só pra um eixo (ex: Extensão); a
+	// parte escrita é a ficha da etapa prévia - avaliada no evento, ou tirada da média da prévia
+	// quando avaliacaoPrevia.contaNaFinal.
+	avaliacaoFinal: new Schema({
+		ativa: {type: Boolean},
+		abreEm: {type: Date},
+		fechaEm: {type: Date},
+		soPresencaConfirmada: {type: Boolean},
+		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
+		instrucoesAvaliador: {type: String},
+		fichas: [{
+			categoria: {type: String},
+			eixo: {type: String},
+			criterios: [{ nome: {type: String}, maximo: {type: Number}, _id: false }],
+			_id: false
+		}]
+	}, { _id: false }),
+	// Estado da distribuição da avaliação final (fora de avaliacaoFinal, que a tela regrava inteira):
+	// iniciadaEm = a organização distribuiu; a partir daí, tirar alguém de um trabalho completa a vaga.
+	distribuicaoFinal: new Schema({
+		iniciadaEm: {type: Date},
+		ultimaEm: {type: Date},
+		faltando: [{ projeto: {type: Schema.Types.ObjectId, ref: 'Projeto'}, nomeProjeto: {type: String}, numInscricao: {type: Number}, categoria: {type: String}, eixo: {type: String}, faltam: {type: Number}, _id: false }]
+	}, { _id: false }),
 	// Administradores(as) DESTA Mostra (só tipo:'edicao'): Pessoas com o acesso do admin2
 	// restrito a esta edição (ver utils/perfil.js). Atribuídos pelo(a) super-admin.
 	administradores: [{type: Schema.Types.ObjectId, ref: 'Pessoa'}],
