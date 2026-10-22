@@ -40,7 +40,8 @@ const express = require('express')
 , resultadoPrevia = require('../controllers/resultado-previa-controller')
 , avaliacaoPreviaSchema = require('../models/avaliacao-previa-schema')
 , avaliacaoFinal = require('../controllers/avaliacao-final-controller')
-, avaliacaoFinalSchema = require('../models/avaliacao-final-schema');
+, avaliacaoFinalSchema = require('../models/avaliacao-final-schema')
+, relatorioProjeto = require('../utils/relatorioProjeto');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -1456,14 +1457,13 @@ router.get('/projetos/relatorios.zip', miPermiso("3"), async (req, res) => {
 
   let projetos;
   try {
-    projetos = await projetoSchema.find(await perfil.comEscopo(req, filtro), 'numInscricao nomeProjeto');
+    projetos = await projetoSchema.find(await perfil.comEscopo(req, filtro), 'numInscricao nomeProjeto relatorio2');
   } catch (err) {
     console.error('Erro ao buscar projetos pro zip', err);
     return res.status(500).send('Erro ao gerar o zip.');
   }
 
-  let pastaRelatorios = path.join(__dirname, '..', 'public', 'relatorios');
-  let encontrados = projetos.filter((p) => fs.existsSync(path.join(pastaRelatorios, p.numInscricao + '.pdf')));
+  let encontrados = projetos.filter((p) => relatorioProjeto.existe(p));
 
   if (encontrados.length === 0) {
     return res.status(404).send('Nenhum relatório encontrado pros projetos selecionados.');
@@ -1485,12 +1485,22 @@ router.get('/projetos/relatorios.zip', miPermiso("3"), async (req, res) => {
     // preservando acentos. Baseado em blocklist (não em \p{L}/\p{N} - o babel 6 usado
     // neste projeto não suporta Unicode property escapes, viraria lixo em produção).
     let nomeSanitizado = (p.nomeProjeto || '').replace(/[\/\\:*?"<>|]/g, '_').trim();
-    archive.file(path.join(pastaRelatorios, p.numInscricao + '.pdf'), {
+    archive.file(relatorioProjeto.arquivoDoProjeto(p._id), {
       name: p.numInscricao + '_' + nomeSanitizado + '.pdf'
     });
   });
 
   archive.finalize();
+});
+
+// Relatório de um projeto (só admin da Mostra do projeto) - o arquivo não é mais público.
+router.get('/projetos/:id/relatorio', miPermiso("3"), async (req, res) => {
+  try {
+    if (!idValido(req.params.id)) return res.status(400).send('ID inválido');
+    let projeto = await projetoSchema.findOne(await perfil.comEscopo(req, { _id: req.params.id }), 'numInscricao nomeProjeto relatorio2').lean();
+    if (!relatorioProjeto.existe(projeto)) return res.status(404).send('Relatório não encontrado.');
+    res.download(relatorioProjeto.arquivoDoProjeto(projeto._id), relatorioProjeto.nomeParaDownload(projeto));
+  } catch (error) { erroDe(res, 'Erro ao baixar o relatório')(error); }
 });
 
 // Resolve os destinatários de um projeto para envio de e-mail em massa, conforme o

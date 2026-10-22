@@ -107,6 +107,7 @@
 				$scope.hospedagemVerify = $scope.projeto5.hospedagem.length ? 'Sim' : 'Não';
 
 				$scope.relatorio = projeto.relatorio2;
+				$scope.urlRelatorio = '/api/painel/projetos/' + $stateParams.id + '/relatorio';
 				$scope.carregando = false;
 
 				// Trava de outra pessoa ativa: mostra quem está editando.
