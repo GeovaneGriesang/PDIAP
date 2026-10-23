@@ -469,13 +469,18 @@
 
 			var integrantes = montarPacoteOrientadores().concat(alunosAtuais);
 
-			var pendentes = 2, falhou = false;
+			// Diz O QUE falhou (ex: "Fulana: Documento inválido") em vez de só "Falha ao salvar".
+			var pendentes = 2, erros = [];
+			var motivo = function(response, parte) {
+				var txt = typeof response.data === 'string' && response.data && response.data.length < 300 ? response.data : 'erro ' + response.status;
+				return parte + ': ' + txt;
+			};
 			function finalizar() {
 				pendentes--;
 				if (pendentes > 0) return;
 				$scope.alterado = true;
-				if (falhou) {
-					$scope.toast('Falha ao salvar - confira os dados e tente de novo.', 'failed-toast');
+				if (erros.length) {
+					$scope.toast('Não salvou - ' + erros.join(' | '), 'failed-toast');
 				} else {
 					$scope.toast('Alteração realizada com sucesso!', 'success-toast');
 				}
@@ -483,15 +488,13 @@
 
 			adminAPI.putProjeto(payload)
 			.then(function() { finalizar(); }, function(response) {
-				console.log('update error: '+response.data);
-				falhou = true;
+				erros.push(motivo(response, 'dados do projeto'));
 				finalizar();
 			});
 
 			adminAPI.putIntegrante(integrantes)
 			.then(function() { finalizar(); }, function(response) {
-				console.log('update integrantes error: '+response.data);
-				falhou = true;
+				erros.push(motivo(response, 'integrantes'));
 				finalizar();
 			});
 		};
