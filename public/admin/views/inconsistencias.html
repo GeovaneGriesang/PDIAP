@@ -167,10 +167,13 @@
                     Senha própria: {{p.senhaDefinida ? 'sim' : 'não'}} · Cadastro: {{p.createdAt | date:'dd/MM/yyyy'}}<br>
                     Ligado a: {{p.vinculos.projetos}} projeto(s), {{p.vinculos.avaliador}} avaliador(a), {{p.vinculos.participante}} participante,
                     {{p.vinculos.eventos}} evento(s), {{p.vinculos.saberes}} Saberes<span data-ng-if="p.vinculos.administraMostras">, administra {{p.vinculos.administraMostras}} Mostra(s)</span>
-                    <div style="margin-top:6px;"><md-button class="md-raised md-primary" style="text-transform:none;margin-left:0;" data-ng-click="juntar(g, p, $event)">Manter este</md-button></div>
+                    <div style="margin-top:6px;">
+                      <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;" data-ng-disabled="g.ocupado" data-ng-click="juntar(g, p, $event)">Manter este</md-button>
+                      <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="g.ocupado" data-ng-click="trocarEmail(g, p, $event)">Trocar e-mail</md-button>
+                    </div>
                   </div>
                 </div>
-                <p flex="100" style="font-size:12px;color:rgba(0,0,0,0.55);margin:4px 6px 0;">Se NÃO forem a mesma pessoa, não junte: uma delas precisa trocar para um e-mail próprio.</p>
+                <p flex="100" style="font-size:12px;color:rgba(0,0,0,0.55);margin:4px 6px 0;">Se NÃO forem a mesma pessoa, não junte: use "Trocar e-mail" para dar a cada uma o seu próprio e-mail.</p>
               </div>
             </div>
 
