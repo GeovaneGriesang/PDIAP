@@ -170,7 +170,11 @@
 						? (obj.tipoAprovacao === 'apresentacao' ? 'apresentacao' : 'anais')
 						: 'nao';
 
-					if (value.aprovado === true && value.participa === undefined) {
+					// Avaliado (tem nota) e NINGUÉM do grupo com presença marcada: o grupo apresentou, mas
+					// os alunos não conseguem emitir o certificado (que exige presença). Grupo com pelo
+					// menos uma presença foi conferido por alguém - não entra.
+					var algumaPresenca = (value.integrantes || []).some(function(i) { return i.presenca === true; });
+					if (value.aprovado === true && !algumaPresenca) {
 						$scope.semPresenca.push(obj);
 					}
 					if (value.aprovado === true) {
