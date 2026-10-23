@@ -8,13 +8,13 @@
     <div layout="row" layout-align="start center" style="flex-wrap:wrap;">
       <p style="margin-right:16px;"><b>Nome:</b> {{details.nomeProjeto}}</p>
       <div layout="row" layout-align="center center" class="md-whiteframe-1dp"
-        data-ng-class="{grey: details.aprovado !== true, green1: details.aprovado === true && details.participa === true, red: details.aprovado === true && details.participa === false}"
+        data-ng-class="{grey: details.aprovado !== true || (details.participa !== true && details.participa !== false), green1: details.aprovado === true && details.participa === true, red: details.aprovado === true && details.participa === false}"
         style="padding:3px 12px;border-radius:4px;font-size:11px;color:#f5f5f5;">
         <span style="font-weight:500;">
           <span data-ng-if="details.aprovado !== true">Aguardando aprovação</span>
           <span data-ng-if="details.aprovado === true && details.participa === true">Confirmado!</span>
           <span data-ng-if="details.aprovado === true && details.participa === false">Cancelado</span>
-          <span data-ng-if="details.aprovado === true && details.participa === undefined">Aprovado - aguardando confirmação</span>
+          <span data-ng-if="details.aprovado === true && details.participa !== true && details.participa !== false">Aprovado - aguardando confirmação</span>
         </span>
       </div>
     </div>
