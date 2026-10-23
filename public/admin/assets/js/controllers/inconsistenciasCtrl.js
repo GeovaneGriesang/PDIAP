@@ -41,18 +41,50 @@
 					' será apagado e tudo o que está ligado a ele passa pro que fica. Confirme que é a MESMA pessoa.')
 				.targetEvent(ev).ok('Juntar').cancel('Cancelar');
 			$mdDialog.show(confirm).then(function() {
+				grupo.ocupado = true;
 				var seguir = function(i) {
 					if (i >= outros.length) {
 						$scope.toast('Cadastros juntados em ' + manter.nome + '.', 'success-toast');
-						carregarCadastro();
+						outros.forEach(function(p) { tirarDoGrupo(grupo, p); });
+						grupo.ocupado = false;
 						return;
 					}
 					$http.post('/admin/pessoas/mesclar', { manterId: manter._id, removerId: outros[i]._id }).then(function() { seguir(i + 1); }, function(response) {
 						$scope.toast(typeof response.data === 'string' ? response.data : 'Falha ao juntar.', 'failed-toast');
-						carregarCadastro();
+						outros.slice(0, i).forEach(function(p) { tirarDoGrupo(grupo, p); });
+						grupo.ocupado = false;
 					});
 				};
 				seguir(0);
+			}, function() {});
+		};
+		// Atualiza só o grupo na tela (recarregar a lista inteira levava a página de volta pro topo):
+		// a pessoa sai do grupo; grupo com 1 pessoa só deixa de ser e-mail repetido.
+		var tirarDoGrupo = function(grupo, pessoa) {
+			grupo.pessoas = grupo.pessoas.filter(function(p) { return p._id !== pessoa._id; });
+			if (grupo.detalhes) grupo.detalhes = grupo.detalhes.filter(function(p) { return p._id !== pessoa._id; });
+			if (grupo.pessoas.length <= 1) {
+				var lista = $scope.cadastro.cadastroUnico.emailsRepetidos;
+				lista.splice(lista.indexOf(grupo), 1);
+			}
+		};
+		// Pessoas DIFERENTES com o mesmo e-mail: cada uma ganha o próprio (só super-admin).
+		$scope.trocarEmail = function(grupo, pessoa, ev) {
+			var dialogo = $mdDialog.prompt()
+				.title('Trocar o e-mail de ' + pessoa.nome)
+				.textContent('O novo e-mail vale para entrar na MOVACI e vai também para os cadastros de avaliador(a), participante e integrante de projeto desta pessoa. A senha continua a mesma.')
+				.placeholder('novo e-mail').ariaLabel('Novo e-mail').initialValue('')
+				.targetEvent(ev).ok('Trocar').cancel('Cancelar');
+			$mdDialog.show(dialogo).then(function(email) {
+				email = (email || '').trim();
+				if (!email) return;
+				grupo.ocupado = true;
+				$http.post('/admin/pessoas/' + pessoa._id + '/email', { email: email }).then(function(response) {
+					$scope.toast('E-mail de ' + pessoa.nome + ' trocado para ' + response.data.email + '.', 'success-toast');
+					tirarDoGrupo(grupo, pessoa);
+				}, function(response) {
+					$scope.toast(typeof response.data === 'string' ? response.data : 'Falha ao trocar o e-mail.', 'failed-toast');
+				}).finally(function() { grupo.ocupado = false; });
 			}, function() {});
 		};
 

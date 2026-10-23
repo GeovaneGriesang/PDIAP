@@ -451,6 +451,34 @@ router.post('/pessoas/mesclar', soSuper, async (req, res) => {
   }
 });
 
+// Troca o e-mail principal de UMA Pessoa (ex: pessoas diferentes cadastradas com o mesmo e-mail,
+// que não podem ser juntadas). Sem confirmação por e-mail (é a organização que troca); o novo
+// e-mail precisa estar livre e vai também pras cópias nos papéis ligados a ela (Avaliador,
+// Participante, integrantes de projeto - responsável de evento não guarda e-mail).
+router.post('/pessoas/:id/email', soSuper, async (req, res) => {
+  try {
+    let id = req.params.id;
+    if (!idValido(id)) return res.status(400).send('ID inválido.');
+    let email = (req.body.email || '').toString().trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return res.status(400).send('Informe um e-mail válido.');
+    let pessoa = await pessoaSchema.findById(id);
+    if (!pessoa) return res.status(404).send('Cadastro não encontrado.');
+    if (pessoaController.mesmoEmail(pessoa.email, email)) return res.status(400).send('Este já é o e-mail deste cadastro.');
+    if (!(await pessoaController.emailLivre(email, pessoa._id))) return res.status(400).send('Este e-mail já é usado por outro cadastro.');
+    pessoa.email = email;
+    pessoa.emailsAlternativos = (pessoa.emailsAlternativos || []).filter((e) => !pessoaController.mesmoEmail(e, email));
+    await pessoa.save();
+    await avaliadorSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: email } });
+    await participanteSchema.updateMany({ pessoa: pessoa._id }, { $set: { email: email } });
+    await projetoSchema.updateMany({ 'integrantes.pessoa': pessoa._id }, { $set: { 'integrantes.$[eu].email': email } }, { arrayFilters: [{ 'eu.pessoa': pessoa._id }] });
+    console.log('E-mail de cadastro trocado pela organização (' + (await perfil.carregar(req)).nome + '): Pessoa ' + id);
+    res.send({ email: email });
+  } catch (error) {
+    console.error('Erro ao trocar e-mail do cadastro', error);
+    res.status(500).send('Erro ao trocar o e-mail.');
+  }
+});
+
 // --- Administradores por Mostra (só super-admin) ------------------------------------------
 router.get('/administradores', soSuper, async (req, res) => {
   try {
