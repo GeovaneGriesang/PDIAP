@@ -80,9 +80,6 @@
 					templateUrl: '/admin/avaliacao/views/ranking.html',
 					controller: 'rankingCtrl'
 				},
-				'ranking1@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking1.html' },
-				'ranking2@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking2.html' },
-				'ranking3@ranking': { templateUrl: '/admin/avaliacao/views/list-ranking3.html' },
 				'feiras@ranking': { templateUrl: '/admin/avaliacao/views/list-feiras.html' },
 				'mencaoHonrosa@ranking': { templateUrl: '/admin/avaliacao/views/list-mencao-honrosa.html' }
 			},

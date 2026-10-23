@@ -1,43 +1,22 @@
 (function(){
 	'use strict';
 
-	// Grupos categoria/eixo na mesma ordem das abas e seções da tela (ver ranking.html e
-	// list-ranking1/2/3.html) - usado pra montar os PDFs de resultado (baixarPdfColocacao/
-	// baixarPdfDestaques abaixo) e pra saber quais chaves de $rootScope marcar empate
-	// (marcarEmpates), lendo os arrays já carregados/ordenados em $rootScope.
-	var GRUPOS_EIXOS = [
-		{categoria: 'Fundamental I', eixos: [
-			{nome: 'Ciências da Natureza e suas tecnologias', chave: 'eixo1_1'},
-			{nome: 'Ciências Humanas e suas tecnologias', chave: 'eixo1_2'},
-			{nome: 'Linguagens, Códigos e suas tecnologias', chave: 'eixo1_3'},
-			{nome: 'Matemática e suas tecnologias', chave: 'eixo1_4'}
-		]},
-		{categoria: 'Fundamental II', eixos: [
-			{nome: 'Ciências da Natureza e suas tecnologias', chave: 'eixo2_1'},
-			{nome: 'Ciências Humanas e suas tecnologias', chave: 'eixo2_2'},
-			{nome: 'Linguagens, Códigos e suas tecnologias', chave: 'eixo2_3'},
-			{nome: 'Matemática e suas tecnologias', chave: 'eixo2_4'}
-		]},
-		{categoria: 'Ensino Médio, Técnico e Superior', eixos: [
-			{nome: 'Ciências Agrárias, Exatas e da Terra', chave: 'eixo1'},
-			{nome: 'Ciências Ambientais, Biológicas e da Saúde', chave: 'eixo2'},
-			{nome: 'Ciências Humanas e Sociais Aplicadas', chave: 'eixo3'},
-			{nome: 'Línguas e Artes', chave: 'eixo4'},
-			{nome: 'Extensão', chave: 'eixo5'},
-			{nome: 'Ciências da Computação', chave: 'eixo6'},
-			{nome: 'Engenharias', chave: 'eixo7'}
-		]}
-	];
-
-	var TODAS_CHAVES_EIXO = GRUPOS_EIXOS.reduce(function(acc, grupo) {
-		return acc.concat(grupo.eixos.map(function(e) { return e.chave; }));
-	}, []);
+	// Categorias e eixos do Ranking vêm da MOSTRA (Feira.categoriasEixos da edição - ver
+	// avaliacaoAPI.edicaoDaMostra), não mais de uma lista fixa no código: a XI MOVACI, por
+	// exemplo, separou "Ensino Médio e Técnico" de "Ensino Superior", e com a lista fixa todo
+	// projeto de categoria/eixo fora dela sumia do ranking sem aviso (já acontecia com projetos do
+	// Ensino Médio inscritos em eixos do Fundamental). Categoria ou eixo de projeto que não está
+	// na Mostra ganha uma seção própria, marcada "fora da lista da Mostra", em vez de sumir.
+	//
+	// $scope.categorias = [{ nome, foraDaMostra, eixos: [{ nome, foraDaMostra, todos, ordenados,
+	// visiveis }], geral, premiados }] - ordenados = por nota (base dos PDFs, empates e premiados);
+	// visiveis = o que a aba mostra no modo de ranqueamento escolhido.
 
 	// Marca (proj.empatado = true) quem está empatado numa pontuação que afeta o pódio -
 	// tanto empates dentro do 1º-3º quanto um 4º colocado (ou mais abaixo) empatado com o
 	// 3º, que também precisa aparecer pra ajudar no desempate. Empate abaixo dessa faixa
 	// (ex: 5º empatado com 6º) não importa pro resultado e não é destacado. `lista` já
-	// vem ordenada por -total (ver reordenar() abaixo).
+	// vem ordenada por -total.
 	function marcarEmpates(lista) {
 		if (!lista || lista.length === 0) return;
 		var corte = lista.length >= 3 ? lista[2].total : lista[lista.length - 1].total;
@@ -56,58 +35,27 @@
 
 		// Guia (barra de abas) controlada na mão via ng-show, não <md-tabs> - ver comentário
 		// no <style> de ranking.html sobre por que (conflito entre md-dynamic-height e o
-		// cabeçalho fixo/sticky). "fund1" replica o mesmo primeiro-aba-ativa-por-padrão que
-		// <md-tabs> já tinha.
-		$scope.abaAtiva = 'fund1';
+		// cabeçalho fixo/sticky). Abas: 'cat<i>' e 'geral<i>' por categoria, 'feiras', 'mencaoHonrosa'.
+		$scope.abaAtiva = 'cat0';
+		// '-total' (por nota) ou 'nomeProjeto' (os 3 primeiros de cada eixo em ordem alfabética, sem
+		// revelar a colocação) - seletor "Ranqueamento" da toolbar.
+		$scope.rank = '-total';
+		$scope.categorias = [];
+		$scope.totalPremiadosGeral = 0;
 
-		$rootScope.projetos = [];
-		$rootScope.eixo1_1 = [];
-		$rootScope.eixo1_2 = [];
-		$rootScope.eixo1_3 = [];
-		$rootScope.eixo1_4 = [];
-		$rootScope.eixo2_1 = [];
-		$rootScope.eixo2_2 = [];
-		$rootScope.eixo2_3 = [];
-		$rootScope.eixo2_4 = [];
-		$rootScope.eixo1 = [];
-		$rootScope.eixo2 = [];
-		$rootScope.eixo3 = [];
-		$rootScope.eixo4 = [];
-		$rootScope.eixo5 = [];
-		$rootScope.eixo6 = [];
-		$rootScope.eixo7 = [];
-
-		$rootScope.ori_eixo1_1 = [];
-		$rootScope.ori_eixo1_2 = [];
-		$rootScope.ori_eixo1_3 = [];
-		$rootScope.ori_eixo1_4 = [];
-		$rootScope.ori_eixo2_1 = [];
-		$rootScope.ori_eixo2_2 = [];
-		$rootScope.ori_eixo2_3 = [];
-		$rootScope.ori_eixo2_4 = [];
-		$rootScope.ori_eixo1 = [];
-		$rootScope.ori_eixo2 = [];
-		$rootScope.ori_eixo3 = [];
-		$rootScope.ori_eixo4 = [];
-		$rootScope.ori_eixo5 = [];
-		$rootScope.ori_eixo6 = [];
-		$rootScope.ori_eixo7 = [];
-
-		$rootScope.trouxas = [];
 		$rootScope.mencaoHonrosa = [];
 		$rootScope.feirasComProjetos = [];
 		$scope.searchProject = "";
 
 		// Constrói o objeto de exibição comum (total da nota + orientadores/alunos já
-		// concatenados) uma vez só por projeto - antes essa mesma conta era copiada e colada
-		// em 4 lugares (uma por categoria + "trouxas"), o que deixava fácil de esquecer um
-		// lugar ao adicionar um novo uso (caso de menção honrosa/feiras abaixo).
+		// concatenados) uma vez só por projeto.
 		function construirObjExibicao(value) {
 			var total;
 			if (value.avaliacao !== undefined && value.avaliacao.length > 0) {
 				// Soma todas as notas presentes (2, 3 ou mais avaliadores, +desempate se
 				// houver) - ver models/feira-schema.js, numAvaliadoresPorProjeto.
 				total = value.avaliacao.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
+				total = Math.round(total * 100) / 100;
 			} else {
 				total = 0;
 				value.avaliacao = undefined;
@@ -134,85 +82,65 @@
 				avaliacao: value.avaliacao,
 				total: total,
 				// Pra contagem de "Total premiados" (por categoria e geral), pro selo de
-				// Premiado/Menção/Classificado (independente do modo de ordenação - ver
-				// abrirDetalhesPremiacao abaixo) e pra editar isso sem sair da tela.
+				// Premiado/Menção/Classificado e pra editar isso sem sair da tela.
 				premiacao: value.premiacao,
 				colocacao: value.colocacao,
 				feirasClassificadas: value.feirasClassificadas
 			};
 		}
 
+		// Categorias/eixos da Mostra, na ordem cadastrada (sem projetos ainda).
+		function gruposDaMostra(edicao) {
+			return ((edicao && edicao.categoriasEixos) || []).filter(function(c) { return c && c.categoria; }).map(function(c) {
+				return {
+					nome: c.categoria, foraDaMostra: false, geral: [], premiados: 0,
+					eixos: (c.eixos || []).map(function(e) { return { nome: e, foraDaMostra: false, todos: [], ordenados: [], visiveis: [] }; })
+				};
+			});
+		}
+
+		// Põe o projeto no eixo da categoria dele, criando categoria/eixo "fora da lista da Mostra"
+		// quando preciso (no fim, pra não embaralhar a ordem da Mostra).
+		function encaixar(categorias, obj) {
+			var nomeCat = obj.categoria || '(sem categoria)';
+			var nomeEixo = obj.eixo || '(sem eixo)';
+			var cat = categorias.filter(function(c) { return c.nome === nomeCat; })[0];
+			if (!cat) {
+				cat = { nome: nomeCat, foraDaMostra: true, geral: [], premiados: 0, eixos: [] };
+				categorias.push(cat);
+			}
+			var eixo = cat.eixos.filter(function(e) { return e.nome === nomeEixo; })[0];
+			if (!eixo) {
+				eixo = { nome: nomeEixo, foraDaMostra: true, todos: [], ordenados: [], visiveis: [] };
+				cat.eixos.push(eixo);
+			}
+			eixo.todos.push(obj);
+		}
+
 		let carregarProjetos = function() {
 			var anoAtual = avaliacaoAPI.anoDaMostra();
-
-			// Zera os acumuladores antes de recarregar - carregarProjetos() agora é chamado
-			// de novo depois de confirmarPremiados() (pra atualizar os totais na tela), e sem
-			// isso cada chamada extra ia EMPILHAR projetos duplicados em cima dos que já
-			// estavam nesses arrays (só eram zerados uma vez, na inicialização do controller).
-			TODAS_CHAVES_EIXO.forEach(function(chave) { $rootScope[chave] = []; });
-			$rootScope.projetos = [];
-			$rootScope.trouxas = [];
 			$rootScope.mencaoHonrosa = [];
 
-			// Feiras externas (Mostratec etc.) cadastradas pro ano atual - carrega antes dos
-			// projetos pra já poder agrupar por feira na mesma passada (ver
-			// value.feirasClassificadas abaixo). tipo:'edicao' é a própria edição do
-			// MOVACI/PDIAP reaproveitando essa coleção (ver models/feira-schema.js), não uma
-			// feira de classificação de verdade - fica de fora.
+			// Feiras: as externas (Mostratec etc.) do ano pra aba "Feiras" e a própria edição
+			// (tipo:'edicao') pras categorias/eixos do ranking.
 			avaliacaoAPI.getFeiras().then(function(response) {
 				$rootScope.feirasComProjetos = response.data
 					.filter(function(f) { return f.tipo !== 'edicao' && f.ano === anoAtual; })
 					.map(function(f) { return {feira: f, projetos: []}; });
+				var categorias = gruposDaMostra(avaliacaoAPI.edicaoDaMostra(response.data));
 
 				avaliacaoAPI.getTodosProjetos()
 				.then(function(response) {
-					angular.forEach(response.data, function (value, key) {
+					angular.forEach(response.data, function (value) {
 						if (!avaliacaoAPI.pertenceAMostraAtual(value)) return;
 						if (value.aprovado !== true) return;
 
-						// Snapshot ANTES de construirObjExibicao, que pode zerar
-						// value.avaliacao (caso [] vazio) - preserva o mesmo critério de
-						// sempre pra decidir se entra no ranking por eixo (avaliado ou
-						// participação confirmada) ou só em "trouxas".
+						// Snapshot ANTES de construirObjExibicao, que pode zerar value.avaliacao
+						// (caso [] vazio): entra no ranking por eixo quem foi avaliado ou teve a
+						// participação confirmada.
 						var elegivelRanking = value.avaliacao !== undefined || value.participa === true;
 						let obj = construirObjExibicao(value);
-
-						if (elegivelRanking) {
-							if (value.categoria === 'Fundamental I (1º ao 5º anos)') {
-								switch(value.eixo) {
-									case 'Ciências da Natureza e suas tecnologias': $rootScope.eixo1_1.push(obj); break;
-									case 'Ciências Humanas e suas tecnologias': $rootScope.eixo1_2.push(obj); break;
-									case 'Linguagens, Códigos e suas tecnologias': $rootScope.eixo1_3.push(obj); break;
-									case 'Matemática e suas tecnologias': $rootScope.eixo1_4.push(obj); break;
-									default:
-									// default code block
-								}
-							} else if (value.categoria === 'Fundamental II (6º ao 9º anos)') {
-								switch(value.eixo) {
-									case 'Ciências da Natureza e suas tecnologias': $rootScope.eixo2_1.push(obj); break;
-									case 'Ciências Humanas e suas tecnologias': $rootScope.eixo2_2.push(obj); break;
-									case 'Linguagens, Códigos e suas tecnologias': $rootScope.eixo2_3.push(obj); break;
-									case 'Matemática e suas tecnologias': $rootScope.eixo2_4.push(obj); break;
-									default:
-									// default code block
-								}
-							} else if (value.categoria === 'Ensino Médio, Técnico e Superior') {
-								$rootScope.projetos.push(obj);
-								switch(value.eixo) {
-									case 'Ciências Agrárias, Exatas e da Terra': $rootScope.eixo1.push(obj); break;
-									case 'Ciências Ambientais, Biológicas e da Saúde': $rootScope.eixo2.push(obj); break;
-									case 'Ciências Humanas e Sociais Aplicadas': $rootScope.eixo3.push(obj); break;
-									case 'Línguas e Artes': $rootScope.eixo4.push(obj); break;
-									case 'Extensão': $rootScope.eixo5.push(obj); break;
-									case 'Ciências da Computação': $rootScope.eixo6.push(obj); break;
-									case 'Engenharias': $rootScope.eixo7.push(obj); break;
-									default:
-									// default code block
-								}
-							}
-						} else {
-							$rootScope.trouxas.push(obj);
-						}
+						if (elegivelRanking) encaixar(categorias, obj);
 
 						// Menção honrosa e classificação pra feiras externas são marcadas à
 						// parte (Projetos > Premiação), independente do ranking por nota
@@ -228,6 +156,11 @@
 							});
 						}
 					});
+					$scope.categorias = categorias;
+					// Aba que não existe mais (ex: outra Mostra) volta pra primeira.
+					var abas = ['feiras', 'mencaoHonrosa'];
+					categorias.forEach(function(c, i) { abas.push('cat' + i, 'geral' + i); });
+					if (abas.indexOf($scope.abaAtiva) === -1) $scope.abaAtiva = 'cat0';
 					$scope.reordenar();
 				}, function(response) {
 					console.log(response.data);
@@ -348,15 +281,10 @@
 			});
 		};
 
-		// $rootScope.ordenacao = ['categoria','eixo'];
-		// $rootScope.ordenarPor = function(campo) {
-		// 	$rootScope.ordenacao = campo;
-		// }
-
 		$scope.query = 'nomeProjeto';
 		$scope.setBusca = function(campo) {
 			$scope.query = campo;
-		}
+		};
 
 		carregarProjetos();
 
@@ -366,228 +294,45 @@
 		avaliacaoAPI.getConfigPremiacao(avaliacaoAPI.anoDaMostra())
 			.then(function(response) { $scope.numPremiadosPorEixo = response.data.numPremiadosPorEixo; }, function(response) { console.log(response.data); });
 
-		$scope.reordenar = function(){
-			$rootScope.ori_eixo1_1 = $filter('orderBy')($rootScope.eixo1_1,'-total',false);
-			$rootScope.ori_eixo1_2 = $filter('orderBy')($rootScope.eixo1_2,'-total',false);
-			$rootScope.ori_eixo1_3 = $filter('orderBy')($rootScope.eixo1_3,'-total',false);
-			$rootScope.ori_eixo1_4 = $filter('orderBy')($rootScope.eixo1_4,'-total',false);
+		var ehPremiado = function(p) { return p && p._id && p.premiacao === 'Premiado'; };
 
-			$rootScope.ori_eixo2_1 = $filter('orderBy')($rootScope.eixo2_1,'-total',false);
-			$rootScope.ori_eixo2_2 = $filter('orderBy')($rootScope.eixo2_2,'-total',false);
-			$rootScope.ori_eixo2_3 = $filter('orderBy')($rootScope.eixo2_3,'-total',false);
-			$rootScope.ori_eixo2_4 = $filter('orderBy')($rootScope.eixo2_4,'-total',false);
-
-			$rootScope.ori_eixo1 = $filter('orderBy')($rootScope.eixo1,'-total',false);
-			$rootScope.ori_eixo2 = $filter('orderBy')($rootScope.eixo2,'-total',false);
-			$rootScope.ori_eixo3 = $filter('orderBy')($rootScope.eixo3,'-total',false);
-			$rootScope.ori_eixo4 = $filter('orderBy')($rootScope.eixo4,'-total',false);
-			$rootScope.ori_eixo5 = $filter('orderBy')($rootScope.eixo5,'-total',false);
-			$rootScope.ori_eixo6 = $filter('orderBy')($rootScope.eixo6,'-total',false);
-			$rootScope.ori_eixo7 = $filter('orderBy')($rootScope.eixo7,'-total',false);
-
-			$rootScope.eixo1_1 = $rootScope.ori_eixo1_1; 
-			$rootScope.eixo1_2 = $rootScope.ori_eixo1_2;
-			$rootScope.eixo1_3 = $rootScope.ori_eixo1_3;
-			$rootScope.eixo1_4 = $rootScope.ori_eixo1_4;
-			$rootScope.eixo2_1 = $rootScope.ori_eixo2_1;
-			$rootScope.eixo2_2 = $rootScope.ori_eixo2_2;
-			$rootScope.eixo2_3 = $rootScope.ori_eixo2_3;
-			$rootScope.eixo2_4 = $rootScope.ori_eixo2_4;
-			$rootScope.eixo1 = $rootScope.ori_eixo1;
-			$rootScope.eixo2 = $rootScope.ori_eixo2;
-			$rootScope.eixo3 = $rootScope.ori_eixo3;
-			$rootScope.eixo4 = $rootScope.ori_eixo4;
-			$rootScope.eixo5 = $rootScope.ori_eixo5;
-			$rootScope.eixo6 = $rootScope.ori_eixo6;
-			$rootScope.eixo7 = $rootScope.ori_eixo7;
-
-			TODAS_CHAVES_EIXO.forEach(function(chave) { marcarEmpates($rootScope[chave]); });
-			atualizarContadoresPremiados();
-			atualizarGerais();
-		}
-
-		var CHAVES_FUND1 = ['eixo1_1', 'eixo1_2', 'eixo1_3', 'eixo1_4'];
-		var CHAVES_FUND2 = ['eixo2_1', 'eixo2_2', 'eixo2_3', 'eixo2_4'];
-		var CHAVES_ENSINO_MEDIO = ['eixo1', 'eixo2', 'eixo3', 'eixo4', 'eixo5', 'eixo6', 'eixo7'];
-
-		// Total de projetos já confirmados como Premiado (premiacao:'Premiado' - ver
-		// confirmarPremiados abaixo) por categoria e no geral, pro painel no topo da tela.
-		function contarPremiados(chaves) {
+		// Ordena cada eixo por nota, marca empates, monta o que a aba mostra no modo escolhido e
+		// recalcula as listas gerais e os contadores de premiados.
+		$scope.reordenar = function() {
 			var total = 0;
-			chaves.forEach(function(chave) {
-				total += ($rootScope[chave] || []).filter(function(p) { return p && p._id && p.premiacao === 'Premiado'; }).length;
+			$scope.categorias.forEach(function(cat) {
+				cat.geral = [];
+				cat.eixos.forEach(function(eixo) {
+					eixo.ordenados = $filter('orderBy')(eixo.todos, '-total', false);
+					marcarEmpates(eixo.ordenados);
+					// Alfabético: só os 3 primeiros de cada eixo, em ordem de nome (não revela a colocação).
+					eixo.visiveis = $scope.rank === 'nomeProjeto'
+						? $filter('orderBy')(eixo.ordenados.slice(0, 3), 'nomeProjeto', false)
+						: eixo.ordenados;
+					cat.geral = cat.geral.concat(eixo.todos);
+				});
+				cat.premiados = cat.geral.filter(ehPremiado).length;
+				cat.temProjetos = cat.geral.length > 0;
+				total += cat.premiados;
 			});
-			return total;
+			$scope.totalPremiadosGeral = total;
+		};
+
+		// Seletor "Ranqueamento" da toolbar.
+		$scope.recarregar = function(filtro) {
+			$scope.rank = filtro;
+			$scope.reordenar();
+		};
+
+		// Primeiros N de cada eixo por nota (base dos PDFs e da confirmação de premiados).
+		function topN(eixo, n) {
+			return eixo.ordenados.filter(function(p) { return p && p._id; }).slice(0, n);
 		}
-		function atualizarContadoresPremiados() {
-			$scope.totalPremiadosFund1 = contarPremiados(CHAVES_FUND1);
-			$scope.totalPremiadosFund2 = contarPremiados(CHAVES_FUND2);
-			$scope.totalPremiadosEnsinoMedio = contarPremiados(CHAVES_ENSINO_MEDIO);
-			$scope.totalPremiadosGeral = $scope.totalPremiadosFund1 + $scope.totalPremiadosFund2 + $scope.totalPremiadosEnsinoMedio;
-		}
-
-		// Listagem geral de cada categoria - todos os eixos juntos numa lista só, pontuados
-		// por nota (usada nas abas "Geral - ..." pra decidir quem classificar pra feiras
-		// externas tipo Mostratec, já que essa decisão é por categoria inteira, não por
-		// eixo). A ordenação em si (Alfabético/Total) fica no template via orderBy,
-		// lendo $scope.rank (mesmo seletor "Ranqueamento" já usado nas abas por eixo).
-		function juntarEixos(chaves) {
-			var lista = [];
-			chaves.forEach(function(chave) { lista = lista.concat($rootScope[chave] || []); });
-			return lista.filter(function(p) { return p && p._id; });
-		}
-		function atualizarGerais() {
-			$scope.geralFund1 = juntarEixos(CHAVES_FUND1);
-			$scope.geralFund2 = juntarEixos(CHAVES_FUND2);
-			$scope.geralEnsinoMedio = juntarEixos(CHAVES_ENSINO_MEDIO);
-		}
-
-		$scope.recarregar = function(filtro){
-			if(filtro === 'nomeProjeto'){
-				var eixo1_1 = [];
-				var eixo1_2 = [];
-				var eixo1_3 = [];
-				var eixo1_4 = [];
-
-				var eixo2_1 = [];
-				var eixo2_2 = [];
-				var eixo2_3 = [];
-				var eixo2_4 = [];
-
-				var eixo1 = [];
-				var eixo2 = [];
-				var eixo3 = [];
-				var eixo4 = [];
-				var eixo5 = [];
-				var eixo6 = [];
-				var eixo7 = [];
-				for(var x=0; x<3;x++){
-					eixo1_1.push($rootScope.eixo1_1[x]);					
-					eixo1_2.push($rootScope.eixo1_2[x]);
-					eixo1_3.push($rootScope.eixo1_3[x]);
-					eixo1_4.push($rootScope.eixo1_4[x]);
-					eixo2_1.push($rootScope.eixo2_1[x]);					
-					eixo2_2.push($rootScope.eixo2_2[x]);
-					eixo2_3.push($rootScope.eixo2_3[x]);
-					eixo2_4.push($rootScope.eixo2_4[x]);
-		
-					eixo1.push($rootScope.eixo1[x]);
-					eixo2.push($rootScope.eixo2[x]);
-					eixo3.push($rootScope.eixo3[x]);
-					eixo4.push($rootScope.eixo4[x]);
-					eixo5.push($rootScope.eixo5[x]);
-					eixo6.push($rootScope.eixo6[x]);
-					eixo7.push($rootScope.eixo7[x]);
-				}			
-						
-				if(eixo1_1[2] == null) eixo1_1[2] = {_id:null,total:0};
-				if(eixo1_2[2] == null) eixo1_2[2] = {_id:null,total:0};
-				if(eixo1_3[2] == null) eixo1_3[2] = {_id:null,total:0};
-				if(eixo1_4[2] == null) eixo1_4[2] = {_id:null,total:0};
-
-				if(eixo2_1[2] == null) eixo1_1[2] = {_id:null,total:0};
-				if(eixo2_2[2] == null) eixo1_2[2] = {_id:null,total:0};
-				if(eixo2_3[2] == null) eixo1_3[2] = {_id:null,total:0};
-				if(eixo2_4[2] == null) eixo1_4[2] = {_id:null,total:0};
-
-				if(eixo1[2] == null) eixo1[2] = {_id:null,total:0};
-				if(eixo2[2] == null) eixo2[2] = {_id:null,total:0};
-				if(eixo3[2] == null) eixo3[2] = {_id:null,total:0};
-				if(eixo4[2] == null) eixo4[2] = {_id:null,total:0};
-				if(eixo5[2] == null) eixo5[2] = {_id:null,total:0};
-				if(eixo6[2] == null) eixo6[2] = {_id:null,total:0};
-				if(eixo7[2] == null) eixo7[2] = {_id:null,total:0};			
-
-				if(eixo1_1[1] == null) eixo1_1[1] = {_id:null,total:0};
-				if(eixo1_2[1] == null) eixo1_2[1] = {_id:null,total:0};
-				if(eixo1_3[1] == null) eixo1_3[1] = {_id:null,total:0};
-				if(eixo1_4[1] == null) eixo1_4[1] = {_id:null,total:0};
-
-				if(eixo2_1[1] == null) eixo1_1[1] = {_id:null,total:0};
-				if(eixo2_2[1] == null) eixo1_2[1] = {_id:null,total:0};
-				if(eixo2_3[1] == null) eixo1_3[1] = {_id:null,total:0};
-				if(eixo2_4[1] == null) eixo1_4[1] = {_id:null,total:0};
-
-				if(eixo1[1] == null) eixo1[1] = {_id:null,total:0};
-				if(eixo2[1] == null) eixo2[1] = {_id:null,total:0};
-				if(eixo3[1] == null) eixo3[1] = {_id:null,total:0};
-				if(eixo4[1] == null) eixo4[1] = {_id:null,total:0};
-				if(eixo5[1] == null) eixo5[1] = {_id:null,total:0};
-				if(eixo6[1] == null) eixo6[1] = {_id:null,total:0};
-				if(eixo7[1] == null) eixo7[1] = {_id:null,total:0};
-
-				if(eixo1_1[0] == null) eixo1_1 = [];
-				if(eixo1_2[0] == null) eixo1_2 = [];
-				if(eixo1_3[0] == null) eixo1_3 = [];
-				if(eixo1_4[0] == null) eixo1_4 = [];
-
-				if(eixo2_1[0] == null) eixo1_1 = [];
-				if(eixo2_2[0] == null) eixo1_2 = [];
-				if(eixo2_3[0] == null) eixo1_3 = [];
-				if(eixo2_4[0] == null) eixo1_4 = [];
-
-				if(eixo1[0] == null) eixo1 = [];
-				if(eixo2[0] == null) eixo2 = [];
-				if(eixo3[0] == null) eixo3 = [];
-				if(eixo4[0] == null) eixo4 = [];
-				if(eixo5[0] == null) eixo5 = [];
-				if(eixo6[0] == null) eixo6 = [];
-				if(eixo7[0] == null) eixo7 = [];
-				
-				$rootScope.eixo1_1 = $filter('orderBy')(eixo1_1,filtro,false);
-				$rootScope.eixo1_2 = $filter('orderBy')(eixo1_2,filtro,false);
-				$rootScope.eixo1_3 = $filter('orderBy')(eixo1_3,filtro,false);
-				$rootScope.eixo1_4 = $filter('orderBy')(eixo1_4,filtro,false);
-
-				$rootScope.eixo2_1 = $filter('orderBy')(eixo2_1,filtro,false);
-				$rootScope.eixo2_2 = $filter('orderBy')(eixo2_2,filtro,false);
-				$rootScope.eixo2_3 = $filter('orderBy')(eixo2_3,filtro,false);
-				$rootScope.eixo2_4 = $filter('orderBy')(eixo2_4,filtro,false);
-
-				$rootScope.eixo1 = $filter('orderBy')(eixo1,filtro,false);
-				$rootScope.eixo2 = $filter('orderBy')(eixo2,filtro,false);
-				console.log("EIXO2:"+JSON.stringify($rootScope.eixo2));
-				$rootScope.eixo3 = $filter('orderBy')(eixo3,filtro,false);
-				$rootScope.eixo4 = $filter('orderBy')(eixo4,filtro,false);
-				$rootScope.eixo5 = $filter('orderBy')(eixo5,filtro,false);
-				$rootScope.eixo6 = $filter('orderBy')(eixo6,filtro,false);
-				$rootScope.eixo7 = $filter('orderBy')(eixo7,filtro,false);
-			} else {
-				$rootScope.eixo1_1 = $filter('orderBy')($rootScope.ori_eixo1_1,filtro,false);
-				$rootScope.eixo1_2 = $filter('orderBy')($rootScope.ori_eixo1_2,filtro,false);
-				$rootScope.eixo1_3 = $filter('orderBy')($rootScope.ori_eixo1_3,filtro,false);
-				$rootScope.eixo1_4 = $filter('orderBy')($rootScope.ori_eixo1_4,filtro,false);
-
-				$rootScope.eixo2_1 = $filter('orderBy')($rootScope.ori_eixo2_1,filtro,false);
-				$rootScope.eixo2_2 = $filter('orderBy')($rootScope.ori_eixo2_2,filtro,false);
-				$rootScope.eixo2_3 = $filter('orderBy')($rootScope.ori_eixo2_3,filtro,false);
-				$rootScope.eixo2_4 = $filter('orderBy')($rootScope.ori_eixo2_4,filtro,false);
-
-				$rootScope.eixo1 = $filter('orderBy')($rootScope.ori_eixo1,filtro,false);
-				$rootScope.eixo2 = $filter('orderBy')($rootScope.ori_eixo2,filtro,false);
-				$rootScope.eixo3 = $filter('orderBy')($rootScope.ori_eixo3,filtro,false);
-				$rootScope.eixo4 = $filter('orderBy')($rootScope.ori_eixo4,filtro,false);
-				$rootScope.eixo5 = $filter('orderBy')($rootScope.ori_eixo5,filtro,false);
-				$rootScope.eixo6 = $filter('orderBy')($rootScope.ori_eixo6,filtro,false);
-				$rootScope.eixo7 = $filter('orderBy')($rootScope.ori_eixo7,filtro,false);
-			}
-
-
-		}
-
-		// Top 3 de um eixo (array já carregado/ordenado por -total em $rootScope, ver
-		// reordenar() acima) - filtra os placeholders {_id:null} que recarregar() pode ter
-		// deixado pra trás se o usuário trocou pra ordenação alfabética antes de baixar o PDF.
-		function top3(chave) {
-			return topN(chave, 3);
-		}
-
-		// Igual a top3, mas com a quantidade configurável - usado por confirmarPremiados
-		// abaixo (top3 continua fixo em 3 de propósito, só pros PDFs de resultado - mudar
-		// numPremiadosPorEixo não afeta o "1º, 2º e 3º colocados" do PDF, só quem confirmar
-		// marca como Premiado).
-		function topN(chave, n) {
-			return ($rootScope[chave] || []).filter(function(p) { return p && p._id; }).slice(0, n);
+		// Percorre todos os eixos (na ordem das abas) com o nome da seção "Categoria - Eixo".
+		function cadaEixo(fn) {
+			$scope.categorias.forEach(function(cat) {
+				cat.eixos.forEach(function(eixo) { fn(eixo, cat.nome + ' - ' + eixo.nome); });
+			});
 		}
 
 		// Seções de classificação pra feiras externas e menção honrosa - cross-cutting
@@ -626,25 +371,23 @@
 		// tem pelo menos um projeto avaliado, na mesma ordem das abas da tela.
 		$scope.baixarPdfColocacao = function() {
 			var secoes = [];
-			GRUPOS_EIXOS.forEach(function(grupo) {
-				grupo.eixos.forEach(function(eixo) {
-					var top = top3(eixo.chave);
-					if (top.length === 0) return;
-					secoes.push({
-						titulo: grupo.categoria + ' - ' + eixo.nome,
-						colunas: [
-							{ texto: 'Colocação', largura: 60 },
-							{ texto: 'Pontuação', largura: 60 },
-							{ texto: 'Nº Inscrição', largura: 60 },
-							{ texto: 'Projeto', largura: '*' },
-							{ texto: 'Escola', largura: 110 },
-							{ texto: 'Aluno(s)', largura: 120 },
-							{ texto: 'Orientador(es)', largura: 120 }
-						],
-						linhas: top.map(function(p, i) {
-							return [(i + 1) + 'º', p.total, p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
-						})
-					});
+			cadaEixo(function(eixo, titulo) {
+				var top = topN(eixo, 3);
+				if (top.length === 0) return;
+				secoes.push({
+					titulo: titulo,
+					colunas: [
+						{ texto: 'Colocação', largura: 60 },
+						{ texto: 'Pontuação', largura: 60 },
+						{ texto: 'Nº Inscrição', largura: 60 },
+						{ texto: 'Projeto', largura: '*' },
+						{ texto: 'Escola', largura: 110 },
+						{ texto: 'Aluno(s)', largura: 120 },
+						{ texto: 'Orientador(es)', largura: 120 }
+					],
+					linhas: top.map(function(p, i) {
+						return [(i + 1) + 'º', p.total, p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
+					})
 				});
 			});
 			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
@@ -662,25 +405,23 @@
 		// nota) - senão a posição na lista já entregaria o resultado.
 		$scope.baixarPdfDestaques = function() {
 			var secoes = [];
-			GRUPOS_EIXOS.forEach(function(grupo) {
-				grupo.eixos.forEach(function(eixo) {
-					var destaques = top3(eixo.chave).sort(function(a, b) {
-						return (a.nomeProjeto || '').localeCompare(b.nomeProjeto || '');
-					});
-					if (destaques.length === 0) return;
-					secoes.push({
-						titulo: grupo.categoria + ' - ' + eixo.nome,
-						colunas: [
-							{ texto: 'Nº Inscrição', largura: 60 },
-							{ texto: 'Projeto', largura: '*' },
-							{ texto: 'Escola', largura: 110 },
-							{ texto: 'Aluno(s)', largura: 120 },
-							{ texto: 'Orientador(es)', largura: 120 }
-						],
-						linhas: destaques.map(function(p) {
-							return [p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
-						})
-					});
+			cadaEixo(function(eixo, titulo) {
+				var destaques = topN(eixo, 3).sort(function(a, b) {
+					return (a.nomeProjeto || '').localeCompare(b.nomeProjeto || '');
+				});
+				if (destaques.length === 0) return;
+				secoes.push({
+					titulo: titulo,
+					colunas: [
+						{ texto: 'Nº Inscrição', largura: 60 },
+						{ texto: 'Projeto', largura: '*' },
+						{ texto: 'Escola', largura: 110 },
+						{ texto: 'Aluno(s)', largura: 120 },
+						{ texto: 'Orientador(es)', largura: 120 }
+					],
+					linhas: destaques.map(function(p) {
+						return [p.numInscricao, p.nomeProjeto, p.nomeEscola, p.alunos, p.orientadores];
+					})
 				});
 			});
 			secoes = secoes.concat(secoesFeirasEMencaoHonrosa());
@@ -701,11 +442,9 @@
 		// Premiação), não fazem parte desse fluxo automático.
 		$scope.confirmarPremiados = function(ev) {
 			var premiados = [];
-			GRUPOS_EIXOS.forEach(function(grupo) {
-				grupo.eixos.forEach(function(eixo) {
-					topN(eixo.chave, $scope.numPremiadosPorEixo).forEach(function(p, i) {
-						premiados.push({ id: p._id, colocacao: i + 1 });
-					});
+			cadaEixo(function(eixo) {
+				topN(eixo, $scope.numPremiadosPorEixo).forEach(function(p, i) {
+					premiados.push({ id: p._id, colocacao: i + 1 });
 				});
 			});
 
@@ -736,8 +475,8 @@
 						.textContent(response.data.marcados + ' projeto(s) marcado(s) como Premiado.')
 						.ok('Entendi')
 						.targetEvent(ev));
-					// Recarrega do servidor pra os totais de premiados (painel do topo e de
-					// cada categoria) refletirem o resultado de imediato, sem precisar dar F5.
+					// Recarrega do servidor pra os totais de premiados refletirem o resultado de
+					// imediato, sem precisar dar F5.
 					carregarProjetos();
 				}, function(response) {
 					$mdDialog.show($mdDialog.alert()
