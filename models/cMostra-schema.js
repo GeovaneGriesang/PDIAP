@@ -50,8 +50,12 @@ const CadastroMostraSchema = new Schema({
     },
     ano_certificado: {
 		type: Number
-	}
-}, {collection: 'mostra'}); 
+	},
+	// Mostra (Feira tipo:'edicao') deste certificado - um certificado por Mostra, mesmo com duas
+	// Mostras no mesmo ano. Certificado antigo sem feiraId vale pro ano todo (ano_certificado) até
+	// a Mostra ganhar o seu - ver certificadosService.js#layoutDoCertificado.
+	feiraId: { type: Schema.Types.ObjectId, ref: 'Feira' }
+}, {collection: 'mostra'});
 
 //exporta o Model do Schema
 const Mostra = module.exports = mongoose.model('Mostra', CadastroMostraSchema);

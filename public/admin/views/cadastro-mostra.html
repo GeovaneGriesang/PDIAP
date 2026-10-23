@@ -31,8 +31,8 @@
                             <img data-ng-src="{{previewImagem || imagemExistente}}" style="max-height:120px;max-width:220px;border:1px solid #ccc;border-radius:4px;display:block;" alt="Prévia do layout do certificado">
                             <p style="font-size:12px;color:#666;margin:4px 0 0 0;">
                                 <span data-ng-if="previewImagemNome">Nova imagem selecionada: {{previewImagemNome}}</span>
-                                <span data-ng-if="!previewImagemNome && imagemExistente && confereCertificado(ano)">Imagem já cadastrada para o ano {{ano}}.</span>
-                                <span data-ng-if="!previewImagemNome && imagemExistente && !confereCertificado(ano)">Imagem de outro ano (será usada se você salvar sem trocar).</span>
+                                <span data-ng-if="!previewImagemNome && imagemExistente && situacaoCertificado(mostraId) === 'proprio'">Imagem já cadastrada para esta Mostra.</span>
+                                <span data-ng-if="!previewImagemNome && imagemExistente && situacaoCertificado(mostraId) !== 'proprio'">Imagem do certificado antigo do ano ou de outra Mostra (será usada se você salvar sem trocar).</span>
                             </p>
                         </div>
                         <div class="md-errors-spacer">
@@ -48,8 +48,8 @@
                             <img data-ng-src="{{previewImagemFundo || imagemFundoExistente}}" style="max-height:120px;max-width:220px;border:1px solid #ccc;border-radius:4px;display:block;" alt="Prévia do layout do certificado (fundo)">
                             <p style="font-size:12px;color:#666;margin:4px 0 0 0;">
                                 <span data-ng-if="previewImagemFundoNome">Nova imagem selecionada: {{previewImagemFundoNome}}</span>
-                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && confereCertificado(ano)">Imagem já cadastrada para o ano {{ano}}.</span>
-                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && !confereCertificado(ano)">Imagem de outro ano (será usada se você salvar sem trocar).</span>
+                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && situacaoCertificado(mostraId) === 'proprio'">Imagem já cadastrada para esta Mostra.</span>
+                                <span data-ng-if="!previewImagemFundoNome && imagemFundoExistente && situacaoCertificado(mostraId) !== 'proprio'">Imagem do certificado antigo do ano ou de outra Mostra (será usada se você salvar sem trocar).</span>
                             </p>
                         </div>
                         <div class="md-errors-spacer">
@@ -167,13 +167,18 @@
                         </div>
                     </md-input-container>
                     <md-input-container class="md-block" flex-gt-xs="30">
-                        <md-select data-ng-model="ano" ng-change="carregaDado(ano)" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
-                            <md-optgroup label="Ano:">
-                              <md-option ng-value="a.ano" data-ng-repeat="a in anosMostras track by a.ano">{{a.ano}} - {{a.nomes}}
-                                <span data-ng-if="confereCertificado(a.ano)">(Certificado Cadastrado)</span>
+                        <md-select data-ng-model="mostraId" ng-change="carregaDado(mostraId)" placeholder="Mostra" disableOptionCentering style="width:100%!important;font-size:17px;" required>
+                            <md-optgroup label="Mostra:">
+                              <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}
+                                <span data-ng-if="situacaoCertificado(m._id) === 'proprio'">(Certificado cadastrado)</span>
+                                <span data-ng-if="situacaoCertificado(m._id) === 'ano'">(usando o certificado antigo de {{m.ano}})</span>
                               </md-option>
                             </md-optgroup>
                         </md-select>
+                        <p data-ng-if="situacaoCertificado(mostraId) === 'ano'" style="color:#7a4a00;font-size:13px;margin:6px 0 0;">
+                            Esta Mostra ainda não tem certificado próprio: hoje sai o certificado antigo de {{mostraDe(mostraId).ano}} (de antes de existir um por Mostra).
+                            Ao salvar, esta Mostra passa a ter o seu.
+                        </p>
                     </md-input-container> 
                     <div class="finalizar" layout="row" layout-align="center center" data-ng-if="!spinnerActive" style="margin:40px 0 20px 0;">
                         <md-button class="md-raised md-primary white green darken-1 btnEntrar2" aria-label="Salvar" data-ng-disabled="!editForm.$valid" data-ng-click="cadastrarMostra()">

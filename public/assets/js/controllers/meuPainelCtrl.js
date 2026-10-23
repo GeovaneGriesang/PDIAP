@@ -56,12 +56,18 @@
 		// Certificado não guarda a Mostra, só o ano (ver routes/index.js#/emitirCertificado),
 		// então a ligação com a Mostra é pelo ano. Se houver duas Mostras no mesmo ano, os
 		// certificados daquele ano aparecem nas duas.
+		// Certificado com Mostra (mostraId) vai só pra ela - duas Mostras no mesmo ano (X e XI MOVACI)
+		// não dividem certificado; registro antigo sem Mostra cai pelo ano, como antes.
+		var daMostra = function(c, mostra) {
+			if (c.mostraId && mostra.mostraId) return c.mostraId === mostra.mostraId;
+			return !!mostra.ano && c.ano === mostra.ano;
+		};
 		$scope.certificadosDaMostra = function(mostra) {
-			return ($scope.certificados || []).filter(function(c) { return mostra.ano && c.ano === mostra.ano; });
+			return ($scope.certificados || []).filter(function(c) { return daMostra(c, mostra); });
 		};
 		$scope.certificadosAvulsos = function() {
-			var anos = (($scope.conta && $scope.conta.mostras) || []).map(function(m) { return m.ano; });
-			return ($scope.certificados || []).filter(function(c) { return anos.indexOf(c.ano) === -1; });
+			var mostras = ($scope.conta && $scope.conta.mostras) || [];
+			return ($scope.certificados || []).filter(function(c) { return !mostras.some(function(m) { return daMostra(c, m); }); });
 		};
 		$scope.baixar = function(certificado) {
 			if (!certificado.baixar()) {

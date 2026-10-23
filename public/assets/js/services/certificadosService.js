@@ -9,7 +9,7 @@
 	.module('PDIAP')
 	.factory('certificadosService', function($mdDialog, $window, projetosAPI, certificadoSeminarioService) {
 
-		var SEM_LAYOUT = 'O certificado deste ano ainda não está disponível. Fale com a organização da MOVACI.';
+		var SEM_LAYOUT = 'O certificado desta Mostra ainda não está disponível. Fale com a organização da MOVACI.';
 
 		var countCertificados = 0;
 		var avaliador = [];
@@ -226,6 +226,25 @@
 			});
 		};
 
+		// Certificado (Eventos > Cadastrar Certificado) de um registro: o da MOSTRA dele (dados.mostraId -
+		// X e XI MOVACI, do mesmo ano, têm certificados diferentes); se a Mostra ainda não tem o seu,
+		// o certificado antigo do ano (cadastrado antes de existir um por Mostra, sem feiraId).
+		// Registro antigo sem Mostra: o do ano, se houver um só.
+		var layoutDoCertificado = function(dadosMostra, dados) {
+			var lista = dadosMostra || [];
+			if (dados.mostraId) {
+				var proprio = lista.filter(function(l) { return l.feiraId && String(l.feiraId) === String(dados.mostraId); })[0];
+				if (proprio) return proprio;
+			}
+			var doAno = lista.filter(function(l) { return !l.feiraId && l.ano_certificado == dados.ano; })[0];
+			if (doAno) return doAno;
+			if (!dados.mostraId) {
+				var doMesmoAno = lista.filter(function(l) { return l.ano_certificado == dados.ano; });
+				if (doMesmoAno.length === 1) return doMesmoAno[0];
+			}
+			return {};
+		};
+
 		// Mês/ano de HOJE por extenso, pro rodapé "Venâncio Aires, <mês> de <ano>." do certificado.
 		var dataEmissao = function() {
 			var date = new Date();
@@ -278,15 +297,9 @@
 			var dados_certificado = {};
 			var texto = "";
 
-			//Itera pelos certificados pra encontrar o layout do ano certo - sem "achar",
-			// dados_certificado fica {} (e o texto sai undefined, avisando que falta
-			// cadastrar o certificado daquele ano em vez de travar a tela).
-			for (var i = 0; i < dadosMostra.length; i++) {
-				if (dadosMostra[i].ano_certificado == ano2) {
-					dados_certificado = dadosMostra[i];
-					break;
-				}
-			}
+			// Certificado da Mostra do registro (ver layoutDoCertificado) - sem nenhum, fica {} e o
+			// texto sai vazio, avisando que falta cadastrar em vez de travar a tela.
+			dados_certificado = layoutDoCertificado(dadosMostra, dados);
 			
 			if (tipo === 'Avaliador') {
 				// var texto = ['Certificamos que ' +dados.nome.toUpperCase()+ ' participou como AVALIADOR (a) de '+
@@ -426,13 +439,7 @@
 			// {text: 'V MOVACI - Mostra Venâncio-airense de Cultura e Inovação, do Instituto Federal de Educação, Ciência e '+
 			// 'Tecnologia Sul-rio-grandense, ',bold: true}, 'IFSul, Câmpus Venâncio Aires, ocorrida de 28 a 30 de setembro de 2016.\n\n'];
 
-			//Itera pelos certificados para encontrar o layout necessário
-			for (var i = 0; i < dadosMostra.length; i++) {
-				if (dadosMostra[i].ano_certificado == dados.ano) {
-					dados_certificado = dadosMostra[i];
-					break;
-				}
-			}
+			dados_certificado = layoutDoCertificado(dadosMostra, dados);
 			//pega o texto que vai ser utilizado no certificado
 			texto = dados_certificado.textoDocentes;
 			// var url_1 = window.localStorage.getItem('url1');
@@ -601,7 +608,7 @@
 					var add = function(dados, rotulo, tipo, detalhe) {
 						if (!dados) return;
 						itens.push({
-							rotulo: rotulo, detalhe: detalhe, ano: dados.ano,
+							rotulo: rotulo, detalhe: detalhe, ano: dados.ano, mostraId: dados.mostraId,
 							baixar: function() {
 								return tipo === 'Presenca-saberes' ? emitirCertificado2(layouts, 2, dados) : emitirCertificado1(layouts, tipo, 2, dados);
 							}
