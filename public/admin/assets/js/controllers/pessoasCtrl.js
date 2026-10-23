@@ -2,10 +2,11 @@
 	'use strict';
 
 	// Tela "Pessoas": busca no cadastro único e mostra os perfis da pessoa em cada Mostra
-	// (derivados dos vínculos, nunca gravados - ver controllers/perfis-controller.js).
+	// (derivados dos vínculos, nunca gravados - ver controllers/perfis-controller.js); a
+	// organização também altera os dados da pessoa por aqui.
 	angular
 	.module('PDIAPa')
-	.controller('pessoasCtrl', function($scope, $mdToast, adminAPI) {
+	.controller('pessoasCtrl', function($scope, $mdToast, $http, adminAPI) {
 
 		$scope.toast = function(message,tema) {
 			var toast = $mdToast.simple().textContent(message).action('✖').position('top right').theme(tema).hideDelay(10000);
@@ -46,6 +47,38 @@
 
 		$scope.voltar = function() {
 			$scope.perfil = null;
+			$scope.edicao = null;
+		};
+
+		// Edição dos dados da pessoa (PUT /admin/pessoas/:id - perfis-controller.js#atualizarDados).
+		$scope.NACIONALIDADES = NACIONALIDADES;
+		$scope.edicao = null;
+		$scope.salvando = false;
+		$scope.normalizar = function(d) { return String(d || '').replace(/[^0-9a-zA-Z]/g, '').toUpperCase(); };
+		$scope.editar = function() {
+			var p = $scope.perfil.pessoa;
+			$scope.edicao = {
+				nome: p.nome || '', documento: $scope.perfil.documento, nacionalidade: p.nacionalidade, telefone: p.telefone || '',
+				email: p.email || '', alternativos: (p.emailsAlternativos || []).slice(0, 2)
+			};
+		};
+		$scope.cancelarEdicao = function() { $scope.edicao = null; };
+		$scope.salvarEdicao = function() {
+			var e = $scope.edicao;
+			var dados = {
+				nome: e.nome, documento: e.documento, telefone: e.telefone, email: e.email,
+				emailsAlternativos: (e.alternativos || []).filter(function(x) { return x && x.trim(); })
+			};
+			if (e.nacionalidade) dados.nacionalidade = e.nacionalidade;
+			$scope.salvando = true;
+			$http.put('/admin/pessoas/' + $scope.perfil.pessoa._id, dados).then(function(response) {
+				var r = response.data;
+				$scope.toast(r.alterados.length ? 'Cadastro de ' + r.pessoa.nome + ' salvo.' : 'Nada foi alterado.', 'success-toast');
+				$scope.edicao = null;
+				$scope.verPerfis(r.pessoa.documento);
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao salvar.', 'failed-toast');
+			}).finally(function() { $scope.salvando = false; });
 		};
 	});
 })();
