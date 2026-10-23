@@ -1478,12 +1478,43 @@ router.post('/solicitarEscola', async function(req, res){
   }
 });
 
+// Lista dos documentos da página inicial / painel - SEM o arquivo: o arquivo fica no próprio
+// documento (data URI em base64) e mandar todos juntos dava ~9MB numa resposta só; em conexão
+// lenta o menu ficava em "Nenhum documento disponível" até tudo baixar. Cada arquivo sai por
+// GET /documentos/:id/arquivo, só quando alguém clica.
 router.get('/getDocumentosInfo', async function(req, res){
   try {
-    let data = await CadastroDocumentoSchema.find({'exibe': true});
+    let data = await CadastroDocumentoSchema.find({'exibe': true}, '-pdf').lean();
     res.status(200).send(data);
   } catch (err) {
     console.error(err);
+    res.status(500).send('Erro ao listar os documentos.');
+  }
+});
+
+const EXTENSOES_DOCUMENTO = {
+  'application/pdf': 'pdf',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-powerpoint': 'ppt', 'application/msword': 'doc', 'application/vnd.ms-excel': 'xls',
+  'image/png': 'png', 'image/jpeg': 'jpg'
+};
+router.get('/documentos/:id/arquivo', async function(req, res){
+  try {
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return res.status(404).send('Documento não encontrado.');
+    let doc = await CadastroDocumentoSchema.findOne({ _id: req.params.id, exibe: true }, 'pdf titulo').lean();
+    let m = doc && /^data:([^;,]+)(;base64)?,(.*)$/s.exec(doc.pdf || '');
+    if (!m) return res.status(404).send('Documento não encontrado.');
+    let tipo = m[1].toLowerCase();
+    let conteudo = m[2] ? Buffer.from(m[3], 'base64') : Buffer.from(decodeURIComponent(m[3]));
+    let nome = String(doc.titulo || 'documento').replace(/[\/\\:*?"<>|]/g, '_').trim() + '.' + (EXTENSOES_DOCUMENTO[tipo] || 'bin');
+    res.set('Content-Type', tipo);
+    res.attachment(nome);
+    res.send(conteudo);
+  } catch (err) {
+    console.error('Erro ao baixar documento', err);
+    res.status(500).send('Erro ao baixar o documento.');
   }
 });
 

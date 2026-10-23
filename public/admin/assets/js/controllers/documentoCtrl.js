@@ -3,36 +3,36 @@
     'use strict';
     angular
     .module('PDIAPa')
-    .controller('documentoCtrl', function($scope, $rootScope, $timeout, $mdDialog, adminAPI) {
+    .controller('documentoCtrl', function($scope, $rootScope, $timeout, $mdDialog, $http, adminAPI) {
 
-        // Declaração e inicialização segura das scopes
+        // Cada documento é de UMA Mostra (não do ano todo - pode haver duas Mostras no mesmo ano):
+        // os seletores listam cada Mostra separada. A Mostra padrão é a das outras telas
+        // ($rootScope.mostraId) ou a mais recente.
         $scope.mostras = [];
-        $scope.anosMostras = [];
         $scope.titulo_documento = "";
-        $scope.ano = new Date().getFullYear();
-        // Filtro por ano da lista abaixo - independente do "ano" do formulário de cadastro
-        // acima (esse é o ano do documento que está sendo enviado agora).
-        $scope.filtroAno = new Date().getFullYear();
-
-        // O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona,
-        // religa cada <md-option> e reescreve o ng-model no processo (bug conhecido do
-        // Angular Material com ng-repeat dentro de md-select) - por isso só define o ano
-        // padrão depois que a lista chegar e terminar de religar: o ano da Mostra em uso
-        // ($rootScope.ano - a Mostra atual, ou a que foi escolhida num filtro de outra tela),
-        // ou o da mais recente se esse ano não tiver Mostra. Documento pertence a um ANO, então
-        // o seletor lista cada ano uma vez (anosMostras), não uma opção por Mostra.
+        $scope.form = { mostraId: null };
+        $scope.filtro = { mostraId: null };
+        // O <md-select>+ng-repeat de Mostras, ao ser preenchido de forma assíncrona, religa cada
+        // <md-option> e reescreve o ng-model no processo (bug conhecido do Angular Material) - por
+        // isso só define a Mostra padrão depois que a lista chegar.
         adminAPI.getMostras()
         .then(function(response) {
-            var mostras = response.data;
-            $scope.mostras = mostras;
-            $scope.anosMostras = adminAPI.anosDasMostras(mostras);
+            $scope.mostras = (response.data || []).filter(function(m) { return m.tipo === 'edicao'; })
+                .sort(function(a, b) { return (b.ano - a.ano) || (String(a._id) < String(b._id) ? 1 : -1); });
             $timeout(function() {
-                var existe = $scope.anosMostras.some(function(a) { return a.ano === $rootScope.ano; });
-                var anoPadrao = existe ? $rootScope.ano : ($scope.anosMostras.length ? $scope.anosMostras[0].ano : new Date().getFullYear());
-                $scope.ano = anoPadrao;
-                $scope.filtroAno = anoPadrao;
+                var existe = $scope.mostras.some(function(m) { return m._id === $rootScope.mostraId; });
+                var padrao = existe ? $rootScope.mostraId : ($scope.mostras.length ? $scope.mostras[0]._id : null);
+                $scope.form.mostraId = padrao;
+                $scope.filtro.mostraId = padrao;
             });
         }, function(response) { console.log('Error: '+response.data); });
+        $scope.mostraDe = function(id) { return $scope.mostras.filter(function(m) { return m._id === id; })[0]; };
+        // Lista da Mostra escolhida + documentos antigos sem Mostra do mesmo ano (pra definir a Mostra).
+        $scope.daMostra = function(info) {
+            var m = $scope.mostraDe($scope.filtro.mostraId);
+            if (!m) return false;
+            return info.feiraId ? info.feiraId === m._id : info.ano === m.ano;
+        };
         $scope.Exibe_documento = false;
         $scope.documentos = [];
         $scope.spinnerActive = false; // Controle do carregamento
@@ -79,7 +79,7 @@
                 let pacote = {
                     "pdf": leitor.result, // String Base64 do PDF ou Word
                     "titulo": $scope.titulo_documento,
-                    "ano": $scope.ano,
+                    "feiraId": $scope.form.mostraId,
                     "exibe": $scope.Exibe_documento
                 };
 
@@ -119,32 +119,25 @@
             adminAPI.putUpdateExibir(id, exibe);
         };
 
-        // Visualização sob demanda (não trava a página)
-        $scope.Visualiza = function(fileBase64, tituloDoc){
-            if(!fileBase64 || fileBase64 === '') return false;
-            
-            // Se for PDF, renderiza no iframe
-            if (fileBase64.startsWith("data:application/pdf")) {
-                var preview = document.getElementById("visualizaPdf");
-                if (preview) {
-                    preview.src = fileBase64;
-                    return true;
-                }
-            } 
-            
-            // Se for Word (.doc/.docx) ou PowerPoint (.ppt/.pptx), força o download imediato para aliviar a RAM
-            var link = document.createElement('a');
-            link.href = fileBase64;
+        // Muda a Mostra de um documento (os antigos só tinham o ano).
+        $scope.mudarMostra = function(info) {
+            $http.put('/admin/documentos/' + info._id + '/mostra', { feiraId: info.novaMostra }).then(function(response) {
+                info.feiraId = response.data.feiraId;
+                info.ano = response.data.ano;
+                info.novaMostra = null;
+                if (typeof $scope.toast === 'function') { $scope.toast('Documento movido para ' + $scope.nomeMostra(info.feiraId) + '.', 'success-toast'); }
+            }, function(response) {
+                if (typeof $scope.toast === 'function') { $scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao salvar.', 'failed-toast'); }
+            });
+        };
+        $scope.nomeMostra = function(id) { var m = $scope.mostraDe(id); return m ? m.ano + ' - ' + m.nome : '-'; };
 
-            var extensao = fileBase64.includes("officedocument.wordprocessingml") ? ".docx" : ".pdf";
-            if(fileBase64.includes("msword")) { extensao = ".doc"; }
-            if(fileBase64.includes("officedocument.presentationml")) { extensao = ".pptx"; }
-            if(fileBase64.includes("ms-powerpoint")) { extensao = ".ppt"; }
-
-            link.download = (tituloDoc || "documento") + extensao;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // Visualizar/baixar: o arquivo vem do servidor só agora (a lista não traz os arquivos).
+        // PDF abre no quadro abaixo; Word/PowerPoint baixam.
+        $scope.Visualiza = function(info){
+            var url = '/admin/documentos/' + info._id + '/arquivo';
+            var preview = document.getElementById('visualizaPdf');
+            if (preview) preview.src = url;
             return true;
         };
     });

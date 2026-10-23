@@ -56,7 +56,7 @@
 						<a href="javascript:void(0);">Documentos <span class="icon fa-angle-down"></span></a>
 						<ul> 
 							<li ng-repeat="doc in documentos" ng-show="doc.exibe">
-								<a ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank">
+								<a ng-href="/documentos/{{doc._id}}/arquivo" target="_blank">
 									{{ doc.titulo }}
 								</a>
 							</li>
@@ -287,7 +287,7 @@
 				<a class="link depth-1" data-ng-if="edits[0].solicitacao_escola" href="/solicitar-escola" target="_blank"><span class="indent-1"></span>Cadastrar minha escola</a>
 				<a class="link depth-1" data-ng-if="!edits[0].botoes.length && !algumaInscricaoAberta() && !edits[0].saberes_docentes && !edits[0].solicitacao_escola" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
 				<span class="link depth-0">Documentos</span>
-				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
+				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="/documentos/{{doc._id}}/arquivo" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
 				<a class="link depth-0" href="#" data-ng-click="showLoginDialog($event)">Logar</a>
 			</nav>

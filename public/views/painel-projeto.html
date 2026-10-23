@@ -120,7 +120,7 @@
           <div class="md-whiteframe-2dp projeto-cartao" data-ng-if="documentos.length">
             <h3>Documentos</h3>
             <div class="projeto-linha" data-ng-repeat="doc in documentos">
-              <a ng-href="{{doc.pdf}}" download="{{doc.titulo}}" target="_blank" style="color:#2e7d32;">{{doc.titulo}}</a>
+              <a ng-href="/documentos/{{doc._id}}/arquivo" target="_blank" style="color:#2e7d32;">{{doc.titulo}}</a>
             </div>
           </div>
         </div>
