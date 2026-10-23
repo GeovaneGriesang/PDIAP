@@ -558,3 +558,28 @@ md-toast.md-success-toast-theme .md-toast-content {
 @media only screen and (max-width: 370px) and (min-width: 0) {
   .bolinha { display: none !important; }
 }
+
+/* Listas de projetos/pessoas (md-list-item com colunas flex="5"/"10"/"15" + texto): o texto
+   (título longo) ocupa só o espaço que sobra e quebra a linha. Sem isto ele crescia até o
+   tamanho do título e o navegador encolhia as colunas fixas (bolinha, nº) só naquela linha,
+   desalinhando a lista. */
+md-list-item > .md-list-item-text[layout="column"],
+md-list-item .md-list-item-inner > .md-list-item-text[layout="column"],
+md-list-item .md-no-style > .md-list-item-text[layout="column"] {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+/* Colunas de largura fixa (flex="5"/"10"/"15"): o Angular Material troca a base delas por
+   "auto" quando também têm .md-list-item-text (caso do nº) - volta pra 100% (limitada pelo
+   max-width da coluna) e nunca encolhe. */
+md-list-item > [flex]:not([layout="column"]),
+md-list-item .md-list-item-inner > [flex]:not([layout="column"]),
+md-list-item .md-no-style > [flex]:not([layout="column"]) {
+  flex-basis: 100% !important;
+  flex-shrink: 0 !important;
+}
+md-list-item > [flex=""]:not([layout="column"]),
+md-list-item .md-list-item-inner > [flex=""]:not([layout="column"]),
+md-list-item .md-no-style > [flex=""]:not([layout="column"]) {
+  flex-basis: 0% !important;
+}
