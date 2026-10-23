@@ -110,7 +110,7 @@ router.post('/emitirCertificado', (req, res) => {
     // REPROVADO, liberando certificado pra quem não foi selecionado.
     let usr = await ProjetoSchema.find(
       {'integrantes':{$elemMatch:{'cpf':cpf,'presenca':true, 'tipo':'Aluno'}}, 'aprovado': true},
-      'integrantes.$ nomeProjeto numInscricao createdAt categoria -_id');
+      'integrantes.$ nomeProjeto numInscricao createdAt categoria feiraId -_id');
     if (usr == 0) throw {};
     return usr;
   }
@@ -118,7 +118,7 @@ router.post('/emitirCertificado', (req, res) => {
   async function pesquisaProjetoOrientador(cpf) {
     let usr = await ProjetoSchema.find(
       {'integrantes':{$elemMatch:{'cpf':cpf, 'tipo':'Orientador'}}, 'aprovado': true},
-      'integrantes.$ nomeProjeto numInscricao createdAt -_id');
+      'integrantes.$ nomeProjeto numInscricao createdAt feiraId -_id');
     if (usr == 0) throw {};
     return usr;
   }
@@ -138,15 +138,15 @@ router.post('/emitirCertificado', (req, res) => {
     // sumia do resultado), o que quebrava o inserirTokenAvaliador logo abaixo, que
     // depende de usr[i]._id para saber QUAL avaliador atualizar. "email" também
     // estava faltando, apesar de ser usado no map de resposta mais abaixo.
-    return await avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt categoriasEixos categoriasEixosAvaliados');
+    return await avaliadorSchema.find({'cpf':cpf,'avaliacao':true}, 'nome email token createdAt categoriasEixos categoriasEixosAvaliados feiraId');
   }
 
   async function pesquisaParticipante(cpf) {
-    return await participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas tokenPalestra eventos createdAt -_id');
+    return await participanteSchema.find({'cpf':cpf}, 'nome tokenSaberes tokenOficinas tokenPalestra eventos createdAt feiraId -_id');
   }
 
   async function pesquisaEvento(cpf) {
-    let usr = await eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ createdAt');
+    let usr = await eventoSchema.find({'responsavel.cpf':cpf}, 'tipo titulo cargaHoraria data responsavel.$ createdAt feiraId');
     if (usr == 0) throw {};
     console.log("EVENTO \n"+usr)
     return usr;
@@ -175,7 +175,7 @@ router.post('/emitirCertificado', (req, res) => {
   async function pesquisaPremiado(cpf) {
     // Também busca projetos sem premiacao/menção mas classificados pra alguma feira (ver
     // feirasClassificadas em projeto-schema.js) - os dois conceitos são independentes.
-    let usr = await ProjetoSchema.find({'integrantes.cpf':cpf, $or:[{'premiacao':{$exists:true}}, {'feirasClassificadas':{$exists:true,$not:{$size:0}}}]}, 'integrantes.$ categoria eixo premiacao colocacao feirasClassificadas token nomeProjeto numInscricao _id createdAt');
+    let usr = await ProjetoSchema.find({'integrantes.cpf':cpf, $or:[{'premiacao':{$exists:true}}, {'feirasClassificadas':{$exists:true,$not:{$size:0}}}]}, 'integrantes.$ categoria eixo premiacao colocacao feirasClassificadas token nomeProjeto numInscricao _id createdAt feiraId');
     if (usr == 0) throw {};
     return usr;
   }
@@ -205,6 +205,7 @@ router.post('/emitirCertificado', (req, res) => {
             tokentipo: usr[i].integrantes[0].certificados.tipo,
 	    createdAt: usr[i].createdAt,
 	    ano: ano,
+	    mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined,
 	    categoria: usr[i].categoria
           }
           array.push(participante);
@@ -240,6 +241,7 @@ router.post('/emitirCertificado', (req, res) => {
 			token: usr[i].token,
 			createdAt: usr[i].createdAt,
 			ano: ano,
+			mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined,
 			categoriasAvaliadas: Avaliador.formatarCategoriasEixos(avaliadas)
 		};
 		array.push(avaliador);
@@ -295,7 +297,8 @@ router.post('/emitirCertificado', (req, res) => {
       tokenPalestra: usr[0].tokenPalestra,
       eventos: usr[0].eventos,
       percentualSeminario: agregado ? agregado.percentual : undefined,
-      ano: ano
+      ano: ano,
+      mostraId: usr[0].feiraId ? String(usr[0].feiraId) : undefined
     }
     // array.push(participante)
     return participante
@@ -330,7 +333,8 @@ router.post('/emitirCertificado', (req, res) => {
         	  token: usr[i].responsavel[0].certificados[0]._id,
         	  tokentipo: usr[i].responsavel[0].certificados[0].tipo,
 		  createdAt: usr[i].createdAt,
-		  ano: ano
+		  ano: ano,
+		  mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined
         	};
         	array.push(participante);		
 	}
@@ -362,7 +366,8 @@ router.post('/emitirCertificado', (req, res) => {
         			colocacao: usr[i].colocacao,
         			token: usr[i].token,
         			createdAt: usr[i].createdAt,
-				ano: ano
+				ano: ano,
+				mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined
       			};
 			array.push(premiado);
 		}		
@@ -395,7 +400,8 @@ router.post('/emitirCertificado', (req, res) => {
 				eixo: usr[i].eixo,
         			token: usr[i].token,
         			createdAt: usr[i].createdAt,
-				ano: ano
+				ano: ano,
+				mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined
       			};
 			array.push(premiado);
 		}		
@@ -442,6 +448,7 @@ router.post('/emitirCertificado', (req, res) => {
 					token: usr[i].token,
 					createdAt: usr[i].createdAt,
 					ano: ano,
+					mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined,
 					feiraId: feira._id,
 					feiraNome: feira.nome
 				});
@@ -475,7 +482,8 @@ router.post('/emitirCertificado', (req, res) => {
        		   token: usr[i].integrantes[0].certificados._id,
        		   tokentipo: usr[i].integrantes[0].certificados.tipo,
 		   createdAt: usr[i].createdAt,
-		   ano: ano
+		   ano: ano,
+		   mostraId: usr[i].feiraId ? String(usr[i].feiraId) : undefined
        		};	
        		array.push(participante);
 	}

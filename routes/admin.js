@@ -1127,10 +1127,16 @@ router.put('/removeParticipante', miPermiso("3"), async (req, res) => {
 // conseguia apagar e trocar o layout do certificado de um ano.
 router.post('/postCertificado', miPermiso("3"), async (req, res) => {
   try {
-    if (!(await perfil.podeAno(req, req.body.data && req.body.data.ano_certificado))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
-    //quando cadastrar um novo certificado ele primeiro exclui o certificado do ano selecionado para depois criar um novo com o mesmo ano
-    //isso existe pra caso seja necessário substituir o certificado de algum ano (Obs: mongo não tem problema com excluir o que não existe)
-    await CadastroMostraSchema.deleteOne({"ano_certificado":req.body.data.ano_certificado});
+    // Um certificado por MOSTRA (não por ano - X e XI MOVACI são do mesmo ano): substitui o desta
+    // Mostra. O certificado antigo do ano (sem feiraId) não é apagado - continua valendo pras outras
+    // Mostras daquele ano que ainda não têm o seu.
+    let feiraId = req.body.data && req.body.data.feiraId;
+    if (!idValido(String(feiraId))) return res.status(400).send('Escolha a Mostra do certificado.');
+    if (!(await perfil.podeMostra(req, feiraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let mostraCert = await feiraSchema.findOne({ _id: feiraId, tipo: 'edicao' }, 'ano').lean();
+    if (!mostraCert) return res.status(400).send('Mostra não encontrada.');
+    req.body.data.ano_certificado = mostraCert.ano;
+    await CadastroMostraSchema.deleteOne({ feiraId: mostraCert._id });
     //Preenche o schema com as informações enviadas pelo body do request da adminAPIService para /postcertificado
     let novoCadastro = new cadastroMostraSchema({
       imagem: req.body.data.dataUrl,
@@ -1147,7 +1153,8 @@ router.post('/postCertificado', miPermiso("3"), async (req, res) => {
       textoDocentes: req.body.data.textoDocentes,
       textoPPalestra: req.body.data.textoPPalestra,
       textoRPalestra: req.body.data.textoRPalestra,
-      ano_certificado: req.body.data.ano_certificado
+      ano_certificado: req.body.data.ano_certificado,
+      feiraId: mostraCert._id
     });
     //envia o Schema para cMostra-controller para salvar os dados no banco
     await cadastroMostra.createMostra(novoCadastro);

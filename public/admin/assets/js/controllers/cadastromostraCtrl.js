@@ -6,29 +6,45 @@
 
       $scope.certificados = [];
       $scope.mostras = [];
-      // Certificado pertence a um ANO: o seletor lista cada ano uma vez (ver adminAPI.anosDasMostras).
-      $scope.anosMostras = [];
+      // Um certificado por MOSTRA (X e XI MOVACI, do mesmo ano, têm o seu cada) - o seletor lista
+      // cada Mostra. Certificado antigo sem Mostra (cadastrado por ano) aparece pras Mostras daquele
+      // ano que ainda não têm o seu; salvar cria o da Mostra escolhida.
+      $scope.mostraId = null;
 
-      // O ano padrão (a Mostra mais recente) só pode ser definido depois que TANTO a
-      // lista de Mostras quanto os certificados já cadastrados chegarem (são 2 chamadas
-      // assíncronas independentes) - e só depois que o <md-select>+ng-repeat de Mostras
-      // religar suas opções, senão o Material reescreve o ng-model sozinho (bug conhecido
-      // com ng-repeat dentro de md-select) e derruba o valor que acabamos de definir.
+      // A Mostra padrão (a das outras telas, ou a mais recente) só pode ser definida depois que TANTO
+      // a lista de Mostras quanto os certificados chegarem (2 chamadas independentes) - e só depois
+      // que o <md-select>+ng-repeat religar as opções (bug conhecido do Angular Material).
       var mostrasProntas = false, certificadosProntos = false;
-      var definirAnoPadrao = function() {
+      var definirMostraPadrao = function() {
         if (!mostrasProntas || !certificadosProntos) return;
         $timeout(function() {
-          // Padrão = ano da Mostra em uso ($rootScope.ano: a Mostra atual, ou a escolhida num
-          // filtro de outra tela); se esse ano não tem Mostra, o da mais recente.
-          var existe = $scope.anosMostras.some(function(a) { return a.ano === $rootScope.ano; });
-          $scope.ano = existe ? $rootScope.ano : ($scope.anosMostras.length ? $scope.anosMostras[0].ano : new Date().getFullYear());
-          $scope.carregaDado($scope.ano);
+          var existe = $scope.mostras.some(function(m) { return m._id === $rootScope.mostraId; });
+          $scope.mostraId = existe ? $rootScope.mostraId : ($scope.mostras.length ? $scope.mostras[0]._id : null);
+          $scope.carregaDado($scope.mostraId);
         });
       };
 
       adminAPI.getMostras()
-      .then(function(response) { $scope.mostras = response.data; $scope.anosMostras = adminAPI.anosDasMostras(response.data); mostrasProntas = true; definirAnoPadrao(); },
-        function(response) { console.log('Error: '+response.data); mostrasProntas = true; definirAnoPadrao(); });
+      .then(function(response) {
+          $scope.mostras = (response.data || []).filter(function(m) { return m.tipo === 'edicao'; })
+            .sort(function(a, b) { return (b.ano - a.ano) || (String(a._id) < String(b._id) ? 1 : -1); });
+          mostrasProntas = true; definirMostraPadrao();
+        },
+        function(response) { console.log('Error: '+response.data); mostrasProntas = true; definirMostraPadrao(); });
+
+      $scope.mostraDe = function(id) { return $scope.mostras.filter(function(m) { return m._id === id; })[0]; };
+      // Certificado que vale pra Mostra: o dela; senão o antigo do ano (sem Mostra).
+      $scope.certificadoDaMostra = function(id) {
+        var m = $scope.mostraDe(id);
+        if (!m) return null;
+        return $scope.certificados.filter(function(c) { return c.feiraId === m._id; })[0]
+          || $scope.certificados.filter(function(c) { return !c.feiraId && c.ano_certificado == m.ano; })[0] || null;
+      };
+      // 'proprio' (a Mostra tem o seu) | 'ano' (usa o antigo do ano) | '' (nenhum).
+      $scope.situacaoCertificado = function(id) {
+        var c = $scope.certificadoDaMostra(id);
+        return !c ? '' : (c.feiraId ? 'proprio' : 'ano');
+      };
 
       //algumas scopes para recuperar os dados
 
@@ -144,34 +160,28 @@
       // duplicar as informações de um ano pro outro alterando só o que precisa. Por isso
       // as imagens não são zeradas aqui: só são sobrescritas dentro do "if" quando existe
       // mesmo um certificado pro ano, igual já acontecia com os campos de texto.
-      $scope.carregaDado = function (ano) {
-        for (var i = 0; i < $scope.certificados.length; i++){
-          if($scope.certificados[i].ano_certificado == ano){
-             $scope.textocertificado_avaliador = $scope.certificados[i].textoAvaliador;
-             $scope.textocertificado_orientador = $scope.certificados[i].textoOrientador;
-             $scope.textocertificado_apresentacao = $scope.certificados[i].textoApresentacao;
-             $scope.textocertificado_premiado = $scope.certificados[i].textoPremiado;
-             $scope.textocertificado_mencao = $scope.certificados[i].textoMencao;
-             $scope.textocertificado_saberes = $scope.certificados[i].textoSaberes;
-             $scope.textocertificado_poficinas = $scope.certificados[i].textoPOficinas;
-             $scope.textocertificado_roficinas = $scope.certificados[i].textoROficinas;
-             $scope.textocertificado_academica = $scope.certificados[i].textoAcademica;
-             $scope.textocertificado_docentes = $scope.certificados[i].textoDocentes;
-             $scope.textocertificado_ppalestra = $scope.certificados[i].textoPPalestra;
-             $scope.textocertificado_rpalestra = $scope.certificados[i].textoRPalestra;
-             $scope.imagemExistente = $scope.certificados[i].imagem;
-             $scope.imagemFundoExistente = $scope.certificados[i].imagemFundo;
-          }
+      $scope.carregaDado = function (mostraId) {
+        var c = $scope.certificadoDaMostra(mostraId);
+        if (c) {
+             $scope.textocertificado_avaliador = c.textoAvaliador;
+             $scope.textocertificado_orientador = c.textoOrientador;
+             $scope.textocertificado_apresentacao = c.textoApresentacao;
+             $scope.textocertificado_premiado = c.textoPremiado;
+             $scope.textocertificado_mencao = c.textoMencao;
+             $scope.textocertificado_saberes = c.textoSaberes;
+             $scope.textocertificado_poficinas = c.textoPOficinas;
+             $scope.textocertificado_roficinas = c.textoROficinas;
+             $scope.textocertificado_academica = c.textoAcademica;
+             $scope.textocertificado_docentes = c.textoDocentes;
+             $scope.textocertificado_ppalestra = c.textoPPalestra;
+             $scope.textocertificado_rpalestra = c.textoRPalestra;
+             $scope.imagemExistente = c.imagem;
+             $scope.imagemFundoExistente = c.imagemFundo;
         }
       };
 
-      $scope.confereCertificado = function(ano){
-        for (var i = 0; i < $scope.certificados.length; i++){
-          if($scope.certificados[i].ano_certificado == ano){
-            return true;
-          }
-        }
-        return false;
+      var recarregarCertificados = function() {
+        return adminAPI.getCertificado().then(function(response) { $scope.certificados = response.data || []; });
       };
 
       adminAPI.getCertificado().then(function(response){
@@ -180,11 +190,11 @@
         // existir um cadastrado - antes só carregava quando o usuário reselecionava o ano
         // manualmente no filtro (ng-change não dispara sozinho no primeiro carregamento).
         certificadosProntos = true;
-        definirAnoPadrao();
+        definirMostraPadrao();
       }, function(response) {
         console.log('Error: '+response.data);
         certificadosProntos = true;
-        definirAnoPadrao();
+        definirMostraPadrao();
       });
 
       // Mostra uma prévia da imagem assim que o usuário escolhe um arquivo novo, antes de
@@ -236,13 +246,14 @@
             'textoDocentes' : $scope.textocertificado_docentes,
             'textoPPalestra' : $scope.textocertificado_ppalestra,
             'textoRPalestra' : $scope.textocertificado_rpalestra,
-            'ano_certificado' : $scope.ano
+            'feiraId' : $scope.mostraId
           };
 
           //chama o método postCertificado da adminAPI passando as informações do certificado e ativa um método de callback CASO o request retorne 200 ou 'success'
           adminAPI.postCertificado(dados)
           .then(function(){
-            alert('Sucesso!!');
+            alert('Certificado da ' + (($scope.mostraDe($scope.mostraId) || {}).nome || 'Mostra') + ' salvo.');
+            recarregarCertificados();
           }, function(response) {
             console.log('Error: '+response.data);
           });

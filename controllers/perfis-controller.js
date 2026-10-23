@@ -70,7 +70,8 @@ module.exports.perfis = async (documentoInformado) => {
 		}
 		if (feira) { chave = String(feira._id); rotulo = feira.ano + ' - ' + feira.nome; ano = feira.ano; }
 		else { chave = 'ano-' + (ano || 'sem-data'); rotulo = ano ? String(ano) : 'Sem data'; }
-		if (!grupos.has(chave)) grupos.set(chave, { mostra: rotulo, ano: ano || 0, papeis: [] });
+		// mostraId: o "Meu painel" casa os certificados com a Mostra por ele (duas Mostras no mesmo ano).
+		if (!grupos.has(chave)) grupos.set(chave, { mostra: rotulo, ano: ano || 0, mostraId: feira ? String(feira._id) : null, papeis: [] });
 		return grupos.get(chave);
 	}
 	function dele(sub) {
