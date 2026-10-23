@@ -49,11 +49,14 @@
     </div>
 
     <md-content>
-      <!-- Sem presença: avaliado, aprovado, mas ninguém confirmou presença (Projetos > Presença) -->
+      <!-- Sem presença: avaliado (tem nota), aprovado, mas NENHUM integrante com presença marcada -->
       <div data-ng-show="abaAtiva === 'semPresenca'">
         <div data-ng-if="semPresenca.length === 0" style="text-align:center;padding:30px;color:rgba(0,0,0,0.4);">
           Nenhum projeto avaliado sem presença pendente.
         </div>
+        <p data-ng-if="semPresenca.length > 0" style="color:rgba(0,0,0,0.6);font-size:13px;margin:12px 24px 0;">
+          Projetos com nota e nenhum integrante com presença marcada - os(as) alunos(as) não conseguem emitir o certificado. Abra o projeto e marque quem esteve.
+        </p>
         <md-list flex data-ng-if="semPresenca.length > 0">
           <md-divider></md-divider>
           <md-list-item class="md-3-line" data-ng-repeat="proj in semPresenca track by proj._id" ng-click="abrirPresenca(proj, $event)">
