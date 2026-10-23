@@ -21,8 +21,12 @@ const CadastroDocumentoSchema = new Schema({
     },
     exibe: {
         type: Boolean
-    }   
-}, {collection: 'documentos'}); 
+    },
+    // Mostra (Feira tipo:'edicao') do documento - cada documento é de UMA Mostra, mesmo com duas
+    // Mostras no mesmo ano; "ano" acima continua gravado (= ano da Mostra). Documento antigo sem
+    // feiraId: ver scripts/migrar-documentos-mostra.js e o seletor da tela Cadastrar Documento.
+    feiraId: { type: Schema.Types.ObjectId, ref: 'Feira' }
+}, {collection: 'documentos'});
 
 //exporta o Model do Schema
 const Documentos = module.exports = mongoose.model('Documentos', CadastroDocumentoSchema);

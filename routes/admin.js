@@ -1173,13 +1173,18 @@ router.get('/getCertificados', async (req, res) => {
 //rota para cadastrar os documentos
 // miPermiso("3"): mesma brecha de /postCertificado (só exigia estar logado).
 router.post('/postDocumento', miPermiso("3"), async (req, res) => {
-  if (!(await perfil.podeAno(req, req.body.pacote && req.body.pacote.ano))) return res.status(403).send('Fora dos anos das Mostras que você administra.');
-  console.log(req.body.pacote.exibe);
+  let pacote = req.body.pacote || {};
+  // Documento é de UMA Mostra (não do ano todo): o ano vem dela.
+  if (!idValido(String(pacote.feiraId))) return res.status(400).send('Escolha a Mostra do documento.');
+  if (!(await perfil.podeMostra(req, pacote.feiraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+  let mostra = await feiraSchema.findOne({ _id: pacote.feiraId, tipo: 'edicao' }, 'ano').lean();
+  if (!mostra) return res.status(400).send('Mostra não encontrada.');
   let novoCadastro = new CadastroDocumentoSchema({
-    pdf: req.body.pacote.pdf,
-    titulo: req.body.pacote.titulo,
-    ano: req.body.pacote.ano,
-    exibe: req.body.pacote.exibe,
+    pdf: pacote.pdf,
+    titulo: pacote.titulo,
+    ano: mostra.ano,
+    feiraId: mostra._id,
+    exibe: pacote.exibe,
   });
   try {
     await CadastroDocumento.createDocumento(novoCadastro);
@@ -1190,14 +1195,54 @@ router.post('/postDocumento', miPermiso("3"), async (req, res) => {
   }
 });
 
-//Leandro Henrique Kopp Ferreira - 14/10/2021
-//rota para requisição dos documentos
-router.get('/getDocumentos', async (req, res) =>{
+// Lista SEM o arquivo (data URI de até alguns MB cada - mandar os ~40 juntos travava a tela); o
+// arquivo sai por GET /documentos/:id/arquivo, um de cada vez.
+router.get('/getDocumentos', miPermiso("3"), async (req, res) =>{
   try {
-    let data = await CadastroDocumentoSchema.find();
+    let data = await CadastroDocumentoSchema.find({}, '-pdf').sort({ _id: -1 }).lean();
     res.status(200).send(data);
   } catch (error) {
-    console.error('Erro ao mostrar certificados', error);
+    console.error('Erro ao listar documentos', error);
+    res.status(500).send('Erro ao listar documentos');
+  }
+});
+
+// Arquivo de um documento pro admin (também os que não estão exibidos na página inicial).
+// PDF abre no navegador (inline); os outros tipos baixam.
+router.get('/documentos/:id/arquivo', miPermiso("3"), async (req, res) => {
+  try {
+    if (!idValido(req.params.id)) return res.status(400).send('ID inválido');
+    let doc = await CadastroDocumentoSchema.findById(req.params.id, 'pdf titulo').lean();
+    let m = doc && /^data:([^;,]+)(;base64)?,(.*)$/s.exec(doc.pdf || '');
+    if (!m) return res.status(404).send('Documento não encontrado.');
+    let tipo = m[1].toLowerCase();
+    let ext = { 'application/pdf': 'pdf', 'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx', 'application/msword': 'doc', 'application/vnd.ms-powerpoint': 'ppt' }[tipo] || 'bin';
+    let nome = String(doc.titulo || 'documento').replace(/[\/\\:*?"<>|]/g, '_').trim() + '.' + ext;
+    res.set('Content-Type', tipo);
+    res.set('Content-Disposition', (tipo === 'application/pdf' ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(nome));
+    res.send(m[2] ? Buffer.from(m[3], 'base64') : Buffer.from(decodeURIComponent(m[3])));
+  } catch (error) {
+    console.error('Erro ao abrir documento', error);
+    res.status(500).send('Erro ao abrir o documento.');
+  }
+});
+
+// Muda a Mostra de um documento (documentos antigos só tinham o ano).
+router.put('/documentos/:id/mostra', miPermiso("3"), async (req, res) => {
+  try {
+    if (!idValido(req.params.id) || !idValido(String(req.body.feiraId))) return res.status(400).send('ID inválido');
+    let doc = await CadastroDocumentoSchema.findById(req.params.id, 'ano feiraId').lean();
+    if (!doc) return res.status(404).send('Documento não encontrado.');
+    if (doc.feiraId ? !(await perfil.podeMostra(req, String(doc.feiraId))) : !(await perfil.podeAno(req, doc.ano))) return res.status(403).send('Fora das Mostras que você administra.');
+    if (!(await perfil.podeMostra(req, req.body.feiraId))) return res.status(403).send('Escolha uma das Mostras que você administra.');
+    let mostra = await feiraSchema.findOne({ _id: req.body.feiraId, tipo: 'edicao' }, 'ano').lean();
+    if (!mostra) return res.status(400).send('Mostra não encontrada.');
+    await CadastroDocumentoSchema.updateOne({ _id: req.params.id }, { $set: { feiraId: mostra._id, ano: mostra.ano } });
+    res.send({ feiraId: mostra._id, ano: mostra.ano });
+  } catch (error) {
+    console.error('Erro ao mudar a Mostra do documento', error);
+    res.status(500).send('Erro ao salvar.');
   }
 });
 

@@ -18,9 +18,9 @@
             <div class="md-toolbar-tools">
 
             <div style="width:220px;">
-              <md-select data-ng-model="filtroAno" placeholder="Ano" style="width:100%!important;font-size:17px;">
-                <md-optgroup label="Ano:">
-                  <md-option ng-value="a.ano" data-ng-repeat="a in anosMostras track by a.ano">{{a.ano}} - {{a.nomes}}</md-option>
+              <md-select data-ng-model="filtro.mostraId" placeholder="Mostra" style="width:100%!important;font-size:17px;">
+                <md-optgroup label="Mostra:">
+                  <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
                 </md-optgroup>
               </md-select>
             </div>
@@ -46,9 +46,9 @@
                     </md-input-container>          
                     
                     <md-input-container class="md-block" flex-gt-xs="30">
-                        <md-select data-ng-model="ano" placeholder="Ano" disableOptionCentering style="width:100%!important;font-size:17px;">
-                            <md-optgroup label="Ano:">
-                                <md-option ng-value="a.ano" data-ng-repeat="a in anosMostras track by a.ano">{{a.ano}} - {{a.nomes}}</md-option>
+                        <md-select data-ng-model="form.mostraId" placeholder="Mostra" disableOptionCentering style="width:100%!important;font-size:17px;" required>
+                            <md-optgroup label="Mostra:">
+                                <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
                             </md-optgroup>
                         </md-select>
                     </md-input-container>        
@@ -72,16 +72,23 @@
                 
                 <md-list data-ng-if="exibeDocumentos()" flex style="margin-bottom:50px;" class="eventos-form">
                     <md-divider></md-divider>
-                    <md-list-item class="md-3-line" data-ng-repeat="info in documentos | filter:{ano: filtroAno}" style="padding:0 45px;">
+                    <md-list-item class="md-3-line" data-ng-repeat="info in documentos | filter:daMostra track by info._id" style="padding:0 45px;">
                         <div class="md-list-item-text" style="margin-right:5px;text-align:left;">
                             <h3>{{info.titulo}}</h3>
-                            <p>Ano: {{info.ano}}</p>
+                            <p data-ng-if="info.feiraId">Mostra: {{nomeMostra(info.feiraId)}}</p>
+                            <div data-ng-if="!info.feiraId" layout="row" layout-align="start center" style="flex-wrap:wrap;">
+                                <span style="color:#7a4a00;font-size:13px;margin-right:8px;">Documento antigo de {{info.ano}}, sem Mostra definida:</span>
+                                <md-select data-ng-model="info.novaMostra" placeholder="Escolher a Mostra" aria-label="Mostra do documento" style="margin:0;min-width:200px;">
+                                    <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
+                                </md-select>
+                                <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!info.novaMostra" data-ng-click="mudarMostra(info)">Salvar Mostra</md-button>
+                            </div>
                         </div>
                         <div class="md-list-item-text" flex="15">
                             <h3>Exibir: <input type="checkbox" data-ng-model="info.exibe" aria-label="confirmar" class="md-checkbox" data-ng-click="UpdateExibir(info._id, info.exibe)"></h3>
                         </div>
                         <div flex style="display:flex;align-self:center;justify-content:space-evenly;">
-                            <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important; background-color: green;" aria-label="Visualizar documento" ng-click="Visualiza(info.pdf, info.titulo)">
+                            <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important; background-color: green;" aria-label="Visualizar documento" ng-click="Visualiza(info)">
                                 <md-icon md-svg-icon="eye" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
                                 <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Visualizar / Baixar</span>
                             </md-button>
