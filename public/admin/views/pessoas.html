@@ -56,11 +56,58 @@
       <div data-ng-if="perfil">
         <md-button class="md-raised" data-ng-click="voltar()" aria-label="Voltar">Voltar à busca</md-button>
         <div style="background:#fff;padding:20px;margin:15px 0;">
-          <h3 style="margin:0 0 8px 0;">{{perfil.pessoa.nome || '(sem nome)'}}</h3>
-          <div>Doc. identificação: <strong>{{perfil.documento}}</strong></div>
-          <div data-ng-if="perfil.cadastrada">
-            E-mail: {{perfil.pessoa.email || '-'}}<span data-ng-if="perfil.pessoa.emailsAlternativos.length"> · Outros e-mails de acesso: {{perfil.pessoa.emailsAlternativos.join(', ')}}</span> · Telefone: {{perfil.pessoa.telefone || '-'}} · Nacionalidade: {{nomeNacionalidade(perfil.pessoa.nacionalidade)}}
+          <div layout="row" layout-align="start start">
+            <h3 flex style="margin:0 0 8px 0;">{{perfil.pessoa.nome || '(sem nome)'}}</h3>
+            <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;margin:0;" data-ng-if="perfil.cadastrada && !edicao" data-ng-click="editar()">Editar dados</md-button>
           </div>
+          <div data-ng-if="!edicao">
+            <div>Doc. identificação: <strong>{{perfil.documento}}</strong></div>
+            <div data-ng-if="perfil.cadastrada">
+              E-mail: {{perfil.pessoa.email || '-'}}<span data-ng-if="perfil.pessoa.emailsAlternativos.length"> · Outros e-mails de acesso: {{perfil.pessoa.emailsAlternativos.join(', ')}}</span> · Telefone: {{perfil.pessoa.telefone || '-'}} · Nacionalidade: {{nomeNacionalidade(perfil.pessoa.nacionalidade)}}
+            </div>
+          </div>
+
+          <!-- Edição pela organização (PUT /admin/pessoas/:id): vale pro login e vai pras cópias nos outros cadastros. -->
+          <form name="pessoaForm" novalidate data-ng-if="edicao" style="margin-top:8px;">
+            <div layout="row" layout-wrap>
+              <md-input-container flex="50" flex-xs="100">
+                <label>Nome completo</label>
+                <input type="text" data-ng-model="edicao.nome" required maxlength="200"/>
+              </md-input-container>
+              <md-input-container flex="25" flex-xs="100">
+                <label>Documento de identificação</label>
+                <input type="text" data-ng-model="edicao.documento" required maxlength="30"/>
+              </md-input-container>
+              <md-input-container flex="25" flex-xs="100">
+                <label>Nacionalidade</label>
+                <md-select data-ng-model="edicao.nacionalidade">
+                  <md-option ng-value="k" data-ng-repeat="(k, v) in NACIONALIDADES">{{v}}</md-option>
+                </md-select>
+              </md-input-container>
+              <md-input-container flex="50" flex-xs="100">
+                <label>E-mail principal</label>
+                <input type="email" data-ng-model="edicao.email" required maxlength="200"/>
+              </md-input-container>
+              <md-input-container flex="25" flex-xs="100">
+                <label>Telefone (com DDD)</label>
+                <input type="text" data-ng-model="edicao.telefone" maxlength="25"/>
+              </md-input-container>
+              <md-input-container flex="50" flex-xs="100" data-ng-repeat="i in [0, 1]">
+                <label>Outro e-mail de acesso {{i + 1}} (opcional)</label>
+                <input type="email" data-ng-model="edicao.alternativos[i]" maxlength="200"/>
+              </md-input-container>
+            </div>
+            <p data-ng-if="edicao.documento && normalizar(edicao.documento) !== normalizar(perfil.documento)" style="color:#7a4a00;font-size:13px;margin-top:0;">
+              Trocar o documento muda também os registros desta pessoa em projetos, avaliação, eventos e Saberes: os certificados passam a sair pelo documento novo.
+            </p>
+            <p style="color:rgba(0,0,0,0.6);font-size:13px;margin-top:0;">
+              As alterações valem para o login e vão também para os cadastros de avaliador(a), participante, integrante de projeto, responsável de evento e Saberes desta pessoa. A senha não muda.
+            </p>
+            <div layout="row" layout-align="end center">
+              <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="salvando" data-ng-click="cancelarEdicao()">Cancelar</md-button>
+              <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || pessoaForm.$invalid" data-ng-click="salvarEdicao()">Salvar</md-button>
+            </div>
+          </form>
           <div data-ng-if="!perfil.cadastrada" class="message-error" style="margin-top:6px;">
             Ainda sem cadastro único - os registros abaixo foram achados pelo documento.
           </div>

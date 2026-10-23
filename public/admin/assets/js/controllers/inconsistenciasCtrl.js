@@ -80,7 +80,8 @@
 				if (!email) return;
 				grupo.ocupado = true;
 				$http.post('/admin/pessoas/' + pessoa._id + '/email', { email: email }).then(function(response) {
-					$scope.toast('E-mail de ' + pessoa.nome + ' trocado para ' + response.data.email + '.', 'success-toast');
+					if (!response.data.alterados.length) return $scope.toast('Este já é o e-mail deste cadastro.', 'failed-toast');
+					$scope.toast('E-mail de ' + pessoa.nome + ' trocado para ' + response.data.pessoa.email + '.', 'success-toast');
 					tirarDoGrupo(grupo, pessoa);
 				}, function(response) {
 					$scope.toast(typeof response.data === 'string' ? response.data : 'Falha ao trocar o e-mail.', 'failed-toast');
