@@ -2074,8 +2074,9 @@ router.put('/update', ensureAuthenticated, miPermiso("3"), async (req, res) => {
     if (!idValido(id)) return res.status(400).send('ID inválido');
     if (await perfil.foraDoEscopo(req, projetoSchema, { _id: id })) return res.status(403).send('Fora das Mostras que você administra.');
     let newProject = filtrarCamposEditaveis(req.body);
-
-    console.log(newProject);
+    // A tela manda a hospedagem como lista de nomes; no banco é texto separado por vírgula (mesma
+    // conversão de routes/painel-projetos.js) - o Mongoose atual recusa lista num campo String.
+    if (Array.isArray(newProject.hospedagem)) newProject.hospedagem = newProject.hospedagem.join(',');
 
     // Mesmo bug/fix já corrigido no grupo 4 (routes/projetos.js): .update() nunca devolve
     // o documento, mesmo com {new:true} - vira findOneAndUpdate(), que de fato devolve.
@@ -2100,14 +2101,14 @@ router.put('/upgreiceEditProjeto', ensureAuthenticated, miPermiso("3"), async (r
       let v = myArray[j];
       if (v.cpf !== undefined) {
         let checagemDoc = documentoValidator.validarDocumentoQualquerPais(v.cpf);
-        if (!checagemDoc.valido) return res.status(400).send(checagemDoc.mensagem);
+        if (!checagemDoc.valido) return res.status(400).send((v.nome ? v.nome + ': ' : '') + checagemDoc.mensagem);
         v.cpf = checagemDoc.normalizado;
         // Liga o integrante à Pessoa do cadastro único (ver pessoaController.vincularPessoa).
         v.pessoa = await pessoaController.vincularPessoa({ cpf: v.cpf, nome: v.nome, email: v.email, telefone: v.telefone, nacionalidade: v.nacionalidade });
       }
       if (v.telefone !== undefined) {
         let checagemTelefone = documentoValidator.validarTelefone(v.telefone);
-        if (!checagemTelefone.valido) return res.status(400).send(checagemTelefone.mensagem);
+        if (!checagemTelefone.valido) return res.status(400).send((v.nome ? v.nome + ': ' : '') + checagemTelefone.mensagem);
       }
     }
 
