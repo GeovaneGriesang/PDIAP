@@ -183,26 +183,45 @@
 			resetForm();
 		};
 
+		// Mostra (ex.: de teste) sai junto com tudo o que é dela - antes, mostra o que vai
+		// ser apagado (GET /admin/feiras/:id/vinculos). Mostra atual não pode ser removida.
 		$scope.removerFeira = function(ev,id,nome) {
-			var confirm = $mdDialog.confirm()
-			.textContent('Deseja remover a mostra '+nome+'?')
-			.ariaLabel('Remover mostra')
-			.targetEvent(ev)
-			.ok('Sim')
-			.cancel('Não');
-			$mdDialog.show(confirm).then(function() {
-				adminAPI.removeFeira(id)
-				.then(function(response) {
-					$scope.toast('Mostra removida com sucesso!','success-toast');
-					var index = $scope.feiras.map(function(f) { return f._id; }).indexOf(id);
-					if (index !== -1) {
-						$scope.feiras.splice(index, 1);
-					}
-				}, function(response) {
-					$scope.toast('Falha.','failed-toast');
-					console.log("Error: "+response.data);
-				});
-			}, function() {});
+			adminAPI.getVinculosFeira(id).then(function(response) {
+				var v = response.data;
+				if (v.mostraAtual) {
+					$mdDialog.show($mdDialog.alert()
+					.title('Não dá para remover a ' + nome)
+					.textContent('Ela é a Mostra atual. Troque a Mostra atual em Sistema > Mostra atual e tente de novo.')
+					.ariaLabel('Mostra atual')
+					.targetEvent(ev)
+					.ok('Entendi'));
+					return;
+				}
+				var texto = v.total
+					? 'Junto com ela serão apagados: ' + v.itens.map(function(i) { return i.texto; }).join(', ') + '. Isso não pode ser desfeito pela tela.'
+					: 'Não há nada ligado a ela (projetos, avaliadores, certificados, documentos...).';
+				var confirm = $mdDialog.confirm()
+				.title('Remover a ' + nome + '?')
+				.textContent(texto)
+				.ariaLabel('Remover mostra')
+				.targetEvent(ev)
+				.ok(v.total ? 'Remover tudo' : 'Remover')
+				.cancel('Cancelar');
+				$mdDialog.show(confirm).then(function() {
+					adminAPI.removeFeira(id)
+					.then(function(response) {
+						$scope.toast('Mostra removida com sucesso!','success-toast');
+						var index = $scope.feiras.map(function(f) { return f._id; }).indexOf(id);
+						if (index !== -1) {
+							$scope.feiras.splice(index, 1);
+						}
+					}, function(response) {
+						$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha.','failed-toast');
+					});
+				}, function() {});
+			}, function(response) {
+				$scope.toast('Não foi possível ver o que está ligado à Mostra.','failed-toast');
+			});
 		};
 
 		let resetForm = function() {

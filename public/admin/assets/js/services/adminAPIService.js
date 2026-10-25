@@ -287,6 +287,10 @@
 			return $http(request);
 		};
 
+		let _getVinculosFeira = function(id) {
+			return $http.get('/admin/feiras/' + id + '/vinculos');
+		};
+
 		let _removeFeira = function(id) {
 			const request = {
 				url: '/admin/removeFeira',
@@ -734,6 +738,7 @@
 			getFeiras: _getFeiras,
 			getHistoricoEmails: _getHistoricoEmails,
 			removeFeira: _removeFeira,
+			getVinculosFeira: _getVinculosFeira,
 			editarFeira: _putEditarFeira,
 			postSeminario: _postSeminario,
 			getSeminarios: _getSeminarios,

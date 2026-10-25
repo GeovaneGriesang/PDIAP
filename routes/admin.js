@@ -35,6 +35,7 @@ const express = require('express')
 , sessao = require('../utils/sessao')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
 , mesclarPessoas = require('../controllers/mesclar-pessoas-controller')
+, removerMostra = require('../controllers/remover-mostra-controller')
 , avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
 , distribuicaoPrevia = require('../controllers/distribuicao-previa-controller')
 , resultadoPrevia = require('../controllers/resultado-previa-controller')
@@ -829,14 +830,29 @@ router.get('/mostraFeiras', miPermiso("3","2"), async (req, res) => {
   }
 });
 
+// O que está ligado à Mostra antes de remover (a tela mostra e pede confirmação).
+router.get('/feiras/:id/vinculos', soSuper, async (req, res) => {
+  try {
+    let v = await removerMostra.vinculos(req.params.id);
+    if (!v) return res.status(404).send('Mostra não encontrada');
+    res.send(v);
+  } catch (error){
+    console.error('Erro ao ver vínculos da feira', error);
+    res.status(500).send('Erro ao ver o que está ligado à Mostra');
+  }
+});
+
+// Remove a Mostra e tudo o que é dela (ver controllers/remover-mostra-controller.js).
 router.put('/removeFeira', soSuper, async (req, res) => {
   try {
     let id = req.body.id;
     if (!idValido(id)) return res.status(400).send('ID inválido');
-    await feiraSchema.deleteOne({"_id": id});
+    let r = await removerMostra.remover(id, req.user && (req.user.nome || req.user.username));
+    if (r.erro) return res.status(r.status).send(r.erro);
     res.send('success');
   } catch (error){
     console.error('Erro ao remover feira', error);
+    res.status(500).send('Erro ao remover a Mostra');
   }
 });
 
