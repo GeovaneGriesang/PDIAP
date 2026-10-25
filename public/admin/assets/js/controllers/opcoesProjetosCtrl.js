@@ -1,7 +1,7 @@
 (function(){
 	'use strict';
 
-	// Editar > Campos editáveis: o que os integrantes podem alterar no projeto pelo "Meu painel",
+	// Mostra > Campos editáveis: o que os integrantes podem alterar no projeto pelo "Meu painel",
 	// POR MOSTRA (cada edição tem os seus - ver controllers/opcoes-projetos-controller.js). A Mostra
 	// escolhida é a mesma das outras telas do admin ($rootScope.mostraId).
 	angular

@@ -30,7 +30,7 @@ const express = require('express')
 
 const TRAVA_MS = 3 * 60 * 1000;
 
-// Campos que os integrantes podem alterar e a opção de Editar > Campos editáveis (admin, POR
+// Campos que os integrantes podem alterar e a opção de Mostra > Campos editáveis (admin, POR
 // MOSTRA - ver controllers/opcoes-projetos-controller.js) que libera cada um. Qualquer outro campo do body (aprovado, premiacao, token...) é ignorado.
 // hospedagem também é limpa ao trocar alunos (aba Aluno(s)), por isso vale com "integrantes".
 const CAMPO_OPCAO = {

@@ -4,7 +4,7 @@
 	angular
 	.module('PDIAPav')
 	.factory("avaliacaoAPI", function($http, $rootScope) {
-		// Mostra atual (Editar > Mostra atual no admin), carregada no resolve das rotas
+		// Mostra atual (Sistema > Mostra atual no admin), carregada no resolve das rotas
 		// (routes/ui-routes.js) em $rootScope.mostraAtual. Sem Mostra atual configurada (ou sem
 		// permissão pra ler), tudo cai no ano do calendário - o comportamento de antes.
 		let _mostraAtualId = function() {

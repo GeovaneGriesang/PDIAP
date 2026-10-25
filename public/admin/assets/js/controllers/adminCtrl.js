@@ -3,7 +3,29 @@
 
 	angular
 	.module('PDIAPa')
-	.controller('adminCtrl', function($scope, $rootScope, $timeout, $window, $mdToast, $mdSidenav) {
+	.controller('adminCtrl', function($scope, $rootScope, $timeout, $window, $mdToast, $mdSidenav, $state, $transitions) {
+
+		// Menu lateral (admin.html): grupo de cada tela - abre sozinho o grupo da tela
+		// atual (ao entrar por link/F5 e ao navegar) e destaca o item com ativo().
+		var GRUPO_DA_TELA = {
+			'master.mostra': 'mostra', 'master.cadastro-documento': 'mostra', 'master.cadastro-mostra': 'mostra', 'master.editar-opcoes-projetos': 'mostra',
+			'master': 'projetos', 'master.editar-projetos': 'projetos', 'master.seleciona-aprovados': 'projetos', 'master.presenca-projetos': 'projetos', 'master.premiacao': 'projetos', 'master.relatorios-projetos': 'projetos',
+			'master.inscricao-avaliadores': 'avaliacao', 'master.avaliacao-previa': 'avaliacao', 'master.avaliacao-previa-acompanhamento': 'avaliacao', 'master.avaliacao-final': 'avaliacao', 'master.avaliacao-final-acompanhamento': 'avaliacao', 'master.avaliacao-inserir': 'avaliacao', 'master.relatorio-avaliadores': 'avaliacao',
+			'master.cadastro-eventos': 'eventos', 'master.cadastro-participantes': 'eventos',
+			'master.enviar-email-projetos': 'emails', 'master.enviar-email-avaliadores': 'emails', 'master.enviar-email-premiados': 'emails', 'master.enviar-email-participantes': 'emails', 'master.historico-emails': 'emails',
+			'master.pessoas': 'cadastros', 'master.cadastro-escolas': 'cadastros', 'master.cadastro-feiras': 'cadastros',
+			'master.administradores': 'sistema', 'master.editar-mostra-atual': 'sistema', 'master.editar-tela-inicial': 'sistema'
+		};
+		$scope.secao = {};
+		function abrirGrupoDaTela(nome) {
+			if (GRUPO_DA_TELA[nome]) $scope.secao[GRUPO_DA_TELA[nome]] = true;
+		}
+		abrirGrupoDaTela($state.current.name);
+		var pararDeOuvir = $transitions.onSuccess({}, function(trans) { abrirGrupoDaTela(trans.to().name); });
+		$scope.$on('$destroy', pararDeOuvir);
+		$scope.ativo = function(nome) {
+			return $state.is(nome);
+		};
 
 		// Volta pro painel pessoal (/painel) - mesma sessão, sem sair.
 		$scope.voltarAoPainel = function() {

@@ -347,7 +347,7 @@
 					$scope.premiacao = {_id:projeto._id};
 
 					// Feiras aplicáveis a este projeto: só as cadastradas pro ano/categoria dele
-					// (ver "Eventos > Feiras Filiadas") - cada uma vira um checkbox independente
+					// (ver "Cadastros gerais > Feiras filiadas") - cada uma vira um checkbox independente
 					// de Premiação/Menção Honrosa (details.premiacao.html).
 					$scope.feirasDisponiveis = [];
 					$scope.premiacao.feirasSelecionadas = {};

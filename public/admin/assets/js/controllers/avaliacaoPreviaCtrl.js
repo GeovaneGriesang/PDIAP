@@ -1,7 +1,7 @@
 (function(){
 	'use strict';
 
-	// Avaliação > Etapa prévia: configuração POR MOSTRA da avaliação dos textos antes do evento
+	// Avaliação > Prévia: configuração POR MOSTRA da avaliação dos textos antes do evento
 	// (aprovação pra apresentação/anais) - prazos, convite x envio direto, nº de avaliadores por
 	// trabalho, anonimato, se a nota conta na final e a ficha de cada categoria. Ver
 	// controllers/avaliacao-previa-controller.js. A Mostra é a mesma das outras telas ($rootScope.mostraId).

@@ -257,7 +257,7 @@
 			});
 		};
 
-		// --- Empatados: mesmo diálogo/rota de Avaliação > Inserir (ver
+		// --- Empatados: mesmo diálogo/rota de Avaliação > Lançar notas (ver
 		// avaliacaoInserirCtrl.js#visualizarDetalhes + details.avaliacao.html). ---
 		$scope.abrirDesempate = function(projeto, ev) {
 			$mdDialog.show({
@@ -303,7 +303,7 @@
 			});
 		};
 
-		// --- Sem aprovação: mesmo seletor/rota de Projetos > Selecionar Aprovados (ver
+		// --- Sem aprovação: mesmo seletor/rota de Projetos > Selecionar aprovados (ver
 		// projetosCtrl.js#marcarSituacao/update). Edição inline na lista, sem diálogo. ---
 		$scope.idProjetosAnais = [];
 		$scope.idProjetosApresentacao = [];

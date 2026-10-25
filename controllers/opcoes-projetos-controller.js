@@ -1,6 +1,6 @@
 'use strict';
 
-// "Campos editáveis" POR MOSTRA (Editar > Campos editáveis, no admin): o que os integrantes podem
+// "Campos editáveis" POR MOSTRA (Mostra > Campos editáveis, no admin): o que os integrantes podem
 // alterar no projeto pelo painel (routes/painel-projetos.js) e o texto/link mostrados na tela do
 // projeto. Antes era uma configuração só, global (admin2.opcoes), que valia pra qualquer edição.
 //
@@ -37,7 +37,7 @@ function configurada(o) {
 	return !!(o && FLAGS.concat(EXIBICAO).some((k) => typeof o[k] === 'boolean'));
 }
 
-// Mostra atual (Editar > Mostra atual) ou, sem ela, a edição de maior ano - mesma regra do admin.
+// Mostra atual (Sistema > Mostra atual) ou, sem ela, a edição de maior ano - mesma regra do admin.
 async function mostraAtual() {
 	let id = await adminController.getMostraAtualId();
 	if (id) return Feira.findById(id).lean();

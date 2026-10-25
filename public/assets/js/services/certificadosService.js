@@ -226,7 +226,7 @@
 			});
 		};
 
-		// Certificado (Eventos > Cadastrar Certificado) de um registro: o da MOSTRA dele (dados.mostraId -
+		// Certificado (Mostra > Certificados) de um registro: o da MOSTRA dele (dados.mostraId -
 		// X e XI MOVACI, do mesmo ano, têm certificados diferentes); se a Mostra ainda não tem o seu,
 		// o certificado antigo do ano (cadastrado antes de existir um por Mostra, sem feiraId).
 		// Registro antigo sem Mostra: o do ano, se houver um só.
@@ -280,7 +280,7 @@
 
 		// Gera o PDF de um certificado. Fora do diálogo pra ser usado também na lista por
 		// Mostra do "Meu painel" (listarCertificados). Retorna false quando não existe layout
-		// cadastrado pro ano do certificado (Eventos > Cadastrar Certificado, no admin).
+		// cadastrado pro ano do certificado (Mostra > Certificados, no admin).
 		var emitirCertificado1 = function(layouts, tipo, modo, dados) {
 			var dadosMostra = layouts.dadosMostra;
 			var dadosFeiras = layouts.dadosFeiras;

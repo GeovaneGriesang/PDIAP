@@ -2,7 +2,7 @@
 
 // Documentos antigos (models/documento-schema.js) só tinham o ANO. Agora cada documento é de uma
 // Mostra (feiraId): quando o ano tem uma Mostra só, grava ela; anos com mais de uma Mostra (ex: 2026
-// - X e XI MOVACI) ficam pra organização escolher em Eventos > Cadastrar Documento (seletor na
+// - X e XI MOVACI) ficam pra organização escolher em Mostra > Documentos (seletor na
 // própria linha do documento).
 //
 // Uso:
@@ -29,7 +29,7 @@ const dryRun = process.argv.includes('--dry-run');
 			gravados++;
 		}
 		console.log((dryRun ? '[DRY RUN] ' : '') + 'Documentos sem Mostra: ' + docs.length + ' · Mostra gravada (ano com uma Mostra só): ' + gravados);
-		console.log('Para escolher na tela (Eventos > Cadastrar Documento): ' + escolher.length);
+		console.log('Para escolher na tela (Mostra > Documentos): ' + escolher.length);
 		escolher.forEach((x) => console.log('  ' + x));
 	} catch (err) {
 		console.error('Erro:', err.message);

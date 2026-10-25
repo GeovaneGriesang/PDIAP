@@ -3,7 +3,7 @@
 // Certificados (layout + textos, models/cMostra-schema.js) eram um por ANO. Agora é um por Mostra
 // (feiraId). Quando o ano tem uma Mostra só, liga o certificado a ela. Ano com mais de uma Mostra
 // (ex: 2026 - X e XI MOVACI): o certificado fica sem Mostra e continua valendo pras Mostras daquele
-// ano até cada uma ganhar o seu em Eventos > Cadastrar Certificado (ver
+// ano até cada uma ganhar o seu em Mostra > Certificados (ver
 // certificadosService.js#layoutDoCertificado).
 //
 // Uso:
@@ -31,7 +31,7 @@ const dryRun = process.argv.includes('--dry-run');
 		}
 		console.log((dryRun ? '[DRY RUN] ' : '') + 'Certificados sem Mostra: ' + certs.length + ' · ligados à Mostra do ano: ' + ligados.length);
 		ligados.forEach((x) => console.log('  ' + x));
-		console.log('Continuam valendo pro ano todo (cada Mostra cadastra o seu em Eventos > Cadastrar Certificado): ' + doAno.length);
+		console.log('Continuam valendo pro ano todo (cada Mostra cadastra o seu em Mostra > Certificados): ' + doAno.length);
 		doAno.forEach((x) => console.log('  ' + x));
 	} catch (err) {
 		console.error('Erro:', err.message);

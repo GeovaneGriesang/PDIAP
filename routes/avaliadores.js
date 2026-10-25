@@ -214,7 +214,7 @@ router.put('/dashboard/meus-dados', ensureAvaliador, pendencias.exigeSemPendenci
   }
 });
 
-// Lançar nota é coisa do admin (Avaliação > Inserir, Inconsistências, app de Avaliação/Ranking)
+// Lançar nota é coisa do admin (Avaliação > Lançar notas, Inconsistências, app de Avaliação/Ranking)
 // - antes bastava estar logado, então qualquer avaliador(a)/participante podia mudar a nota de
 // qualquer projeto. Agora: admin, e só em projeto das Mostras dele(a).
 router.put('/addNota', ensureAuthenticated, perfil.exigeAdmin, async (req, res) => {

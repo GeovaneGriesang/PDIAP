@@ -4,7 +4,7 @@
 // critério e parecer), média e SUGESTÃO de decisão, e as ações manuais da organização (entregar a
 // alguém, tirar, reenviar aviso, pedir avaliação a mais, decidir). A decisão é sempre da
 // organização e vai pros campos de sempre (Projeto.aprovado + tipoAprovacao, os mesmos de
-// Editar > Projetos e do envio de e-mails), não pra um campo novo.
+// Projetos > Editar projetos e do envio de e-mails), não pra um campo novo.
 
 const AvaliacaoPrevia = require('../models/avaliacao-previa-schema')
 ,	Projeto = require('../models/projeto-schema')

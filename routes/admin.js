@@ -1469,7 +1469,7 @@ router.get('/getOpcoes', miPermiso("3"), async (req, res) => {
 	}
 });
 
-// Mostra atual (Editar > Mostra atual): padrão de todos os seletores de Mostra do painel e do
+// Mostra atual (Sistema > Mostra atual): padrão de todos os seletores de Mostra do painel e do
 // Ranking/Avaliação. Só uma pode estar marcada; id null desmarca (volta a valer a de maior ano).
 router.get('/mostraAtual', miPermiso("3","2"), async (req, res) => {
   try {

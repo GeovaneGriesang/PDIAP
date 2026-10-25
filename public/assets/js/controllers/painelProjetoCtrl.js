@@ -50,7 +50,7 @@
 		};
 
 
-		// Documentos cadastrados pelo admin (Eventos > Cadastrar Documento) - os mesmos da home. A
+		// Documentos cadastrados pelo admin (Mostra > Documentos) - os mesmos da home. A
 		// área antiga do projeto linkava arquivos fixos em /alpha/documentos que não existiam mais.
 		$scope.documentos = [];
 		projetosAPI.getDocumentos().then(function(response) {

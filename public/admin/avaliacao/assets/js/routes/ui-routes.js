@@ -31,7 +31,7 @@
 			return deferred.promise;
 		};
 
-		// Mostra atual (Editar > Mostra atual no admin) vira $rootScope.mostraAtual (a Feira
+		// Mostra atual (Sistema > Mostra atual no admin) vira $rootScope.mostraAtual (a Feira
 		// tipo:'edicao' inteira) - Ranking e Avaliação passam a usar o ano/_id dela em vez do
 		// ano do calendário (ver avaliacaoAPI.anoDaMostra). Qualquer falha (sem Mostra atual
 		// configurada, sem permissão, erro de rede) deixa null e vale o ano do calendário, como
