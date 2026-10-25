@@ -1,0 +1,91 @@
+/* Padrão de botões do sistema todo (site, Meu painel, admin e avaliação) - carregado
+   DEPOIS do style.css de cada layout. Cor principal = verde do tema (configs/icons.js).
+   Botão sem classe de cor fica com contorno verde (secundário) em vez do cinza-claro do
+   Angular Material, que sumia no fundo cinza das telas.
+     md-primary            -> verde cheio (ação principal: salvar, buscar, entrar)
+     (sem cor)             -> contorno verde (ação secundária)
+     btn-neutro            -> contorno cinza (cancelar, voltar, sair)
+     btn-perigo / md-warn  -> vermelho (recusar, tirar, remover)                       */
+
+/* Ação secundária: md-raised sem nenhuma classe de cor. */
+.md-button.md-raised:not(.md-primary):not(.md-accent):not(.md-warn):not(.green):not(.red):not(.teal):not(.btn-outline):not(.btn-options):not(.btn-neutro):not(.btn-perigo):not(.md-fab):not([disabled]) {
+  background-color: #fff;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+  box-shadow: none;
+}
+.md-button.md-raised:not(.md-primary):not(.md-accent):not(.md-warn):not(.green):not(.red):not(.teal):not(.btn-outline):not(.btn-options):not(.btn-neutro):not(.btn-perigo):not(.md-fab):not([disabled]):hover {
+  background-color: #e8f5e9;
+}
+
+/* Ação principal sem classe de cor própria: verde cheio. */
+.md-button.md-raised.md-primary:not(.green):not(.teal):not(.red):not(.btn-outline):not(.btn-options):not([disabled]) {
+  background-color: #2e7d32;
+  color: #fff;
+}
+.md-button.md-raised.md-primary:not(.green):not(.teal):not(.red):not(.btn-outline):not(.btn-options):not([disabled]):hover {
+  background-color: #1b5e20;
+}
+
+/* Cancelar / voltar / sair. */
+.md-button.btn-neutro:not([disabled]) {
+  background-color: #fff;
+  color: #424242;
+  border: 1px solid #9e9e9e;
+  box-shadow: none;
+}
+.md-button.btn-neutro:not([disabled]):hover {
+  background-color: #f5f5f5;
+}
+
+/* Recusar / tirar / remover. */
+.md-button.btn-perigo:not([disabled]) {
+  background-color: #fff;
+  color: #c62828;
+  border: 1px solid #c62828;
+  box-shadow: none;
+}
+.md-button.btn-perigo:not([disabled]):hover {
+  background-color: #ffebee;
+}
+.md-button.md-raised.red:not([disabled]) {
+  background-color: #e53935 !important;
+  color: #fff !important;
+}
+
+/* Botões de opção das barras de ferramentas (eram cinza sobre cinza). */
+.md-button.btn-options:not([disabled]) {
+  background: #fff !important;
+  color: #2e7d32 !important;
+  border: 1px solid #2e7d32;
+}
+.md-button.btn-options:not([disabled]):hover {
+  background: #e8f5e9 !important;
+}
+
+/* Botão redondo (+) sem cor: verde (o padrão do Material era rosa). */
+.md-button.md-fab:not(.md-warn):not([disabled]) {
+  background-color: #43a047;
+  color: #fff;
+}
+
+/* Botão de texto (diálogos: OK / Cancelar / Confirmar). */
+md-dialog-actions .md-button:not(.md-raised):not([disabled]) {
+  font-weight: 500 !important;
+}
+.md-button.md-primary:not(.md-raised):not(.md-fab):not(.md-icon-button):not([disabled]) {
+  color: #2e7d32;
+}
+.md-button.md-warn:not(.md-raised):not(.md-fab):not(.md-icon-button):not([disabled]) {
+  color: #c62828;
+}
+
+/* Desabilitado: cinza claro com texto legível (antes: fundo cinza-escuro com texto
+   quase branco). Não mexe no display - o admin esconde alguns de propósito. */
+.md-button.md-raised[disabled],
+.md-button.md-raised[disabled] md-icon {
+  background-color: #e0e0e0 !important;
+  color: #9e9e9e !important;
+  border: 1px solid #e0e0e0;
+  box-shadow: none !important;
+}

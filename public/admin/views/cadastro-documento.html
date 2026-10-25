@@ -81,7 +81,7 @@
                                 <md-select data-ng-model="info.novaMostra" placeholder="Escolher a Mostra" aria-label="Mostra do documento" style="margin:0;min-width:200px;">
                                     <md-option ng-value="m._id" data-ng-repeat="m in mostras track by m._id">{{m.ano}} - {{m.nome}}</md-option>
                                 </md-select>
-                                <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!info.novaMostra" data-ng-click="mudarMostra(info)">Salvar Mostra</md-button>
+                                <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="!info.novaMostra" data-ng-click="mudarMostra(info)">Salvar Mostra</md-button>
                             </div>
                         </div>
                         <div class="md-list-item-text" style="flex:0 0 110px;align-self:center;">

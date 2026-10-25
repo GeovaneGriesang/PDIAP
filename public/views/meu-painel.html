@@ -117,7 +117,7 @@
               </div>
               <div data-ng-if="a.situacao === 'convidado'">
                 <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="a.ocupado" data-ng-click="aceitarAvaliacao(a)">Aceitar</md-button>
-                <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="a.ocupado" data-ng-click="recusarAvaliacao(a, $event)">Recusar</md-button>
+                <md-button class="md-raised btn-perigo" style="text-transform:none;" data-ng-disabled="a.ocupado" data-ng-click="recusarAvaliacao(a, $event)">Recusar</md-button>
               </div>
               <md-button data-ng-if="a.situacao !== 'convidado'" class="md-raised" data-ng-class="{'md-primary white green darken-1': a.situacao === 'aceito'}" style="text-transform:none;" ui-sref="painelAvaliacaoPrevia({id: a._id})">
                 {{a.situacao === 'aceito' ? 'Avaliar' : (a.aberta ? 'Ver ou alterar' : 'Ver')}}

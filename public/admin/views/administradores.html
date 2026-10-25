@@ -35,7 +35,7 @@
             <label>Incluir: nome, documento ou e-mail (mín. 3 letras)</label>
             <input type="text" data-ng-model="busca[m._id].termo"/>
           </md-input-container>
-          <md-button type="submit" class="md-raised" style="text-transform:none;" data-ng-disabled="busca[m._id].buscando">Buscar</md-button>
+          <md-button type="submit" class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="busca[m._id].buscando">Buscar</md-button>
         </form>
         <p data-ng-if="busca[m._id].nenhum" style="color:rgba(0,0,0,0.55);font-size:13px;margin:4px 0 0;">Ninguém encontrado no cadastro único (ou já administra esta Mostra).</p>
         <div data-ng-repeat="p in busca[m._id].resultados" layout="row" layout-align="start center" style="padding:2px 0;">
