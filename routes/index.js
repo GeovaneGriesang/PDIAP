@@ -4,7 +4,6 @@ const express = require('express')
 , router = express.Router()
 , passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy
-, Projeto = require('../controllers/projeto-controller')
 , Avaliador = require('../controllers/avaliador-controller')
 , Participante = require('../controllers/participante-controller')
 , loginBootstrap = require('../utils/loginBootstrap')
@@ -21,7 +20,6 @@ const express = require('express')
 , bcrypt = require('bcryptjs')
 , Admin = require('../controllers/admin-controller')
 , nodemailer = require('nodemailer')
-, adminSchema = require('../models/admin-schema')
 , mongoose = require('mongoose')
 , path = require('path')
 , fs = require('fs')
@@ -56,14 +54,6 @@ function splita(arg){
 
 function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
-}
-
-function miPermiso(role) {
-  return function(req, res, next) {
-    if(req.user.permissao === role)
-    next();
-    else res.send(403);
-  }
 }
 
 function ensureAuthenticated(req, res, next) {
@@ -922,29 +912,21 @@ router.post('/registro',
   }
 });
 
-// Login: o admin (conta admin2, até a fase de perfis por Mostra) e, fora isso, qualquer pessoa
-// (painel único, ver utils/loginBootstrap.js#autenticarLogin) - por qualquer um dos e-mails
-// dela, com ou sem papel. O login próprio do PROJETO acabou: os integrantes entram com a própria
-// conta e abrem o projeto pelo painel (routes/painel-projetos.js).
+// Login: qualquer pessoa (painel único, ver utils/loginBootstrap.js#autenticarLogin) - por
+// qualquer um dos e-mails dela, com ou sem papel. Quem administra entra pela própria conta e
+// abre o admin pelo painel (perfis em utils/perfil.js). O login da conta "admin2" acabou em
+// 2026-10-25 - o documento dela continua, só guardando as configurações gerais do site. O login
+// próprio do PROJETO também acabou: os integrantes abrem o projeto pelo painel.
 passport.use('unico', new LocalStrategy(function(username, password, done) {
-  Projeto.getLoginAdmin(username, (err, admin) => {
+  loginBootstrap.autenticarLogin(username, password, (err, usuario) => {
     if (err) { console.error(err); return done(err); }
-    if (admin) {
-      return Projeto.compareLogin(password, admin.password, (err, isMatch) => {
-        if (err) { console.error(err); return done(err); }
-        return isMatch ? done(null, admin) : done(null, false, {message: 'Invalid password'});
-      });
-    }
-    loginBootstrap.autenticarLogin(username, password, (err, usuario) => {
-      if (err) { console.error(err); return done(err); }
-      if (!usuario) return done(null, false, {message: 'Unknown User'});
-      return done(null, usuario);
-    });
+    if (!usuario) return done(null, false, {message: 'Unknown User'});
+    return done(null, usuario);
   });
 }));
 
 // Pessoa vai pra sessão com prefixo ("pessoa:<id>") - sem ele, o _id dela poderia colidir
-// com o de outra coleção na cascata abaixo. Admin/Projeto/conta legada seguem só com o id.
+// com o de outra coleção na cascata abaixo. Conta legada segue só com o id.
 passport.serializeUser(function(user, done){
   done(null, sessao.ehPessoa(user) ? 'pessoa:' + user.id : user.id);
 });
@@ -954,10 +936,8 @@ passport.deserializeUser(async function(id, done){
     if (typeof id === 'string' && id.indexOf('pessoa:') === 0) {
       return done(null, (await pessoaSchema.findById(id.slice(7))) || false);
     }
-    let user = await adminSchema.findById(id);
-    if (user) return done(null, user);
-    // Sessão aberta com o login antigo do projeto não acha nada aqui e é encerrada.
-    user = await avaliadorSchema.findById(id) || await participanteSchema.findById(id);
+    // Sessão aberta com o login antigo do projeto ou da conta admin2 não acha nada aqui e é encerrada.
+    let user = await avaliadorSchema.findById(id) || await participanteSchema.findById(id);
     // Sessão aberta antes do painel único (era o papel): se o papel tem Pessoa, a sessão
     // passa a ser a Pessoa, igual a um login novo.
     if (user && user.pessoa) {
@@ -982,9 +962,8 @@ router.post('/login', authLimiter, passport.authenticate('unico'), async (req, r
       console.error('Erro ao decidir redirecionamento do login', err);
       res.status(500).send('error');
     }
-  } else if (req.user.permissao === "3") {
-    // res.redirect('/admin/');
-    res.send({redirect:'/master'});
+  } else {
+    res.sendStatus(403);
   }
   //res.cookie('userid', user.id, { maxAge: 2592000000 });  // Expires in one month
 });

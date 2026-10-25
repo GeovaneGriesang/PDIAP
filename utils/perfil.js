@@ -6,7 +6,8 @@
 //    do admin, mas SÓ às Mostras dela; as outras não aparecem nem podem ser alteradas;
 //  - Super-admin: Pessoa com superAdmin:true - tudo, inclusive as configurações globais (criar
 //    Mostra e atribuir admins, Tela inicial, Mostra atual, Escolas, Feiras filiadas, Pessoas).
-// A conta antiga "admin2" (Admin com permissao "3") conta como super-admin enquanto existir.
+// A conta antiga "admin2" não entra mais (login desligado em 2026-10-25) - o documento dela
+// só guarda as configurações gerais do site.
 //
 // O filtro por Mostra é feito no SERVIDOR (escopo/comEscopo/foraDoEscopo): esconder no menu não
 // basta, porque as rotas do admin devolviam tudo e o navegador é que filtrava.
@@ -23,11 +24,7 @@ async function carregar(req) {
 	if (req._perfil) return req._perfil;
 	let p = { superAdmin: false, ehAdmin: false, mostras: [], nome: undefined };
 	let u = req.isAuthenticated && req.isAuthenticated() ? req.user : null;
-	let modelo = sessao.modelo(u);
-	if (modelo === 'Admin' && u.permissao === '3') {
-		p.superAdmin = true;
-		p.nome = u.username;
-	} else if (modelo === 'Pessoa') {
+	if (sessao.modelo(u) === 'Pessoa') {
 		p.nome = u.nome;
 		if (u.superAdmin === true) p.superAdmin = true;
 		else p.mostras = await Feira.find({ tipo: 'edicao', administradores: u._id }, '_id nome ano').sort({ ano: -1 }).lean();
