@@ -93,7 +93,7 @@
               <label>Divergência (p.p.)</label>
               <input type="number" min="0" max="100" data-ng-model="criterios.divergencia"/>
             </md-input-container>
-            <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="salvarCriterios()">Salvar critérios</md-button>
+            <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="salvarCriterios()">Salvar critérios</md-button>
           </div>
         </div>
 
@@ -137,7 +137,7 @@
             <div layout="row" layout-wrap layout-align="start center" style="margin-bottom:6px;">
               <md-button class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="/admin/projetos/{{t._id}}/texto-previa" target="_blank">Abrir o texto</md-button>
               <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="extra(t, true)">+1 avaliador(a) neste trabalho</md-button>
-              <md-button class="md-raised" style="text-transform:none;" data-ng-if="t.extras" data-ng-disabled="ocupado" data-ng-click="extra(t, false)">-1</md-button>
+              <md-button class="md-raised btn-perigo" style="text-transform:none;" data-ng-if="t.extras" data-ng-disabled="ocupado" data-ng-click="extra(t, false)">-1</md-button>
               <span class="acp-suave" style="font-size:13px;" data-ng-if="t.textoEnviadoEm">Texto enviado em {{t.textoEnviadoEm | date:'dd/MM/yyyy HH:mm'}}</span>
             </div>
             <p data-ng-if="!t.avaliacoes.length" class="acp-suave">Ainda não foi entregue a ninguém.</p>
@@ -155,7 +155,7 @@
                 </div>
                 <div data-ng-if="['convidado','aceito','concluido'].indexOf(a.situacao) !== -1">
                   <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao !== 'concluido'" data-ng-disabled="ocupado" data-ng-click="lembrar(a)">Reenviar aviso</md-button>
-                  <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
+                  <md-button class="md-raised btn-perigo" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
                 </div>
               </div>
               <div data-ng-if="a.situacao === 'concluido' || (a.notas.length && a.situacao !== 'convidado')" style="font-size:13px;margin:6px 0 0 12px;">

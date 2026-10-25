@@ -54,7 +54,7 @@
 
       <!-- Perfis da pessoa por Mostra -->
       <div data-ng-if="perfil">
-        <md-button class="md-raised" data-ng-click="voltar()" aria-label="Voltar">Voltar à busca</md-button>
+        <md-button class="md-raised btn-neutro" data-ng-click="voltar()" aria-label="Voltar">Voltar à busca</md-button>
         <div style="background:#fff;padding:20px;margin:15px 0;">
           <div layout="row" layout-align="start start">
             <h3 flex style="margin:0 0 8px 0;">{{perfil.pessoa.nome || '(sem nome)'}}</h3>
@@ -104,7 +104,7 @@
               As alterações valem para o login e vão também para os cadastros de avaliador(a), participante, integrante de projeto, responsável de evento e Saberes desta pessoa. A senha não muda.
             </p>
             <div layout="row" layout-align="end center">
-              <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="salvando" data-ng-click="cancelarEdicao()">Cancelar</md-button>
+              <md-button class="md-raised btn-neutro" style="text-transform:none;" data-ng-disabled="salvando" data-ng-click="cancelarEdicao()">Cancelar</md-button>
               <md-button class="md-raised md-primary white green darken-1" style="text-transform:none;" data-ng-disabled="salvando || pessoaForm.$invalid" data-ng-click="salvarEdicao()">Salvar</md-button>
             </div>
           </form>

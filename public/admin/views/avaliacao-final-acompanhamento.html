@@ -155,7 +155,7 @@
                 </div>
                 <div data-ng-if="a.situacao !== 'removido'">
                   <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao === 'concluido'" data-ng-disabled="ocupado" data-ng-click="reabrir(a, $event)">Reabrir</md-button>
-                  <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
+                  <md-button class="md-raised btn-perigo" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
                 </div>
               </div>
               <div data-ng-if="a.notas.length && a.situacao !== 'removido' || a.situacao === 'concluido'" style="font-size:13px;margin:6px 0 0 12px;">
