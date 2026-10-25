@@ -1,10 +1,10 @@
 (function(){
 	'use strict';
 
-	// Avaliação > Prévia: acompanhamento (avaliacao-previa-acompanhamento.html): cada trabalho da
+	// Avaliação > Prévia: andamento (avaliacao-previa-acompanhamento.html): cada trabalho da
 	// Mostra com quem está avaliando, o que falta, as notas por critério e o parecer, a média e a
 	// SUGESTÃO pelos critérios da organização; ações manuais e a decisão (vai pra Projeto.aprovado +
-	// tipoAprovacao, os mesmos campos de Editar > Projetos). Ver controllers/resultado-previa-controller.js.
+	// tipoAprovacao, os mesmos campos de Projetos > Editar projetos). Ver controllers/resultado-previa-controller.js.
 	angular
 	.module('PDIAPa')
 	.controller('avaliacaoPreviaAcompCtrl', function($scope, $rootScope, $timeout, $http, $mdDialog) {

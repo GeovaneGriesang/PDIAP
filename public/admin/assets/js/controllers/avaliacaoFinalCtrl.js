@@ -1,7 +1,7 @@
 (function(){
 	'use strict';
 
-	// Avaliação > No evento: configuração POR MOSTRA da avaliação final pelo sistema (janela das
+	// Avaliação > Final: configuração POR MOSTRA da avaliação final pelo sistema (janela das
 	// notas, quem entra na distribuição, ficha da apresentação por categoria/eixo) e a distribuição dos
 	// trabalhos aprovados. Ver controllers/avaliacao-final-controller.js. A Mostra é a mesma das outras
 	// telas ($rootScope.mostraId).

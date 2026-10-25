@@ -5,7 +5,7 @@
 // os(as) avaliadores(as) da Mostra (mesma categoria/eixo primeiro, carga dividida conforme os turnos
 // de disponibilidade) e a organização ajusta; cada pessoa avalia pela ficha no Meu painel
 // (routes/painel-avaliacoes-finais.js). Ao concluir, a nota vai SOZINHA pra Projeto.avaliacao, o
-// mesmo campo de Avaliação > Inserir e do Ranking (#publicar) - o desempate continua manual no Inserir.
+// mesmo campo de Avaliação > Lançar notas e do Ranking (#publicar) - o desempate continua manual no Inserir.
 //
 // Ficha: parte escrita (a ficha da etapa prévia) + apresentação (fichas desta configuração). Quando a
 // prévia "conta na final" e o trabalho tem avaliação prévia concluída, a parte escrita sai da ficha e
@@ -33,7 +33,7 @@ const inteiro = (v, min, max, padrao) => { let n = parseInt(v, 10); return isNaN
 const texto = (v, max) => (v == null ? '' : String(v).slice(0, max || 5000));
 function dataBR(d) { return d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : ''; }
 
-// Quantos(as) avaliam cada trabalho (o mesmo número de Avaliação > Inserir; 2 quando não gravado).
+// Quantos(as) avaliam cada trabalho (o mesmo número de Avaliação > Lançar notas; 2 quando não gravado).
 const vagas = (mostra) => (mostra && mostra.numAvaliadoresPorProjeto) || 2;
 module.exports.vagas = vagas;
 

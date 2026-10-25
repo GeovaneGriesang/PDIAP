@@ -26,7 +26,7 @@ module.exports.getEdicaoAtual = async (callback) => {
 
 // Campos editáveis (opções) agora são por Mostra: controllers/opcoes-projetos-controller.js.
 
-// Mostra atual configurada no singleton admin2 (tela Editar > Mostra atual). Devolve o _id só
+// Mostra atual configurada no singleton admin2 (tela Sistema > Mostra atual). Devolve o _id só
 // se a Feira ainda existe e é uma edição (Mostra apagada => null, e quem chama cai no padrão).
 module.exports.getMostraAtualId = async () => {
 	let admin = await Admin.findOne({ username: 'admin2' }, 'mostraAtual -_id');

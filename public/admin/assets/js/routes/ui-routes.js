@@ -37,7 +37,7 @@
 		// Ao entrar no admin (login novo / F5), $rootScope.mostraId começa sempre vazio - em
 		// vez de cair no ano corrente do calendário (que pode nem ter Mostra cadastrada
 		// ainda, ou não ser mais a edição "ativa"), define como padrão a Mostra ATUAL
-		// (Editar > Mostra atual, $rootScope.mostraAtualId) ou, se nenhuma estiver marcada
+		// (Sistema > Mostra atual, $rootScope.mostraAtualId) ou, se nenhuma estiver marcada
 		// (ou a marcada foi apagada), a mais recente cadastrada (getMostras() já vem ordenada
 		// desc por ano - ver adminAPIService.js).
 		// $rootScope.mostraId (o _id da Feira) é a chave de seleção de verdade - $rootScope.ano

@@ -56,7 +56,7 @@
 			return $http({ url: '/admin/getOpcoes', method: 'GET', params: mostraId ? { mostraId: mostraId } : {} });
 		}
 
-		// Mostra atual (Editar > Mostra atual): { mostraId } (null = nenhuma marcada). id null desmarca.
+		// Mostra atual (Sistema > Mostra atual): { mostraId } (null = nenhuma marcada). id null desmarca.
 		let _getMostraAtual = function() {
 			return $http({ url: '/admin/mostraAtual', method: 'GET' });
 		};

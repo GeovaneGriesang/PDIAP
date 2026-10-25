@@ -3,7 +3,7 @@
     <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
       <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
     </md-button>
-    <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliadores | Inscrição</h4>
+    <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Avaliadores</h4>
   </div>
 
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
@@ -214,7 +214,7 @@
           </div>
           <div class="md-list-item-text" flex="15">
             <md-checkbox aria-label="Check" data-ng-model="ava.avaliacao" data-ng-click="contador(ava.avaliacao,ava._id)">Presença</md-checkbox>
-            <!-- Aprovação pra receber trabalhos na avaliação prévia (Avaliação > Etapa prévia). -->
+            <!-- Aprovação pra receber trabalhos na avaliação prévia (Avaliação > Prévia: configuração). -->
             <md-checkbox aria-label="Avaliação prévia" data-ng-model="ava.aptoAvaliacaoPrevia" data-ng-change="marcarPrevia(ava)">Prévia</md-checkbox>
           </div>
           <div flex="20" style="display:flex;align-self:center;justify-content:center;gap:8px;">

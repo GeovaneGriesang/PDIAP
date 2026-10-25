@@ -1,4 +1,4 @@
-<!-- Avaliação > Etapa prévia (avaliacaoPreviaCtrl): configuração POR MOSTRA da avaliação dos textos
+<!-- Avaliação > Prévia: configuração (avaliacaoPreviaCtrl): configuração POR MOSTRA da avaliação dos textos
      antes do evento. Distribuição, convites e avaliação pelo sistema chegam na próxima parte (P2). -->
 <div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
   <section layout="column" role="main" flex>
@@ -7,7 +7,7 @@
         <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
           <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
         </md-button>
-        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Etapa prévia</h4>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Avaliação | Prévia: configuração</h4>
       </div>
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
         <div class="md-toolbar-tools">
@@ -90,7 +90,7 @@
 
         <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin-bottom:16px;" data-ng-show="config.ativa">
           <h3 style="margin-top:0;color:#225024;">Ficha de avaliação por categoria</h3>
-          <p data-ng-if="!config.fichas.length" style="color:#7a4a00;">Esta Mostra ainda não tem categorias cadastradas (em Mostra). Cadastre-as para montar as fichas.</p>
+          <p data-ng-if="!config.fichas.length" style="color:#7a4a00;">Esta Mostra ainda não tem categorias cadastradas (em Mostra &gt; Configuração). Cadastre-as para montar as fichas.</p>
           <div data-ng-repeat="f in config.fichas" style="border-top:1px solid #eee;padding-top:10px;margin-top:10px;">
             <b>{{f.categoria}}</b> <span style="color:rgba(0,0,0,0.55);">- total {{totalFicha(f)}} ponto(s)</span>
             <span data-ng-if="f.padrao" style="font-size:12px;color:#7a4a00;"> (ficha inicial tirada da ficha em papel - revise e salve)</span>
@@ -125,7 +125,7 @@
             na mesma categoria e eixo e dividindo a quantidade entre as pessoas. Ninguém recebe um trabalho de que é integrante.
             Depois de iniciada, a distribuição continua sozinha (a cada 30 min): substitui quem recusa ou não responde o convite,
             inclui textos que chegarem depois e manda os lembretes. Trabalho por trabalho (notas, pareceres e a decisão):
-            <a ui-sref="master.avaliacao-previa-acompanhamento">Prévia: acompanhamento</a>.
+            <a ui-sref="master.avaliacao-previa-acompanhamento">Prévia: andamento</a>.
           </p>
           <p data-ng-if="distribuicao.iniciadaEm" style="margin:0 0 8px;">
             <b>Distribuição automática ligada</b> desde {{distribuicao.iniciadaEm | date:'dd/MM/yyyy HH:mm'}} · última rodada {{distribuicao.ultimaEm | date:'dd/MM/yyyy HH:mm'}}

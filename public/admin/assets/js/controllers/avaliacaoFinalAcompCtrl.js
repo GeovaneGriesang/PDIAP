@@ -1,7 +1,7 @@
 (function(){
 	'use strict';
 
-	// Avaliação > No evento: acompanhamento (avaliacao-final-acompanhamento.html): cada trabalho aprovado
+	// Avaliação > Final: andamento (avaliacao-final-acompanhamento.html): cada trabalho aprovado
 	// da Mostra com quem avalia, o que falta, as notas por critério e a nota que já foi pro Ranking
 	// (Projeto.avaliacao); trocas, reabrir uma avaliação e "não veio" (passa os pendentes da pessoa
 	// adiante). Ver controllers/avaliacao-final-controller.js.

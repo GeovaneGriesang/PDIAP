@@ -11,7 +11,7 @@
                 <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
                     <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
                 </md-button>
-                <h4 class="md-title" style="color:#225024;margin:0!important;">Eventos | Cadastrar Documento</h4>
+                <h4 class="md-title" style="color:#225024;margin:0!important;">Mostra | Documentos</h4>
             </div>
 
             <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
@@ -73,7 +73,7 @@
                 <md-list data-ng-if="exibeDocumentos()" flex style="margin-bottom:50px;" class="eventos-form">
                     <md-divider></md-divider>
                     <md-list-item class="md-3-line" data-ng-repeat="info in documentos | filter:daMostra track by info._id" style="padding:0 45px;">
-                        <div class="md-list-item-text" style="margin-right:5px;text-align:left;">
+                        <div class="md-list-item-text" style="flex:1 1 auto;min-width:0;margin-right:5px;text-align:left;">
                             <h3>{{info.titulo}}</h3>
                             <p data-ng-if="info.feiraId">Mostra: {{nomeMostra(info.feiraId)}}</p>
                             <div data-ng-if="!info.feiraId" layout="row" layout-align="start center" style="flex-wrap:wrap;">
@@ -84,10 +84,10 @@
                                 <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!info.novaMostra" data-ng-click="mudarMostra(info)">Salvar Mostra</md-button>
                             </div>
                         </div>
-                        <div class="md-list-item-text" flex="15">
+                        <div class="md-list-item-text" style="flex:0 0 110px;align-self:center;">
                             <h3>Exibir: <input type="checkbox" data-ng-model="info.exibe" aria-label="confirmar" class="md-checkbox" data-ng-click="UpdateExibir(info._id, info.exibe)"></h3>
                         </div>
-                        <div flex style="display:flex;align-self:center;justify-content:space-evenly;">
+                        <div style="flex:0 0 360px;display:flex;align-self:center;justify-content:flex-end;gap:12px;">
                             <md-button no-ink class="md-raised md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important; background-color: green;" aria-label="Visualizar documento" ng-click="Visualiza(info)">
                                 <md-icon md-svg-icon="eye" ng-style="{width:'18px', height:'18px', color:'rgba(255,255,255,0.87)', 'margin-bottom':'3px'}"></md-icon>
                                 <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Visualizar / Baixar</span>

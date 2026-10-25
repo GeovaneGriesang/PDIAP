@@ -12,203 +12,194 @@
     <!-- menu da sidenav -->
     <hr size="3" style="background:#2e7d32;width:80%;">
     <md-content role="navigation" style="background:#43a047;" class="config-admin">
+      <!-- Tudo que é configurado por Mostra (edição): dados/categorias, documentos, modelo de certificado e o que os projetos podem editar. -->
       <md-list>
-        <md-list-item ng-click="section.expand = !section.expand">
-          <p class="md-subheader" style="color:#f5f5f5;">Projetos</p>
+        <md-list-item ng-click="secao.mostra = !secao.mostra">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Mostra</p>
           <span flex></span>
-          <md-icon md-svg-src="{{section.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+          <md-icon md-svg-src="{{secao.mostra ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
         </md-list-item>
-        <md-list-item data-ng-show="section.expand" ui-sref="master.seleciona-aprovados">
+        <md-list-item data-ng-show="secao.mostra" ui-sref="master.mostra" data-ng-class="{'item-ativo': ativo('master.mostra')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Selecionar aprovados</p>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Configuração</p>
         </md-list-item>
-        <md-list-item data-ng-show="section.expand" ui-sref="master.presenca-projetos">
+        <md-list-item data-ng-show="secao.mostra" ui-sref="master.cadastro-documento" data-ng-class="{'item-ativo': ativo('master.cadastro-documento')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Presença</p>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Documentos</p>
         </md-list-item>
-	<md-list-item data-ng-show="section.expand" ui-sref="master.premiacao">
+        <md-list-item data-ng-show="secao.mostra" ui-sref="master.cadastro-mostra" data-ng-class="{'item-ativo': ativo('master.cadastro-mostra')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Premiação</p>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Certificados</p>
         </md-list-item>
-        <md-list-item data-ng-show="section.expand" ng-click="abrirInsercaoProjeto()">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Inserir</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section.expand" ui-sref="master.editar-projetos">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Editar</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section.expand" ui-sref="master.enviar-email-projetos">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Enviar e-mail</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section.expand" ui-sref="master.relatorios-projetos">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Relatórios</p>
-        </md-list-item>
-      </md-list>
-      <md-list>
-        <md-list-item ng-click="section2.expand = !section2.expand">
-          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Avaliação</p>
-          <span flex></span>
-          <md-icon md-svg-src="{{section2.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.avaliacao-previa">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Etapa prévia</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.avaliacao-previa-acompanhamento">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Prévia: acompanhamento</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.avaliacao-final">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">No evento</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.avaliacao-final-acompanhamento">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">No evento: acompanhamento</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.avaliacao-inserir">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Inserir</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.inscricao-avaliadores">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Avaliadores</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.enviar-email-avaliadores">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">E-mail para avaliadores</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.enviar-email-premiados">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">E-mail para premiados</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section2.expand" ui-sref="master.relatorio-avaliadores">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Relatório</p>
-        </md-list-item>
-        <!-- Ranking (3 melhores projetos por eixo, calculado a partir das notas lançadas)
-             mora num app Angular separado (PDIAPav, public/admin/avaliacao/) - abre em outra
-             aba, igual ao mesmo link que já existe dentro da tela de avaliação individual
-             (avaliacao.html) e ao mesmo padrão usado acima por abrirInsercaoProjeto(). -->
-        <md-list-item data-ng-show="section2.expand" ng-click="abrirRanking()">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Ranking</p>
-        </md-list-item>
-      </md-list>
-
-      <!-- Configuração da edição anual da MOVACI/PDIAP (categorias/eixos, dias/turnos de
-           avaliação, quantidade de avaliadores por projeto) - não é submenu de Avaliação
-           nem de Eventos, é a própria "Mostra de Trabalhos" do ano. -->
-      <md-list>
-        <md-list-item ui-sref="master.mostra">
-          <md-icon md-svg-src="calendar" style="color:#f5f5f5;"></md-icon>
-          <p class="md-subheader" style="color:#f5f5f5;">Mostra</p>
-        </md-list-item>
-      </md-list>
-
-      <md-list>
-        <md-list-item ng-click="section3.expand = !section3.expand">
-          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Eventos</p>
-          <span flex></span>
-          <md-icon md-svg-src="{{section3.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
-        </md-list-item>
-        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-eventos">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Evento</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-mostra">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Certificado</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section3.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.cadastro-feiras">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Feiras Filiadas</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section3.expand" ui-sref="master.cadastro-documento">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar Documento</p>
-        </md-list-item>
-      </md-list>
-      <md-list>
-        <md-list-item ng-click="section4.expand = !section4.expand">
-          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Participantes</p>
-          <span flex></span>
-          <md-icon md-svg-src="{{section4.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
-        </md-list-item>
-        <md-list-item data-ng-show="section4.expand" ui-sref="master.cadastro-participantes">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar/Alterar</p>
-        </md-list-item>
-        <md-list-item data-ng-show="section4.expand" ui-sref="master.enviar-email-participantes">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Enviar e-mail</p>
-        </md-list-item>
-      </md-list>
-
-      <md-list>
-        <md-list-item ng-click="section5.expand = !section5.expand">
-          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Editar</p>
-          <span flex></span>
-          <md-icon md-svg-src="{{section5.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
-        </md-list-item>
-        <md-list-item data-ng-show="section5.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.editar-tela-inicial">
-          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Tela inicial</p>
-        </md-list-item>
-	<md-list-item data-ng-show="section5.expand" ui-sref="master.editar-opcoes-projetos">
+        <md-list-item data-ng-show="secao.mostra" ui-sref="master.editar-opcoes-projetos" data-ng-class="{'item-ativo': ativo('master.editar-opcoes-projetos')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Campos editáveis</p>
         </md-list-item>
-        <md-list-item data-ng-show="section5.expand" data-ng-if="$root.perfil.superAdmin" ui-sref="master.editar-mostra-atual">
+      </md-list>
+
+      <md-list>
+        <md-list-item ng-click="secao.projetos = !secao.projetos">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Projetos</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.projetos ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ng-click="abrirInsercaoProjeto()">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Inscrever projeto</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ui-sref="master.editar-projetos" data-ng-class="{'item-ativo': ativo('master.editar-projetos')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Editar projetos</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ui-sref="master.seleciona-aprovados" data-ng-class="{'item-ativo': ativo('master.seleciona-aprovados')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Selecionar aprovados</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ui-sref="master.presenca-projetos" data-ng-class="{'item-ativo': ativo('master.presenca-projetos')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Presença</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ui-sref="master.premiacao" data-ng-class="{'item-ativo': ativo('master.premiacao')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Premiação</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.projetos" ui-sref="master.relatorios-projetos" data-ng-class="{'item-ativo': ativo('master.relatorios-projetos')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Relatórios</p>
+        </md-list-item>
+      </md-list>
+
+      <!-- Ranking mora num app Angular separado (PDIAPav, public/admin/avaliacao/) - abre em outra aba, como a inscrição de projeto. -->
+      <md-list>
+        <md-list-item ng-click="secao.avaliacao = !secao.avaliacao">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Avaliação</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.avaliacao ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.inscricao-avaliadores" data-ng-class="{'item-ativo': ativo('master.inscricao-avaliadores')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Avaliadores</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.avaliacao-previa" data-ng-class="{'item-ativo': ativo('master.avaliacao-previa')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Prévia: configuração</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.avaliacao-previa-acompanhamento" data-ng-class="{'item-ativo': ativo('master.avaliacao-previa-acompanhamento')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Prévia: andamento</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.avaliacao-final" data-ng-class="{'item-ativo': ativo('master.avaliacao-final')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Final: configuração</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.avaliacao-final-acompanhamento" data-ng-class="{'item-ativo': ativo('master.avaliacao-final-acompanhamento')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Final: andamento</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.avaliacao-inserir" data-ng-class="{'item-ativo': ativo('master.avaliacao-inserir')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Lançar notas</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ng-click="abrirRanking()">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Ranking</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.avaliacao" ui-sref="master.relatorio-avaliadores" data-ng-class="{'item-ativo': ativo('master.relatorio-avaliadores')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Relatório</p>
+        </md-list-item>
+      </md-list>
+
+      <md-list>
+        <md-list-item ng-click="secao.eventos = !secao.eventos">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Eventos</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.eventos ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.eventos" ui-sref="master.cadastro-eventos" data-ng-class="{'item-ativo': ativo('master.cadastro-eventos')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastro de eventos</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.eventos" ui-sref="master.cadastro-participantes" data-ng-class="{'item-ativo': ativo('master.cadastro-participantes')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Participantes</p>
+        </md-list-item>
+      </md-list>
+
+      <!-- Todos os envios em massa num lugar só, com o histórico junto. -->
+      <md-list>
+        <md-list-item ng-click="secao.emails = !secao.emails">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">E-mails</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.emails ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.emails" ui-sref="master.enviar-email-projetos" data-ng-class="{'item-ativo': ativo('master.enviar-email-projetos')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Para projetos</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.emails" ui-sref="master.enviar-email-avaliadores" data-ng-class="{'item-ativo': ativo('master.enviar-email-avaliadores')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Para avaliadores</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.emails" ui-sref="master.enviar-email-premiados" data-ng-class="{'item-ativo': ativo('master.enviar-email-premiados')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Para premiados</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.emails" ui-sref="master.enviar-email-participantes" data-ng-class="{'item-ativo': ativo('master.enviar-email-participantes')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Para participantes</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.emails" ui-sref="master.historico-emails" data-ng-class="{'item-ativo': ativo('master.historico-emails')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Histórico de envios</p>
+        </md-list-item>
+      </md-list>
+
+      <!-- Cadastros que valem para todas as Mostras (só super-admin). -->
+      <md-list data-ng-if="$root.perfil.superAdmin">
+        <md-list-item ng-click="secao.cadastros = !secao.cadastros">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Cadastros gerais</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.cadastros ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.cadastros" ui-sref="master.pessoas" data-ng-class="{'item-ativo': ativo('master.pessoas')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Pessoas</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.cadastros" ui-sref="master.cadastro-escolas" data-ng-class="{'item-ativo': ativo('master.cadastro-escolas')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Escolas</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.cadastros" ui-sref="master.cadastro-feiras" data-ng-class="{'item-ativo': ativo('master.cadastro-feiras')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Feiras filiadas</p>
+        </md-list-item>
+      </md-list>
+
+      <!-- Configurações globais do site (só super-admin). -->
+      <md-list data-ng-if="$root.perfil.superAdmin">
+        <md-list-item ng-click="secao.sistema = !secao.sistema">
+          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Sistema</p>
+          <span flex></span>
+          <md-icon md-svg-src="{{secao.sistema ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.sistema" ui-sref="master.administradores" data-ng-class="{'item-ativo': ativo('master.administradores')}">
+          <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Administradores</p>
+        </md-list-item>
+        <md-list-item data-ng-show="secao.sistema" ui-sref="master.editar-mostra-atual" data-ng-class="{'item-ativo': ativo('master.editar-mostra-atual')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Mostra atual</p>
         </md-list-item>
-      </md-list>
-
-      <md-list data-ng-if="$root.perfil.superAdmin">
-        <md-list-item ng-click="section6.expand = !section6.expand">
-          <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Escolas</p>
-          <span flex></span>
-          <md-icon md-svg-src="{{section6.expand ? 'chevron-up' : 'chevron-down'}}" style="color:#f5f5f5;"></md-icon>
-        </md-list-item>
-        <md-list-item data-ng-show="section6.expand" ui-sref="master.cadastro-escolas">
+        <md-list-item data-ng-show="secao.sistema" ui-sref="master.editar-tela-inicial" data-ng-class="{'item-ativo': ativo('master.editar-tela-inicial')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
-          <p class="md-body-2 submenu" style="color:#f5f5f5;">Cadastrar/Aprovar</p>
+          <p class="md-body-2 submenu" style="color:#f5f5f5;">Tela inicial do site</p>
         </md-list-item>
       </md-list>
 
-      <!-- Item avulso (sem subseção) - histórico cobre os 4 pontos de envio em massa
-           (Projetos, Avaliação x2, Participantes), não faz sentido morar dentro de um só. -->
+      <!-- Pendências de Projetos x Avaliação x Cadastro - atravessa as seções, por isso é avulso. -->
       <md-list>
-        <md-list-item ui-sref="master.historico-emails">
-          <md-icon md-svg-src="history" style="color:#f5f5f5;"></md-icon>
-          <p class="md-subheader" style="color:#f5f5f5;">Histórico de E-mails</p>
-        </md-list-item>
-      </md-list>
-
-      <!-- Cadastro único: perfis de cada pessoa por Mostra (avaliador, orientador, estudante,
-           participante, responsável...) - atravessa todas as seções, por isso é avulso. -->
-      <md-list data-ng-if="$root.perfil.superAdmin">
-        <md-list-item ui-sref="master.pessoas">
-          <md-icon md-svg-src="account-search" style="color:#f5f5f5;"></md-icon>
-          <p class="md-subheader" style="color:#f5f5f5;">Pessoas</p>
-        </md-list-item>
-      </md-list>
-
-      <!-- Perfis: quem administra cada Mostra (só super-admin). -->
-      <md-list data-ng-if="$root.perfil.superAdmin">
-        <md-list-item ui-sref="master.administradores">
-          <md-icon md-svg-src="account-key" style="color:#f5f5f5;"></md-icon>
-          <p class="md-subheader" style="color:#f5f5f5;">Administradores</p>
-        </md-list-item>
-      </md-list>
-
-      <!-- Idem - pendências de Projetos x Avaliação, não é submenu de nenhum dos dois. -->
-      <md-list>
-        <md-list-item ui-sref="master.inconsistencias">
+        <md-list-item ui-sref="master.inconsistencias" data-ng-class="{'item-ativo': ativo('master.inconsistencias')}">
           <md-icon md-svg-src="alert-circle-outline" style="color:#f5f5f5;"></md-icon>
           <p class="md-subheader" style="color:#f5f5f5;">Inconsistências</p>
         </md-list-item>

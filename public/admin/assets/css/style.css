@@ -429,6 +429,13 @@ md-list-item.list-header .md-no-style {
   font-size: 15px !important;
   font-weight: 100;
 }
+/* Item da tela aberta no menu lateral (adminCtrl.ativo). */
+.config-admin md-list-item.item-ativo {
+  background: rgba(0,0,0,0.18);
+}
+.config-admin md-list-item.item-ativo .submenu {
+  font-weight: 500;
+}
 md-list-item:hover {
   background: rgba(158,158,158,0.2);
 }
