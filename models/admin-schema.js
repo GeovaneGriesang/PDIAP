@@ -84,7 +84,10 @@ const AdminSchema = new Schema({
 	// Botões configuráveis da home/menu (ex.: "Agendar Visita"), texto + link.
 	botoes: [{
 		texto: { type: String },
-		link: { type: String }
+		link: { type: String },
+		// 'menu' = item próprio no menu do topo (ex.: "Anais do evento"), sem botão no banner;
+		// 'pagina' (ou vazio, nos antigos) = botão no banner + item no menu "Botões" (como sempre foi).
+		local: { type: String }
 	}],
 	// Mensagens de destaque exibidas na home (ex.: classificações para a Mostratec).
 	destaques: [{

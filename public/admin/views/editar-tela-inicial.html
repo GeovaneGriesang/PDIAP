@@ -10,7 +10,7 @@
         <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
           <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
         </md-button>
-        <h4 class="md-title" style="color:#225024;margin:0!important;">Editar | Tela Inicial</h4>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Sistema | Tela inicial do site</h4>
       </div>
       <md-toolbar role="toolbar" class="toolbar-admin" style="box-shadow:0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)">
       <div class="md-toolbar-tools">
@@ -139,16 +139,25 @@
 	  </md-input-container>
 
 	  <hr size="3" style="background:green!important;margin-top:1.5em!important;">
-	  <h3 style="text-align:center;font-size:15px;">Botões (ex: Agendar Visita)</h3>
+	  <h3 style="text-align:center;font-size:15px;">Botões e links (ex: Agendar Visita, Anais do evento)</h3>
+	  <p style="text-align:center;font-size:13px;color:rgba(0,0,0,0.6);margin-top:-6px;">"Botão na página" aparece no banner e no menu "Botões"; "Item no menu do topo" aparece só no menu, ao lado de "Fale Conosco".</p>
 	  <div ng-repeat="item in edits[0].botoes" ng-form="botoesForm" layout-gt-xs="row" layout-align="center center">
 	    <md-input-container class="md-block" flex-gt-xs>
-	      <label>Texto do botão</label>
+	      <label>Texto</label>
 	      <input type="text" name="{{'botaoTexto'+$index}}" data-ng-model="edits[0].botoes[$index].texto" />
 	    </md-input-container>
 	    <div flex="5" hide-xs></div>
 	    <md-input-container class="md-block" flex-gt-xs>
 	      <label>Link</label>
 	      <input type="url" name="{{'botaoLink'+$index}}" data-ng-model="edits[0].botoes[$index].link" />
+	    </md-input-container>
+	    <div flex="5" hide-xs></div>
+	    <md-input-container class="md-block" flex-gt-xs="25">
+	      <label>Onde aparece</label>
+	      <md-select data-ng-model="edits[0].botoes[$index].local" aria-label="Onde aparece">
+	        <md-option value="pagina">Botão na página</md-option>
+	        <md-option value="menu">Item no menu do topo</md-option>
+	      </md-select>
 	    </md-input-container>
 	    <md-button class="md-fab md-mini md-warn" aria-label="Remover" data-ng-click="removeBotao($index)">
 	      <md-tooltip md-direction="right">Remover</md-tooltip>

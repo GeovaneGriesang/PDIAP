@@ -18,6 +18,8 @@
 					if (edits[0][campo].dataProrrogacao) edits[0][campo].dataProrrogacao = new Date(edits[0][campo].dataProrrogacao);
 				});
 				if (!edits[0].botoes) edits[0].botoes = [];
+				// Botões antigos não têm "local" - o seletor mostra "Botão na página" (value "pagina").
+				edits[0].botoes.forEach(function(b) { if (!b.local) b.local = 'pagina'; });
 				if (!edits[0].destaques) edits[0].destaques = [];
 				$scope.edits = edits;
 			}, function(response) {
@@ -26,7 +28,7 @@
 		}
 		$scope.carregarEdits();
 
-		$scope.addBotao = function() { $scope.edits[0].botoes.push({texto:'', link:''}); };
+		$scope.addBotao = function() { $scope.edits[0].botoes.push({texto:'', link:'', local:'pagina'}); };
 		$scope.removeBotao = function(idx) { $scope.edits[0].botoes.splice(idx, 1); };
 		$scope.addDestaque = function() { $scope.edits[0].destaques.push({texto:''}); };
 		$scope.removeDestaque = function(idx) { $scope.edits[0].destaques.splice(idx, 1); };
