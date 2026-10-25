@@ -104,6 +104,14 @@
             </md-input-container>
             <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="!novaFicha.chave" data-ng-click="adicionarFichaEixo()">+ Ficha do eixo</md-button>
           </div>
+          <div style="border-top:1px solid #eee;margin-top:14px;padding-top:10px;">
+            <md-checkbox data-ng-model="config.publicarFichas" style="margin-bottom:4px;"><b>Publicar as fichas no menu Documentos do site</b></md-checkbox>
+            <p style="font-size:14px;color:rgba(0,0,0,0.6);margin:0 0 0 30px;">
+              Entra no menu Documentos (e na área do projeto) como "Fichas de avaliação - {{nomeMostraCurto()}}": as fichas em branco desta configuração,
+              uma por categoria, prontas para imprimir. Mudou a ficha? O documento acompanha na hora.
+              <a data-ng-href="/fichas-avaliacao/{{$root.mostraId}}" target="_blank" data-ng-if="publicadaSalva">Ver como está publicada</a>
+            </p>
+          </div>
         </div>
 
         <div layout="row" layout-align="center center">
@@ -143,7 +151,15 @@
             <md-button class="md-raised" style="text-transform:none;" data-ng-disabled="distribuindo || !distribuicao.avisosPendentes" data-ng-click="avisar($event)">
               Avisar por e-mail ({{distribuicao.avisosPendentes || 0}} pessoa(s) ainda sem aviso)
             </md-button>
+            <md-button class="md-raised" style="text-transform:none;" data-ng-if="distribuicao.situacoes.pendente" data-ng-href="/admin/avaliacao-final/fichas-impressao?mostraId={{$root.mostraId}}" target="_blank">
+              Imprimir as fichas de todos(as)
+            </md-button>
           </div>
+          <p style="font-size:13px;color:rgba(0,0,0,0.6);margin:10px 0 0;">
+            <b>Sem internet no evento?</b> O Meu painel continua funcionando no aparelho de quem já abriu a lista com internet (as notas ficam guardadas e
+            são enviadas quando a conexão volta). Para o pior caso, imprima as fichas (uma folha por trabalho, por avaliador(a)) e depois lance cada
+            ficha preenchida em Final: andamento > "Lançar ficha em papel".
+          </p>
         </div>
       </form>
     </md-content>

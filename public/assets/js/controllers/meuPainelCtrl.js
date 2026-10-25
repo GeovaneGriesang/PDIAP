@@ -11,7 +11,7 @@
 	//
 	// Menu lateral (meu-painel.html): "Início" (resumo) e uma entrada por Mostra - a Mostra
 	// escolhida mostra as participações dela e os certificados do mesmo ano.
-	.controller('meuPainelCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, $mdDialog, $mdSidenav, $mdMedia, contaAPI, certificadosService) {
+	.controller('meuPainelCtrl', function($scope, $rootScope, $state, $window, $http, $mdToast, $mdDialog, $mdSidenav, $mdMedia, $interval, contaAPI, certificadosService, avaliacaoOffline) {
 
 		var logado = $rootScope.pessoaLogada || {};
 
@@ -75,23 +75,28 @@
 			}
 		};
 
-		contaAPI.getMeusDados()
-		.then(function(response) {
-			$scope.conta = response.data;
-			if ($scope.conta.nome) $scope.nome = $scope.conta.nome;
-			if (!$scope.conta.documento) {
-				$scope.certificados = [];
-				return;
-			}
-			certificadosService.listarCertificados($scope.conta.documento)
-			.then(function(itens) {
-				$scope.certificados = itens;
-			}, function() {
-				$scope.erroCertificados = true;
+		var carregarConta = function() {
+			contaAPI.getMeusDados()
+			.then(function(response) {
+				$scope.conta = response.data;
+				if ($scope.conta.nome) $scope.nome = $scope.conta.nome;
+				if (!$scope.conta.documento) {
+					$scope.certificados = [];
+					return;
+				}
+				certificadosService.listarCertificados($scope.conta.documento)
+				.then(function(itens) {
+					$scope.certificados = itens;
+				}, function() {
+					$scope.erroCertificados = true;
+				});
+			}, function(response) {
+				// Sem internet o aviso do topo já explica; participações e certificados voltam com a conexão.
+				if (avaliacaoOffline.semRede(response)) return;
+				$scope.toast('Não foi possível carregar suas participações.', 'failed-toast');
 			});
-		}, function() {
-			$scope.toast('Não foi possível carregar suas participações.', 'failed-toast');
-		});
+		};
+		carregarConta();
 
 		// Abre o mesmo diálogo da página pública de certificados, com o documento de quem está
 		// logado - TODOS os certificados da pessoa (ver services/certificadosService.js).
@@ -119,11 +124,49 @@
 		};
 
 		// Avaliação no evento (routes/painel-avaliacoes-finais.js): um cartão por Mostra, em ordem de nº.
+		// Com internet, a lista e as fichas ficam guardadas no aparelho (avaliacaoOfflineService.js);
+		// sem internet, o painel mostra a lista guardada e o que ainda não foi enviado.
 		$scope.avaliacoesFinais = [];
 		$scope.buscaFinal = { texto: '' };
-		$http.get('/api/painel/avaliacoes-finais').then(function(response) {
-			$scope.avaliacoesFinais = response.data || [];
-		}, function() {});
+		$scope.semInternet = !!$rootScope.semInternet;
+		var carregarFinais = function(primeira) {
+			$http.get('/api/painel/avaliacoes-finais').then(function(response) {
+				$scope.semInternet = $rootScope.semInternet = false;
+				if (!$scope.conta) carregarConta();
+				$scope.avaliacoesFinais = response.data || [];
+				avaliacaoOffline.guardarLista($scope.avaliacoesFinais);
+				if (primeira) avaliacaoOffline.prepararFichas($scope.avaliacoesFinais);
+				avaliacaoOffline.enviarPendentes();
+			}, function(response) {
+				if (!avaliacaoOffline.semRede(response)) return;
+				$scope.semInternet = true;
+				if (primeira || !$scope.avaliacoesFinais.length) $scope.avaliacoesFinais = avaliacaoOffline.lista();
+			});
+		};
+		carregarFinais(true);
+		// A fila é lida do aparelho só quando muda (ler a cada digest devolvia objetos novos: $rootScope:infdig).
+		var filaPorId = {};
+		var atualizarFila = function() {
+			$scope.filaOffline = avaliacaoOffline.fila();
+			$scope.recusadasOffline = $scope.filaOffline.filter(function(i) { return i.erro; });
+			filaPorId = {};
+			$scope.filaOffline.forEach(function(i) { filaPorId[i._id] = i; });
+		};
+		atualizarFila();
+		// Enviou o que estava no aparelho: a lista do servidor passa a valer de novo.
+		$scope.$on('avaliacaoOffline:mudou', function() {
+			atualizarFila();
+			if (!$scope.filaOffline.length) carregarFinais(false);
+		});
+		// Sem internet: confere a cada 20 s se voltou (o aviso some e a lista se atualiza).
+		var conferir = $interval(function() { if ($scope.semInternet) carregarFinais(false); }, 20000);
+		$scope.$on('$destroy', function() { $interval.cancel(conferir); });
+		$scope.naFila = function(a) { return filaPorId[a._id] || null; };
+		$scope.tentarDeNovo = function(id) { avaliacaoOffline.tentarDeNovo(id); };
+		$scope.nomeDaFila = function(item) {
+			var a = $scope.avaliacoesFinais.filter(function(x) { return x._id === item._id; })[0];
+			return a ? (a.projeto.numInscricao ? 'nº ' + a.projeto.numInscricao + ' - ' : '') + a.projeto.nomeProjeto : 'Trabalho';
+		};
 		var gruposCache = { lista: null, grupos: [] };
 		$scope.gruposFinais = function() {
 			if (gruposCache.lista === $scope.avaliacoesFinais) return gruposCache.grupos;
@@ -172,10 +215,19 @@
 			}, function() {});
 		};
 
-		$scope.logout = function() {
-			$http.post('/logout').then(function() {
-				$window.location.href = '/';
-			});
+		$scope.logout = function(ev) {
+			var sair = function() {
+				avaliacaoOffline.esquecerLogin();
+				$http.post('/logout').finally(function() {
+					$window.location.href = '/';
+				});
+			};
+			var n = avaliacaoOffline.fila().length;
+			if (!n) return sair();
+			$mdDialog.show($mdDialog.confirm()
+				.title('Há avaliações ainda não enviadas')
+				.textContent(n + ' avaliação(ões) feita(s) sem internet ainda está(ão) só neste aparelho. Elas continuam guardadas e são enviadas quando você entrar de novo, neste aparelho, com internet. Sair mesmo assim?')
+				.ariaLabel('Sair').targetEvent(ev).ok('Sair').cancel('Ficar')).then(sair, function() {});
 		};
 	});
 })();

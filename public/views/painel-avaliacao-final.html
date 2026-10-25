@@ -8,6 +8,7 @@
   .avf-criterio { padding:4px 0;border-top:1px solid #f0f0f0; }
   .avf-parte { margin:14px 0 4px;color:#2e7d32;font-weight:bold; }
   .avf-aviso { background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:12px 16px;margin-bottom:16px;color:#7a4a00; }
+  .avf-offline { background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:12px 16px;margin-bottom:16px;color:#0d47a1; }
 </style>
 
 <div data-ng-cloak style="min-height:100vh;background:#fdfdfd;">
@@ -30,7 +31,14 @@
           {{av.mostra.nome}} · {{av.projeto.categoria}}<span data-ng-if="av.projeto.eixo"> · {{av.projeto.eixo}}</span>
         </p>
 
-        <div class="avf-aviso" data-ng-if="!av.aberta">{{av.motivo}} {{av.situacao === 'concluido' ? 'As notas não podem mais ser alteradas.' : 'Por enquanto dá só para ver o trabalho e a ficha.'}}</div>
+        <div class="avf-offline" data-ng-if="semInternet">
+          <b>Sem conexão com a internet.</b> Pode avaliar normalmente: as notas ficam guardadas neste aparelho e são enviadas sozinhas quando a internet voltar.
+        </div>
+        <div class="avf-offline" data-ng-if="naFila() && !naFila().erro">
+          Esta avaliação está guardada neste aparelho ({{naFila().concluir ? 'concluída' : 'rascunho'}}) e ainda não foi enviada.
+        </div>
+        <div class="avf-aviso" data-ng-if="naFila().erro">O servidor não aceitou a avaliação guardada neste aparelho: {{naFila().erro}}</div>
+        <div class="avf-aviso" data-ng-if="!av.aberta">{{av.motivo || 'A avaliação não está aberta agora.'}} {{av.situacao === 'concluido' ? 'As notas não podem mais ser alteradas.' : 'Por enquanto dá só para ver o trabalho e a ficha.'}}</div>
 
         <div class="md-whiteframe-2dp avf-cartao">
           <h3>Trabalho</h3>
@@ -42,7 +50,7 @@
             <a href="" data-ng-click="verResumo = !verResumo">{{verResumo ? 'Esconder' : 'Ver'}} o resumo da inscrição</a>
             <p data-ng-if="verResumo" style="white-space:pre-wrap;margin-top:4px;">{{av.projeto.resumo}}</p>
           </div>
-          <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="av.projeto.temTexto || av.projeto.temRelatorio">
+          <div layout="row" layout-wrap layout-align="start center" style="margin-top:8px;" data-ng-if="!semInternet && (av.projeto.temTexto || av.projeto.temRelatorio)">
             <md-button data-ng-if="av.projeto.temTexto" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="{{urlTexto}}" target="_blank">Abrir o texto (PDF)</md-button>
             <md-button data-ng-if="av.projeto.temRelatorio" class="md-raised" style="text-transform:none;margin-left:0;" data-ng-href="{{urlRelatorio}}" target="_blank">Abrir o relatório (PDF)</md-button>
           </div>

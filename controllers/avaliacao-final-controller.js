@@ -56,6 +56,7 @@ module.exports.limpar = (c) => {
 		soPresencaConfirmada: c.soPresencaConfirmada !== false,
 		maxPorAvaliador: inteiro(c.maxPorAvaliador, 0, 200, 0),
 		instrucoesAvaliador: texto(c.instrucoesAvaliador),
+		publicarFichas: c.publicarFichas === true,
 		fichas: fichas
 	};
 };
@@ -112,7 +113,7 @@ module.exports.paraTela = (mostra) => {
 	});
 	return {
 		ativa: !!c.ativa, abreEm: c.abreEm, fechaEm: c.fechaEm, soPresencaConfirmada: c.soPresencaConfirmada !== false,
-		maxPorAvaliador: c.maxPorAvaliador || 0, instrucoesAvaliador: c.instrucoesAvaliador || '',
+		maxPorAvaliador: c.maxPorAvaliador || 0, instrucoesAvaliador: c.instrucoesAvaliador || '', publicarFichas: !!c.publicarFichas,
 		avaliadoresPorTrabalho: vagas(mostra), fichas: fichas,
 		eixosPorCategoria: ce.filter((x) => x.categoria).map((x) => ({ categoria: x.categoria, eixos: x.eixos || [] })),
 		escritaDaPrevia: escritaVemDaPrevia(mostra)
@@ -120,13 +121,33 @@ module.exports.paraTela = (mostra) => {
 };
 
 // Notas abertas agora? Etapa ativa e dentro da janela (sem datas = aberta enquanto ativa).
-module.exports.aberta = (mostra) => {
+// avaliadoEm: avaliação feita SEM INTERNET (guardada no aparelho) e enviada depois - vale a hora em
+// que foi feita, desde que chegue até PRAZO_ENVIO_OFFLINE depois do encerramento.
+const PRAZO_ENVIO_OFFLINE = 2 * 24 * 60 * 60 * 1000;
+module.exports.aberta = (mostra, avaliadoEm) => {
 	let c = (mostra && mostra.avaliacaoFinal) || {};
 	if (!c.ativa) return { aberta: false, motivo: 'A avaliação no evento desta Mostra está desligada.' };
-	let agora = new Date();
-	if (c.abreEm && agora < new Date(c.abreEm)) return { aberta: false, motivo: 'A avaliação abre em ' + dataBR(c.abreEm) + '.' };
-	if (c.fechaEm && agora > new Date(c.fechaEm)) return { aberta: false, motivo: 'A avaliação terminou em ' + dataBR(c.fechaEm) + '.' };
+	let agora = new Date(), quando = agora;
+	if (avaliadoEm && avaliadoEm < agora && c.fechaEm && agora > new Date(c.fechaEm) && agora - new Date(c.fechaEm) <= PRAZO_ENVIO_OFFLINE) quando = avaliadoEm;
+	if (c.abreEm && quando < new Date(c.abreEm)) return { aberta: false, motivo: 'A avaliação abre em ' + dataBR(c.abreEm) + '.' };
+	if (c.fechaEm && quando > new Date(c.fechaEm)) return { aberta: false, motivo: 'A avaliação terminou em ' + dataBR(c.fechaEm) + '.' };
 	return { aberta: true };
+};
+
+// Notas recebidas (tela ou ficha em papel) conferidas contra a ficha: { notas } ou { erro }.
+// Nota vazia vira null (rascunho); fora de 0..máximo é recusada.
+module.exports.conferirNotas = (ficha, recebidas) => {
+	recebidas = Array.isArray(recebidas) ? recebidas : [];
+	if (recebidas.length !== ficha.length) return { erro: 'A ficha deste trabalho mudou. Recarregue a página e confira as notas.', mudou: true };
+	let notas = [];
+	for (let i = 0; i < ficha.length; i++) {
+		let v = recebidas[i];
+		if (v === null || v === undefined || v === '') { notas.push(null); continue; }
+		let n = Number(String(v).replace(',', '.'));
+		if (!isFinite(n) || n < 0 || n > ficha[i].maximo) return { erro: 'A nota de "' + ficha[i].nome + '" precisa estar entre 0 e ' + ficha[i].maximo + '.' };
+		notas.push(dois(n));
+	}
+	return { notas: notas };
 };
 
 // Média (em pontos) das avaliações prévias concluídas, por trabalho.
@@ -379,8 +400,9 @@ module.exports.acompanhamento = async (mostra, filtroProjetos) => {
 		let avs = atribs.filter((a) => String(a.projeto) === String(p._id)).map((a) => ({
 			_id: a._id, avaliador: avPor.get(String(a.avaliador)) || { _id: a.avaliador, nome: '(avaliador(a) removido(a) da Mostra)' },
 			situacao: a.situacao, origem: a.origem, criadoEm: a.criadoEm, removidoEm: a.removidoEm, avisadoEm: a.avisadoEm,
-			ficha: a.ficha || [], notas: a.notas || [], total: a.total, maximo: a.maximo, parecer: a.parecer, salvoEm: a.salvoEm, concluidoEm: a.concluidoEm,
-			escritaDaPrevia: !!a.escritaDaPrevia,
+			// Ficha guardada a partir da primeira nota; antes disso, a que vale agora (pra lançar a ficha em papel).
+			ficha: a.ficha && a.ficha.length ? a.ficha : module.exports.fichaDoProjeto(mostra, p, media === null ? undefined : media).ficha, notas: a.notas || [], total: a.total, maximo: a.maximo, parecer: a.parecer, salvoEm: a.salvoEm, concluidoEm: a.concluidoEm,
+			escritaDaPrevia: !!a.escritaDaPrevia, origemNotas: a.origemNotas, avaliadoEm: a.avaliadoEm, lancadoPor: a.lancadoPor,
 			nota: a.situacao === 'concluido' ? dois((a.total || 0) + (a.escritaDaPrevia ? (media || 0) : 0)) : null
 		}));
 		let ativas = avs.filter((a) => ATIVAS.includes(a.situacao));
@@ -460,4 +482,73 @@ module.exports.liberarPendentes = async (mostra, avaliadorId) => {
 	let r = await AvaliacaoFinal.updateMany({ feiraId: mostra._id, avaliador: avaliadorId, situacao: 'pendente' }, { $set: { situacao: 'removido', removidoEm: new Date() } });
 	if (r.modifiedCount) module.exports.completar(mostra);
 	return { liberados: r.modifiedCount };
+};
+
+// --- fichas impressas e ficha em papel ------------------------------------------------------------
+
+// Partes da ficha agrupadas pra impressão: [{ rotulo, criterios: [{nome, maximo}] }].
+function partesDaFicha(ficha) {
+	return [['escrita', 'Parte escrita'], ['apresentacao', 'Apresentação']].map(([chave, rotulo]) => ({
+		rotulo: rotulo, criterios: ficha.filter((k) => (k.parte || 'apresentacao') === chave).map((k) => ({ nome: k.nome, maximo: k.maximo }))
+	})).filter((p) => p.criterios.length);
+}
+
+// Fichas EM BRANCO da Mostra, uma por categoria (e as específicas de eixo) - publicadas no menu
+// Documentos quando a organização autoriza (avaliacaoFinal.publicarFichas). A parte escrita sai da
+// ficha da etapa prévia; quando ela vale na final, vai junto com a observação.
+module.exports.fichasModelo = (mostra) => {
+	let escritaPrevia = escritaVemDaPrevia(mostra);
+	return module.exports.paraTela(mostra).fichas.map((f) => {
+		let escrita = distribuicaoPrevia.fichaDaCategoria(mostra, f.categoria).map((k) => ({ nome: k.nome, maximo: k.maximo, parte: 'escrita' }));
+		let apresentacao = module.exports.fichaApresentacao(mostra, f.categoria, f.eixo || '').map((k) => ({ nome: k.nome, maximo: k.maximo, parte: 'apresentacao' }));
+		return {
+			categoria: f.categoria, eixo: f.eixo || '', partes: partesDaFicha(escrita.concat(apresentacao)),
+			observacao: escritaPrevia ? 'A parte escrita é avaliada antes do evento (etapa prévia) e a média entra na nota final. No evento, avalia-se a apresentação.' : ''
+		};
+	});
+};
+
+// Trabalhos AINDA NÃO AVALIADOS de cada avaliador(a), com a ficha de cada um, pra imprimir (plano B
+// sem internet). avaliadorId opcional: só daquela pessoa.
+module.exports.fichasParaImprimir = async (mostra, avaliadorId) => {
+	let filtro = { feiraId: mostra._id, situacao: 'pendente' };
+	if (avaliadorId) filtro.avaliador = avaliadorId;
+	let atribs = await AvaliacaoFinal.find(filtro).lean();
+	let projetos = new Map((await Projeto.find({ _id: { $in: atribs.map((a) => a.projeto) } }, 'nomeProjeto numInscricao categoria eixo nomeEscola').lean()).map((p) => [String(p._id), p]));
+	let avaliadores = await Avaliador.find({ _id: { $in: atribs.map((a) => a.avaliador) } }, 'nome pessoa').lean();
+	let pessoas = new Map((await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa).filter(Boolean) } }, 'nome').lean()).map((p) => [String(p._id), p.nome]));
+	let nomeAv = new Map(avaliadores.map((a) => [String(a._id), pessoas.get(String(a.pessoa)) || a.nome || '']));
+	let grupos = new Map();
+	for (let a of atribs) {
+		let p = projetos.get(String(a.projeto));
+		if (!p) continue;
+		let f = await module.exports.fichaDoRegistro(mostra, a, p);
+		let chave = String(a.avaliador);
+		if (!grupos.has(chave)) grupos.set(chave, { avaliador: nomeAv.get(chave) || '', fichas: [] });
+		grupos.get(chave).fichas.push({ projeto: p, partes: partesDaFicha(f.ficha), escritaDaPrevia: f.escritaDaPrevia });
+	}
+	return [...grupos.values()]
+		.map((g) => Object.assign(g, { fichas: g.fichas.sort((x, y) => (x.projeto.numInscricao || 0) - (y.projeto.numInscricao || 0)) }))
+		.sort((x, y) => x.avaliador.localeCompare(y.avaliador, 'pt-BR'));
+};
+
+// A organização lança a ficha preenchida em papel: todas as notas, conclui e manda pro ranking -
+// vale mesmo com a avaliação já encerrada (é o plano B do dia).
+module.exports.lancarPapel = async (atr, mostra, recebidas, parecer, quem) => {
+	if (!ATIVAS.includes(atr.situacao)) return { erro: 'Este trabalho não está mais com esta pessoa.' };
+	let projeto = await Projeto.findById(atr.projeto, 'categoria eixo').lean();
+	if (!projeto) return { erro: 'Trabalho não encontrado.' };
+	let f = await module.exports.fichaDoRegistro(mostra, atr, projeto);
+	let c = module.exports.conferirNotas(f.ficha, recebidas);
+	if (c.erro) return { erro: c.erro };
+	if (c.notas.some((n) => n === null)) return { erro: 'Preencha a nota de todos os critérios da ficha.' };
+	let agora = new Date();
+	let r = await AvaliacaoFinal.updateOne({ _id: atr._id, situacao: { $in: ATIVAS } }, { $set: {
+		ficha: f.ficha, escritaDaPrevia: f.escritaDaPrevia, notas: c.notas, parecer: texto(parecer), total: dois(c.notas.reduce((s, n) => s + n, 0)),
+		maximo: f.ficha.reduce((s, k) => s + k.maximo, 0), situacao: 'concluido', salvoEm: agora, concluidoEm: atr.concluidoEm || agora,
+		origemNotas: 'papel', lancadoPor: texto(quem, 200)
+	}, $unset: { avaliadoEm: 1 } });
+	if (!r.matchedCount) return { erro: 'Este trabalho mudou de situação. Atualize a página.' };
+	await module.exports.publicar(atr.projeto);
+	return { ok: true };
 };

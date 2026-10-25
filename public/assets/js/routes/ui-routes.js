@@ -20,20 +20,34 @@
       //
       // Ordem obrigatória: primeiro definir a senha; depois corrigir as pendências do cadastro
       // (utils/pendencias.js) - enquanto houver, qualquer tela do painel manda pra "Corrija seus dados".
-      let checkLoggedinPessoa = function ($q, $rootScope, $http, $window, $state, $transition$) {
+      //
+      // Sem internet: vale o último login guardado no aparelho (avaliacaoOfflineService.js), pra quem
+      // avalia no evento continuar usando o painel; o servidor confere a sessão de novo no envio.
+      let checkLoggedinPessoa = function ($q, $rootScope, $http, $window, $state, $transition$, avaliacaoOffline) {
         var deferred = $q.defer();
+        var seguir = function (login) {
+          $rootScope.pessoaLogada = login;
+          var destino = $transition$.to().name;
+          if (login.senhaDefinida && (login.pendencias || []).length && destino !== 'painelPendencias' && destino !== 'painelTrocarSenha') {
+            deferred.reject();
+            $state.go('painelPendencias');
+            return;
+          }
+          deferred.resolve();
+        };
         $http
           .get('/conta/loggedin')
           .then(function (response) {
-            $rootScope.pessoaLogada = response.data;
-            var destino = $transition$.to().name;
-            if (response.data.senhaDefinida && (response.data.pendencias || []).length && destino !== 'painelPendencias' && destino !== 'painelTrocarSenha') {
-              deferred.reject();
-              $state.go('painelPendencias');
+            $rootScope.semInternet = false;
+            avaliacaoOffline.guardarLogin(response.data);
+            seguir(response.data);
+          }, function (response) {
+            var guardado = avaliacaoOffline.loginGuardado();
+            if (avaliacaoOffline.semRede(response) && guardado) {
+              $rootScope.semInternet = true;
+              seguir(guardado);
               return;
             }
-            deferred.resolve();
-          }, function () {
             $window.location.href = '/';
             deferred.reject();
           });

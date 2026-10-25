@@ -33,7 +33,9 @@ const express = require('express')
 , sessao = require('../utils/sessao')
 , opcoesProjetos = require('../controllers/opcoes-projetos-controller')
 , perfil = require('../utils/perfil')
-, pendencias = require('../utils/pendencias');
+, pendencias = require('../utils/pendencias')
+, avaliacaoFinal = require('../controllers/avaliacao-final-controller')
+, fichaImpressao = require('../utils/fichaImpressao');
 
 // Limita tentativas de login e de pedido de redefinição de senha para dificultar força bruta
 // e enumeração de usuários. Chave por IP (padrão da lib); conta acertos e erros igualmente.
@@ -1094,6 +1096,8 @@ router.get('/conta/loggedin', ensurePessoa, async (req, res) => {
     let [avaliador, participante] = await Promise.all([sessao.avaliadorDaSessao(req), sessao.participanteDaSessao(req)]);
     let p = await perfil.carregar(req);
     res.send({
+      // Separa, no aparelho, o que cada pessoa guardou para usar sem internet (avaliacaoOfflineService.js).
+      id: pessoa ? String(pessoa._id) : String(req.user._id),
       // Administrador(a) de alguma Mostra ou super-admin: o painel mostra o atalho pro admin.
       admin: p.ehAdmin,
       superAdmin: p.superAdmin,
@@ -1472,10 +1476,34 @@ router.post('/solicitarEscola', async function(req, res){
 router.get('/getDocumentosInfo', async function(req, res){
   try {
     let data = await CadastroDocumentoSchema.find({'exibe': true}, '-pdf').lean();
+    // Fichas de avaliação que a organização autorizou publicar (Avaliação > Final: configuração):
+    // entram no menu como documento, com link próprio (página pronta pra imprimir).
+    let comFichas = await feiraSchema.find({ tipo: 'edicao', 'avaliacaoFinal.publicarFichas': true }, 'nome ano').lean();
+    comFichas.forEach((m) => data.push({ _id: 'fichas-' + m._id, titulo: 'Fichas de avaliação - ' + m.nome, exibe: true, ano: m.ano, feiraId: m._id, link: '/fichas-avaliacao/' + m._id }));
     res.status(200).send(data);
   } catch (err) {
     console.error(err);
     res.status(500).send('Erro ao listar os documentos.');
+  }
+});
+
+// Fichas de avaliação EM BRANCO de uma Mostra (uma por categoria/eixo), só quando a organização
+// autorizou publicar. Página pronta pra imprimir (utils/fichaImpressao.js).
+router.get('/fichas-avaliacao/:mostraId', async function(req, res){
+  try {
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.mostraId)) return res.status(404).send('Fichas não encontradas.');
+    let mostra = await feiraSchema.findOne({ _id: req.params.mostraId, tipo: 'edicao', 'avaliacaoFinal.publicarFichas': true }, avaliacaoFinal.CAMPOS_MOSTRA).lean();
+    if (!mostra) return res.status(404).send('Fichas não encontradas.');
+    let fichas = avaliacaoFinal.fichasModelo(mostra).map((f) => ({
+      titulo: 'Ficha de avaliação - ' + mostra.nome,
+      linhas: [['Categoria', f.categoria + (f.eixo ? ' - eixo ' + f.eixo : '')], ['Trabalho', ' '], ['Avaliador(a)', ' ']],
+      partes: f.partes, observacao: f.observacao, comAssinatura: true
+    }));
+    res.type('html').send(fichaImpressao.pagina('Fichas de avaliação - ' + mostra.nome,
+      'Fichas usadas na avaliação dos trabalhos apresentados na ' + mostra.nome + ', uma por categoria. No evento, a avaliação é feita pelo Meu painel; a ficha impressa serve de consulta e de reserva.', fichas));
+  } catch (err) {
+    console.error('Erro ao montar as fichas de avaliação', err);
+    res.status(500).send('Erro ao montar as fichas.');
   }
 });
 
@@ -1619,7 +1647,7 @@ router.get('/avaliadores/inscricao/:slug?', function(req, res, next) {
 // Painel único de qualquer pessoa logada (ui-routes.js#painel*). As URLs antigas de
 // avaliador/participante abaixo continuam servindo a SPA, que redireciona pro /painel
 // (links de e-mails antigos).
-router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/pendencias', '/painel/projeto/:id', '/painel/avaliacao-previa/:id'], function(req, res, next) {
+router.get(['/painel', '/painel/trocar-senha', '/painel/dados', '/painel/pendencias', '/painel/projeto/:id', '/painel/avaliacao-previa/:id', '/painel/avaliacao-evento/:id'], function(req, res, next) {
   res.render('layout.ejs');
 });
 

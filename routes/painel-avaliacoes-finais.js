@@ -116,31 +116,33 @@ router.get('/:id/relatorio', carregar, (req, res) => {
 
 // Notas pela ficha. concluir=false guarda o rascunho (pode faltar nota); concluir=true exige todas,
 // calcula o total e manda pro ranking. Dá pra alterar enquanto a avaliação estiver aberta.
+// Avaliação feita SEM INTERNET (avaliacaoOfflineService.js no navegador): vem com avaliadoEm (hora em
+// que foi feita, pelo relógio do aparelho) - vale a janela daquela hora (com folga, ver #aberta) e,
+// se o registro já foi salvo depois disso (outro aparelho, a organização), a versão antiga é
+// ignorada: { ignorado: true }.
 router.put('/:id', carregar, pendencias.exigeSemPendencias, async (req, res) => {
   try {
     let atr = req.atr;
-    let ab = final.aberta(req.mostra);
+    let avaliadoEm = req.body && req.body.avaliadoEm ? new Date(req.body.avaliadoEm) : null;
+    if (avaliadoEm && (isNaN(avaliadoEm) || avaliadoEm > new Date())) avaliadoEm = null;
+    if (avaliadoEm && atr.salvoEm && atr.salvoEm > avaliadoEm) return res.send({ ignorado: true, situacao: atr.situacao, total: atr.total, maximo: atr.maximo });
+    let ab = final.aberta(req.mostra, avaliadoEm);
     if (!ab.aberta) return res.status(403).send(ab.motivo);
     let f = await final.fichaDoRegistro(req.mostra, atr, req.projeto);
     let ficha = f.ficha;
-    let recebidas = Array.isArray(req.body && req.body.notas) ? req.body.notas : [];
-    if (recebidas.length !== ficha.length) return res.status(409).send('A ficha deste trabalho mudou. Recarregue a página e confira as notas.');
-    let notas = [];
-    for (let i = 0; i < ficha.length; i++) {
-      let v = recebidas[i];
-      if (v === null || v === undefined || v === '') { notas.push(null); continue; }
-      let n = Number(v);
-      if (!isFinite(n) || n < 0 || n > ficha[i].maximo) return res.status(400).send('A nota de "' + ficha[i].nome + '" precisa estar entre 0 e ' + ficha[i].maximo + '.');
-      notas.push(Math.round(n * 100) / 100);
-    }
+    let conferidas = final.conferirNotas(ficha, req.body && req.body.notas);
+    if (conferidas.erro) return res.status(conferidas.mudou ? 409 : 400).send(conferidas.erro);
+    let notas = conferidas.notas;
     let concluir = req.body && req.body.concluir === true;
     let completa = notas.every((n) => n !== null);
     if (concluir && !completa) return res.status(400).send('Para concluir, dê nota a todos os critérios da ficha.');
     let set = {
       ficha: ficha, escritaDaPrevia: f.escritaDaPrevia, notas: notas, parecer: String((req.body && req.body.parecer) || '').slice(0, 5000), salvoEm: new Date(),
-      maximo: ficha.reduce((s, k) => s + k.maximo, 0), situacao: concluir ? 'concluido' : 'pendente'
+      maximo: ficha.reduce((s, k) => s + k.maximo, 0), situacao: concluir ? 'concluido' : 'pendente',
+      origemNotas: avaliadoEm ? 'aparelho' : 'painel'
     };
-    let unset = {};
+    let unset = { lancadoPor: 1 };
+    if (avaliadoEm) set.avaliadoEm = avaliadoEm; else unset.avaliadoEm = 1;
     if (completa) set.total = Math.round(notas.reduce((s, n) => s + n, 0) * 100) / 100; else unset.total = 1;
     if (concluir) set.concluidoEm = atr.concluidoEm || new Date(); else unset.concluidoEm = 1;
     let r = await AvaliacaoFinal.updateOne({ _id: atr._id, situacao: { $in: final.ATIVAS } }, Object.keys(unset).length ? { $set: set, $unset: unset } : { $set: set });
