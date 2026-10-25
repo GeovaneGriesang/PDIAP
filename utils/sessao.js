@@ -7,7 +7,7 @@
 //
 // Exceção: conta legada de Avaliador/Participante SEM Pessoa (ex: cadastrado sem documento)
 // continua logando como o próprio papel (req.user = Avaliador/Participante), como antes.
-// Projeto e Admin seguem com login próprio por enquanto (fases seguintes).
+// Os logins próprios do Projeto e da conta admin2 acabaram (só Pessoa e conta legada de papel).
 
 const Pessoa = require('../models/pessoa-schema')
 ,	Avaliador = require('../models/avaliador-schema')
