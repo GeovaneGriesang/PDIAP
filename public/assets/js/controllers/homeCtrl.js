@@ -65,6 +65,11 @@
 		// Usado em layout2.ejs pra decidir se mostra "Nenhum botão disponível" no menu
 		// (antes checava só edits[0].cadastro_projetos/cadastro_avaliadores - agora
 		// verifica se ALGUMA edição tem projetos ou avaliadores com inscrição aberta).
+		// Botões da tela inicial (Sistema > Tela inicial do site): local 'menu' vira item
+		// próprio no menu do topo; os demais são botão no banner + item no menu "Botões".
+		$scope.botaoNoMenu = function(btn) { return btn.local === 'menu'; };
+		$scope.botaoNaPagina = function(btn) { return btn.local !== 'menu'; };
+
 		$scope.algumaInscricaoAberta = function() {
 			return ($scope.edicoes || []).some(function(e) {
 				return (e.projetos && e.projetos.aberto) || (e.avaliadores && e.avaliadores.aberto);

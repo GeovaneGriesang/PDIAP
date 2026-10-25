@@ -36,10 +36,11 @@
 						</ul>
 					</li>
 					<li><a href="/contato">Fale Conosco</a></li>
+					<li ng-repeat="btn in edits[0].botoes | filter:botaoNoMenu"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
 					<li>
 						<a href="javascript:void(0);">Botões <span class="icon fa-angle-down"></span></a>
 						<ul>
-							<li ng-repeat="btn in edits[0].botoes"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
+							<li ng-repeat="btn in edits[0].botoes | filter:botaoNaPagina"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
 							<!-- Um botão por Mostra com inscrição aberta (Fase 2, ver memória
 							     project-mostra-ano-nao-unico) - com uma única edição de propósito (caso
 							     comum hoje), aparece só um botão de cada, igual sempre foi. -->
@@ -47,7 +48,7 @@
 							<li ng-repeat="ed in edicoes" ng-if="ed.avaliadores.aberto"><a ng-href="{{ed.slug ? '/avaliadores/inscricao/' + ed.slug : '/avaliadores/inscricao'}}" target="_blank">Cadastrar avaliador<span ng-if="edicoes.length > 1"> - {{ed.nome}}</span></a></li>
 							<li ng-if="edits[0].saberes_docentes"><a href="/saberes-docentes/inscricao" target="_blank">Saberes Docentes</a></li>
 							<li ng-if="edits[0].solicitacao_escola"><a href="/solicitar-escola" target="_blank">Cadastrar minha escola</a></li>
-							<li ng-if="!edits[0].botoes.length && !algumaInscricaoAberta() && !edits[0].saberes_docentes && !edits[0].solicitacao_escola">
+							<li ng-if="!(edits[0].botoes | filter:botaoNaPagina).length && !algumaInscricaoAberta() && !edits[0].saberes_docentes && !edits[0].solicitacao_escola">
 								<a href="javascript:void(0);" style="font-style: italic; color: #999;">Nenhum botão disponível</a>
 							</li>
 						</ul>
@@ -101,7 +102,7 @@
 					</div>
 					<a href="/saberes-docentes/inscricao" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].saberes_docentes == true">Saberes Docentes</a>
 					<a href="/solicitar-escola" class="button special" style="margin-top:3em" target="_blank" data-ng-if="edits[0].solicitacao_escola == true">Cadastrar minha escola</a>
-					<a ng-href="{{btn.link}}" class="button special" style="margin-top:3em" target="_blank" data-ng-repeat="btn in edits[0].botoes">{{btn.texto}}</a>
+					<a ng-href="{{btn.link}}" class="button special" style="margin-top:3em" target="_blank" data-ng-repeat="btn in edits[0].botoes | filter:botaoNaPagina">{{btn.texto}}</a>
 
 					<div class="infos" style="display: flex; margin-left: 80px; margin-top: 90px;">
 						<img class="icone-info" src="alpha/images/calendario.png" width="35px" height="35px" style="margin-right: 1%">
@@ -279,13 +280,14 @@
 				<a class="link depth-1" href="" data-ng-click="showEmitCertificate($event)"><span class="indent-1"></span>Gerar</a>
 				<a class="link depth-1" href="/certificados"><span class="indent-1"></span>Validar</a>
 				<a class="link depth-0" href="/contato">Fale Conosco</a>
+				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes | filter:botaoNoMenu" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
 				<span class="link depth-0">Botões</span>
-				<a class="link depth-1" data-ng-repeat="btn in edits[0].botoes" ng-href="{{btn.link}}" target="_blank"><span class="indent-1"></span>{{btn.texto}}</a>
+				<a class="link depth-1" data-ng-repeat="btn in edits[0].botoes | filter:botaoNaPagina" ng-href="{{btn.link}}" target="_blank"><span class="indent-1"></span>{{btn.texto}}</a>
 				<a class="link depth-1" data-ng-repeat="ed in edicoes" data-ng-if="ed.projetos.aberto" ng-href="{{ed.slug ? '/projetos/inscricao/' + ed.slug : '/projetos/inscricao'}}" target="_blank"><span class="indent-1"></span>Cadastrar projeto<span ng-if="edicoes.length > 1"> - {{ed.nome}}</span></a>
 				<a class="link depth-1" data-ng-repeat="ed in edicoes" data-ng-if="ed.avaliadores.aberto" ng-href="{{ed.slug ? '/avaliadores/inscricao/' + ed.slug : '/avaliadores/inscricao'}}" target="_blank"><span class="indent-1"></span>Cadastrar avaliador<span ng-if="edicoes.length > 1"> - {{ed.nome}}</span></a>
 				<a class="link depth-1" data-ng-if="edits[0].saberes_docentes" href="/saberes-docentes/inscricao" target="_blank"><span class="indent-1"></span>Saberes Docentes</a>
 				<a class="link depth-1" data-ng-if="edits[0].solicitacao_escola" href="/solicitar-escola" target="_blank"><span class="indent-1"></span>Cadastrar minha escola</a>
-				<a class="link depth-1" data-ng-if="!edits[0].botoes.length && !algumaInscricaoAberta() && !edits[0].saberes_docentes && !edits[0].solicitacao_escola" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
+				<a class="link depth-1" data-ng-if="!(edits[0].botoes | filter:botaoNaPagina).length && !algumaInscricaoAberta() && !edits[0].saberes_docentes && !edits[0].solicitacao_escola" href="javascript:void(0);"><span class="indent-1"></span>Nenhum botão disponível</a>
 				<span class="link depth-0">Documentos</span>
 				<a class="link depth-1" data-ng-repeat="doc in documentos" data-ng-show="doc.exibe" ng-href="/documentos/{{doc._id}}/arquivo" target="_blank"><span class="indent-1"></span>{{ doc.titulo }}</a>
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
