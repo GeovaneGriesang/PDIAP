@@ -116,6 +116,8 @@ const FeiraSchema = new Schema({
 		soPresencaConfirmada: {type: Boolean},
 		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
 		instrucoesAvaliador: {type: String},
+		// Fichas em branco publicadas no menu Documentos do site (/fichas-avaliacao/:mostraId).
+		publicarFichas: {type: Boolean},
 		fichas: [{
 			categoria: {type: String},
 			eixo: {type: String},

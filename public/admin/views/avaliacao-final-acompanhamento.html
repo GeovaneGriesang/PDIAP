@@ -105,6 +105,7 @@
                   · {{v.turnos}} turno(s) · a avaliar: <b>{{v.pendentes}}</b> · concluídas: <b>{{v.concluidas}}</b>
                 </div>
               </div>
+              <md-button class="md-raised" style="text-transform:none;" data-ng-if="v.pendentes" data-ng-href="/admin/avaliacao-final/fichas-impressao?mostraId={{$root.mostraId}}&avaliadorId={{v._id}}" target="_blank">Imprimir as fichas</md-button>
               <md-button class="md-raised" style="text-transform:none;" data-ng-if="v.pendentes" data-ng-disabled="ocupado" data-ng-click="liberar(v, $event)">Não veio: passar os {{v.pendentes}} pendentes adiante</md-button>
             </div>
           </div>
@@ -151,13 +152,37 @@
                     <span data-ng-if="a.situacao === 'removido'" class="acf-suave">Tirado(a) pela organização em {{a.removidoEm | date:'dd/MM HH:mm'}}</span>
                     <span data-ng-if="a.origem === 'manual'" class="acf-suave"> · entregue pela organização</span>
                     <span data-ng-if="a.avisadoEm" class="acf-suave"> · avisado(a) por e-mail</span>
+                    <span data-ng-if="a.origemNotas === 'aparelho'" class="acf-selo acf-manual">feita sem internet em {{a.avaliadoEm | date:'dd/MM HH:mm'}}, enviada depois</span>
+                    <span data-ng-if="a.origemNotas === 'papel'" class="acf-selo acf-manual">ficha em papel lançada por {{a.lancadoPor || 'organização'}}</span>
                   </div>
                 </div>
                 <div data-ng-if="a.situacao !== 'removido'">
+                  <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao === 'pendente'" data-ng-disabled="ocupado" data-ng-click="abrirPapel(a)">Lançar ficha em papel</md-button>
                   <md-button class="md-raised" style="text-transform:none;" data-ng-if="a.situacao === 'concluido'" data-ng-disabled="ocupado" data-ng-click="reabrir(a, $event)">Reabrir</md-button>
                   <md-button class="md-raised btn-perigo" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="remover(a, $event)">Tirar</md-button>
                 </div>
               </div>
+              <!-- Ficha preenchida em papel (plano B sem internet): a organização digita as notas da folha. -->
+              <form name="papelForm" novalidate data-ng-if="papel[a._id]" style="background:#f6fbf6;border:1px solid #c8e6c9;border-radius:6px;padding:10px 14px;margin:8px 0 4px;">
+                <b style="color:#225024;">Ficha em papel de {{a.avaliador.nome}}</b>
+                <span class="acf-suave" style="font-size:13px;"> - digite as notas como estão na folha. Ao lançar, a avaliação fica concluída e vai para o Ranking.</span>
+                <div data-ng-repeat="k in a.ficha" layout="row" layout-align="start center" style="border-top:1px solid #e8f5e9;">
+                  <div flex style="font-size:14px;"><span class="acf-suave">{{k.parte === 'escrita' ? 'Escrita' : 'Apresentação'}} ·</span> {{k.nome}}</div>
+                  <md-input-container style="margin:4px 0 4px 10px;width:110px;">
+                    <label>0 a {{k.maximo}}</label>
+                    <input type="number" step="0.1" min="0" max="{{k.maximo}}" data-ng-model="papel[a._id].notas[$index]" required/>
+                  </md-input-container>
+                </div>
+                <div style="text-align:right;font-size:15px;margin:4px 0;">Total da ficha: <b>{{totalPapel(a) === null ? '-' : virgula(totalPapel(a))}}</b> de {{maximoFicha(a)}}</div>
+                <md-input-container class="md-block" style="margin:4px 0;">
+                  <label>Comentários da folha (opcional)</label>
+                  <textarea data-ng-model="papel[a._id].parecer" rows="2" maxlength="5000"></textarea>
+                </md-input-container>
+                <div layout="row" layout-align="end center">
+                  <md-button class="md-raised btn-neutro" style="text-transform:none;" data-ng-click="papel[a._id] = null">Cancelar</md-button>
+                  <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="ocupado || papelForm.$invalid || totalPapel(a) === null" data-ng-click="lancarPapel(a)">Lançar e concluir</md-button>
+                </div>
+              </form>
               <div data-ng-if="a.notas.length && a.situacao !== 'removido' || a.situacao === 'concluido'" style="font-size:13px;margin:6px 0 0 12px;">
                 <div data-ng-repeat="k in a.ficha"><span class="acf-suave">{{k.parte === 'escrita' ? 'Escrita' : 'Apresentação'}} ·</span> {{k.nome}}: <b>{{a.notas[$index] === null || a.notas[$index] === undefined ? '-' : virgula(a.notas[$index])}}</b> de {{k.maximo}}</div>
                 <div data-ng-if="a.parecer" style="margin-top:4px;white-space:pre-wrap;"><b>Comentários:</b> {{a.parecer}}</div>

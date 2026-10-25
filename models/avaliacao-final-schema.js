@@ -32,6 +32,12 @@ const AvaliacaoFinalSchema = new Schema({
 	parecer: { type: String },
 	salvoEm: { type: Date },
 	concluidoEm: { type: Date },
+	// De onde vieram as notas: 'painel' (Meu painel, com internet), 'aparelho' (feita sem internet,
+	// guardada no aparelho e enviada depois - avaliadoEm = hora em que foi feita, pelo relógio do
+	// aparelho) ou 'papel' (ficha impressa, lançada pela organização - lancadoPor = quem lançou).
+	origemNotas: { type: String, enum: ['painel', 'aparelho', 'papel'] },
+	avaliadoEm: { type: Date },
+	lancadoPor: { type: String },
 	// Último aviso por e-mail da lista de trabalhos (só sai o aviso de quem ainda não foi avisado).
 	avisadoEm: { type: Date }
 }, { collection: 'avaliacoesFinais' });

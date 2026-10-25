@@ -36,6 +36,7 @@ const express = require('express')
 , inconsistenciasCadastro = require('../controllers/inconsistencias-cadastro-controller')
 , mesclarPessoas = require('../controllers/mesclar-pessoas-controller')
 , removerMostra = require('../controllers/remover-mostra-controller')
+, fichaImpressao = require('../utils/fichaImpressao')
 , avaliacaoPrevia = require('../controllers/avaliacao-previa-controller')
 , distribuicaoPrevia = require('../controllers/distribuicao-previa-controller')
 , resultadoPrevia = require('../controllers/resultado-previa-controller')
@@ -428,6 +429,39 @@ router.post('/avaliacao-final/recalcular', miPermiso("3"), async (req, res) => {
     if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
     res.send({ trabalhos: await avaliacaoFinal.republicarMostra(await mostraFinal(req.body.mostraId)) });
   } catch (error) { erroDe(res, 'Erro ao recalcular as notas')(error); }
+});
+
+// Fichas impressas por avaliador(a), com os trabalhos que ainda não avaliou (plano B sem internet).
+// Página HTML pronta pra imprimir (utils/fichaImpressao.js); avaliadorId opcional.
+router.get('/avaliacao-final/fichas-impressao', miPermiso("3"), async (req, res) => {
+  try {
+    if (!(await perfil.podeMostra(req, req.query.mostraId))) return res.status(403).send(msgOutraMostra);
+    let avaliadorId = idValido(String(req.query.avaliadorId || '')) ? String(req.query.avaliadorId) : null;
+    let mostra = await mostraFinal(req.query.mostraId);
+    let grupos = await avaliacaoFinal.fichasParaImprimir(mostra, avaliadorId);
+    let fichas = [];
+    grupos.forEach((g) => g.fichas.forEach((f) => fichas.push({
+      titulo: 'Ficha de avaliação - ' + mostra.nome,
+      linhas: [['Avaliador(a)', g.avaliador], ['Trabalho', (f.projeto.numInscricao ? 'nº ' + f.projeto.numInscricao + ' - ' : '') + f.projeto.nomeProjeto],
+        ['Categoria', f.projeto.categoria + (f.projeto.eixo ? ' - ' + f.projeto.eixo : '')], ['Escola', f.projeto.nomeEscola]],
+      partes: f.partes, comAssinatura: true,
+      observacao: f.escritaDaPrevia ? 'A parte escrita deste trabalho já foi avaliada antes do evento e entra na nota sozinha. Avalie só a apresentação.' : ''
+    })));
+    res.type('html').send(fichaImpressao.pagina('Fichas para imprimir - ' + mostra.nome,
+      'Uma folha por trabalho ainda não avaliado' + (avaliadorId ? '' : ', agrupadas por avaliador(a)') + '. Depois, a organização lança cada ficha preenchida em Avaliação > Final: andamento > "Lançar ficha em papel".', fichas));
+  } catch (error) { erroDe(res, 'Erro ao montar as fichas')(error); }
+});
+
+// A organização lança a ficha preenchida em papel (todas as notas) - conclui e vai pro ranking.
+router.post('/avaliacao-final/lancar-papel', miPermiso("3"), async (req, res) => {
+  try {
+    let x = await avaliacaoFinalDoAdmin(req, req.body.id);
+    if (!x) return res.status(404).send('Avaliação não encontrada nas suas Mostras.');
+    let quem = (await perfil.carregar(req)).nome;
+    let r = await avaliacaoFinal.lancarPapel(x.atr, x.mostra, req.body.notas, req.body.parecer, quem);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send(r);
+  } catch (error) { erroDe(res, 'Erro ao lançar a ficha')(error); }
 });
 
 // --- Juntar cadastros da mesma pessoa (só super-admin, ver mesclar-pessoas-controller.js) ---

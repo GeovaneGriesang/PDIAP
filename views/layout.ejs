@@ -69,6 +69,7 @@
   <script type="text/javascript" src="assets/js/services/projetosAPIService.js"></script>
   <script type="text/javascript" src="assets/js/services/avaliadorAPIService.js"></script>
   <script type="text/javascript" src="assets/js/services/contaAPIService.js"></script>
+  <script type="text/javascript" src="assets/js/services/avaliacaoOfflineService.js"></script>
   <script type="text/javascript" src="assets/js/directives/cepMask.js"></script>
   <script type="text/javascript" src="assets/js/directives/foneMask.js"></script>
   <script type="text/javascript" src="assets/js/directives/cpfMask.js"></script>
@@ -79,5 +80,11 @@
   <script type="text/javascript" src="assets/js/directives/ngBlur.js"></script>
   <script type="text/javascript" src="assets/js/directives/rgMask.js"></script>
   <script type="text/javascript" src="assets/js/directives/dataMask.js"></script>
+  <!-- Meu painel sem internet (avaliação no evento): guarda as telas no aparelho - ver /sw.js. -->
+  <script>
+    if ('serviceWorker' in navigator && /^\/painel(\/|$)/.test(location.pathname)) {
+      window.addEventListener('load', function() { navigator.serviceWorker.register('/sw.js').catch(function() {}); });
+    }
+  </script>
 </body>
 </html>

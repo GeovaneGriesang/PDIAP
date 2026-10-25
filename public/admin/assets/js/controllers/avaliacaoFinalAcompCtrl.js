@@ -150,6 +150,29 @@
 					function(r) { return r.liberados + ' trabalho(s) passado(s) adiante.'; }, 'Falha ao liberar os trabalhos.');
 			}, function() {});
 		};
+		// Ficha em papel (plano B sem internet): a organização digita as notas da folha e conclui.
+		$scope.papel = {};
+		$scope.abrirPapel = function(a) {
+			$scope.papel[a._id] = { notas: a.ficha.map(function(k, i) { var n = (a.notas || [])[i]; return n === null || n === undefined ? null : n; }), parecer: a.parecer || '' };
+		};
+		$scope.maximoFicha = function(a) { return a.ficha.reduce(function(s, k) { return s + k.maximo; }, 0); };
+		$scope.totalPapel = function(a) {
+			var p = $scope.papel[a._id], s = 0;
+			if (!p) return null;
+			for (var i = 0; i < a.ficha.length; i++) {
+				var n = p.notas[i];
+				if (n === null || n === undefined || n === '' || isNaN(n) || n < 0 || n > a.ficha[i].maximo) return null;
+				s += Number(n);
+			}
+			return Math.round(s * 100) / 100;
+		};
+		$scope.lancarPapel = function(a) {
+			var p = $scope.papel[a._id];
+			acao($http.post('/admin/avaliacao-final/lancar-papel', { id: a._id, notas: p.notas, parecer: p.parecer }),
+				'Ficha de ' + a.avaliador.nome + ' lançada: ' + $scope.virgula($scope.totalPapel(a)) + ' ponto(s).', 'Falha ao lançar a ficha.')
+				.then(function() { $scope.papel[a._id] = null; });
+		};
+
 		$scope.recalcular = function(ev) {
 			confirmar(ev, 'Recalcular as notas no ranking?', 'A nota de todos os trabalhos avaliados pelo sistema é regravada com as avaliações concluídas e a média atual da etapa prévia. Notas lançadas à mão no Inserir em trabalhos sem avaliação pelo sistema não mudam.', 'Recalcular').then(function() {
 				acao($http.post('/admin/avaliacao-final/recalcular', { mostraId: $rootScope.mostraId }), function(r) { return r.trabalhos + ' trabalho(s) recalculado(s).'; }, 'Falha ao recalcular.');

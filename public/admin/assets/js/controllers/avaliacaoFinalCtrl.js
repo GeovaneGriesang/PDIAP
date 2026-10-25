@@ -31,6 +31,7 @@
 				c.abreEm = paraDia(c.abreEm);
 				c.fechaEm = paraDia(c.fechaEm);
 				$scope.config = c;
+				$scope.publicadaSalva = !!c.publicarFichas;
 				atualizarEixosLivres();
 				$scope.distribuicao = response.data.distribuicao || { situacoes: {}, faltando: [] };
 			}, function(response) {
@@ -42,6 +43,10 @@
 		$scope.nomeMostra = function() {
 			var m = $scope.mostras.filter(function(x) { return x._id === $rootScope.mostraId; })[0];
 			return m ? m.ano + ' - ' + m.nome : '';
+		};
+		$scope.nomeMostraCurto = function() {
+			var m = $scope.mostras.filter(function(x) { return x._id === $rootScope.mostraId; })[0];
+			return m ? m.nome : '';
 		};
 
 		$http.get('/admin/mostraFeiras').then(function(response) {
