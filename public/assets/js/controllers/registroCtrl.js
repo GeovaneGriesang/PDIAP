@@ -407,7 +407,7 @@
 		// pendente. A inscrição do projeto segue normalmente usando essa escola
 		// pendente - não trava esperando o admin aprovar, só o texto que aparece pro
 		// selecionador muda de "digite" pra essa escola já vinculada.
-		$scope.escolaNaoEncontrada = function(nomeDigitado, ev) {
+		$scope.escolaNaoEncontrada = function(nomeDigitado, ev, formulario) {
 			$mdDialog.show({
 				controller: function dialogController($scope, $mdDialog, projetosAPI) {
 					$scope.escola = { nome: nomeDigitado || '' };
@@ -445,7 +445,7 @@
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscola($scope.projeto, escolaCriada);
-					atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
+					atualizarValidadeEscola($scope.projeto, formulario || $scope.projetoForm);
 				}, function(response) {
 					console.log('Erro ao solicitar escola: '+response.data);
 				});
@@ -475,47 +475,52 @@
 		// digitando e apagar a seleção sem querer. Essa validação customizada garante
 		// que só fica válido com um _id de escola de verdade vinculado (selecionada da
 		// lista ou solicitada como pendente), nunca só com texto livre.
+		//
+		// O formulário vem do template (projetoForm/projetoForm2): ele fica num escopo filho
+		// (ng-show/md-tab), fora do $scope deste controller. Sem ele, só não valida - erro
+		// aqui interrompia a busca do md-autocomplete e a lista de escolas não aparecia.
 		function atualizarValidadeEscola(alvo, formulario) {
+			if (!formulario || !formulario.nomeEscola) return;
 			var valido = !alvo.nomeEscola || !!alvo.escola;
 			formulario.nomeEscola.$setValidity('escolaSelecionada', valido);
 		}
 
-		$scope.escolaSelecionada = function(item) {
+		$scope.escolaSelecionada = function(item, formulario) {
 			$scope.projeto.escola = item ? item._id : undefined;
 			if (item) preencherEnderecoDaEscola($scope.projeto, item);
-			atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
+			atualizarValidadeEscola($scope.projeto, formulario || $scope.projetoForm);
 		};
 
-		$scope.escolaTextoAlterado = function() {
+		$scope.escolaTextoAlterado = function(formulario) {
 			if ($scope.projeto.escola) {
 				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto.escola; })[0];
 				if (!atual || atual.nome !== $scope.projeto.nomeEscola) {
 					$scope.projeto.escola = undefined;
 				}
 			}
-			atualizarValidadeEscola($scope.projeto, $scope.projetoForm);
+			atualizarValidadeEscola($scope.projeto, formulario || $scope.projetoForm);
 		};
 
 		// Mesma coisa, pra edição de um projeto já existente (aba "Instituição" de
 		// update.html e de editar-projetos.html no admin) - usa projeto2/projetoForm2
 		// em vez de projeto/projetoForm.
-		$scope.escolaSelecionadaInstituicao = function(item) {
+		$scope.escolaSelecionadaInstituicao = function(item, formulario) {
 			$scope.projeto2.escola = item ? item._id : undefined;
 			if (item) preencherEnderecoDaEscola($scope.projeto2, item);
-			atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+			atualizarValidadeEscola($scope.projeto2, formulario || $scope.projetoForm2);
 		};
 
-		$scope.escolaTextoAlteradoInstituicao = function() {
+		$scope.escolaTextoAlteradoInstituicao = function(formulario) {
 			if ($scope.projeto2.escola) {
 				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto2.escola; })[0];
 				if (!atual || atual.nome !== $scope.projeto2.nomeEscola) {
 					$scope.projeto2.escola = undefined;
 				}
 			}
-			atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+			atualizarValidadeEscola($scope.projeto2, formulario || $scope.projetoForm2);
 		};
 
-		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev) {
+		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev, formulario) {
 			$mdDialog.show({
 				controller: function dialogController($scope, $mdDialog, projetosAPI) {
 					$scope.escola = { nome: nomeDigitado || '' };
@@ -553,7 +558,7 @@
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto2.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscola($scope.projeto2, escolaCriada);
-					atualizarValidadeEscola($scope.projeto2, $scope.projetoForm2);
+					atualizarValidadeEscola($scope.projeto2, formulario || $scope.projetoForm2);
 				}, function(response) {
 					console.log('Erro ao solicitar escola: '+response.data);
 				});

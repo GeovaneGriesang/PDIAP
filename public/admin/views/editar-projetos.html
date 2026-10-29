@@ -217,9 +217,9 @@
               data-ng-required="true"
               md-no-cache="true"
               md-selected-item="selectedItemInstituicao"
-              md-selected-item-change="escolaSelecionadaInstituicao(item)"
+              md-selected-item-change="escolaSelecionadaInstituicao(item, projetoForm2)"
               md-search-text="projeto2.nomeEscola"
-              md-search-text-change="escolaTextoAlteradoInstituicao()"
+              md-search-text-change="escolaTextoAlteradoInstituicao(projetoForm2)"
               md-items="item in escolas | filter:{nome: projeto2.nomeEscola}"
               md-item-text="item.nome"
               md-min-length="1"
@@ -238,7 +238,7 @@
               </md-autocomplete>
             </div>
             <div layout-gt-sm="row" data-ng-if="projetoForm2.nomeEscola.$error.escolaSelecionada && projeto2.nomeEscola.length > 0" style="margin:-4px 0 12px 0;">
-              <md-button class="md-primary" ng-click="escolaNaoEncontradaInstituicao(projeto2.nomeEscola, $event)" style="text-transform:none;padding:0;min-height:0;">
+              <md-button class="md-primary" ng-click="escolaNaoEncontradaInstituicao(projeto2.nomeEscola, $event, projetoForm2)" style="text-transform:none;padding:0;min-height:0;">
                 Não encontrei minha escola na lista - solicitar cadastro
               </md-button>
           </div>
