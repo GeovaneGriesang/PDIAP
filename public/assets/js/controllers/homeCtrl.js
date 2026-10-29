@@ -67,8 +67,20 @@
 		// verifica se ALGUMA edição tem projetos ou avaliadores com inscrição aberta).
 		// Botões da tela inicial (Sistema > Tela inicial do site): local 'menu' vira item
 		// próprio no menu do topo; os demais são botão no banner + item no menu "Botões".
-		$scope.botaoNoMenu = function(btn) { return btn.local === 'menu'; };
 		$scope.botaoNaPagina = function(btn) { return btn.local !== 'menu'; };
+		// Menu do topo em ordem alfabética: os itens fixos (Botões, Certificados, Documentos,
+		// Fale Conosco) ficam escritos no layout2.ejs (os submenus precisam existir quando o
+		// plugin do template monta os dropdowns), e cada botão de local 'menu' entra entre o
+		// item fixo que vem antes e o que vem depois dele no alfabeto.
+		var comparaTexto = function(a, b) { return (a || '').localeCompare(b || '', 'pt', {sensitivity: 'base'}); };
+		$scope.menuEntre = function(depois, antes) {
+			return function(btn) {
+				return btn.local === 'menu'
+					&& (!depois || comparaTexto(btn.texto, depois) > 0)
+					&& (!antes || comparaTexto(btn.texto, antes) <= 0);
+			};
+		};
+		$scope.ordemTexto = function(btn) { return (btn.texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
 
 		$scope.algumaInscricaoAberta = function() {
 			return ($scope.edicoes || []).some(function(e) {
