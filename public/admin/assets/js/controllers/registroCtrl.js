@@ -34,28 +34,32 @@
 			if (escola.cep) $scope.projeto2.cep = escola.cep;
 		}
 
-		function atualizarValidadeEscolaInstituicao() {
+		// O formulário vem do template (projetoForm2 fica num escopo filho da md-tab); sem
+		// ele só não valida - erro aqui interrompia a busca do md-autocomplete.
+		function atualizarValidadeEscolaInstituicao(formulario) {
+			formulario = formulario || $scope.projetoForm2;
+			if (!formulario || !formulario.nomeEscola) return;
 			var valido = !$scope.projeto2.nomeEscola || !!$scope.projeto2.escola;
-			$scope.projetoForm2.nomeEscola.$setValidity('escolaSelecionada', valido);
+			formulario.nomeEscola.$setValidity('escolaSelecionada', valido);
 		}
 
-		$scope.escolaSelecionadaInstituicao = function(item) {
+		$scope.escolaSelecionadaInstituicao = function(item, formulario) {
 			$scope.projeto2.escola = item ? item._id : undefined;
 			if (item) preencherEnderecoDaEscolaInstituicao(item);
-			atualizarValidadeEscolaInstituicao();
+			atualizarValidadeEscolaInstituicao(formulario);
 		};
 
-		$scope.escolaTextoAlteradoInstituicao = function() {
+		$scope.escolaTextoAlteradoInstituicao = function(formulario) {
 			if ($scope.projeto2.escola) {
 				var atual = $scope.escolas.filter(function(e) { return e._id === $scope.projeto2.escola; })[0];
 				if (!atual || atual.nome !== $scope.projeto2.nomeEscola) {
 					$scope.projeto2.escola = undefined;
 				}
 			}
-			atualizarValidadeEscolaInstituicao();
+			atualizarValidadeEscolaInstituicao(formulario);
 		};
 
-		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev) {
+		$scope.escolaNaoEncontradaInstituicao = function(nomeDigitado, ev, formulario) {
 			$mdDialog.show({
 				controller: function dialogController($scope, $mdDialog) {
 					$scope.escola = { nome: nomeDigitado || '' };
@@ -93,7 +97,7 @@
 					$scope.escolas.push(escolaCriada);
 					$scope.projeto2.nomeEscola = escolaCriada.nome;
 					preencherEnderecoDaEscolaInstituicao(escolaCriada);
-					atualizarValidadeEscolaInstituicao();
+					atualizarValidadeEscolaInstituicao(formulario);
 				}, function(response) {
 					console.log('Erro ao solicitar escola: '+response.data);
 				});

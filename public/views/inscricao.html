@@ -49,7 +49,7 @@
 			</div>
 		</div>
 	</md-content>
-	<md-content flex layout="column" layout-align="center center" class="inscricao-content" data-ng-if="!edicoesParaEscolher">
+	<md-content flex layout="column" layout-align="center center" class="inscricao-content" data-ng-show="!edicoesParaEscolher">
 		<!-- Vídeo tutorial: fica escondido atrás de um botão em vez de já vir tocando/visível
 		     na página, que ficava "agressivo" demais. Expande/recolhe na própria página (em
 		     vez de abrir num diálogo à parte, que cortava o vídeo). -->
@@ -161,8 +161,8 @@
 				<div class="bloco-right" flex-xs="100" flex="75">
 					<div layout-gt-sm="row">
 						<md-autocomplete flex="100" md-no-cache="noCache" md-selected-item="escolaSelecionadaItem"
-							md-selected-item-change="escolaSelecionada(item)"
-							md-search-text="projeto.nomeEscola" md-search-text-change="escolaTextoAlterado()"
+							md-selected-item-change="escolaSelecionada(item, projetoForm)"
+							md-search-text="projeto.nomeEscola" md-search-text-change="escolaTextoAlterado(projetoForm)"
 							md-items="item in escolas | filter:{nome: projeto.nomeEscola}" md-item-text="item.nome"
 							md-min-length="1" md-floating-label="Nome da instituição" md-input-name="nomeEscola"
 							data-ng-required="true">
@@ -181,7 +181,7 @@
 						</md-autocomplete>
 					</div>
 					<div layout-gt-sm="row" data-ng-if="projetoForm.nomeEscola.$error.escolaSelecionada && projeto.nomeEscola.length > 0" style="margin:-4px 0 12px 0;">
-						<md-button class="md-primary" ng-click="escolaNaoEncontrada(projeto.nomeEscola, $event)" style="text-transform:none;padding:0;min-height:0;">
+						<md-button class="md-primary" ng-click="escolaNaoEncontrada(projeto.nomeEscola, $event, projetoForm)" style="text-transform:none;padding:0;min-height:0;">
 							Não encontrei minha escola na lista - solicitar cadastro
 						</md-button>
 					</div>
