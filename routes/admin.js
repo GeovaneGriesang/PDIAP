@@ -904,7 +904,7 @@ router.post('/criarEscola', soSuper, async (req, res) => {
       status: 'aprovada',
       origem: 'admin',
       aprovadaEm: new Date(),
-      aprovadaPor: req.user.username
+      aprovadaPor: req.user.nome || req.user.username
     });
     let data = await newEscola.save();
     res.send(data);
@@ -961,7 +961,7 @@ router.put('/aprovarEscola', soSuper, async (req, res) => {
       status: 'aprovada',
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
-      aprovadaPor: req.user.username
+      aprovadaPor: req.user.nome || req.user.username
     }, { returnDocument: 'after' });
     avisarDecisaoEscola(data, true);
     res.send(data);
@@ -983,7 +983,7 @@ router.put('/rejeitarEscola', soSuper, async (req, res) => {
       status: 'rejeitada',
       motivoDecisao: req.body.motivo,
       aprovadaEm: new Date(),
-      aprovadaPor: req.user.username
+      aprovadaPor: req.user.nome || req.user.username
     }, { returnDocument: 'after' });
     avisarDecisaoEscola(data, false);
     res.send(data);

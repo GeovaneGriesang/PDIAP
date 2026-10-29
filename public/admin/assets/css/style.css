@@ -886,3 +886,6 @@ md-list-item .md-list-item-inner > [flex=""]:not([layout="column"]),
 md-list-item .md-no-style > [flex=""]:not([layout="column"]) {
   flex-basis: 0% !important;
 }
+
+/* Dados da escola (Cadastros gerais > Escolas): uma linha com cidade, estado e CEP. */
+.escola-dados { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; color: rgba(0,0,0,0.7); }

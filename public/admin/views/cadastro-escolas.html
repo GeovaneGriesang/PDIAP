@@ -67,9 +67,16 @@
         </form>
       </div>
 
+      <div style="padding:20px 45px 0 45px;">
+        <md-input-container class="md-block" style="margin-bottom:0;">
+          <label>Buscar escola (nome, cidade, estado ou CEP)</label>
+          <input type="text" data-ng-model="busca.texto" aria-label="Buscar escola"/>
+        </md-input-container>
+      </div>
+
       <div style="background:rgba(128,128,128,0.07);padding:30px 30px 15px 30px;">
         <h3 style="text-align:center;border-top:1px solid grey;margin:0 0 -5px 0;font-size:15px;width:100%;">
-          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Pendentes de aprovação ({{pendentes.length}})</span>
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Pendentes de aprovação ({{busca.texto ? (pendentes | filter:filtroEscola).length + " de " : ""}}{{pendentes.length}})</span>
         </h3>
       </div>
       <md-list flex style="margin-bottom:20px;">
@@ -77,18 +84,24 @@
         <div data-ng-if="pendentes.length === 0" flex style="text-align:center;padding:20px 0;color:rgba(0,0,0,0.4);">
           <p>Nenhuma escola pendente :)</p>
         </div>
-        <md-list-item class="md-3-line" data-ng-repeat="esc in pendentes track by esc._id" style="padding:0 45px;">
-          <div class="md-list-item-text" layout="column" style="padding-right:15px;">
-            <h3>{{::esc.nome}}</h3>
-            <p>{{::esc.cidade}}<span data-ng-if="esc.cidade && esc.estado">/</span>{{::esc.estado}} <span data-ng-if="esc.origem">— solicitada via {{::esc.origem === 'inline_inscricao' ? 'inscrição de projeto' : 'formulário público'}}</span></p>
+        <div data-ng-if="pendentes.length > 0 && !(pendentes | filter:filtroEscola).length" flex style="text-align:center;padding:20px 0;color:rgba(0,0,0,0.4);">
+          <p>Nenhuma escola pendente com essa busca.</p>
+        </div>
+        <md-list-item data-ng-repeat="esc in pendentes | filter:filtroEscola track by esc._id" style="padding:8px 45px;">
+          <div class="md-list-item-text" layout="column" flex style="padding-right:15px;">
+            <h3 style="margin:0 0 6px;">{{esc.nome}}</h3>
+            <div class="escola-dados">
+              <span><b>Cidade:</b> {{esc.cidade || "não informada"}}</span>
+              <span><b>Estado:</b> {{esc.estado || "não informado"}}</span>
+              <span><b>CEP:</b> {{esc.cep || "não informado"}}</span>
+              <span><b>Solicitada em:</b> {{esc.createdAt | date:"dd/MM/yyyy HH:mm"}}<span data-ng-if="esc.origem"> - via {{esc.origem === "inline_inscricao" ? "inscrição de projeto" : (esc.origem === "formulario_publico" ? "formulário público" : esc.origem)}}</span></span>
+              <span data-ng-if="esc.solicitanteNome || esc.solicitanteEmail"><b>Quem solicitou:</b> {{esc.solicitanteNome}}<span data-ng-if="esc.solicitanteEmail"> ({{esc.solicitanteEmail}})</span></span>
+            </div>
           </div>
-          <div flex="30" style="display:flex;align-self:center;justify-content:flex-end;gap:8px;">
-            <md-button no-ink class="md-raised md-primary green darken-1 md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;color:#fff;" aria-label="Aprovar escola" ng-click="aprovarEscola($event,esc)">
-              <span style="vertical-align:middle;font-size:13px;">Aprovar</span>
-            </md-button>
-            <md-button no-ink class="md-raised red md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;" aria-label="Rejeitar escola" ng-click="rejeitarEscola($event,esc)">
-              <span style="vertical-align:middle;font-size:13px;color:rgba(255,255,255,0.87);">Rejeitar</span>
-            </md-button>
+          <div style="display:flex;align-self:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;">
+            <md-button class="md-raised btn-azul" aria-label="Aprovar escola" ng-click="aprovarEscola($event,esc)">Aprovar</md-button>
+            <md-button class="md-raised" aria-label="Editar escola" ng-click="editarEscola($event,esc)">Editar</md-button>
+            <md-button class="md-raised btn-perigo" aria-label="Rejeitar escola" ng-click="rejeitarEscola($event,esc)">Rejeitar</md-button>
           </div>
           <md-divider></md-divider>
         </md-list-item>
@@ -96,7 +109,7 @@
 
       <div style="background:rgba(128,128,128,0.07);padding:30px 30px 15px 30px;">
         <h3 style="text-align:center;border-top:1px solid grey;margin:0 0 -5px 0;font-size:15px;width:100%;">
-          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Escolas aprovadas ({{aprovadas.length}})</span>
+          <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Escolas aprovadas ({{busca.texto ? (aprovadas | filter:filtroEscola).length + " de " : ""}}{{aprovadas.length}})</span>
         </h3>
       </div>
       <md-list flex style="margin-bottom:50px;">
@@ -104,10 +117,17 @@
         <div data-ng-if="aprovadas.length === 0" flex style="text-align:center;padding:20px 0;color:rgba(0,0,0,0.4);">
           <p>Nenhuma escola aprovada ainda :(</p>
         </div>
-        <md-list-item class="md-3-line" data-ng-repeat="esc in aprovadas track by esc._id" style="padding:0 45px;">
-          <div class="md-list-item-text" layout="column" style="padding-right:15px;">
-            <h3>{{::esc.nome}}</h3>
-            <p>{{::esc.cidade}}<span data-ng-if="esc.cidade && esc.estado">/</span>{{::esc.estado}}</p>
+        <div data-ng-if="aprovadas.length > 0 && !(aprovadas | filter:filtroEscola).length" flex style="text-align:center;padding:20px 0;color:rgba(0,0,0,0.4);">
+          <p>Nenhuma escola aprovada com essa busca.</p>
+        </div>
+        <md-list-item data-ng-repeat="esc in aprovadas | filter:filtroEscola track by esc._id" style="padding:8px 45px;">
+          <div class="md-list-item-text" layout="column" flex style="padding-right:15px;">
+            <h3 style="margin:0 0 6px;">{{esc.nome}}</h3>
+            <div class="escola-dados">
+              <span><b>Cidade:</b> {{esc.cidade || "não informada"}}</span>
+              <span><b>Estado:</b> {{esc.estado || "não informado"}}</span>
+              <span><b>CEP:</b> {{esc.cep || "não informado"}}</span>
+            </div>
           </div>
           <div flex="30" style="display:flex;align-self:center;justify-content:flex-end;gap:8px;">
             <md-button no-ink class="md-raised md-primary green darken-1 md-whiteframe-1dp" style="border-radius:70px;min-height:30px;line-height:30px;box-shadow:none!important;color:#fff;" aria-label="Editar escola" ng-click="editarEscolaAprovada($event,esc)">
