@@ -13,6 +13,17 @@
 		$scope.pendentes = [];
 		$scope.aprovadas = [];
 
+		// Busca nas duas listas por nome, cidade, estado ou CEP, sem diferenciar acento nem
+		// maiúsculas (CEP também sem ponto/traço).
+		$scope.busca = { texto: '' };
+		var normalizar = function(t) { return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+		$scope.filtroEscola = function(esc) {
+			var termos = normalizar($scope.busca.texto).split(/\s+/).filter(Boolean);
+			if (!termos.length) return true;
+			var alvo = normalizar([esc.nome, esc.cidade, esc.estado, esc.cep, (esc.cep || '').replace(/\D/g, '')].join(' '));
+			return termos.every(function(t) { return alvo.indexOf(t) !== -1; });
+		};
+
 		$scope.listaEstados = [];
 		$scope.cidades = [];
 
@@ -109,11 +120,31 @@
 			}, function() {});
 		}
 
-		// Aprovar uma escola pendente: abre um diálogo com nome/cep/cidade/estado
-		// pré-preenchidos, mas editáveis - quem solicitou pode ter digitado algo com
-		// variação/erro, então dá pra corrigir no mesmo passo em que aprova.
+		// Aprovar uma escola pendente como está (os dados já aparecem na lista); pra corrigir
+		// algo antes, "Editar" salva e ela continua pendente.
 		$scope.aprovarEscola = function(ev, escolaOriginal) {
-			abrirDialogEscola(ev, escolaOriginal, 'aprovar');
+			var confirm = $mdDialog.confirm()
+			.title('Aprovar a escola?')
+			.textContent(escolaOriginal.nome + ' passa a aparecer na lista de escolas da inscrição de projetos.')
+			.ariaLabel('Aprovar escola')
+			.targetEvent(ev)
+			.ok('Aprovar')
+			.cancel('Cancelar');
+			$mdDialog.show(confirm).then(function() {
+				adminAPI.aprovarEscola(escolaOriginal)
+				.then(function() {
+					$scope.toast('Escola aprovada!', 'success-toast');
+					$scope.mostraEscolas();
+				}, function(response) {
+					$scope.toast('Falha.','failed-toast');
+					console.log('Erro: '+response.data);
+				});
+			}, function() {});
+		};
+
+		// Corrigir os dados de uma escola pendente sem aprovar ainda.
+		$scope.editarEscola = function(ev, escolaOriginal) {
+			abrirDialogEscola(ev, escolaOriginal, 'editar');
 		};
 
 		// Editar uma escola já aprovada (corrigir nome/cidade/estado/cep depois do
