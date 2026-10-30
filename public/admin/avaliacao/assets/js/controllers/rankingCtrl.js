@@ -31,7 +31,14 @@
 
 	angular
 	.module('PDIAPav')
-	.controller('rankingCtrl', function($scope, $rootScope, $mdDialog, $filter, avaliacaoAPI, relatorioPdfService) {
+	.controller('rankingCtrl', function($scope, $rootScope, $window, $mdDialog, $filter, avaliacaoAPI, relatorioPdfService) {
+
+		// Mostra do ranking (ver carregarMostraAtual em routes/ui-routes.js): trocar recarrega a
+		// página com ?mostraId=, pra todas as listas e PDFs saírem da Mostra escolhida.
+		$scope.mostraEscolhida = { id: $rootScope.mostraAtual ? $rootScope.mostraAtual._id : undefined };
+		$scope.trocarMostra = function(id) {
+			if (id) $window.location.href = '/ranking/2016?mostraId=' + encodeURIComponent(id);
+		};
 
 		// Guia (barra de abas) controlada na mão via ng-show, não <md-tabs> - ver comentário
 		// no <style> de ranking.html sobre por que (conflito entre md-dynamic-height e o

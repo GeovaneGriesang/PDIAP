@@ -36,14 +36,20 @@
 		// ano do calendário (ver avaliacaoAPI.anoDaMostra). Qualquer falha (sem Mostra atual
 		// configurada, sem permissão, erro de rede) deixa null e vale o ano do calendário, como
 		// sempre valeu - nunca trava a tela.
-		let carregarMostraAtual = function($q, $rootScope, $http, loggedin) {
+		// ?mostraId=... na URL (Ranking aberto pelo admin com outra Mostra escolhida, ou trocada no
+		// próprio Ranking) tem prioridade sobre a Mostra atual. $rootScope.mostrasDisponiveis = as
+		// Mostras que a pessoa administra, pro seletor do Ranking.
+		let carregarMostraAtual = function($q, $rootScope, $http, $location, loggedin) {
 			var deferred = $q.defer();
 			$rootScope.mostraAtual = null;
+			$rootScope.mostrasDisponiveis = [];
 			$http.get('/admin/mostraAtual').then(function(resposta) {
-				var id = resposta.data && resposta.data.mostraId;
-				if (!id) return deferred.resolve();
+				var id = $location.search().mostraId || (resposta.data && resposta.data.mostraId);
 				$http.get('/admin/mostraFeiras').then(function(feiras) {
-					$rootScope.mostraAtual = (feiras.data || []).filter(function(f) { return f._id === id && f.tipo === 'edicao'; })[0] || null;
+					$rootScope.mostrasDisponiveis = (feiras.data || []).filter(function(f) { return f.tipo === 'edicao'; })
+						.sort(function(a, b) { return (b.ano || 0) - (a.ano || 0) || (a.nome || '').localeCompare(b.nome || ''); });
+					if (!id) return deferred.resolve();
+					$rootScope.mostraAtual = $rootScope.mostrasDisponiveis.filter(function(f) { return f._id === id; })[0] || null;
 					deferred.resolve();
 				}, function() { deferred.resolve(); });
 			}, function() { deferred.resolve(); });
