@@ -167,6 +167,11 @@
 			templateUrl: 'admin/views/historico-emails.html',
 			controller: 'historicoEmailsCtrl'
 		})
+		.state('master.auditoria', {
+			url: "/auditoria",
+			templateUrl: 'admin/views/auditoria.html',
+			controller: 'auditoriaCtrl'
+		})
 		.state('master.pessoas', {
 			url: "/pessoas",
 			templateUrl: 'admin/views/pessoas.html',

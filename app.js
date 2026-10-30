@@ -111,6 +111,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Auditoria: toda alteração (não-leitura) de quem está logado no admin ou no Meu painel - utils/auditoria.js.
+const auditoria = require('./utils/auditoria');
+app.use('/admin', auditoria.registrar('admin'));
+app.use('/api/painel', auditoria.registrar('painel'));
+
 app.use('/', routes);
 app.use('/projetos', projetos);
 app.use('/avaliadores', avaliadores);
