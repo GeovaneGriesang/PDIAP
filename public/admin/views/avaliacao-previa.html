@@ -50,6 +50,11 @@
               <input type="date" data-ng-model="config.envioPrazo" data-ng-required="config.ativa"/>
             </md-input-container>
           </div>
+          <p style="margin:0 0 4px;">Modalidades de texto aceitas (o projeto escolhe uma ao enviar o PDF; nenhuma marcada = sem escolha):</p>
+          <div layout="row" layout-wrap style="margin-bottom:8px;">
+            <md-checkbox data-ng-repeat="m in config.modalidadesDisponiveis" data-ng-checked="config.modalidades.indexOf(m) !== -1"
+                         data-ng-click="alternarModalidade(m)" style="margin-right:24px;">{{m}}</md-checkbox>
+          </div>
           <md-input-container class="md-block">
             <label>Instruções para quem envia (aparecem no projeto)</label>
             <textarea data-ng-model="config.instrucoesEnvio" rows="3"></textarea>

@@ -112,7 +112,7 @@
               <span class="acp-selo acp-{{t.situacao}}">{{SITUACOES[t.situacao]}}</span>
               <span class="acp-selo acp-divergente" data-ng-if="t.divergente">notas divergentes ({{virgula(t.diferenca)}} p.p.)</span>
               <div class="acp-suave" style="font-size:14px;">
-                {{t.categoria}}<span data-ng-if="t.eixo"> - {{t.eixo}}</span><span data-ng-if="t.nomeEscola"> · {{t.nomeEscola}}</span>
+                {{t.categoria}}<span data-ng-if="t.eixo"> - {{t.eixo}}</span><span data-ng-if="t.modalidade"> · {{t.modalidade}}</span><span data-ng-if="t.nomeEscola"> · {{t.nomeEscola}}</span>
               </div>
               <div style="font-size:14px;margin-top:2px;" data-ng-if="t.temTexto">
                 {{t.concluidas}} de {{t.vagas}} avaliação(ões) concluída(s)<span data-ng-if="t.extras"> ({{t.extras}} a mais pedida(s))</span>

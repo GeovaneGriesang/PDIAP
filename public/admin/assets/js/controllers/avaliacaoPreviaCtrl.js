@@ -13,6 +13,11 @@
 		$scope.config = null;
 		$scope.resumo = {};
 		$scope.salvando = false;
+		// Modalidades de texto aceitas pela Mostra (o servidor devolve na ordem certa ao salvar).
+		$scope.alternarModalidade = function(m) {
+			var i = $scope.config.modalidades.indexOf(m);
+			if (i === -1) $scope.config.modalidades.push(m); else $scope.config.modalidades.splice(i, 1);
+		};
 
 		// Datas: o banco guarda data+hora; a tela trabalha só com o dia (prazo = fim do dia).
 		var paraDia = function(v) { if (!v) return null; var d = new Date(v); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
@@ -26,6 +31,7 @@
 				c.envioInicio = paraDia(c.envioInicio);
 				c.envioPrazo = paraDia(c.envioPrazo);
 				c.prazoAvaliacao = paraDia(c.prazoAvaliacao);
+				c.modalidades = c.modalidades || [];
 				$scope.config = c;
 				$scope.resumo = response.data.resumo;
 				$scope.distribuicao = response.data.distribuicao || { situacoes: {}, faltando: [] };

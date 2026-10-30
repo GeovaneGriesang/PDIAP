@@ -128,8 +128,9 @@
 		$scope.enviarTextoPrevia = function(arquivo, invalidos) {
 			if (invalidos && invalidos.length) { $scope.toast('Envie um PDF de até 15MB.', 'failed-toast'); return; }
 			if (!arquivo) return;
-			$scope.envioTexto = { enviando: true, progresso: 0 };
-			Upload.upload({ url: $scope.urlTextoPrevia, method: 'POST', data: { file: arquivo } })
+			var modalidade = $scope.envioTexto.modalidade;
+			$scope.envioTexto = { enviando: true, progresso: 0, modalidade: modalidade };
+			Upload.upload({ url: $scope.urlTextoPrevia, method: 'POST', data: { file: arquivo, modalidade: modalidade || '' } })
 			.then(function() {
 				$scope.toast('Texto enviado!', 'success-toast');
 				carregarProjeto();

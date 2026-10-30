@@ -354,6 +354,7 @@ router.post('/:id/texto-previa', exigeIntegrante, async (req, res) => {
     let situacao = avaliacaoPrevia.situacaoEnvio((await opcoesProjetos.opcoesDoProjeto(req.projeto)).mostra);
     if (!situacao.ativa) return res.status(403).send('Esta Mostra não tem envio de texto para avaliação prévia.');
     if (!situacao.aberto) return res.status(403).send(situacao.motivo || 'O envio do texto não está aberto.');
+    req.modalidades = situacao.modalidades;
   } catch (err) {
     console.error('Erro ao conferir envio do texto', err);
     return res.status(500).send('Erro ao enviar o texto.');
@@ -363,6 +364,13 @@ router.post('/:id/texto-previa', exigeIntegrante, async (req, res) => {
   form.parse(req, async (err, fields, files) => {
     let arquivo = files && files.file && files.file[0];
     if (err || !arquivo) return res.status(400).send('Falha no envio (arquivo ausente ou maior que 15MB).');
+    // Mostra com modalidades: o projeto escolhe uma (com uma só, ela vale sem perguntar).
+    let modalidade = fields && fields.modalidade && String(fields.modalidade[0] || fields.modalidade);
+    if (req.modalidades.length === 1) modalidade = req.modalidades[0];
+    if (req.modalidades.length && !req.modalidades.includes(modalidade)) {
+      fs.unlink(arquivo.filepath, () => {});
+      return res.status(400).send('Escolha a modalidade do texto: ' + req.modalidades.join(', ') + '.');
+    }
     let assinaturaValida = false;
     try {
       let fd = fs.openSync(arquivo.filepath, 'r');
@@ -385,8 +393,10 @@ router.post('/:id/texto-previa', exigeIntegrante, async (req, res) => {
         fs.unlink(arquivo.filepath, () => {});
       }
       let info = { nome: arquivo.originalFilename, tamanho: arquivo.size, enviadoEm: new Date(), enviadoPor: req.pessoa._id };
-      await ProjetoSchema.updateOne({ _id: req.projeto._id }, { $set: { textoPrevia: info, updatedAt: Date.now() } });
-      res.send({ nome: info.nome, tamanho: info.tamanho, enviadoEm: info.enviadoEm });
+      let set = { textoPrevia: info, updatedAt: Date.now() };
+      if (req.modalidades.length) set.modalidade = modalidade;
+      await ProjetoSchema.updateOne({ _id: req.projeto._id }, { $set: set });
+      res.send({ nome: info.nome, tamanho: info.tamanho, enviadoEm: info.enviadoEm, modalidade: set.modalidade });
     } catch (e) {
       console.error('Erro ao salvar texto da avaliação prévia', e);
       res.status(500).send('Erro ao salvar o texto.');

@@ -26,7 +26,7 @@ function exigePessoa(req, res, next) {
   next();
 }
 
-const CAMPOS_PROJETO = 'nomeProjeto numInscricao categoria eixo resumo palavraChave nomeEscola cidade estado integrantes textoPrevia relatorio2';
+const CAMPOS_PROJETO = 'nomeProjeto numInscricao categoria eixo resumo palavraChave nomeEscola cidade estado integrantes textoPrevia relatorio2 modalidade';
 
 // Registro `req.params.id` DESTA pessoa (ainda com ela), com a Mostra e o trabalho.
 async function carregar(req, res, next) {
@@ -83,8 +83,10 @@ router.get('/:id', carregar, async (req, res) => {
       projeto: {
         numInscricao: p.numInscricao, nomeProjeto: p.nomeProjeto, categoria: p.categoria, eixo: p.eixo, resumo: p.resumo, palavraChave: p.palavraChave,
         nomeEscola: p.nomeEscola, cidade: p.cidade, estado: p.estado, integrantes: (p.integrantes || []).map((i) => ({ nome: i.nome, tipo: i.tipo })),
-        // Material pra avaliar a parte escrita no evento (quando ela não veio da prévia).
-        temTexto: temEscrita && !!p.textoPrevia,
+        // O texto (PDF) vai sempre pra banca quando existe, mesmo com a parte escrita vindo da prévia
+        // (reunião de 20/10/2026); sem texto, o relatório (material da parte escrita no evento).
+        modalidade: p.modalidade,
+        temTexto: !!p.textoPrevia,
         temRelatorio: temEscrita && !p.textoPrevia && relatorioProjeto.existe(p)
       },
       ficha: f.ficha, escritaDaPrevia: f.escritaDaPrevia,
@@ -96,7 +98,7 @@ router.get('/:id', carregar, async (req, res) => {
   }
 });
 
-// Texto enviado na etapa prévia (quando a parte escrita é avaliada no evento).
+// Texto enviado na etapa prévia.
 router.get('/:id/texto', carregar, async (req, res) => {
   try {
     let arquivo = configPrevia.arquivoDoProjeto(req.projeto._id);
