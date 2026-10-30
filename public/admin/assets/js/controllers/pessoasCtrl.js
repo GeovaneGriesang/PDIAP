@@ -45,6 +45,23 @@
 			});
 		};
 
+		// Cadastro novo (POST /admin/pessoas - perfis-controller.js#criar).
+		$scope.nova = null;
+		$scope.abrirNova = function() { $scope.nova = { nacionalidade: 'brasileiro' }; };
+		$scope.cancelarNova = function() { $scope.nova = null; };
+		$scope.salvarNova = function() {
+			$scope.salvando = true;
+			$http.post('/admin/pessoas', $scope.nova)
+			.then(function(response) {
+				$scope.toast('Cadastro de ' + response.data.nome + ' criado.', 'success-toast');
+				$scope.nova = null;
+				$scope.busca.q = response.data.documento;
+				$scope.pesquisar();
+			}, function(response) {
+				$scope.toast(typeof response.data === 'string' && response.data ? response.data : 'Falha ao cadastrar.', 'failed-toast');
+			}).finally(function() { $scope.salvando = false; });
+		};
+
 		$scope.voltar = function() {
 			$scope.perfil = null;
 			$scope.edicao = null;

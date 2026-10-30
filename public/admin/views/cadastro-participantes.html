@@ -36,6 +36,16 @@
           <span style="text-transform:uppercase;padding:5px 10px;position:relative;background:#f7f7f7;bottom:10px;letter-spacing:1px;">Novo Participante</span>
         </h3>
         <form name="participantesForm" novalidate class="eventos-form">
+          <!-- Escolher do cadastro único (sem digitar de novo): preenche documento, nome e e-mail. -->
+          <md-autocomplete md-no-cache="true" md-selected-item="pessoaEscolhida.item" md-selected-item-change="usarPessoa(item)"
+                           md-search-text="pessoaEscolhida.texto" md-items="item in buscarPessoas(pessoaEscolhida.texto)" md-item-text="item.nome"
+                           md-min-length="3" md-delay="400" md-floating-label="Buscar no cadastro de pessoas (nome, e-mail ou documento)" style="margin-bottom:12px;">
+            <md-item-template>
+              <span md-highlight-text="pessoaEscolhida.texto" md-highlight-flags="i">{{item.nome}}</span>
+              <span style="color:rgba(0,0,0,0.5);font-size:12px;"> - doc. {{item.documento}} · {{item.email}}</span>
+            </md-item-template>
+            <md-not-found>Ninguém encontrado - preencha os dados abaixo (ou cadastre em Cadastros gerais &gt; Pessoas).</md-not-found>
+          </md-autocomplete>
           <div layout-gt-xs="row">
             <md-input-container class="md-block" flex-gt-xs>
               <label>Nome completo</label>
