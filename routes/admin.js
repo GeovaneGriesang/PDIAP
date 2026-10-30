@@ -448,7 +448,7 @@ router.get('/avaliacao-final/fichas-impressao', miPermiso("3"), async (req, res)
       observacao: f.escritaDaPrevia ? 'A parte escrita deste trabalho já foi avaliada antes do evento e entra na nota sozinha. Avalie só a apresentação.' : ''
     })));
     res.type('html').send(fichaImpressao.pagina('Fichas para imprimir - ' + mostra.nome,
-      'Uma folha por trabalho ainda não avaliado' + (avaliadorId ? '' : ', agrupadas por avaliador(a)') + '. Depois, a organização lança cada ficha preenchida em Avaliação > Final: andamento > "Lançar ficha em papel".', fichas));
+      'Uma folha por trabalho ainda não avaliado' + (avaliadorId ? '' : ', agrupadas por avaliador(a)') + '. Depois, a organização lança cada ficha preenchida em Avaliação > Banca: andamento > "Lançar ficha em papel".', fichas));
   } catch (error) { erroDe(res, 'Erro ao montar as fichas')(error); }
 });
 

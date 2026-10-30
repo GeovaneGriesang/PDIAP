@@ -2,7 +2,7 @@
 
 // Página HTML de fichas de avaliação pronta pra imprimir (uma ficha por folha). Usada pelas fichas
 // em branco do menu Documentos (/fichas-avaliacao/:mostraId) e pelas fichas impressas por
-// avaliador(a), o plano B da avaliação no evento sem internet (Avaliação > Final: andamento).
+// avaliador(a), o plano B da avaliação no evento sem internet (Avaliação > Banca: andamento).
 //
 // fichas: [{ titulo, linhas: [[rótulo, valor]], partes: [{ rotulo, criterios: [{nome, maximo}] }],
 //            observacao, comAssinatura }]

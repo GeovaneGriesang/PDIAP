@@ -1476,7 +1476,7 @@ router.post('/solicitarEscola', async function(req, res){
 router.get('/getDocumentosInfo', async function(req, res){
   try {
     let data = await CadastroDocumentoSchema.find({'exibe': true}, '-pdf').lean();
-    // Fichas de avaliação que a organização autorizou publicar (Avaliação > Final: configuração):
+    // Fichas de avaliação que a organização autorizou publicar (Avaliação > Banca: configuração):
     // entram no menu como documento, com link próprio (página pronta pra imprimir).
     let comFichas = await feiraSchema.find({ tipo: 'edicao', 'avaliacaoFinal.publicarFichas': true }, 'nome ano').lean();
     comFichas.forEach((m) => data.push({ _id: 'fichas-' + m._id, titulo: 'Fichas de avaliação - ' + m.nome, exibe: true, ano: m.ano, feiraId: m._id, link: '/fichas-avaliacao/' + m._id }));
