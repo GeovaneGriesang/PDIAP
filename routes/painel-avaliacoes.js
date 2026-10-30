@@ -14,7 +14,8 @@ const express = require('express')
 , sessao = require('../utils/sessao')
 , pendencias = require('../utils/pendencias')
 , config = require('../controllers/avaliacao-previa-controller')
-, distribuicao = require('../controllers/distribuicao-previa-controller');
+, distribuicao = require('../controllers/distribuicao-previa-controller')
+, resultadoPrevia = require('../controllers/resultado-previa-controller');
 
 function idValido(id) {
   return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
@@ -186,6 +187,11 @@ router.put('/:id', carregar, pendencias.exigeSemPendencias, async (req, res) => 
     if (concluir) set.concluidoEm = new Date(); else unset.concluidoEm = 1;
     let r = await AvaliacaoPrevia.updateOne({ _id: atr._id, situacao: { $in: ['aceito', 'concluido'] } }, Object.keys(unset).length ? { $set: set, $unset: unset } : { $set: set });
     if (!r.matchedCount) return res.status(409).send('Este trabalho mudou de situação. Recarregue a página.');
+    if (concluir) {
+      Feira.findById(atr.feiraId).lean()
+        .then((mostra) => mostra && resultadoPrevia.aplicarAutomatica(mostra))
+        .catch((e) => console.error('Erro na decisão automática da avaliação prévia', e));
+    }
     res.send({ total: set.total, maximo: set.maximo, situacao: set.situacao });
   } catch (err) {
     console.error('Erro ao salvar avaliação prévia', err);

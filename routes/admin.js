@@ -228,11 +228,15 @@ router.put('/avaliacao-previa/criterios-resultado', miPermiso("3"), async (req, 
   try {
     if (!(await perfil.podeMostra(req, req.body.mostraId))) return res.status(403).send(msgOutraMostra);
     let k = resultadoPrevia.limparCriterios(req.body);
-    if (k.corteAnais !== undefined && k.corteApresentacao !== undefined && k.corteAnais < k.corteApresentacao) {
-      return res.status(400).send('A nota para os anais precisa ser maior ou igual à nota para apresentação.');
+    if (k.notaNaoAte !== undefined && k.notaApresentacaoAte !== undefined && k.notaApresentacaoAte < k.notaNaoAte) {
+      return res.status(400).send('A nota de "só apresentação" precisa ser maior ou igual à de "não aprovado".');
+    }
+    if (k.decisaoAutomatica && (k.notaNaoAte === undefined || k.notaApresentacaoAte === undefined)) {
+      return res.status(400).send('Para decidir automaticamente, preencha as duas notas de corte.');
     }
     await feiraSchema.updateOne({ _id: req.body.mostraId, tipo: 'edicao' }, { $set: { resultadoPrevia: k } });
-    res.send('success');
+    let mostra = await feiraSchema.findById(req.body.mostraId, MOSTRA_PREVIA).lean();
+    res.send({ decididos: await resultadoPrevia.aplicarAutomatica(mostra) });
   } catch (error) { erroDe(res, 'Erro ao salvar os critérios')(error); }
 });
 

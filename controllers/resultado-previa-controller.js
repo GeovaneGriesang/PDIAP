@@ -19,16 +19,21 @@ const um = (n) => Math.round(n * 10) / 10;
 module.exports.criterios = (mostra) => {
 	let r = (mostra && mostra.resultadoPrevia) || {};
 	return {
-		corteAnais: typeof r.corteAnais === 'number' ? r.corteAnais : null,
-		corteApresentacao: typeof r.corteApresentacao === 'number' ? r.corteApresentacao : null,
+		decisaoAutomatica: r.decisaoAutomatica === true,
+		notaNaoAte: typeof r.notaNaoAte === 'number' ? r.notaNaoAte : null,
+		notaApresentacaoAte: typeof r.notaApresentacaoAte === 'number' ? r.notaApresentacaoAte : null,
 		divergencia: typeof r.divergencia === 'number' ? r.divergencia : DIVERGENCIA_PADRAO
 	};
 };
 
-// Critérios vindos da tela: % entre 0 e 100 (vazio = sem corte).
+// Critérios vindos da tela: notas de 0 a 10 (vazio = sem corte); divergência em pontos percentuais.
 module.exports.limparCriterios = (b) => {
-	let pct = (v) => (v === null || v === undefined || v === '' || isNaN(Number(v)) ? undefined : Math.min(100, Math.max(0, um(Number(v)))));
-	return { corteAnais: pct(b && b.corteAnais), corteApresentacao: pct(b && b.corteApresentacao), divergencia: pct(b && b.divergencia) };
+	let num = (v, max) => (v === null || v === undefined || v === '' || isNaN(Number(v)) ? undefined : Math.min(max, Math.max(0, Math.round(Number(v) * 100) / 100)));
+	return {
+		decisaoAutomatica: !!(b && b.decisaoAutomatica === true),
+		notaNaoAte: num(b && b.notaNaoAte, 10), notaApresentacaoAte: num(b && b.notaApresentacaoAte, 10),
+		divergencia: num(b && b.divergencia, 100)
+	};
 };
 
 function decisaoDe(p) {
@@ -37,19 +42,22 @@ function decisaoDe(p) {
 	return null;
 }
 
-// Sugestão pela média (% da nota máxima). Sem nenhum corte configurado, não sugere.
+// Decisão pela média de 0 a 10 (= % da nota máxima / 10): até notaNaoAte, não aprovado; até
+// notaApresentacaoAte, só apresentação; acima, apresentação e anais ('anais'). Sem os dois cortes, nada.
 function sugerir(pct, k) {
-	if (pct === null || (k.corteAnais === null && k.corteApresentacao === null)) return null;
-	if (k.corteAnais !== null && pct >= k.corteAnais) return 'anais';
-	if (k.corteApresentacao !== null && pct >= k.corteApresentacao) return 'apresentacao';
-	return 'nao';
+	if (pct === null || k.notaNaoAte === null || k.notaApresentacaoAte === null) return null;
+	let nota = pct / 10;
+	if (nota <= k.notaNaoAte) return 'nao';
+	if (nota <= k.notaApresentacaoAte) return 'apresentacao';
+	return 'anais';
 }
+module.exports.sugerir = sugerir;
 
 // Tudo da tela de acompanhamento. filtroProjetos já vem com o escopo do admin (perfil.comEscopo).
 module.exports.acompanhamento = async (mostra, filtroProjetos) => {
 	let c = mostra.avaliacaoPrevia || {}, k = module.exports.criterios(mostra);
 	let porTrabalho = c.avaliadoresPorTrabalho || 2;
-	let projetos = await Projeto.find(filtroProjetos, 'nomeProjeto numInscricao categoria eixo nomeEscola textoPrevia aprovado tipoAprovacao previaExtras').lean();
+	let projetos = await Projeto.find(filtroProjetos, 'nomeProjeto numInscricao categoria eixo nomeEscola textoPrevia aprovado tipoAprovacao previaExtras decisaoPreviaAuto').lean();
 	let atribs = await AvaliacaoPrevia.find({ feiraId: mostra._id }).sort({ criadoEm: 1 }).lean();
 	let avaliadores = await Avaliador.find({ feiraId: mostra._id, pessoa: { $ne: null } }, 'nome email pessoa categoriasEixos aptoAvaliacaoPrevia aceitaAvaliacaoPrevia').lean();
 	let pessoas = new Map((await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa) } }, 'nome email').lean()).map((p) => [String(p._id), p]));
@@ -81,9 +89,9 @@ module.exports.acompanhamento = async (mostra, filtroProjetos) => {
 			_id: p._id, nomeProjeto: p.nomeProjeto, numInscricao: p.numInscricao, categoria: p.categoria, eixo: p.eixo, nomeEscola: p.nomeEscola,
 			temTexto: !!p.textoPrevia, textoEnviadoEm: p.textoPrevia && p.textoPrevia.enviadoEm,
 			vagas: vagas, extras: p.previaExtras || 0, ativas: ativas.length, concluidas: concl.length, situacao: situacao,
-			pct: pct, mediaPontos: mesmaFicha ? um(concl.reduce((s, a) => s + a.total, 0) / concl.length) : null, maximo: mesmaFicha ? concl[0].maximo : null,
+			pct: pct, nota10: pct === null ? null : um(pct / 10), mediaPontos: mesmaFicha ? um(concl.reduce((s, a) => s + a.total, 0) / concl.length) : null, maximo: mesmaFicha ? concl[0].maximo : null,
 			diferenca: diferenca, divergente: diferenca !== null && diferenca >= k.divergencia,
-			sugestao: sugerir(pct, k), sugestaoFinal: situacao === 'avaliado', decisao: decisaoDe(p), avaliacoes: avs
+			sugestao: sugerir(pct, k), sugestaoFinal: situacao === 'avaliado', decisao: decisaoDe(p), decisaoAuto: !!p.decisaoPreviaAuto, avaliacoes: avs
 		};
 	});
 	return {
@@ -141,9 +149,29 @@ module.exports.lembrarUm = async (mostra, atr) => {
 	return enviado ? { ok: true, email: pessoa.email } : { erro: 'Não foi possível enviar o e-mail agora. Tente mais tarde.' };
 };
 
-// Decisão da organização nos campos de sempre (ver routes/admin.js#/upgreice).
-module.exports.decidir = (projetoId, decisao) => {
-	if (decisao === 'anais' || decisao === 'apresentacao') return Projeto.updateOne({ _id: projetoId }, { $set: { aprovado: true, tipoAprovacao: decisao } });
-	if (decisao === 'nao') return Projeto.updateOne({ _id: projetoId }, { $set: { aprovado: false }, $unset: { tipoAprovacao: 1 } });
-	return Projeto.updateOne({ _id: projetoId }, { $unset: { aprovado: 1, tipoAprovacao: 1 } });
+// Decisão nos campos de sempre (ver routes/admin.js#/upgreice). auto = veio da decisão automática
+// (fica marcada e pode ser recalculada); à mão, a marca sai e a decisão da organização passa a valer.
+module.exports.decidir = (projetoId, decisao, auto) => {
+	let marca = auto ? { decisaoPreviaAuto: true } : {};
+	let semMarca = auto ? {} : { decisaoPreviaAuto: 1 };
+	if (decisao === 'anais' || decisao === 'apresentacao') return Projeto.updateOne({ _id: projetoId }, { $set: Object.assign({ aprovado: true, tipoAprovacao: decisao }, marca), $unset: semMarca });
+	if (decisao === 'nao') return Projeto.updateOne({ _id: projetoId }, { $set: Object.assign({ aprovado: false }, marca), $unset: Object.assign({ tipoAprovacao: 1 }, semMarca) });
+	return Projeto.updateOne({ _id: projetoId }, { $unset: { aprovado: 1, tipoAprovacao: 1, decisaoPreviaAuto: 1 } });
+};
+
+// Decisão automática (Mostra com resultadoPrevia.decisaoAutomatica e os dois cortes): trabalho com
+// todas as avaliações concluídas recebe a decisão pela média - se ainda não tem decisão ou se a que
+// tem também foi automática (recalcula). Decisão à mão da organização nunca é trocada.
+module.exports.aplicarAutomatica = async (mostra) => {
+	let k = module.exports.criterios(mostra);
+	if (!k.decisaoAutomatica || k.notaNaoAte === null || k.notaApresentacaoAte === null) return 0;
+	let r = await module.exports.acompanhamento(mostra, { feiraId: mostra._id });
+	let n = 0;
+	for (let t of r.trabalhos) {
+		if (t.situacao !== 'avaliado' || !t.sugestao || t.sugestao === t.decisao) continue;
+		if (t.decisao && !t.decisaoAuto) continue;
+		await module.exports.decidir(t._id, t.sugestao, true);
+		n++;
+	}
+	return n;
 };

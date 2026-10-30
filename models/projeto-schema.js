@@ -120,6 +120,9 @@ const ProjetoSchema = new Schema({
 	// Avaliadores(as) a MAIS que a organização pediu pra este trabalho na etapa prévia (ex: notas
 	// muito diferentes entre si) - soma ao avaliadoresPorTrabalho da Mostra na distribuição.
 	previaExtras: {type: Number},
+	// true = aprovado/tipoAprovacao vieram da decisão automática da prévia (pode ser recalculada);
+	// decisão à mão da organização apaga a marca e passa a valer.
+	decisaoPreviaAuto: {type: Boolean},
 	textoPrevia: {
 		nome: {type: String},
 		tamanho: {type: Number},

@@ -78,22 +78,28 @@
         </div>
 
         <div class="md-whiteframe-1dp acp-cartao">
-          <b style="color:#225024;">Critérios da sugestão</b>
-          <span class="acp-suave" style="font-size:14px;"> - pela média (% da nota máxima): a partir do mínimo dos anais sugere anais; do mínimo de apresentação, apresentação; abaixo, não aprovado. Divergência: diferença entre as notas (em pontos percentuais) que destaca o trabalho para uma avaliação a mais. A decisão é sempre da organização.</span>
+          <b style="color:#225024;">Decisão pela nota</b>
+          <span class="acp-suave" style="font-size:14px;"> - média do trabalho de 0 a 10 (a nota de cada ficha convertida para 0 a 10).
+            Média até <b>{{virgula(criterios.notaNaoAte) || '?'}}</b>: não aprovado; acima disso até <b>{{virgula(criterios.notaApresentacaoAte) || '?'}}</b>: aprovado só para apresentação;
+            acima: aprovado para apresentação e anais. Divergência: diferença entre as notas (em pontos percentuais) que destaca o trabalho para uma avaliação a mais.</span>
+          <div style="margin-top:8px;">
+            <md-checkbox data-ng-model="criterios.decisaoAutomatica" style="margin-bottom:0;">Decidir automaticamente quando todas as avaliações do trabalho estiverem concluídas
+              (a organização ainda pode mudar à mão; decisão feita à mão não é trocada)</md-checkbox>
+          </div>
           <div layout="row" layout-wrap layout-align="start center">
             <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
-              <label>Mínimo p/ anais (%)</label>
-              <input type="number" min="0" max="100" data-ng-model="criterios.corteAnais"/>
+              <label>Não aprovado: média até (0 a 10)</label>
+              <input type="number" min="0" max="10" step="0.1" data-ng-model="criterios.notaNaoAte"/>
             </md-input-container>
             <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
-              <label>Mínimo p/ apresentação (%)</label>
-              <input type="number" min="0" max="100" data-ng-model="criterios.corteApresentacao"/>
+              <label>Só apresentação: média até (0 a 10)</label>
+              <input type="number" min="0" max="10" step="0.1" data-ng-model="criterios.notaApresentacaoAte"/>
             </md-input-container>
             <md-input-container flex="30" flex-xs="100" style="margin:12px 12px 0 0;">
               <label>Divergência (p.p.)</label>
               <input type="number" min="0" max="100" data-ng-model="criterios.divergencia"/>
             </md-input-container>
-            <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="salvarCriterios()">Salvar critérios</md-button>
+            <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="ocupado" data-ng-click="salvarCriterios()">Salvar</md-button>
           </div>
         </div>
 
@@ -110,8 +116,9 @@
               </div>
               <div style="font-size:14px;margin-top:2px;" data-ng-if="t.temTexto">
                 {{t.concluidas}} de {{t.vagas}} avaliação(ões) concluída(s)<span data-ng-if="t.extras"> ({{t.extras}} a mais pedida(s))</span>
-                <span data-ng-if="t.pct !== null"> · média <b>{{virgula(t.pct)}}%</b><span data-ng-if="t.mediaPontos !== null"> ({{virgula(t.mediaPontos)}} de {{t.maximo}})</span></span>
-                <span data-ng-if="t.sugestao"> · sugestão: <b>{{DECISOES[t.sugestao]}}</b><span data-ng-if="!t.sugestaoFinal" class="acp-suave"> (parcial)</span></span>
+                <span data-ng-if="t.pct !== null"> · média <b>{{virgula(t.nota10)}} de 10</b><span data-ng-if="t.mediaPontos !== null"> ({{virgula(t.mediaPontos)}} de {{t.maximo}} pontos)</span></span>
+                <span data-ng-if="t.sugestao"> · pela nota: <b>{{DECISOES[t.sugestao]}}</b><span data-ng-if="!t.sugestaoFinal" class="acp-suave"> (parcial)</span></span>
+                <span data-ng-if="t.decisao && t.decisaoAuto" class="acp-suave"> · decisão automática</span>
               </div>
             </div>
             <div layout="row" layout-align="end center" data-ng-if="t.temTexto">
@@ -119,8 +126,8 @@
                 <label>Decisão</label>
                 <md-select data-ng-model="t.decisao" data-ng-change="decidir(t)" data-ng-disabled="ocupado">
                   <md-option ng-value="null">Sem decisão</md-option>
-                  <md-option value="anais">Aprovado - anais</md-option>
-                  <md-option value="apresentacao">Aprovado - apresentação</md-option>
+                  <md-option value="anais">Aprovado - apresentação e anais</md-option>
+                  <md-option value="apresentacao">Aprovado - só apresentação</md-option>
                   <md-option value="nao">Não aprovado</md-option>
                 </md-select>
               </md-input-container>
@@ -130,7 +137,7 @@
             </div>
           </div>
           <div data-ng-if="t.sugestao && t.sugestao !== t.decisao && t.temTexto" style="font-size:13px;">
-            <a href="" data-ng-click="usarSugestao(t)">Usar a sugestão ({{DECISOES[t.sugestao]}})</a>
+            <a href="" data-ng-click="usarSugestao(t)">Usar a decisão pela nota ({{DECISOES[t.sugestao]}})</a>
           </div>
 
           <div data-ng-if="aberto[t._id]" style="margin-top:10px;">
