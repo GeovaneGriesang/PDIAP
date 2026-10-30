@@ -605,7 +605,20 @@ router.post('/criarEvento', miPermiso("3"), async (req, res) => {
 
 // Tela "Pessoas" do admin: busca no cadastro único e perfis por Mostra (derivados dos
 // vínculos, ver controllers/perfis-controller.js).
-router.get('/pessoas/pesquisar', soSuper, async (req, res) => {
+// Busca e cadastro novo valem pra qualquer administrador(a) (cadastrar participante, responsável...);
+// perfis por Mostra, edição e juntar cadastros continuam só do super-admin.
+router.post('/pessoas', miPermiso("3"), async (req, res) => {
+  try {
+    let r = await perfisController.criar(req.body);
+    if (r.erro) return res.status(400).send(r.erro);
+    res.send({ _id: r.pessoa._id, nome: r.pessoa.nome, documento: r.pessoa.documento, email: r.pessoa.email });
+  } catch (error) {
+    console.error('Erro ao cadastrar pessoa', error);
+    res.status(500).send('Erro ao cadastrar a pessoa.');
+  }
+});
+
+router.get('/pessoas/pesquisar', miPermiso("3"), async (req, res) => {
   try {
     res.send(await perfisController.pesquisar(req.query.q));
   } catch (error) {

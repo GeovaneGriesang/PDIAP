@@ -26,6 +26,48 @@
 
     <md-content style="background:rgba(128,128,128,0.07);padding:20px 30px;">
 
+      <!-- Cadastro novo (qualquer administrador(a)) -->
+      <div data-ng-if="!perfil && !nova" style="margin-bottom:12px;">
+        <md-button class="md-raised md-primary" style="text-transform:none;margin-left:0;" data-ng-click="abrirNova()">+ Nova pessoa</md-button>
+      </div>
+      <div data-ng-if="nova" class="md-whiteframe-1dp" style="background:#fff;padding:20px;margin-bottom:15px;border-radius:6px;">
+        <h3 style="margin:0 0 4px;color:#225024;">Nova pessoa</h3>
+        <p style="color:#666;font-size:14px;margin:0 0 8px;">Antes, busque acima para não cadastrar a mesma pessoa duas vezes. O primeiro acesso dela ao Meu painel
+          é pelo e-mail, com o documento como senha (depois ela troca).</p>
+        <form name="novaForm" novalidate>
+          <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Nome completo</label>
+              <input name="nome" data-ng-model="nova.nome" required/>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm="30">
+              <label>Documento de identificação</label>
+              <input name="documento" data-ng-model="nova.documento" required minlength="5" maxlength="20"/>
+            </md-input-container>
+          </div>
+          <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm="30">
+              <label>Nacionalidade</label>
+              <md-select name="nacionalidade" data-ng-model="nova.nacionalidade" required aria-label="Nacionalidade">
+                <md-option data-ng-repeat="(valor, nome) in NACIONALIDADES" data-ng-value="valor">{{nome}}</md-option>
+              </md-select>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>E-mail</label>
+              <input type="email" name="email" data-ng-model="nova.email" required/>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm="25">
+              <label>Telefone (opcional)</label>
+              <input name="telefone" data-ng-model="nova.telefone"/>
+            </md-input-container>
+          </div>
+          <div layout="row" layout-align="end center">
+            <md-button class="md-raised btn-neutro" style="text-transform:none;" data-ng-disabled="salvando" data-ng-click="cancelarNova()">Cancelar</md-button>
+            <md-button class="md-raised md-primary" style="text-transform:none;" data-ng-disabled="salvando || novaForm.$invalid" data-ng-click="salvarNova()">Cadastrar</md-button>
+          </div>
+        </form>
+      </div>
+
       <!-- Lista de resultados -->
       <div data-ng-if="!perfil">
         <p data-ng-if="!buscou" style="color:#666;">
@@ -35,13 +77,13 @@
         </p>
         <div data-ng-if="buscou && !resultados.length" style="color:#666;">
           <p>Ninguém encontrado no cadastro único.</p>
-          <p data-ng-if="busca.q.length >= 5">
+          <p data-ng-if="busca.q.length >= 5 && $root.perfil.superAdmin">
             Pessoas antigas podem ainda não ter cadastro único, só registros em projetos/avaliação:
             <md-button class="md-raised" data-ng-click="verPerfis(busca.q)">Ver registros do documento "{{busca.q}}"</md-button>
           </p>
         </div>
         <md-list data-ng-if="resultados.length" class="md-dense" style="background:#fff;">
-          <md-list-item class="md-2-line" data-ng-repeat="p in resultados" data-ng-click="verPerfis(p.documento)">
+          <md-list-item class="md-2-line" data-ng-repeat="p in resultados" data-ng-click="$root.perfil.superAdmin && verPerfis(p.documento)">
             <md-icon md-svg-src="account-card-details" style="color:#43a047;"></md-icon>
             <div class="md-list-item-text">
               <h3>{{p.nome || '(sem nome)'}}</h3>

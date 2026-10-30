@@ -193,6 +193,20 @@
 		// Participante é uma Pessoa do cadastro único (qualquer país): ao sair do campo de
 		// documento, procura no cadastro e, se achar, preenche nome/e-mail (bloqueados).
 		// Se não achar, nome e e-mail são digitados e a Pessoa é criada ao salvar.
+		// Busca no cadastro único pelo nome/e-mail/documento (md-autocomplete do formulário).
+		$scope.pessoaEscolhida = { texto: '', item: null };
+		$scope.buscarPessoas = function(texto) {
+			return adminAPI.pesquisarPessoas(texto).then(function(response) { return response.data || []; }, function() { return []; });
+		};
+		$scope.usarPessoa = function(item) {
+			if (!item) return;
+			$scope.participante = $scope.participante || {};
+			$scope.participante.cpf = item.documento;
+			$scope.participante.nome = item.nome;
+			$scope.participante.email = item.email;
+			$scope.participante.cadastrada = true;
+		};
+
 		$scope.buscarPessoa = function() {
 			var p = $scope.participante;
 			if (!p || !p.cpf) return;
@@ -400,6 +414,7 @@
 
 		let resetForm = function() {
 			delete $scope.participante;
+			$scope.pessoaEscolhida = { texto: '', item: null };
 			$scope.participantesForm.$setPristine();
 			$scope.participantesForm.$setUntouched();
 		};

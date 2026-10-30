@@ -155,8 +155,9 @@
         </md-list-item>
       </md-list>
 
-      <!-- Cadastros que valem para todas as Mostras (só super-admin). -->
-      <md-list data-ng-if="$root.perfil.superAdmin">
+      <!-- Cadastros que valem para todas as Mostras: Pessoas (busca e cadastro novo) pra toda a
+           administração; Escolas e Feiras filiadas só super-admin. -->
+      <md-list>
         <md-list-item ng-click="secao.cadastros = !secao.cadastros">
           <p class="md-subheader" style="color:#f5f5f5;-webkit-flex:initial!important;flex:initial!important;">Cadastros gerais</p>
           <span flex></span>
@@ -166,11 +167,11 @@
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Pessoas</p>
         </md-list-item>
-        <md-list-item data-ng-show="secao.cadastros" ui-sref="master.cadastro-escolas" data-ng-class="{'item-ativo': ativo('master.cadastro-escolas')}">
+        <md-list-item data-ng-if="$root.perfil.superAdmin" data-ng-show="secao.cadastros" ui-sref="master.cadastro-escolas" data-ng-class="{'item-ativo': ativo('master.cadastro-escolas')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Escolas</p>
         </md-list-item>
-        <md-list-item data-ng-show="secao.cadastros" ui-sref="master.cadastro-feiras" data-ng-class="{'item-ativo': ativo('master.cadastro-feiras')}">
+        <md-list-item data-ng-if="$root.perfil.superAdmin" data-ng-show="secao.cadastros" ui-sref="master.cadastro-feiras" data-ng-class="{'item-ativo': ativo('master.cadastro-feiras')}">
           <md-icon md-svg-src="menu-right" style="color:#f5f5f5;"></md-icon>
           <p class="md-body-2 submenu" style="color:#f5f5f5;">Feiras filiadas</p>
         </md-list-item>

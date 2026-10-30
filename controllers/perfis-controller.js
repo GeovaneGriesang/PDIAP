@@ -118,6 +118,34 @@ const pessoaController = require('./pessoa-controller')
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Cadastro de uma pessoa nova pela organização (Cadastros gerais > Pessoas): nome completo, documento,
+// nacionalidade e e-mail obrigatórios (certificado e login); telefone opcional. O primeiro acesso é
+// pelo e-mail com o documento como senha (utils/loginBootstrap.js), como nas outras contas criadas
+// pela organização. Devolve { erro } ou { pessoa }.
+module.exports.criar = async (dados) => {
+	dados = dados || {};
+	let nome = String(dados.nome || '').trim().replace(/\s+/g, ' ');
+	if (!pendencias.nomeCompleto(nome)) return { erro: 'Informe o nome completo (nome e sobrenome).' };
+	let checagem = documentoValidator.validarDocumentoQualquerPais(String(dados.documento || ''));
+	if (!checagem.valido) return { erro: checagem.mensagem };
+	let existente = await Pessoa.findOne({ documento: checagem.normalizado }, 'nome').lean();
+	if (existente) return { erro: 'Este documento já está cadastrado (' + (existente.nome || 'sem nome') + ').' };
+	if (pendencias.NACIONALIDADES.indexOf(dados.nacionalidade) === -1) return { erro: 'Escolha a nacionalidade.' };
+	let email = String(dados.email || '').trim().toLowerCase();
+	if (!EMAIL_RE.test(email) || email.length > 200) return { erro: 'Informe um e-mail válido.' };
+	// _id novo (e não null): assim conta também e-mail de avaliador(a)/participante antigo(a) sem cadastro.
+	if (!(await pessoaController.emailLivre(email, new Pessoa()._id))) return { erro: 'O e-mail ' + email + ' já é usado por outro cadastro.' };
+	let tel = String(dados.telefone || '').trim();
+	if (tel) {
+		let t = documentoValidator.validarTelefone(tel);
+		if (!t.valido) return { erro: 'Telefone inválido (com DDD; de outro país, com o código do país).' };
+		tel = t.normalizado;
+	}
+	let pessoa = await new Pessoa({ nome: nome, documento: checagem.normalizado, nacionalidade: dados.nacionalidade, email: email,
+		telefone: tel || undefined, createdAt: new Date() }).save();
+	return { pessoa: pessoa };
+};
+
 // Altera os dados da Pessoa `id` (só os campos enviados) e as cópias que os outros cadastros
 // guardam (Avaliador, Participante, integrantes de projeto, responsável de evento, Saberes) - de
 // registro ligado a ela OU com o documento ANTIGO dela (mesma regra de #perfis). Devolve { erro }
