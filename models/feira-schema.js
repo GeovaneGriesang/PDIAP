@@ -78,6 +78,8 @@ const FeiraSchema = new Schema({
 		prazoAvaliacao: {type: Date},
 		avaliadoresPorTrabalho: {type: Number},
 		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
+		// true = quem tem projeto num eixo pode avaliar outros trabalhos desse eixo (o próprio nunca).
+		permitirEixoProprio: {type: Boolean},
 		anonima: {type: Boolean},
 		contaNaFinal: {type: Boolean},
 		instrucoesAvaliador: {type: String},
@@ -114,6 +116,7 @@ const FeiraSchema = new Schema({
 		abreEm: {type: Date},
 		fechaEm: {type: Date},
 		soPresencaConfirmada: {type: Boolean},
+		permitirEixoProprio: {type: Boolean}, // ver avaliacaoPrevia.permitirEixoProprio
 		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
 		instrucoesAvaliador: {type: String},
 		// Fichas em branco publicadas no menu Documentos do site (/fichas-avaliacao/:mostraId).

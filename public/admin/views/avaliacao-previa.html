@@ -80,6 +80,7 @@
               <input type="date" data-ng-model="config.prazoAvaliacao"/>
             </md-input-container>
           </div>
+          <md-checkbox data-ng-model="config.permitirEixoProprio">Permitir que quem tem projeto num eixo avalie outros trabalhos desse mesmo eixo (o próprio trabalho, nunca)</md-checkbox><br>
           <md-checkbox data-ng-model="config.anonima">Avaliação anônima (quem avalia não vê integrantes nem escola)</md-checkbox><br>
           <md-checkbox data-ng-model="config.contaNaFinal">A nota desta etapa vale na avaliação final do projeto (como a parte escrita da ficha)</md-checkbox>
           <md-input-container class="md-block" style="margin-top:12px;">
@@ -121,8 +122,9 @@
         <div class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;padding:20px 24px;margin:24px 0 16px;" data-ng-if="config.ativa">
           <h3 style="margin-top:0;color:#225024;">Distribuição dos trabalhos</h3>
           <p style="color:rgba(0,0,0,0.7);margin-top:0;">
-            O sistema entrega cada trabalho com texto a {{config.avaliadoresPorTrabalho}} avaliador(a)(es) aprovado(a)(s), preferindo quem se inscreveu
-            na mesma categoria e eixo e dividindo a quantidade entre as pessoas. Ninguém recebe um trabalho de que é integrante.
+            O sistema entrega cada trabalho com texto a {{config.avaliadoresPorTrabalho}} avaliador(a)(es) aprovado(a)(s), só entre quem se inscreveu
+            na mesma categoria e eixo do trabalho, dividindo a quantidade entre as pessoas. Ninguém recebe um trabalho de que é integrante<span data-ng-if="!config.permitirEixoProprio">
+            nem trabalhos do eixo em que tem projeto</span>.
             Depois de iniciada, a distribuição continua sozinha (a cada 30 min): substitui quem recusa ou não responde o convite,
             inclui textos que chegarem depois e manda os lembretes. Trabalho por trabalho (notas, pareceres e a decisão):
             <a ui-sref="master.avaliacao-previa-acompanhamento">Prévia: andamento</a>.
@@ -144,7 +146,7 @@
             Convites vencidos: {{distribuicao.situacoes.expirado || 0}}
           </div>
           <div data-ng-if="distribuicao.faltando.length" style="background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:10px 14px;margin:10px 0;color:#7a4a00;">
-            <b>{{distribuicao.faltando.length}} trabalho(s) sem avaliadores(as) suficientes</b> - aprove mais pessoas da categoria em Avaliação > Avaliadores
+            <b>{{distribuicao.faltando.length}} trabalho(s) sem avaliadores(as) suficientes</b> - aprove mais pessoas do eixo em Avaliação > Avaliadores
             (coluna "Prévia") ou diminua o número por trabalho / o limite por pessoa:
             <div data-ng-repeat="f in distribuicao.faltando" style="font-size:14px;">
               <span data-ng-if="f.numInscricao">nº {{f.numInscricao}} - </span>{{f.nomeProjeto}} ({{f.categoria}}<span data-ng-if="f.eixo"> - {{f.eixo}}</span>): falta(m) {{f.faltam}}
