@@ -515,6 +515,16 @@ router.put('/pessoas/:id', soSuper, (req, res) => {
 router.post('/pessoas/:id/email', soSuper, (req, res) => editarPessoa(req, res, { email: (req.body && req.body.email) || '' }));
 
 // --- Administradores por Mostra (só super-admin) ------------------------------------------
+// Sistema > Auditoria (utils/auditoria.js): quem alterou o quê, só super-admin.
+router.get('/auditoria', soSuper, async (req, res) => {
+  try {
+    res.send(await require('../utils/auditoria').listar(req.query));
+  } catch (error) {
+    console.error('Erro ao listar auditoria', error);
+    res.status(500).send('Erro ao carregar a auditoria.');
+  }
+});
+
 router.get('/administradores', soSuper, async (req, res) => {
   try {
     let mostras = await feiraSchema.find({ tipo: 'edicao' }, 'nome ano administradores').sort({ ano: -1, _id: -1 })

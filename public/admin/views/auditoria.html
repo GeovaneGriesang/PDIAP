@@ -1,0 +1,63 @@
+<!-- Sistema > Auditoria (auditoriaCtrl, só super-admin): quem alterou o quê no admin e no Meu painel. -->
+<div layout="row" layout-fill data-ng-cloak class="admin-page alert-theme" id="popupContainer">
+  <section layout="column" role="main" flex>
+    <md-toolbar role="toolbar" class="toolbar-admin md-whiteframe-2dp">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" ng-click="toggleSidenav('left')" hide-gt-sm aria-label="Menu">
+          <md-icon md-svg-src="menu" style="color:#225024;vertical-align:baseline;"></md-icon>
+        </md-button>
+        <h4 class="md-title" style="color:#225024;margin:0!important;">Sistema | Auditoria</h4>
+      </div>
+    </md-toolbar>
+
+    <md-content style="background:rgba(128,128,128,0.07);padding:20px 30px;">
+      <p style="color:#666;margin-top:0;">
+        Toda alteração feita por alguém logado no admin ou no Meu painel: quem, quando, o quê e se deu certo.
+        O registro começou em 29/10/2026 - o que aconteceu antes não aparece aqui.
+      </p>
+
+      <div class="md-whiteframe-1dp" style="background:#fff;padding:12px 20px 0;border-radius:6px;margin-bottom:16px;">
+        <div layout="row" layout-wrap layout-align="start center">
+          <md-input-container flex="40" flex-xs="100" style="margin-right:16px;">
+            <label>Buscar (pessoa, e-mail, ação ou o que foi alterado)</label>
+            <input data-ng-model="filtro.texto" data-ng-model-options="{ debounce: 500 }" data-ng-change="carregar(0)"/>
+          </md-input-container>
+          <md-input-container style="margin-right:16px;">
+            <label>De</label>
+            <input type="date" data-ng-model="filtro.de" data-ng-change="carregar(0)"/>
+          </md-input-container>
+          <md-input-container style="margin-right:16px;">
+            <label>Até</label>
+            <input type="date" data-ng-model="filtro.ate" data-ng-change="carregar(0)"/>
+          </md-input-container>
+          <md-checkbox data-ng-model="filtro.erros" data-ng-change="carregar(0)" style="margin-bottom:18px;">Só as que deram erro</md-checkbox>
+        </div>
+      </div>
+
+      <p data-ng-if="carregando" style="color:#666;">Carregando...</p>
+      <p data-ng-if="!carregando && !dados.itens.length" style="color:#666;">Nenhuma alteração encontrada.</p>
+
+      <div data-ng-if="dados.itens.length" class="md-whiteframe-1dp" style="background:#fff;border-radius:6px;">
+        <div data-ng-repeat="a in dados.itens track by a._id" style="padding:10px 20px;border-bottom:1px solid #eee;cursor:pointer;" data-ng-click="alternar(a)">
+          <div layout="row" layout-wrap layout-align="start center">
+            <span style="width:140px;color:#666;font-size:14px;">{{a.quando | date:'dd/MM/yyyy HH:mm'}}</span>
+            <b flex style="min-width:220px;">{{a.acao || (a.metodo + ' ' + a.rota)}}<span data-ng-if="a.alvo" style="font-weight:normal;"> - {{a.alvo}}</span></b>
+            <span style="min-width:200px;">{{a.nome || '(sem nome)'}}<span data-ng-if="a.email" style="color:#666;font-size:13px;"> · {{a.email}}</span></span>
+            <span data-ng-if="deuErro(a)" style="color:#c62828;font-size:13px;margin-left:8px;">não deu certo ({{a.status}})</span>
+            <span data-ng-if="a.origem === 'painel'" style="color:#666;font-size:12px;margin-left:8px;">Meu painel</span>
+          </div>
+          <div data-ng-if="aberto[a._id]" style="margin-top:6px;font-size:13px;color:#424242;">
+            <div>{{a.metodo}} {{a.rota}} · resposta {{a.status}}<span data-ng-if="a.ip"> · IP {{a.ip}}</span></div>
+            <pre data-ng-if="a.detalhes" style="white-space:pre-wrap;word-break:break-all;background:#f7f7f7;padding:8px;margin:6px 0 0;">{{a.detalhes}}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div layout="row" layout-align="center center" data-ng-if="dados.total > dados.porPagina" style="margin:16px 0;">
+        <md-button class="md-raised btn-neutro" data-ng-disabled="dados.pagina === 0 || carregando" data-ng-click="carregar(dados.pagina - 1)">Anterior</md-button>
+        <span style="margin:0 12px;">Página {{dados.pagina + 1}} de {{paginas()}} ({{dados.total}} alterações)</span>
+        <md-button class="md-raised btn-neutro" data-ng-disabled="dados.pagina + 1 >= paginas() || carregando" data-ng-click="carregar(dados.pagina + 1)">Próxima</md-button>
+      </div>
+    </md-content>
+  </section>
+</div>
