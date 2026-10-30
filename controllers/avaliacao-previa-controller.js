@@ -38,6 +38,7 @@ module.exports.limpar = (c) => {
 		prazoAvaliacao: data(c.prazoAvaliacao),
 		avaliadoresPorTrabalho: inteiro(c.avaliadoresPorTrabalho, 1, 10, 2),
 		maxPorAvaliador: inteiro(c.maxPorAvaliador, 0, 200, 0),
+		permitirEixoProprio: c.permitirEixoProprio === true,
 		anonima: c.anonima !== false,
 		contaNaFinal: c.contaNaFinal === true,
 		instrucoesAvaliador: texto(c.instrucoesAvaliador),
@@ -71,7 +72,7 @@ module.exports.paraTela = (mostra) => {
 	return {
 		ativa: !!c.ativa, envioInicio: c.envioInicio, envioPrazo: c.envioPrazo, instrucoesEnvio: c.instrucoesEnvio || '',
 		modo: c.modo || 'convite', diasParaAceitar: c.diasParaAceitar || 3, prazoAvaliacao: c.prazoAvaliacao,
-		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, maxPorAvaliador: c.maxPorAvaliador || 0, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
+		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, maxPorAvaliador: c.maxPorAvaliador || 0, permitirEixoProprio: !!c.permitirEixoProprio, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
 		instrucoesAvaliador: c.instrucoesAvaliador || '', fichas: fichas, categoriasCadastradas: categorias.length
 	};
 };

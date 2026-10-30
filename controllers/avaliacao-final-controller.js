@@ -54,6 +54,7 @@ module.exports.limpar = (c) => {
 		abreEm: data(c.abreEm),
 		fechaEm: data(c.fechaEm),
 		soPresencaConfirmada: c.soPresencaConfirmada !== false,
+		permitirEixoProprio: c.permitirEixoProprio === true,
 		maxPorAvaliador: inteiro(c.maxPorAvaliador, 0, 200, 0),
 		instrucoesAvaliador: texto(c.instrucoesAvaliador),
 		publicarFichas: c.publicarFichas === true,
@@ -113,7 +114,7 @@ module.exports.paraTela = (mostra) => {
 	});
 	return {
 		ativa: !!c.ativa, abreEm: c.abreEm, fechaEm: c.fechaEm, soPresencaConfirmada: c.soPresencaConfirmada !== false,
-		maxPorAvaliador: c.maxPorAvaliador || 0, instrucoesAvaliador: c.instrucoesAvaliador || '', publicarFichas: !!c.publicarFichas,
+		permitirEixoProprio: !!c.permitirEixoProprio, maxPorAvaliador: c.maxPorAvaliador || 0, instrucoesAvaliador: c.instrucoesAvaliador || '', publicarFichas: !!c.publicarFichas,
 		avaliadoresPorTrabalho: vagas(mostra), fichas: fichas,
 		eixosPorCategoria: ce.filter((x) => x.categoria).map((x) => ({ categoria: x.categoria, eixos: x.eixos || [] })),
 		escritaDaPrevia: escritaVemDaPrevia(mostra)
@@ -260,6 +261,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 		let avaliadores = await Avaliador.find(filtroAv, 'nome pessoa cpf categoriasEixos disponibilidade').lean();
 		let pessoas = await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa) } }, 'documento').lean();
 		let docPor = new Map(pessoas.map((p) => [String(p._id), distribuicaoPrevia.digitos(p.documento)]));
+		let eixos = c.permitirEixoProprio ? null : distribuicaoPrevia.eixosComProjeto(await Projeto.find({ feiraId: mostra._id }, 'categoria eixo integrantes.pessoa integrantes.cpf').lean());
 		let peso = new Map(avaliadores.map((a) => [String(a._id), Math.max(1, (a.disponibilidade || []).length)]));
 
 		let carga = new Map(), ocupadas = new Map(), ja = new Map();
@@ -276,6 +278,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 		let candidatos = (p) => avaliadores
 			.filter((a) => !(ja.get(String(p._id)) || new Set()).has(String(a._id)))
 			.filter((a) => !distribuicaoPrevia.conflito(a, docPor.get(String(a.pessoa)) || distribuicaoPrevia.digitos(a.cpf), p))
+			.filter((a) => !eixos || !distribuicaoPrevia.conflitoEixo(a, docPor.get(String(a.pessoa)) || distribuicaoPrevia.digitos(a.cpf), p, eixos))
 			.filter((a) => !limite || (carga.get(String(a._id)) || 0) < limite)
 			.map((a) => ({ a: a, prio: distribuicaoPrevia.prioridade(a, p) }))
 			.filter((x) => x.prio !== null);

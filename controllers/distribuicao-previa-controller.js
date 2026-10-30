@@ -93,14 +93,32 @@ module.exports.expirarConvites = async (feiraId) => {
 
 const digitos = (v) => String(v || '').replace(/\D/g, '');
 
-// Prioridade do(a) avaliador(a) pro trabalho: 1 = inscrito(a) na mesma categoria E eixo; 2 = mesma
-// categoria; 3 = não informou categorias; null = não serve (só outras categorias).
+// Avaliador(a) só recebe trabalho do eixo em que se inscreveu (mesma categoria E eixo) - decisão da
+// organização (reunião de 20/10/2026): sem gente suficiente no eixo, o trabalho fica faltando e a
+// organização entrega à mão. 1 = serve; null = não serve. (Antes completava com a mesma categoria e
+// com quem não informou categorias.)
 function prioridade(avaliador, projeto) {
 	let ce = avaliador.categoriasEixos || [];
-	if (!ce.length) return 3;
-	if (ce.some((x) => x.categoria === projeto.categoria && x.eixo === projeto.eixo)) return 1;
-	if (ce.some((x) => x.categoria === projeto.categoria)) return 2;
-	return null;
+	return ce.some((x) => x.categoria === projeto.categoria && x.eixo === projeto.eixo) ? 1 : null;
+}
+
+// Eixos (categoria|eixo) em que cada pessoa tem projeto na Mostra, por Pessoa e por documento - pra
+// regra "não avaliar no eixo do próprio projeto" (Mostra sem permitirEixoProprio).
+function eixosComProjeto(projetosDaMostra) {
+	let porChave = new Map();
+	let marcar = (k, ce) => { if (!k) return; if (!porChave.has(k)) porChave.set(k, new Set()); porChave.get(k).add(ce); };
+	(projetosDaMostra || []).forEach((p) => {
+		let ce = (p.categoria || '') + '|' + (p.eixo || '');
+		(p.integrantes || []).forEach((i) => { marcar(i.pessoa && 'p:' + i.pessoa, ce); marcar(digitos(i.cpf) && 'd:' + digitos(i.cpf), ce); });
+	});
+	return porChave;
+}
+
+// Tem projeto no mesmo categoria|eixo do trabalho.
+function conflitoEixo(avaliador, documento, projeto, eixos) {
+	let ce = (projeto.categoria || '') + '|' + (projeto.eixo || '');
+	let tem = (k) => !!k && eixos.has(k) && eixos.get(k).has(ce);
+	return tem(avaliador.pessoa && 'p:' + avaliador.pessoa) || tem(documento && 'd:' + documento);
 }
 
 // Integrante do próprio trabalho não avalia (pela Pessoa ou pelo documento).
@@ -114,8 +132,8 @@ const emAndamento = new Set();
 // Distribui os trabalhos COM TEXTO da Mostra entre os(as) avaliadores(as) aprovados(as) até cada um
 // ter `avaliadoresPorTrabalho` vagas ocupadas. Pode rodar quantas vezes for: só completa o que
 // falta (recusas, convites vencidos, textos novos), nunca repete a mesma pessoa no mesmo trabalho.
-// Ordem de escolha: mesma categoria+eixo > mesma categoria > sem categorias informadas; depois
-// quem recebeu menos trabalhos; depois sorteio. Trabalhos com menos candidatos(as) vão primeiro.
+// Só quem se inscreveu na mesma categoria+eixo (e, se a Mostra não permite, quem não tem projeto
+// nesse eixo); entre esses, quem recebeu menos trabalhos; depois sorteio. Trabalhos com menos candidatos(as) vão primeiro.
 // opcoes.iniciar = a organização mandou distribuir (liga a substituição automática); sem ele
 // (agendador), só roda se a organização já ligou.
 module.exports.distribuir = async (mostraId, opcoes) => {
@@ -132,6 +150,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 
 		let projetos = await Projeto.find({ feiraId: mostra._id, 'textoPrevia.enviadoEm': { $exists: true } }, 'nomeProjeto numInscricao categoria eixo integrantes previaExtras').lean();
 		let avaliadores = await Avaliador.find({ feiraId: mostra._id, aptoAvaliacaoPrevia: true, pessoa: { $ne: null } }, 'nome pessoa cpf categoriasEixos').lean();
+		let eixos = c.permitirEixoProprio ? null : eixosComProjeto(await Projeto.find({ feiraId: mostra._id }, 'categoria eixo integrantes.pessoa integrantes.cpf').lean());
 		let pessoas = await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa) } }, 'nome email documento').lean();
 		let pessoaPor = new Map(pessoas.map((p) => [String(p._id), p]));
 		let docPor = new Map(avaliadores.map((a) => { let p = pessoaPor.get(String(a.pessoa)); return [String(a._id), digitos((p && p.documento) || a.cpf)]; }));
@@ -151,6 +170,7 @@ module.exports.distribuir = async (mostraId, opcoes) => {
 		let candidatos = (p) => avaliadores
 			.filter((a) => !(ja.get(String(p._id)) || new Set()).has(String(a._id)))
 			.filter((a) => !conflito(a, docPor.get(String(a._id)), p))
+			.filter((a) => !eixos || !conflitoEixo(a, docPor.get(String(a._id)), p, eixos))
 			.filter((a) => !limite || (carga.get(String(a._id)) || 0) < limite)
 			.map((a) => ({ a: a, prio: prioridade(a, p) }))
 			.filter((x) => x.prio !== null);
@@ -261,4 +281,6 @@ module.exports.resumo = async (mostra) => {
 module.exports.avisar = avisar;
 module.exports.conflito = conflito;
 module.exports.prioridade = prioridade;
+module.exports.eixosComProjeto = eixosComProjeto;
+module.exports.conflitoEixo = conflitoEixo;
 module.exports.digitos = digitos;
