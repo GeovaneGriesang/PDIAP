@@ -102,9 +102,14 @@ const FeiraSchema = new Schema({
 	// média (% da nota máxima) a partir da qual sugere anais / apresentação; divergencia = diferença
 	// (em pontos percentuais) entre avaliadores(as) que marca o trabalho pra uma avaliação a mais.
 	resultadoPrevia: new Schema({
-		corteAnais: {type: Number},
-		corteApresentacao: {type: Number},
-		divergencia: {type: Number}
+		corteAnais: {type: Number}, // antigo (%), não usado desde 2026-10-29
+		corteApresentacao: {type: Number}, // antigo (%), não usado desde 2026-10-29
+		divergencia: {type: Number},
+		// Decisão AUTOMÁTICA pela média de 0 a 10 (reunião de 20/10/2026): média até notaNaoAte = não
+		// aprovado; até notaApresentacaoAte = só apresentação; acima = apresentação e anais.
+		decisaoAutomatica: {type: Boolean},
+		notaNaoAte: {type: Number},
+		notaApresentacaoAte: {type: Number}
 	}, { _id: false }),
 	// Avaliação FINAL no evento pelo sistema - ver controllers/avaliacao-final-controller.js. Quantos
 	// avaliam cada trabalho é o numAvaliadoresPorProjeto acima (o mesmo de Avaliação > Inserir).

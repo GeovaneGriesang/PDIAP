@@ -20,7 +20,7 @@
 		$scope.SITUACOES = {
 			'sem-texto': 'Sem texto', 'faltam-avaliadores': 'Faltam avaliadores(as)', 'em-avaliacao': 'Em avaliação', 'avaliado': 'Avaliado'
 		};
-		$scope.DECISOES = { anais: 'Aprovado - anais', apresentacao: 'Aprovado - apresentação', nao: 'Não aprovado' };
+		$scope.DECISOES = { anais: 'Aprovado - apresentação e anais', apresentacao: 'Aprovado - só apresentação', nao: 'Não aprovado' };
 		$scope.situacaoAvaliacao = function(a) {
 			return {
 				convidado: 'Convite aguardando resposta', aceito: 'Avaliando', concluido: 'Concluída', recusado: 'Recusou',
@@ -111,7 +111,9 @@
 			}).finally(function() { $scope.ocupado = false; });
 		};
 		$scope.salvarCriterios = function() {
-			acao($http.put('/admin/avaliacao-previa/criterios-resultado', angular.extend({ mostraId: $rootScope.mostraId }, $scope.criterios)), 'Critérios da sugestão salvos.', 'Falha ao salvar os critérios.');
+			acao($http.put('/admin/avaliacao-previa/criterios-resultado', angular.extend({ mostraId: $rootScope.mostraId }, $scope.criterios)), function(r) {
+				return 'Salvo.' + (r && r.decididos ? ' ' + r.decididos + ' trabalho(s) decidido(s) automaticamente.' : '');
+			}, 'Falha ao salvar.');
 		};
 		$scope.decidir = function(t) {
 			acao($http.put('/admin/avaliacao-previa/decisao', { mostraId: $rootScope.mostraId, projetoId: t._id, decisao: t.decisao || null }),
@@ -148,13 +150,13 @@
 		// Planilha (CSV com ; e BOM, abre direto no Excel em português).
 		$scope.exportar = function() {
 			var cel = function(v) { v = v === null || v === undefined ? '' : String(v); return '"' + v.replace(/"/g, '""') + '"'; };
-			var linhas = [['Nº', 'Trabalho', 'Categoria', 'Eixo', 'Escola', 'Situação', 'Avaliações concluídas', 'Avaliações previstas', 'Média (%)', 'Média (pontos)', 'Máximo',
-				'Diferença entre avaliadores(as) (p.p.)', 'Sugestão', 'Decisão', 'Notas (avaliador(a): nota)']];
+			var linhas = [['Nº', 'Trabalho', 'Categoria', 'Eixo', 'Escola', 'Situação', 'Avaliações concluídas', 'Avaliações previstas', 'Média (0 a 10)', 'Média (%)', 'Média (pontos)', 'Máximo',
+				'Diferença entre avaliadores(as) (p.p.)', 'Pela nota', 'Decisão', 'Notas (avaliador(a): nota)']];
 			$scope.visiveis().forEach(function(t) {
 				var notas = t.avaliacoes.filter(function(a) { return a.situacao === 'concluido'; })
 					.map(function(a) { return a.avaliador.nome + ': ' + $scope.virgula(a.total) + '/' + a.maximo; }).join(' | ');
 				linhas.push([t.numInscricao, t.nomeProjeto, t.categoria, t.eixo, t.nomeEscola, $scope.SITUACOES[t.situacao], t.concluidas, t.vagas,
-					$scope.virgula(t.pct), $scope.virgula(t.mediaPontos), t.maximo, $scope.virgula(t.diferenca),
+					$scope.virgula(t.nota10), $scope.virgula(t.pct), $scope.virgula(t.mediaPontos), t.maximo, $scope.virgula(t.diferenca),
 					t.sugestao ? $scope.DECISOES[t.sugestao] : '', t.decisao ? $scope.DECISOES[t.decisao] : '', notas]);
 			});
 			var csv = '﻿' + linhas.map(function(l) { return l.map(cel).join(';'); }).join('\r\n');

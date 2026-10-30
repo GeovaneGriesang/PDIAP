@@ -256,6 +256,8 @@ module.exports.ciclo = async () => {
 		try {
 			await module.exports.distribuir(m._id);
 			await module.exports.lembrar(m);
+			// Decisão automática (a cada avaliação concluída já roda; aqui cobre +1/-1 avaliador(a) etc.).
+			await require('./resultado-previa-controller').aplicarAutomatica(m);
 		} catch (e) {
 			console.error('Erro na rodada automática da avaliação prévia (' + m.nome + ')', e);
 		}
