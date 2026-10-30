@@ -78,9 +78,9 @@ const ProjetoSchema = new Schema({
 	// 'aprovado' (que continua true pros dois tipos) de propósito: os ~16 lugares que já
 	// leem aprovado === true continuam valendo sem precisar de mudança.
 	tipoAprovacao: {type: String, enum: ['anais', 'apresentacao']},
-	// "Resumo Simples" | "Resumo Expandido" | "Artigo" - importado da lista oficial de
-	// trabalhos aprovados (vem do sistema de submissão dos textos, não é perguntado na
-	// inscrição).
+	// Modalidade do texto: escolhida pelo projeto ao enviar o PDF da avaliação prévia, entre as que a
+	// Mostra aceita (Feira.avaliacaoPrevia.modalidades). Projetos antigos: "Resumo Simples" |
+	// "Resumo Expandido" | "Artigo", importado da lista oficial de aprovados (scripts/importar-aprovacoes.js).
 	modalidade: {type: String},
 	participa: {type: Boolean},
 	participa_updated: {type: Boolean},

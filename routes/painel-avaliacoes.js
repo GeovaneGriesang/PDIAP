@@ -81,10 +81,10 @@ router.get('/:id', carregar, async (req, res) => {
   try {
     let atr = req.atr, c = req.mostra.avaliacaoPrevia || {};
     if (!distribuicao.ATIVAS.includes(atr.situacao)) return res.status(410).send(atr.situacao === 'expirado' ? 'O prazo para aceitar este convite terminou.' : 'Este trabalho não está mais com você.');
-    let p = await ProjetoSchema.findById(atr.projeto, 'nomeProjeto numInscricao categoria eixo resumo palavraChave nomeEscola cidade estado integrantes textoPrevia').lean();
+    let p = await ProjetoSchema.findById(atr.projeto, 'nomeProjeto numInscricao categoria eixo resumo palavraChave nomeEscola cidade estado integrantes textoPrevia modalidade').lean();
     if (!p) return res.status(404).send('Trabalho não encontrado.');
     let anonima = c.anonima !== false;
-    let projeto = { nomeProjeto: p.nomeProjeto, categoria: p.categoria, eixo: p.eixo, resumo: p.resumo, palavraChave: p.palavraChave, temTexto: !!p.textoPrevia };
+    let projeto = { nomeProjeto: p.nomeProjeto, categoria: p.categoria, eixo: p.eixo, resumo: p.resumo, palavraChave: p.palavraChave, modalidade: p.modalidade, temTexto: !!p.textoPrevia };
     if (!anonima) {
       projeto.nomeEscola = p.nomeEscola;
       projeto.cidade = p.cidade;

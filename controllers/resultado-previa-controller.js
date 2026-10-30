@@ -57,7 +57,7 @@ module.exports.sugerir = sugerir;
 module.exports.acompanhamento = async (mostra, filtroProjetos) => {
 	let c = mostra.avaliacaoPrevia || {}, k = module.exports.criterios(mostra);
 	let porTrabalho = c.avaliadoresPorTrabalho || 2;
-	let projetos = await Projeto.find(filtroProjetos, 'nomeProjeto numInscricao categoria eixo nomeEscola textoPrevia aprovado tipoAprovacao previaExtras decisaoPreviaAuto').lean();
+	let projetos = await Projeto.find(filtroProjetos, 'nomeProjeto numInscricao categoria eixo nomeEscola textoPrevia modalidade aprovado tipoAprovacao previaExtras decisaoPreviaAuto').lean();
 	let atribs = await AvaliacaoPrevia.find({ feiraId: mostra._id }).sort({ criadoEm: 1 }).lean();
 	let avaliadores = await Avaliador.find({ feiraId: mostra._id, pessoa: { $ne: null } }, 'nome email pessoa categoriasEixos aptoAvaliacaoPrevia aceitaAvaliacaoPrevia').lean();
 	let pessoas = new Map((await Pessoa.find({ _id: { $in: avaliadores.map((a) => a.pessoa) } }, 'nome email').lean()).map((p) => [String(p._id), p]));
@@ -87,7 +87,7 @@ module.exports.acompanhamento = async (mostra, filtroProjetos) => {
 			: 'em-avaliacao';
 		return {
 			_id: p._id, nomeProjeto: p.nomeProjeto, numInscricao: p.numInscricao, categoria: p.categoria, eixo: p.eixo, nomeEscola: p.nomeEscola,
-			temTexto: !!p.textoPrevia, textoEnviadoEm: p.textoPrevia && p.textoPrevia.enviadoEm,
+			temTexto: !!p.textoPrevia, modalidade: p.modalidade, textoEnviadoEm: p.textoPrevia && p.textoPrevia.enviadoEm,
 			vagas: vagas, extras: p.previaExtras || 0, ativas: ativas.length, concluidas: concl.length, situacao: situacao,
 			pct: pct, nota10: pct === null ? null : um(pct / 10), mediaPontos: mesmaFicha ? um(concl.reduce((s, a) => s + a.total, 0) / concl.length) : null, maximo: mesmaFicha ? concl[0].maximo : null,
 			diferenca: diferenca, divergente: diferenca !== null && diferenca >= k.divergencia,

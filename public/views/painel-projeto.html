@@ -81,13 +81,20 @@
             </p>
             <p data-ng-if="painel.textoPrevia.instrucoes" style="white-space:pre-wrap;">{{painel.textoPrevia.instrucoes}}</p>
             <p data-ng-if="projeto.textoPrevia.enviadoEm" style="color:#2e7d32;">
-              Enviado em {{projeto.textoPrevia.enviadoEm | date:'dd/MM/yyyy HH:mm'}}: <a ng-href="{{urlTextoPrevia}}" target="_self" style="color:#2e7d32;">{{projeto.textoPrevia.nome}}</a>
+              Enviado em {{projeto.textoPrevia.enviadoEm | date:'dd/MM/yyyy HH:mm'}}: <a ng-href="{{urlTextoPrevia}}" target="_self" style="color:#2e7d32;">{{projeto.textoPrevia.nome}}</a><span data-ng-if="projeto.modalidade"> ({{projeto.modalidade}})</span>
               <span data-ng-if="painel.textoPrevia.aberto"> - enviar outro arquivo substitui este.</span>
             </p>
             <p data-ng-if="!projeto.textoPrevia.enviadoEm && !painel.textoPrevia.aberto" style="color:#c62828;">O texto não foi enviado.</p>
             <p data-ng-if="!painel.textoPrevia.aberto && painel.textoPrevia.motivo" class="projeto-suave">{{painel.textoPrevia.motivo}}</p>
+            <md-input-container data-ng-if="painel.textoPrevia.aberto && painel.textoPrevia.modalidades.length > 1" style="margin:8px 0 0;min-width:260px;">
+              <label>Modalidade do texto</label>
+              <md-select data-ng-model="envioTexto.modalidade" aria-label="Modalidade do texto">
+                <md-option data-ng-repeat="m in painel.textoPrevia.modalidades" data-ng-value="m">{{m}}</md-option>
+              </md-select>
+            </md-input-container>
+            <p data-ng-if="painel.textoPrevia.aberto && painel.textoPrevia.modalidades.length === 1" style="margin:0;">Modalidade: <b>{{painel.textoPrevia.modalidades[0]}}</b></p>
             <md-button data-ng-if="painel.textoPrevia.aberto" class="md-raised md-primary white green darken-1" style="text-transform:none;margin-left:0;"
-                       ngf-select="enviarTextoPrevia($file, $invalidFiles)" accept="application/pdf" ngf-pattern="'.pdf'" ngf-max-size="15MB" data-ng-disabled="envioTexto.enviando">
+                       ngf-select="enviarTextoPrevia($file, $invalidFiles)" accept="application/pdf" ngf-pattern="'.pdf'" ngf-max-size="15MB" data-ng-disabled="envioTexto.enviando || (painel.textoPrevia.modalidades.length > 1 && !envioTexto.modalidade)">
               {{envioTexto.enviando ? 'Enviando... ' + envioTexto.progresso + '%' : (projeto.textoPrevia.enviadoEm ? 'Enviar outro PDF' : 'Enviar o texto (PDF)')}}
             </md-button>
           </div>

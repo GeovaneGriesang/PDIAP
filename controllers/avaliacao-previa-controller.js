@@ -19,6 +19,12 @@ const data = (v) => { if (!v) return undefined; let d = new Date(v); return isNa
 const inteiro = (v, min, max, padrao) => { let n = parseInt(v, 10); return isNaN(n) ? padrao : Math.min(max, Math.max(min, n)); };
 const texto = (v, max) => (v == null ? '' : String(v).slice(0, max || 5000));
 
+// Modalidades de texto que a Mostra pode aceitar (reunião de 20/10/2026).
+const MODALIDADES = ['Resumo simples', 'Resumo expandido', 'Trabalho completo'];
+module.exports.MODALIDADES = MODALIDADES;
+const modalidadesDe = (c) => (Array.isArray(c && c.modalidades) ? MODALIDADES.filter((m) => c.modalidades.includes(m)) : []);
+module.exports.modalidadesDe = modalidadesDe;
+
 // Configuração vinda do admin -> só campos conhecidos, com tipo e limites.
 module.exports.limpar = (c) => {
 	c = c || {};
@@ -39,6 +45,7 @@ module.exports.limpar = (c) => {
 		avaliadoresPorTrabalho: inteiro(c.avaliadoresPorTrabalho, 1, 10, 2),
 		maxPorAvaliador: inteiro(c.maxPorAvaliador, 0, 200, 0),
 		permitirEixoProprio: c.permitirEixoProprio === true,
+		modalidades: modalidadesDe(c),
 		anonima: c.anonima !== false,
 		contaNaFinal: c.contaNaFinal === true,
 		instrucoesAvaliador: texto(c.instrucoesAvaliador),
@@ -72,7 +79,7 @@ module.exports.paraTela = (mostra) => {
 	return {
 		ativa: !!c.ativa, envioInicio: c.envioInicio, envioPrazo: c.envioPrazo, instrucoesEnvio: c.instrucoesEnvio || '',
 		modo: c.modo || 'convite', diasParaAceitar: c.diasParaAceitar || 3, prazoAvaliacao: c.prazoAvaliacao,
-		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, maxPorAvaliador: c.maxPorAvaliador || 0, permitirEixoProprio: !!c.permitirEixoProprio, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
+		avaliadoresPorTrabalho: c.avaliadoresPorTrabalho || 2, maxPorAvaliador: c.maxPorAvaliador || 0, permitirEixoProprio: !!c.permitirEixoProprio, modalidades: modalidadesDe(c), modalidadesDisponiveis: MODALIDADES, anonima: c.anonima !== false, contaNaFinal: !!c.contaNaFinal,
 		instrucoesAvaliador: c.instrucoesAvaliador || '', fichas: fichas, categoriasCadastradas: categorias.length
 	};
 };
@@ -86,5 +93,5 @@ module.exports.situacaoEnvio = (mostra) => {
 	let motivo = null;
 	if (c.envioInicio && agora < new Date(c.envioInicio)) motivo = 'O envio do texto abre em ' + new Date(c.envioInicio).toLocaleDateString('pt-BR') + '.';
 	else if (c.envioPrazo && agora > new Date(c.envioPrazo)) motivo = 'O prazo de envio do texto terminou em ' + new Date(c.envioPrazo).toLocaleDateString('pt-BR') + '.';
-	return { ativa: true, aberto: aberto, motivo: motivo, envioInicio: c.envioInicio, envioPrazo: c.envioPrazo, instrucoes: c.instrucoesEnvio || '' };
+	return { ativa: true, aberto: aberto, motivo: motivo, envioInicio: c.envioInicio, envioPrazo: c.envioPrazo, instrucoes: c.instrucoesEnvio || '', modalidades: modalidadesDe(c) };
 };

@@ -28,7 +28,7 @@
       <div data-ng-if="!carregando && !erro">
         <h2 style="color:#2e7d32;margin:0 0 4px 0;"><span data-ng-if="av.projeto.numInscricao">nº {{av.projeto.numInscricao}} - </span>{{av.projeto.nomeProjeto}}</h2>
         <p class="avf-suave" style="margin-top:0;">
-          {{av.mostra.nome}} · {{av.projeto.categoria}}<span data-ng-if="av.projeto.eixo"> · {{av.projeto.eixo}}</span>
+          {{av.mostra.nome}} · {{av.projeto.categoria}}<span data-ng-if="av.projeto.eixo"> · {{av.projeto.eixo}}</span><span data-ng-if="av.projeto.modalidade"> · {{av.projeto.modalidade}}</span>
         </p>
 
         <div class="avf-offline" data-ng-if="semInternet">

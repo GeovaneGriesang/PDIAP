@@ -80,6 +80,9 @@ const FeiraSchema = new Schema({
 		maxPorAvaliador: {type: Number}, // 0/vazio = sem limite
 		// true = quem tem projeto num eixo pode avaliar outros trabalhos desse eixo (o próprio nunca).
 		permitirEixoProprio: {type: Boolean},
+		// Modalidades de texto aceitas (avaliacao-previa-controller.MODALIDADES); o projeto escolhe uma
+		// ao enviar o PDF. Vazio = sem escolha (como antes).
+		modalidades: {type: [String], default: undefined},
 		anonima: {type: Boolean},
 		contaNaFinal: {type: Boolean},
 		instrucoesAvaliador: {type: String},
