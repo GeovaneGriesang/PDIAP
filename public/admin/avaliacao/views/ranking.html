@@ -119,6 +119,9 @@
           <div>
             <img src="admin/assets/images/logo3-b.png" width="120px" id="logo" style="margin-left:40px;padding-right:15px;border-right:1px solid #225024;"></img>
             <span style="padding-left:5px;font-weight:200;color:#225024;">Ranking das pontuações</span>
+            <md-select data-ng-model="mostraEscolhida.id" data-ng-change="trocarMostra(mostraEscolhida.id)" aria-label="Mostra do ranking" placeholder="Escolha a Mostra" style="margin:0 0 0 16px;min-width:200px;font-size:17px;" data-ng-if="$root.mostrasDisponiveis.length">
+              <md-option data-ng-repeat="m in $root.mostrasDisponiveis" data-ng-value="m._id">{{m.nome}} ({{m.ano}})</md-option>
+            </md-select>
           </div>
 
 	<span flex></span>

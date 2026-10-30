@@ -48,8 +48,9 @@
 		// href+target="_blank" direto no md-list-item não funciona: a diretiva mdListItem só
 		// copia um conjunto fixo de atributos (href, ng-href, ui-sref, ng-click...) pro <a>
 		// que ela gera por baixo dos panos, e "target" não está nessa lista.
+		// Abre na Mostra escolhida no admin ($rootScope.mostraId); sem ela, na Mostra atual.
 		$scope.abrirRanking = function() {
-			$window.open('/ranking/2016', '_blank');
+			$window.open('/ranking/2016' + ($rootScope.mostraId ? '?mostraId=' + encodeURIComponent($rootScope.mostraId) : ''), '_blank');
 		};
 
 		$scope.toast = function(message,tema) {
