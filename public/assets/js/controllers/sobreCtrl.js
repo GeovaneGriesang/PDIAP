@@ -12,7 +12,7 @@
       $scope.fases = [
         {
           ano: '2016',
-          titulo: 'PDIAP – Plataforma Digital de Inscrição e Administração de Projetos',
+          titulo: 'PDIAP: Plataforma Digital de Inscrição e Administração de Projetos',
           rotulo: 'Criação da plataforma',
           periodo: 'maio a dezembro de 2016',
           edital: 'Edital PROPESP 01/2016',
@@ -21,7 +21,7 @@
           colaboracao: ['Daniel Pezzi da Cunha', 'Fábio Lorenzi da Silva', 'Itamar Luís Hammes', 'Marlon Mendes Minussi'],
           bolsistas: ['Ricardo Swarovsky Garim', 'Tiago André Portaluppi'],
           voluntarios: ['Fernando Hansel'],
-          resumo: 'Nasce a plataforma. A partir das necessidades da comissão organizadora da MOVACI, a equipe levantou os requisitos, escolheu as ferramentas e colocou no ar, em poucos meses, o primeiro sistema de inscrição de projetos da mostra – que até então dependia de e-mails e planilhas.',
+          resumo: 'Nasce a plataforma. A partir das necessidades da comissão organizadora da MOVACI, a equipe levantou os requisitos, escolheu as ferramentas e colocou no ar, em poucos meses, o primeiro sistema de inscrição de projetos da mostra, que até então dependia de e-mails e planilhas.',
           destaques: [
             'Escolha da pilha MEAN (MongoDB, Express, AngularJS e Node.js), toda em software livre',
             'Inscrição de projetos pela internet, com dados de estudantes, orientadores(as) e escola',
@@ -31,7 +31,7 @@
         },
         {
           ano: '2017',
-          titulo: 'PDIAP – Plataforma Digital de Inscrição e Administração de Projetos',
+          titulo: 'PDIAP: Plataforma Digital de Inscrição e Administração de Projetos',
           rotulo: 'Automação e avaliação',
           periodo: 'agosto de 2017 a julho de 2018',
           edital: 'Edital PROPESP 03/2017',
@@ -93,7 +93,7 @@
         },
         {
           ano: '2020',
-          titulo: 'PDIAPIA – Plataforma Digital de Inscrição, Administração de Projetos e Integração de Ambientes',
+          titulo: 'PDIAPIA: Plataforma Digital de Inscrição, Administração de Projetos e Integração de Ambientes',
           rotulo: 'Fase 1 · Certificados dinâmicos',
           periodo: 'agosto de 2020 a dezembro de 2021',
           edital: 'Edital PROPESP 06/2020',
@@ -112,7 +112,7 @@
         },
         {
           ano: '2021',
-          titulo: 'PDIAPIA – Fase 2',
+          titulo: 'PDIAPIA: Fase 2',
           rotulo: 'Fase 2 · Menos código, mais configuração',
           periodo: 'agosto de 2021 a agosto de 2022',
           edital: 'Edital PROPESP 04/2021',
@@ -131,7 +131,7 @@
         },
         {
           ano: '2022',
-          titulo: 'PDIAPIA – Fase 3',
+          titulo: 'PDIAPIA: Fase 3',
           rotulo: 'Fase 3 · Comunicação e inclusão',
           periodo: 'setembro de 2022 a agosto de 2023',
           edital: 'Edital PROPESP 09/2022',
@@ -149,7 +149,7 @@
         },
         {
           ano: '2023',
-          titulo: 'PDIAP – Fase 4',
+          titulo: 'PDIAP: Fase 4',
           rotulo: 'Fase 4 · Estabilidade',
           periodo: 'setembro de 2023 a agosto de 2024',
           edital: 'Edital PROPESP 08/2023',
@@ -167,7 +167,7 @@
         },
         {
           ano: '2024',
-          titulo: 'PDIAP – Fase 5',
+          titulo: 'PDIAP: Fase 5',
           rotulo: 'Fase 5 · Dados confiáveis',
           periodo: 'outubro de 2024 a agosto de 2025',
           edital: 'Edital PROPESP 06/2024 e Edital de Ações Afirmativas 07/2024',
@@ -186,7 +186,7 @@
         },
         {
           ano: '2025',
-          titulo: 'PDIAP – Fase 6',
+          titulo: 'PDIAP: Fase 6',
           rotulo: 'Fase 6 · A mostra inteira na plataforma',
           periodo: 'setembro de 2025 a agosto de 2026',
           edital: 'Edital PROPESP 05/2025 e Edital de Ações Afirmativas 08/2025',
@@ -207,7 +207,7 @@
         },
         {
           ano: '2026',
-          titulo: 'PDIAP – Fase 7',
+          titulo: 'PDIAP: Fase 7',
           rotulo: 'Fase 7 · Em andamento',
           periodo: 'setembro de 2026 a agosto de 2027',
           edital: 'Edital PROPESP 06/2026',
@@ -227,8 +227,8 @@
       ];
 
       $scope.publicacoes = [
-        'GRIESANG, G.; ALGAYER, M. R. PDIAP: Plataforma Digital de Inscrição e Administração de Projetos. Revista Foco, v. 17, n. 12, p. 80–95, 2024.',
-        'GRIESANG, G.; GIEHL, P. H.; ALGAYER, M. R. O uso da automação digital para agilizar processos e suprimir erros na execução de rotinas. In: Engenharia elétrica e de computação: docência, pesquisa e inovação tecnológica. Ponta Grossa: Atena, 2023. p. 73–79.',
+        'GRIESANG, G.; ALGAYER, M. R. PDIAP: Plataforma Digital de Inscrição e Administração de Projetos. Revista Foco, v. 17, n. 12, p. 80-95, 2024.',
+        'GRIESANG, G.; GIEHL, P. H.; ALGAYER, M. R. O uso da automação digital para agilizar processos e suprimir erros na execução de rotinas. In: Engenharia elétrica e de computação: docência, pesquisa e inovação tecnológica. Ponta Grossa: Atena, 2023. p. 73-79.',
         'GRIESANG, G.; GIEHL, P. H.; ALGAYER, M. R. The use of digital automation to speed up processes and suppress errors in the execution of routines. Scientific Journal of Applied Social and Clinical Science, v. 2, n. 17, 2022.'
       ];
 
