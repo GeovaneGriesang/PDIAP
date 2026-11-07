@@ -70,7 +70,9 @@
 					</li>
 					<li ng-repeat="btn in edits[0].botoes | filter:menuEntre('Documentos','Fale Conosco') | orderBy:ordemTexto"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
 					<li><a href="/contato">Fale Conosco</a></li>
-					<li ng-repeat="btn in edits[0].botoes | filter:menuEntre('Fale Conosco',null) | orderBy:ordemTexto"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
+					<li ng-repeat="btn in edits[0].botoes | filter:menuEntre('Fale Conosco','Sobre') | orderBy:ordemTexto"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
+					<li><a href="/sobre">Sobre</a></li>
+					<li ng-repeat="btn in edits[0].botoes | filter:menuEntre('Sobre',null) | orderBy:ordemTexto"><a ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a></li>
 					<li><a href="#" class="button" data-ng-click="showLoginDialog($event)"
 							style="outline:none;">Logar</a></li>
 				</ul>
@@ -298,7 +300,9 @@
 				<a class="link depth-1" data-ng-if="documentos.length === 0 || !(documentos | filter:{exibe: true}).length" href="javascript:void(0);"><span class="indent-1"></span>Nenhum documento disponível</a>
 				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes | filter:menuEntre('Documentos','Fale Conosco') | orderBy:ordemTexto" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
 				<a class="link depth-0" href="/contato">Fale Conosco</a>
-				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes | filter:menuEntre('Fale Conosco',null) | orderBy:ordemTexto" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
+				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes | filter:menuEntre('Fale Conosco','Sobre') | orderBy:ordemTexto" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
+				<a class="link depth-0" href="/sobre">Sobre</a>
+				<a class="link depth-0" data-ng-repeat="btn in edits[0].botoes | filter:menuEntre('Sobre',null) | orderBy:ordemTexto" ng-href="{{btn.link}}" target="_blank">{{btn.texto}}</a>
 				<a class="link depth-0" href="#" data-ng-click="showLoginDialog($event)">Logar</a>
 			</nav>
 		</div>

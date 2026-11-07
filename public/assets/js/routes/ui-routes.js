@@ -105,6 +105,10 @@
           url: '/programacao',
           templateUrl: '/alpha/programacao.html',
         })
+        .state('sobre', {
+          url: '/sobre',
+          templateUrl: '/views/sobre.html',
+        })
         //descomentar para possibilitar a inscrição de saberes docentes
         .state('saberes-docentes', {
           url: '/saberes-docentes/inscricao',

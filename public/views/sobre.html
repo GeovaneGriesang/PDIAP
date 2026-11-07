@@ -1,0 +1,134 @@
+<style>
+  body { background: #f4f7f4 !important; height: initial !important; }
+  .sobre { max-width: 1040px; margin: 0 auto; padding: 0 16px 4em; color: #37474f; }
+  .sobre * { box-sizing: border-box; }
+  .sobre h1, .sobre h2, .sobre h3, .sobre h4 { color: #1b5e20; letter-spacing: 0; text-transform: none; }
+  .sobre-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 1.4em 0; }
+  .sobre-topo img { height: 3em; }
+  .sobre-topo a.voltar { color: #2e7d32; border-bottom: none; font-weight: 500; }
+  .sobre-hero { background: linear-gradient(135deg, #2e7d32, #43a047); color: #fff; border-radius: 10px; padding: 2.4em 2em; }
+  .sobre-hero h1 { color: #fff; font-size: 2em; line-height: 1.2; margin: 0 0 .4em; }
+  .sobre-hero p { color: #e8f5e9; margin: 0 0 .8em; line-height: 1.6; }
+  .sobre-hero p:last-child { margin-bottom: 0; }
+  .sobre-hero b { color: #fff; }
+  .sobre-numeros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 1.4em 0 2.4em; }
+  .sobre-numero { background: #fff; border-radius: 8px; padding: 1em; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .sobre-numero strong { display: block; font-size: 2em; line-height: 1.1; color: #2e7d32; }
+  .sobre-numero span { font-size: .85em; color: #607d8b; }
+  .sobre-secao { margin: 0 0 .6em; font-size: 1.4em; }
+  .sobre-sub { margin: 0 0 1.6em; color: #607d8b; }
+  .sobre-linha { position: relative; padding-left: 28px; }
+  .sobre-linha:before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 3px; background: #c8e6c9; border-radius: 2px; }
+  .sobre-fase { position: relative; background: #fff; border-radius: 10px; padding: 1.4em 1.6em; margin-bottom: 1.2em; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .sobre-fase:before { content: ''; position: absolute; left: -26px; top: 1.7em; width: 15px; height: 15px; border-radius: 50%; background: #43a047; border: 3px solid #e8f5e9; }
+  .sobre-fase.andamento:before { background: #fff; border-color: #43a047; }
+  .sobre-fase-cabecalho { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: .3em; }
+  .sobre-fase-ano { font-size: 1.8em; font-weight: 700; color: #2e7d32; line-height: 1; }
+  .sobre-fase-rotulo { font-weight: 500; color: #1b5e20; }
+  .sobre-selo { display: inline-block; font-size: .75em; padding: 2px 10px; border-radius: 12px; background: #e8f5e9; color: #1b5e20; font-weight: 500; }
+  .sobre-selo.andamento { background: #fff8e1; color: #8d6e00; }
+  .sobre-fase-titulo { margin: 0 0 .2em; font-size: 1em; font-weight: 500; color: #37474f; }
+  .sobre-fase-meta { font-size: .85em; color: #78909c; margin: 0 0 .9em; }
+  .sobre-fase p.resumo { line-height: 1.6; margin: 0 0 .9em; }
+  .sobre-fase-colunas { display: grid; grid-template-columns: 3fr 2fr; gap: 1.4em; }
+  .sobre-fase ul.destaques { margin: 0; padding-left: 1.1em; }
+  .sobre-fase ul.destaques li { margin-bottom: .35em; line-height: 1.5; list-style: disc; }
+  .sobre-equipe { background: #f6faf6; border-radius: 8px; padding: .9em 1em; font-size: .9em; }
+  .sobre-equipe h4 { font-size: .8em; text-transform: uppercase; letter-spacing: .04em; color: #607d8b; margin: .6em 0 .2em; }
+  .sobre-equipe h4:first-child { margin-top: 0; }
+  .sobre-equipe .nomes { line-height: 1.5; }
+  .sobre-bloco { background: #fff; border-radius: 10px; padding: 1.4em 1.6em; margin-top: 2em; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .sobre-bloco ul { margin: 0; padding-left: 1.1em; }
+  .sobre-bloco li { margin-bottom: .5em; line-height: 1.5; list-style: disc; }
+  .sobre-bloco a { color: #2e7d32; }
+  .sobre-tecnologias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .4em; }
+  @media (max-width: 760px) {
+    .sobre-numeros { grid-template-columns: repeat(2, 1fr); }
+    .sobre-fase-colunas { grid-template-columns: 1fr; }
+    .sobre-hero { padding: 1.6em 1.2em; }
+    .sobre-hero h1 { font-size: 1.5em; }
+    .sobre-fase { padding: 1.1em 1.1em; }
+  }
+</style>
+
+<div class="sobre" data-ng-controller="sobreCtrl">
+
+  <div class="sobre-topo">
+    <a href="/" style="border-bottom:none;"><img src="alpha/images/favicon.png" alt="Logo MOVACI"></a>
+    <a href="/" class="voltar">&larr; Voltar ao início</a>
+  </div>
+
+  <section class="sobre-hero">
+    <h1>Sobre a plataforma</h1>
+    <p>A plataforma da MOVACI – Mostra Venâncio-airense de Cultura e Inovação – é o <b>PDIAP</b> (Plataforma Digital de Inscrição e Administração de Projetos), desenvolvido desde 2016 no IFSul – Câmpus Venâncio Aires por estudantes do curso Técnico em Informática, sob orientação de professores(as) do câmpus.</p>
+    <p>Ano após ano, cada equipe recebeu a plataforma da equipe anterior, melhorou o que a mostra pedia e passou adiante. Esta página registra essa história e as pessoas que fizeram tudo acontecer.</p>
+  </section>
+
+  <div class="sobre-numeros">
+    <div class="sobre-numero"><strong>{{totais.anos}}</strong><span>anos de desenvolvimento</span></div>
+    <div class="sobre-numero"><strong>{{totais.projetos}}</strong><span>projetos de pesquisa</span></div>
+    <div class="sobre-numero"><strong>{{totais.estudantes}}</strong><span>estudantes na equipe</span></div>
+    <div class="sobre-numero"><strong>{{totais.servidores}}</strong><span>servidores(as) envolvidos(as)</span></div>
+  </div>
+
+  <h2 class="sobre-secao">Linha do tempo</h2>
+  <p class="sobre-sub">Um projeto de pesquisa por ano, registrado na Pró-reitoria de Pesquisa, Inovação e Pós-graduação (PROPESP) do IFSul.</p>
+
+  <div class="sobre-linha">
+    <article class="sobre-fase" data-ng-repeat="f in fases" data-ng-class="{andamento: f.emAndamento}">
+      <div class="sobre-fase-cabecalho">
+        <span class="sobre-fase-ano">{{f.ano}}</span>
+        <span class="sobre-fase-rotulo">{{f.rotulo}}</span>
+        <span class="sobre-selo" data-ng-if="f.mostra">{{f.mostra}}</span>
+        <span class="sobre-selo andamento" data-ng-if="f.emAndamento">em andamento</span>
+      </div>
+      <h3 class="sobre-fase-titulo">{{f.titulo}}</h3>
+      <p class="sobre-fase-meta">{{f.periodo}} · {{f.edital}}</p>
+      <div class="sobre-fase-colunas">
+        <div>
+          <p class="resumo">{{f.resumo}}</p>
+          <ul class="destaques">
+            <li data-ng-repeat="d in f.destaques">{{d}}</li>
+          </ul>
+        </div>
+        <div class="sobre-equipe">
+          <h4>Coordenação</h4>
+          <div class="nomes">{{f.coordenacao.join(', ')}}</div>
+          <h4 data-ng-if="f.colaboracao.length">Colaboração</h4>
+          <div class="nomes" data-ng-if="f.colaboracao.length">{{f.colaboracao.join(', ')}}</div>
+          <h4 data-ng-if="f.bolsistas.length">Bolsistas</h4>
+          <div class="nomes" data-ng-if="f.bolsistas.length">{{f.bolsistas.join(', ')}}</div>
+          <h4 data-ng-if="f.voluntarios.length">Voluntários(as)</h4>
+          <div class="nomes" data-ng-if="f.voluntarios.length">{{f.voluntarios.join(', ')}}</div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <section class="sobre-bloco">
+    <h2 class="sobre-secao">Reconhecimento</h2>
+    <ul>
+      <li>Programa de computador registrado no Instituto Nacional da Propriedade Industrial (INPI), processo BR512024004960-6.</li>
+      <li>Destaque na área de Ciências Exatas e da Terra na 16ª Jornada de Iniciação Científica e Tecnológica (JIC) do IFSul.</li>
+      <li>Presente na vitrine tecnológica do <a href="https://integra.ifsul.edu.br/vitrine/pdiap---plataforma-digitalde-inscricao-e-administracao-de-projetos" target="_blank" rel="noopener">Integra IFSul</a>.</li>
+      <li>Código aberto, disponível no <a href="https://github.com/GeovaneGriesang/PDIAP" target="_blank" rel="noopener">GitHub</a>.</li>
+    </ul>
+  </section>
+
+  <section class="sobre-bloco">
+    <h2 class="sobre-secao">Publicações</h2>
+    <ul>
+      <li data-ng-repeat="p in publicacoes">{{p}}</li>
+    </ul>
+  </section>
+
+  <section class="sobre-bloco">
+    <h2 class="sobre-secao">Tecnologias</h2>
+    <p class="sobre-sub" style="margin-bottom:.4em;">Toda a plataforma é feita com software livre.</p>
+    <div class="sobre-tecnologias">
+      <span class="sobre-selo">Node.js</span><span class="sobre-selo">Express</span><span class="sobre-selo">MongoDB</span>
+      <span class="sobre-selo">AngularJS</span><span class="sobre-selo">Angular Material</span><span class="sobre-selo">pdfmake</span>
+    </div>
+  </section>
+
+</div>

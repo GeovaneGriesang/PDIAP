@@ -1607,6 +1607,11 @@ router.get('/programacao', function(req, res, next) {
   res.render('layout3.ejs');
 });
 
+// Página "Sobre": história do PDIAP ano a ano (public/views/sobre.html + sobreCtrl.js)
+router.get('/sobre', function(req, res, next) {
+  res.render('layout3.ejs');
+});
+
 router.get('/categorias-eixos', function(req, res, next) {
   res.render('layout3.ejs');
 });

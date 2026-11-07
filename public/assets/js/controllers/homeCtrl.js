@@ -69,7 +69,7 @@
 		// próprio no menu do topo; os demais são botão no banner + item no menu "Botões".
 		$scope.botaoNaPagina = function(btn) { return btn.local !== 'menu'; };
 		// Menu do topo em ordem alfabética: os itens fixos (Botões, Certificados, Documentos,
-		// Fale Conosco) ficam escritos no layout2.ejs (os submenus precisam existir quando o
+		// Fale Conosco, Sobre) ficam escritos no layout2.ejs (os submenus precisam existir quando o
 		// plugin do template monta os dropdowns), e cada botão de local 'menu' entra entre o
 		// item fixo que vem antes e o que vem depois dele no alfabeto.
 		var comparaTexto = function(a, b) { return (a || '').localeCompare(b || '', 'pt', {sensitivity: 'base'}); };
