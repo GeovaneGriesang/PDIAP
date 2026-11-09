@@ -213,9 +213,9 @@
           edital: 'Edital PROPESP 06/2026',
           mostra: 'XI MOVACI',
           emAndamento: true,
-          coordenacao: ['Geovane Griesang'],
-          colaboracao: ['Jean Marcos da Silva'],
-          bolsistas: [],
+          coordenacao: ['Jean Marcos da Silva'],
+          colaboracao: ['Geovane Griesang'],
+          bolsistas: ['Biancca Machado Brauvers'],
           voluntarios: [],
           resumo: 'A fase atual prepara a plataforma para a XI MOVACI, em 2027, com foco em atualização tecnológica, mobilidade para quem avalia e documentação para as próximas equipes.',
           destaques: [
@@ -223,6 +223,30 @@
             'Avaliação dos trabalhos pelo celular, durante o evento',
             'Documentação técnica e manuais de uso atualizados'
           ]
+        }
+      ];
+
+      // Nomes que o projeto teve e as vertentes que nasceram dele (seção "Um projeto, vários nomes").
+      $scope.vertentes = [
+        {
+          nome: 'PDIAP',
+          periodo: '2016 a 2019 e de 2023 em diante',
+          texto: 'Plataforma Digital de Inscrição e Administração de Projetos. É o projeto principal: a plataforma que organiza a MOVACI, das inscrições aos certificados.'
+        },
+        {
+          nome: 'IFIntegra',
+          periodo: '2018 e 2019',
+          texto: 'Vertente do PDIAP, registrada como projeto próprio, que integrou a plataforma à biblioteca digital de artigos do câmpus (IFPublica), para levar os trabalhos da mostra até ela sem cadastro manual.'
+        },
+        {
+          nome: 'IFPublica',
+          periodo: 'integrada de 2018 a 2020',
+          texto: 'Biblioteca digital de artigos do câmpus. Recebeu, pelo IFIntegra e depois pelo PDIAPIA, a exportação dos dados dos trabalhos cadastrados na plataforma.'
+        },
+        {
+          nome: 'PDIAPIA',
+          periodo: '2020 a 2022',
+          texto: 'Plataforma Digital de Inscrição, Administração de Projetos e Integração de Ambientes. Nome adotado quando PDIAP e IFIntegra se juntaram em um só projeto. Em 2023, o projeto voltou a se chamar PDIAP.'
         }
       ];
 

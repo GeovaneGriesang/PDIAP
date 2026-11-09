@@ -42,8 +42,14 @@
   .sobre-bloco li { margin-bottom: .5em; line-height: 1.5; list-style: disc; }
   .sobre-bloco a { color: #2e7d32; }
   .sobre-tecnologias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .4em; }
+  .sobre-vertentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 2.4em; }
+  .sobre-vertente { background: #fff; border-radius: 8px; padding: 1em 1.2em; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-left: 4px solid #43a047; }
+  .sobre-vertente strong { font-size: 1.15em; color: #1b5e20; margin-right: 8px; }
+  .sobre-vertente-periodo { font-size: .85em; color: #78909c; }
+  .sobre-vertente p { margin: .5em 0 0; line-height: 1.55; }
   @media (max-width: 760px) {
     .sobre-numeros { grid-template-columns: repeat(2, 1fr); }
+    .sobre-vertentes { grid-template-columns: 1fr; }
     .sobre-fase-colunas { grid-template-columns: 1fr; }
     .sobre-hero { padding: 1.6em 1.2em; }
     .sobre-hero h1 { font-size: 1.5em; }
@@ -69,6 +75,16 @@
     <div class="sobre-numero"><strong>{{totais.projetos}}</strong><span>projetos de pesquisa</span></div>
     <div class="sobre-numero"><strong>{{totais.estudantes}}</strong><span>estudantes na equipe</span></div>
     <div class="sobre-numero"><strong>{{totais.servidores}}</strong><span>servidores(as) envolvidos(as)</span></div>
+  </div>
+
+  <h2 class="sobre-secao">Um projeto, vários nomes</h2>
+  <p class="sobre-sub">Ao longo dos anos, o PDIAP mudou de nome e deu origem a vertentes. Todas fazem parte da mesma história.</p>
+  <div class="sobre-vertentes">
+    <div class="sobre-vertente" data-ng-repeat="v in vertentes">
+      <strong>{{v.nome}}</strong>
+      <span class="sobre-vertente-periodo">{{v.periodo}}</span>
+      <p>{{v.texto}}</p>
+    </div>
   </div>
 
   <h2 class="sobre-secao">Linha do tempo</h2>
