@@ -1,7 +1,7 @@
 'use strict';
 
-// Segunda rodada de correção pontual de escolas, depois de descobrir (investigando o
-// pedido) que ~198 projetos nunca foram vinculados na migração original -
+// Segunda rodada de correção pontual de escolas, depois de descobrir (investigando a
+// inconsistência) que ~198 projetos nunca foram vinculados na migração original -
 // nomeEscola continua com o texto bruto digitado na hora, porque a grafia não batia
 // com nenhuma variante em mapeamento-escolas.json. Esse script cobre os casos
 // concretos identificados:

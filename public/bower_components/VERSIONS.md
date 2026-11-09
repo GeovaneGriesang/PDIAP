@@ -1,7 +1,7 @@
 # Versões vendorizadas em public/bower_components
 
 Bower foi removido como ferramenta do projeto em 2026-09-28 (etapa g) - registro estava
-abandonado e não havia automação de instalação (desatualizadas`). Esta pasta é commitada como está e atualizada manualmente, substituindo
+abandonado e não havia automação de instalação. Esta pasta é commitada como está e atualizada manualmente, substituindo
 cada pacote pelos arquivos de build de navegador já prontos baixados do npm (mesmos pacotes
 também são publicados lá). `*.map` não é commitado (sem uso em produção).
 
