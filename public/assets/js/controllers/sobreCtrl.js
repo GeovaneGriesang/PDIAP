@@ -251,7 +251,7 @@
       ];
 
       $scope.publicacoes = [
-        'GRIESANG, G.; ALGAYER, M. R. PDIAP: Plataforma Digital de Inscrição e Administração de Projetos. Revista Foco, v. 17, n. 12, p. 80-95, 2024.',
+        'GRIESANG, G.; ALGAYER, M. R. PDIAP: Plataforma Digital de Inscrição e Administração de Projetos. Revista Foco, v. 17, n. 12, e7168, p. 1-21, 2024.',
         'GRIESANG, G.; GIEHL, P. H.; ALGAYER, M. R. O uso da automação digital para agilizar processos e suprimir erros na execução de rotinas. In: Engenharia elétrica e de computação: docência, pesquisa e inovação tecnológica. Ponta Grossa: Atena, 2023. p. 73-79.',
         'GRIESANG, G.; GIEHL, P. H.; ALGAYER, M. R. The use of digital automation to speed up processes and suppress errors in the execution of routines. Scientific Journal of Applied Social and Clinical Science, v. 2, n. 17, 2022.'
       ];
