@@ -444,7 +444,9 @@ module.exports.atribuirManual = async (mostra, projeto, avaliadorId) => {
 	if (!av) return { erro: 'Avaliador(a) não encontrado(a) nesta Mostra.' };
 	if (!av.pessoa) return { erro: 'Este(a) avaliador(a) ainda não tem conta no Meu painel.' };
 	let pessoa = await Pessoa.findById(av.pessoa, 'documento').lean();
-	if (distribuicaoPrevia.conflito(av, distribuicaoPrevia.digitos((pessoa && pessoa.documento) || av.cpf), projeto)) return { erro: 'Esta pessoa é integrante do trabalho.' };
+	let documento = distribuicaoPrevia.digitos((pessoa && pessoa.documento) || av.cpf);
+	if (distribuicaoPrevia.conflito(av, documento, projeto)) return { erro: 'Esta pessoa é integrante do trabalho.' };
+	if (!(mostra.avaliacaoFinal || {}).permitirEixoProprio && await distribuicaoPrevia.temProjetoNoEixo(mostra._id, av, documento, projeto)) return { erro: distribuicaoPrevia.MSG_EIXO_PROPRIO };
 	let ocupadas = await AvaliacaoFinal.countDocuments({ projeto: projeto._id, situacao: { $in: ATIVAS } });
 	if (ocupadas >= vagas(mostra)) return { erro: 'Este trabalho já tem ' + vagas(mostra) + ' avaliador(a)(es). Tire alguém antes de entregar a outra pessoa.' };
 	let existente = await AvaliacaoFinal.findOne({ projeto: projeto._id, avaliador: av._id });

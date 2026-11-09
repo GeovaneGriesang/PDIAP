@@ -113,7 +113,9 @@ module.exports.atribuirManual = async (mostra, projeto, avaliadorId) => {
 	if (!av) return { erro: 'Avaliador(a) não encontrado(a) nesta Mostra.' };
 	if (!av.pessoa) return { erro: 'Este(a) avaliador(a) ainda não tem conta no Meu painel.' };
 	let pessoa = await Pessoa.findById(av.pessoa, 'nome email documento').lean();
-	if (distribuicao.conflito(av, distribuicao.digitos((pessoa && pessoa.documento) || av.cpf), projeto)) return { erro: 'Esta pessoa é integrante do trabalho.' };
+	let documento = distribuicao.digitos((pessoa && pessoa.documento) || av.cpf);
+	if (distribuicao.conflito(av, documento, projeto)) return { erro: 'Esta pessoa é integrante do trabalho.' };
+	if (!c.permitirEixoProprio && await distribuicao.temProjetoNoEixo(mostra._id, av, documento, projeto)) return { erro: distribuicao.MSG_EIXO_PROPRIO };
 	let agora = new Date(), direto = c.modo === 'direto';
 	let set = {
 		pessoa: av.pessoa, situacao: direto ? 'aceito' : 'convidado', criadoEm: agora,

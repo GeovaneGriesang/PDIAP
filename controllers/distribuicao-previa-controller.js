@@ -121,6 +121,13 @@ function conflitoEixo(avaliador, documento, projeto, eixos) {
 	return tem(avaliador.pessoa && 'p:' + avaliador.pessoa) || tem(documento && 'd:' + documento);
 }
 
+// Mesma regra para uma entrega só (entrega manual da organização): consulta os projetos da Mostra.
+async function temProjetoNoEixo(mostraId, avaliador, documento, projeto) {
+	let eixos = eixosComProjeto(await Projeto.find({ feiraId: mostraId }, 'categoria eixo integrantes.pessoa integrantes.cpf').lean());
+	return conflitoEixo(avaliador, documento, projeto, eixos);
+}
+const MSG_EIXO_PROPRIO = 'Esta pessoa tem projeto nesta mesma categoria e eixo. Para permitir, marque na configuração a opção que deixa quem tem projeto no eixo avaliar outros trabalhos dele.';
+
 // Integrante do próprio trabalho não avalia (pela Pessoa ou pelo documento).
 function conflito(avaliador, documento, projeto) {
 	return (projeto.integrantes || []).some((i) =>
@@ -285,4 +292,6 @@ module.exports.conflito = conflito;
 module.exports.prioridade = prioridade;
 module.exports.eixosComProjeto = eixosComProjeto;
 module.exports.conflitoEixo = conflitoEixo;
+module.exports.temProjetoNoEixo = temProjetoNoEixo;
+module.exports.MSG_EIXO_PROPRIO = MSG_EIXO_PROPRIO;
 module.exports.digitos = digitos;
